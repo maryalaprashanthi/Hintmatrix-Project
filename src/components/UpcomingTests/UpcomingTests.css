@@ -1,0 +1,151 @@
+.upcoming-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  border: 1px solid #edf2f7;
+}
+
+.upcoming-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.upcoming-header h2 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.upcoming-header a {
+  text-decoration: none;
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.test-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.test-box {
+  background: #fff;
+  border: 1px solid #edf2f7;
+  border-radius: 18px;
+  padding: 22px;
+  transition: all 0.3s ease;
+}
+
+.test-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.12);
+}
+
+.test-icon {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 28px;
+  margin-bottom: 18px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* Purple */
+.test-box:nth-child(1) .test-icon {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+/* Green */
+.test-box:nth-child(2) .test-icon {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+/* Orange */
+.test-box:nth-child(3) .test-icon {
+  background: #ffedd5;
+  color: #f97316;
+}
+
+.test-box h3 {
+  margin: 0 0 14px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.4;
+}
+
+.test-info {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.test-info span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.test-date {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+  color: #4b5563;
+  font-size: 14px;
+}
+
+.test-date span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.test-box button {
+  width: 100%;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* Purple Button */
+.test-box:nth-child(1) button {
+  background: linear-gradient(90deg, #6d28d9, #7c3aed);
+}
+
+/* Green Button */
+.test-box:nth-child(2) button {
+  background: linear-gradient(90deg, #16a34a, #22c55e);
+}
+
+/* Orange Button */
+.test-box:nth-child(3) button {
+  background: linear-gradient(90deg, #ea580c, #f97316);
+}
+
+.test-box button:hover {
+  transform: scale(1.03);
+}
+
+@media (max-width: 1100px) {
+  .test-grid {
+    grid-template-columns: 1fr;
+  }
+}

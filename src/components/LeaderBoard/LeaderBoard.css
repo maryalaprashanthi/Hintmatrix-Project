@@ -1,0 +1,91 @@
+.leaderboard-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.08);
+  height: 100%;
+}
+
+.leaderboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.leaderboard-header h3 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.leaderboard-header span {
+  color: #2563eb;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.leader-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border-radius: 14px;
+  transition: 0.3s;
+  margin-bottom: 8px;
+}
+
+.leader-row:hover {
+  background: #f8faff;
+}
+
+.active-user {
+  background: #eef4ff;
+}
+
+.rank-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.leader-row:nth-child(n + 5) .rank-circle {
+  background: transparent !important;
+  color: #111827;
+}
+
+.leader-row img {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.leader-info {
+  flex: 1;
+}
+
+.leader-info h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.active-user .leader-info h4 {
+  color: #2563eb;
+}
+
+.leader-score {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
