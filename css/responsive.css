@@ -1,0 +1,244 @@
+@media(max-width:768px){
+
+.logo img{
+    height:45px;
+}
+
+}
+@media (max-width:768px){
+
+    .courses{
+        padding:70px 5%;
+    }
+
+    .courses .section-title h2{
+        font-size:32px;
+    }
+
+    .courses .section-title p{
+        font-size:16px;
+    }
+
+    .courses-image img{
+        width:100%;
+    }
+
+}
+@media(max-width:768px){
+
+.practice-images{
+    grid-template-columns:1fr;
+    gap:20px;
+}
+
+}
+
+@media screen and (max-width:992px){
+
+    .slider{
+        width:90%;
+    }
+
+    .slides{
+        height:420px;
+    }
+
+}
+
+@media screen and (max-width:768px){
+
+    .slider{
+        width:95%;
+        border-radius:18px;
+    }
+
+    .slides{
+        height:300px;
+    }
+
+    .prev,
+    .next{
+
+        width:45px;
+        height:45px;
+        font-size:24px;
+
+    }
+
+}
+
+@media screen and (max-width:576px){
+
+    .slides{
+        height:220px;
+    }
+
+    .prev,
+    .next{
+
+        width:40px;
+        height:40px;
+        font-size:20px;
+
+    }
+
+    .dots{
+
+        margin-top:18px;
+
+    }
+
+    .dot{
+
+        width:10px;
+        height:10px;
+
+    }
+
+}
+@media(max-width:768px){
+
+.contact-container{
+    flex-direction:column;
+}
+
+.contact-info,
+.contact-form{
+    width:100%;
+}
+
+.contact .section-title h2{
+    font-size:34px;
+}
+
+}
+/* =========================
+   MOBILE NAVBAR
+========================= */
+
+@media (max-width:768px){
+
+    .navbar{
+        height:80px;
+        padding:15px 20px;
+        position:fixed;
+        top:0;
+        left:0;
+        width:100%;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        z-index:9999;
+    }
+
+    .logo{
+        margin-top:0;
+    }
+
+    .logo img{
+        height:55px;
+        width:auto;
+    }
+
+    .menu-toggle{
+        display:block;
+        font-size:34px;
+        cursor:pointer;
+        z-index:10000;
+    }
+
+    .nav-menu{
+        position:absolute;
+        top:80px;
+        left:0;
+        width:100%;
+        background:#fff;
+        display:none;
+        flex-direction:column;
+        align-items:center;
+        padding:25px 0;
+        box-shadow:0 10px 20px rgba(0,0,0,.08);
+        gap:25px;
+    }
+
+    .nav-menu.active{
+        display:flex;
+    }
+
+    .nav-links{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        gap:20px;
+    }
+
+    .nav-buttons{
+        display:flex;
+        flex-direction:column;
+        gap:15px;
+    }
+
+    .login-btn,
+    .signup-btn{
+        width:180px;
+        text-align:center;
+    }
+
+}
+
+@media (max-width:768px){
+
+.hero{
+
+    padding:120px 20px 50px;
+
+}
+
+.hero-content{
+
+    flex-direction:column-reverse;
+    align-items:center;
+    text-align:center;
+    gap:30px;
+
+}
+
+.hero-text,
+.hero-image{
+
+    width:100%;
+
+}
+
+.hero-text h1{
+
+    font-size:42px;
+    line-height:1.2;
+
+}
+
+.hero-text p{
+
+    font-size:18px;
+    line-height:1.8;
+
+}
+
+.hero-buttons{
+
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+    align-items:center;
+
+}
+
+.hero-image img{
+
+    width:100%;
+    max-width:300px;
+    height:auto;
+
+}
+
+}

@@ -1,0 +1,344 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>HINTMATRIX - Login</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+
+height:100vh;
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+background:linear-gradient(135deg,#EAF4FF,#D8F3FF,#FFFFFF);
+
+}
+
+.login-container{
+
+width:900px;
+height:550px;
+
+display:flex;
+
+background:white;
+
+border-radius:20px;
+
+overflow:hidden;
+
+box-shadow:0 15px 35px rgba(0,0,0,0.15);
+
+}
+
+.left{
+
+width:50%;
+
+background:linear-gradient(135deg,#5d89cf,#06B6D4);
+
+color:white;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+flex-direction:column;
+
+padding:40px;
+
+text-align:center;
+
+}
+
+.left img{
+
+width:120px;
+margin-bottom:20px;
+
+}
+
+.left h1{
+
+font-size:34px;
+margin-bottom:15px;
+
+}
+
+.left p{
+
+font-size:16px;
+line-height:28px;
+
+}
+
+.right{
+
+width:50%;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+padding:40px;
+
+}
+
+.login-box{
+
+width:100%;
+
+}
+
+.login-box h2{
+
+text-align:center;
+
+margin-bottom:10px;
+
+color:#4d9ce7;
+
+}
+
+.login-box p{
+
+text-align:center;
+
+margin-bottom:30px;
+
+color:gray;
+
+}
+
+.input-group{
+
+margin-bottom:20px;
+
+}
+
+.input-group label{
+
+display:block;
+
+margin-bottom:8px;
+
+font-weight:500;
+
+}
+
+.input-group input{
+
+width:100%;
+
+padding:14px;
+
+border:1px solid #ddd;
+
+border-radius:10px;
+
+font-size:15px;
+
+outline:none;
+
+transition:.3s;
+
+}
+
+.input-group input:focus{
+
+border-color:#2563EB;
+
+box-shadow:0 0 5px rgba(37,99,235,.3);
+
+}
+
+.options{
+
+display:flex;
+
+justify-content:space-between;
+
+font-size:14px;
+
+margin-bottom:20px;
+
+}
+
+.options a{
+
+text-decoration:none;
+
+color:#2563EB;
+
+font-weight:500;
+
+}
+
+.login-btn{
+
+width:100%;
+
+padding:15px;
+
+background:#1b7fc1;
+
+color:white;
+
+border:none;
+
+border-radius:10px;
+
+font-size:16px;
+
+cursor:pointer;
+
+transition:.3s;
+
+}
+
+.login-btn:hover{
+
+background:#5377dd;
+
+}
+
+.register{
+
+margin-top:20px;
+
+text-align:center;
+
+}
+
+.register a{
+
+text-decoration:none;
+
+font-weight:600;
+
+color:#2b4870;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="login-container">
+
+<div class="left">
+
+
+
+<h1>Welcome to HINTMATRIX</h1>
+
+<p>
+
+Learn • Practice • Excel
+
+<br><br>
+
+An AI Powered Learning Platform for Accounting Students.
+
+</p>
+
+</div>
+
+<div class="right">
+
+<div class="login-box">
+
+<h2>Login</h2>
+
+<p>Sign in to continue learning</p>
+
+<form action="LoginServlet" method="post">
+
+<div class="input-group">
+
+<label>Username</label>
+
+<input type="text"
+name="username"
+placeholder="Enter Username"
+required>
+
+</div>
+
+<div class="input-group">
+
+<label>Password</label>
+
+<input type="password"
+name="password"
+placeholder="Enter Password"
+required>
+
+</div>
+
+<div class="options">
+
+<label>
+
+<input type="checkbox">
+
+Remember Me
+
+</label>
+
+<a href="forgotpassword.jsp">
+
+Forgot Password?
+
+</a>
+
+</div>
+
+<button class="login-btn">
+
+Login
+
+</button>
+
+</form>
+
+<div class="register">
+
+New User?
+
+<a href="signup.html">
+
+Register Here
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>
