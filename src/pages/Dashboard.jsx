@@ -8,36 +8,42 @@ import UpcomingTests from "../components/UpcomingTests/UpcomingTests";
 
 function Dashboard() {
   return (
-    <div className="dashboard-content">
+    <div className="dashboard">
+
       {/* Welcome */}
-      <div className="welcome-section">
-        <h1>Welcome To Dashboard 👋</h1>
-        <p>Keep learning and keep growing!</p>
+      <div className="dashboard-header">
+        <div>
+          <h1>Welcome To Dashboard 👋</h1>
+          <p>Keep learning and keep growing!</p>
+        </div>
       </div>
 
       {/* Statistics */}
-      <div className="stats-grid">
+      <section className="stats-section">
         <StatsCard type="courses" />
         <StatsCard type="practice" />
         <StatsCard type="completed" />
         <StatsCard type="pending" />
-      </div>
+      </section>
 
       {/* Rank & Streak */}
-      <div className="rank-grid">
+      <section className="rank-section">
         <StatsCard type="rank" />
         <StatsCard type="streak" />
-      </div>
+      </section>
 
-      {/* Bottom Section */}
-      <div className="bottom-grid">
+      {/* Bottom */}
+      <section className="bottom-section">
         <RecentActivity />
         <TodayPractice />
         <LeaderBoard />
-      </div>
+      </section>
 
       {/* Upcoming Tests */}
-      <UpcomingTests />
+      <section className="upcoming-section">
+        <UpcomingTests />
+      </section>
+
     </div>
   );
 }

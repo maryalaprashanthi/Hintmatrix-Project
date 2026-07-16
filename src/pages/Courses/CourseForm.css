@@ -1,0 +1,116 @@
+/* ==========================================
+   Course Form Page
+========================================== */
+
+.course-form-page {
+  padding: 30px;
+  background: #f5f7fb;
+  min-height: calc(100vh - 82px);
+}
+
+/* ==========================================
+   Card
+========================================== */
+
+.course-card {
+  border: none;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+/* ==========================================
+   Header
+========================================== */
+
+.course-card .card-header {
+  background: #ffffff;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.course-card h2 {
+  color: #111827;
+  font-size: 30px;
+}
+
+.course-card p {
+  color: #6b7280;
+  font-size: 15px;
+}
+
+/* ==========================================
+   Form Labels
+========================================== */
+
+.form-label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+/* ==========================================
+   Inputs
+========================================== */
+
+.form-control,
+.form-select {
+  height: 50px;
+  border-radius: 12px;
+  border: 1px solid #dbe4f0;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+textarea.form-control {
+  height: auto;
+  resize: vertical;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+/* ==========================================
+   File Upload
+========================================== */
+
+input[type="file"] {
+  padding: 11px;
+}
+
+/* ==========================================
+   Save Button
+========================================== */
+
+.btn-primary {
+  background: #2563eb;
+  border: none;
+  border-radius: 12px;
+  height: 48px;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+
+/* ==========================================
+   Responsive
+========================================== */
+
+@media (max-width: 768px) {
+  .course-form-page {
+    padding: 20px;
+  }
+
+  .course-card h2 {
+    font-size: 24px;
+  }
+
+  .btn-primary {
+    width: 100%;
+  }
+}

@@ -1,57 +1,59 @@
 import "./Navbar.css";
 import logo from "../../assets/hintmatrix-logo.png";
 
-import {
-  FiSearch,
-  FiBell,
-  FiChevronDown,
-} from "react-icons/fi";
+import {FiSearch,FiBell,FiChevronDown} from "react-icons/fi";
 
-function Navbar() {
-  return (
-    <header className="navbar">
-      {/* Left - Logo */}
-      <div className="navbar-left">
-        <img
-          src={logo}
-          alt="HintMatrix Logo"
-          className="logo"
-        />
-      </div>
+export default function Navbar(){
 
-      {/* Center - Search Bar */}
-      <div className="navbar-center">
-        <div className="search-box">
-          <FiSearch className="search-icon" />
+return(
 
-          <input
-            type="text"
-            placeholder="Search for courses, topics..."
-          />
-        </div>
-      </div>
+<header className="navbar">
 
-      {/* Right - Notification & Profile */}
-      <div className="navbar-right">
-        <div className="notification">
-          <FiBell />
+<div className="navbar-left">
+<img src={logo} className="logo" alt="logo"/>
+</div>
 
-          <span className="badge">3</span>
-        </div>
+<div className="navbar-center">
 
-        <div className="profile">
-          <img
-            src="https://i.pravatar.cc/150?img=32"
-            alt="Profile"
-          />
+<div className="search-box">
 
-          <span>Prashanthi</span>
+<FiSearch className="search-icon"/>
 
-          <FiChevronDown />
-        </div>
-      </div>
-    </header>
-  );
+<input
+placeholder="Search for courses, topics..."
+/>
+
+</div>
+
+</div>
+
+<div className="navbar-right">
+
+<div className="notification">
+
+<FiBell/>
+
+<span className="badge">3</span>
+
+</div>
+
+<div className="profile">
+
+<img
+src="https://i.pravatar.cc/150?img=32"
+alt=""
+/>
+
+<span>Prashanthi</span>
+
+<FiChevronDown/>
+
+</div>
+
+</div>
+
+</header>
+
+);
+
 }
-
-export default Navbar;

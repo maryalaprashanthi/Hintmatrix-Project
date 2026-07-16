@@ -1,122 +1,58 @@
-/* Sidebar */
+.sidebar{
+    position:fixed;
 
-.sidebar {
-  width: 270px;
-  min-width: 270px;
-  height: calc(100vh - 82px);
+    top:82px;
+    left:0;
 
-  background: #ffffff;
-  border-right: 1px solid #edf2f7;
+    width:270px;
+    height:calc(100vh - 82px);
 
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+    background:#fff;
 
-  padding: 24px 18px;
+    border-right:1px solid #e5e7eb;
 
-  position: sticky;
-  top: 82px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+
+    padding:20px 16px;
+
+    overflow-y:auto;
 }
 
-/* Menu */
-
-.sidebar-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.sidebar-menu{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
 }
 
-/* Menu Item */
+.menu-item{
+    display:flex;
+    align-items:center;
 
-.menu-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+    gap:15px;
 
-  height: 56px;
-  padding: 0 18px;
+    height:54px;
 
-  text-decoration: none;
-  color: #374151;
+    padding:0 18px;
 
-  border-radius: 16px;
+    border-radius:12px;
 
-  font-size: 17px;
-  font-weight: 500;
-
-  transition: all 0.25s ease;
+    color:#475569;
 }
 
-.menu-item svg {
-  font-size: 22px;
-  flex-shrink: 0;
+.menu-item.active{
+    background:#edf4ff;
+    color:#2563eb;
 }
 
-.menu-item:hover {
-  background: #f4f7ff;
-  color: #2563eb;
-}
+.logout{
+    display:flex;
+    align-items:center;
 
-.menu-item.active {
-  background: #edf4ff;
-  color: #2563eb;
-  font-weight: 600;
-}
+    gap:15px;
 
-/* Logout */
+    height:54px;
 
-.logout {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-
-  height: 56px;
-  padding: 0 18px;
-
-  border-radius: 16px;
-
-  cursor: pointer;
-
-  color: #4b5563;
-
-  transition: all 0.25s ease;
-}
-
-.logout svg {
-  font-size: 22px;
-}
-
-.logout:hover {
-  background: #f4f7ff;
-  color: #ef4444;
-}
-
-/* Scrollbar */
-
-.sidebar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 10px;
-}
-
-/* Responsive */
-
-@media (max-width: 1024px) {
-  .sidebar {
-    width: 230px;
-    min-width: 230px;
-  }
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    position: fixed;
-    left: 0;
-    top: 82px;
-    z-index: 100;
-    transform: translateX(0);
-  }
+    padding:0 18px;
 }
