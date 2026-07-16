@@ -5,17 +5,15 @@ import "./Layout.css";
 
 function Layout() {
   return (
-    <>
+    <div className="app-layout">
       <Navbar />
 
-      <div className="layout">
-        <Sidebar />
+      <Sidebar />
 
-        <main className="main-content">
-          <Outlet />
-        </main>
-      </div>
-    </>
+      <main className="page-content">
+        <Outlet />
+      </main>
+    </div>
   );
 }
 

@@ -6,6 +6,7 @@ import {
   MdMenuBook,
   MdOutlineEdit,
   MdAssignment,
+  MdVideoLibrary,
   MdBarChart,
   MdWorkspacePremium,
   MdSettings,
@@ -15,6 +16,7 @@ import {
 function Sidebar() {
   return (
     <aside className="sidebar">
+
       <nav className="sidebar-menu">
 
         <NavLink
@@ -28,6 +30,7 @@ function Sidebar() {
           <span>Dashboard</span>
         </NavLink>
 
+
         <NavLink
           to="/courses"
           className={({ isActive }) =>
@@ -37,6 +40,7 @@ function Sidebar() {
           <MdMenuBook />
           <span>Courses</span>
         </NavLink>
+
 
         <NavLink
           to="/practice"
@@ -48,6 +52,7 @@ function Sidebar() {
           <span>Practice</span>
         </NavLink>
 
+
         <NavLink
           to="/tests"
           className={({ isActive }) =>
@@ -57,6 +62,19 @@ function Sidebar() {
           <MdAssignment />
           <span>Tests</span>
         </NavLink>
+
+
+        {/* Sessions Added */}
+        <NavLink
+          to="/sessions"
+          className={({ isActive }) =>
+            isActive ? "menu-item active" : "menu-item"
+          }
+        >
+          <MdVideoLibrary />
+          <span>Sessions</span>
+        </NavLink>
+
 
         <NavLink
           to="/results"
@@ -68,6 +86,7 @@ function Sidebar() {
           <span>Results</span>
         </NavLink>
 
+
         <NavLink
           to="/certificates"
           className={({ isActive }) =>
@@ -77,6 +96,7 @@ function Sidebar() {
           <MdWorkspacePremium />
           <span>Certificates</span>
         </NavLink>
+
 
         <NavLink
           to="/settings"
@@ -90,10 +110,12 @@ function Sidebar() {
 
       </nav>
 
+
       <div className="logout">
         <MdLogout />
         <span>Logout</span>
       </div>
+
     </aside>
   );
 }
