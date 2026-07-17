@@ -4,14 +4,12 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
-
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
     font-family:"Inter",sans-serif;
 }
-
 
 /* ==========================================
    Overlay
@@ -21,15 +19,20 @@
 
     position:fixed;
 
-    inset:0;
+    top:95px;
+    left:0;
+    right:0;
+    bottom:0;
 
     display:flex;
 
     justify-content:center;
 
-    align-items:center;
+    align-items:flex-start;
 
-    padding:20px;
+    padding:25px;
+
+    overflow-y:auto;
 
     background:rgba(15,23,42,.55);
 
@@ -41,44 +44,45 @@
 
 }
 
-
-
 /* ==========================================
    Modal
 ========================================== */
 
-
 .course-modal{
 
-    width:950px;
+    width:900px;
 
     max-width:92%;
 
-    max-height:90vh;
+    margin:0 auto;
+
+    max-height:85vh;
 
     overflow-y:auto;
 
-    background:#ffffff;
+    background:#fff;
 
-    border-radius:22px;
+    border-radius:28px;
 
-    box-shadow:
-    0 25px 60px rgba(15,23,42,.18);
+    box-shadow:    0 20px 50px rgba(0,0,0,.12),
+    0 8px 20px rgba(0,0,0,.08);
+
 
     animation:popup .35s ease;
 
 }
 
-
-
-
-
 /* ==========================================
    Header
 ========================================== */
 
-
 .modal-header{
+
+    position:sticky;
+
+    top:0;
+
+    z-index:20;
 
     display:flex;
 
@@ -94,11 +98,7 @@
 
 }
 
-
-
 .modal-header h2{
-
-    margin:0;
 
     font-size:30px;
 
@@ -108,25 +108,21 @@
 
 }
 
-
-
 .modal-header p{
 
     margin-top:6px;
 
-    font-size:14px;
-
     color:#6b7280;
+
+    font-size:14px;
 
 }
 
-
-
 .close-btn{
 
-    width:40px;
+    width:42px;
 
-    height:40px;
+    height:42px;
 
     border:none;
 
@@ -146,24 +142,19 @@
 
 }
 
-
-
 .close-btn:hover{
 
     background:#2563eb;
 
-    color:white;
+    color:#fff;
 
     transform:rotate(90deg);
 
 }
 
-
-
 /* ==========================================
    Body
 ========================================== */
-
 
 .modal-body{
 
@@ -171,35 +162,27 @@
 
 }
 
-
-
 /* ==========================================
    Cards
 ========================================== */
 
-
 .form-card{
 
-    background:#ffffff;
+    background:#fff;
 
     border:1px solid #e5e7eb;
 
-    border-radius:16px;
+    border-radius:18px;
 
     padding:20px;
 
-    margin-bottom:18px;
+    margin-bottom:24px;
 
 }
-
-
-
-
 
 /* ==========================================
    Section Title
 ========================================== */
-
 
 .section-title{
 
@@ -211,7 +194,7 @@
 
     margin-bottom:20px;
 
-    font-size:20px;
+    font-size:22px;
 
     font-weight:700;
 
@@ -219,22 +202,9 @@
 
 }
 
-
-
-.section-title svg{
-
-    color:#2563eb;
-
-}
-
-
-
-
-
 /* ==========================================
-   Form Grid
+   Grid
 ========================================== */
-
 
 .form-grid{
 
@@ -246,14 +216,9 @@
 
 }
 
-
-
-
-
 /* ==========================================
    Form Group
 ========================================== */
-
 
 .form-group{
 
@@ -263,11 +228,9 @@
 
 }
 
-
-
 .form-group label{
 
-    margin-bottom:7px;
+    margin-bottom:8px;
 
     font-size:13px;
 
@@ -277,29 +240,21 @@
 
 }
 
-
-
 .form-group label span{
 
     color:#ef4444;
 
 }
 
-
-
-
 /* ==========================================
-   Input
+   Inputs
 ========================================== */
-
 
 .input-box{
 
     position:relative;
 
 }
-
-
 
 .input-icon{
 
@@ -313,11 +268,7 @@
 
     color:#94a3b8;
 
-    font-size:15px;
-
 }
-
-
 
 .input-box input{
 
@@ -335,11 +286,7 @@
 
     font-size:14px;
 
-    color:#111827;
-
 }
-
-
 
 .input-box input:focus{
 
@@ -347,18 +294,9 @@
 
     border-color:#2563eb;
 
-    box-shadow:
-    0 0 0 3px rgba(37,99,235,.12);
+    box-shadow:0 0 0 3px rgba(37,99,235,.12);
 
 }
-
-
-
-
-/* ==========================================
-   Select
-========================================== */
-
 
 .form-group select{
 
@@ -374,10 +312,7 @@
 
     font-size:14px;
 
-    color:#111827;
-
 }
-
 
 .form-group select:focus{
 
@@ -387,17 +322,16 @@
 
 }
 
-
 input::placeholder,
 textarea::placeholder{
 
     color:#9ca3af;
 
 }
-/* ==========================================
-   Upload Section
-========================================== */
 
+/* ==========================================
+   Upload
+========================================== */
 
 .upload-container{
 
@@ -405,17 +339,15 @@ textarea::placeholder{
 
     border-radius:16px;
 
-    background:#fafcff;
-
     padding:30px;
 
     text-align:center;
 
+    background:#fafcff;
+
     transition:.3s;
 
 }
-
-
 
 .upload-container:hover{
 
@@ -425,45 +357,9 @@ textarea::placeholder{
 
 }
 
-
-
-.upload-container label{
-
-    display:block;
-
-    margin-bottom:12px;
-
-    font-size:14px;
-
-    font-weight:600;
-
-    color:#374151;
-
-}
-
-
-
-.upload-container input[type="file"]{
-
-    width:100%;
-
-    padding:10px;
-
-    border:1px solid #dbe4f0;
-
-    border-radius:10px;
-
-    background:#fff;
-
-    cursor:pointer;
-
-}
-
-
-
 .upload-icon{
 
-    font-size:44px;
+    font-size:48px;
 
     color:#2563eb;
 
@@ -471,7 +367,21 @@ textarea::placeholder{
 
 }
 
+.upload-container label{
 
+    display:block;
+
+    margin-bottom:12px;
+
+    font-weight:600;
+
+}
+
+.upload-container input[type=file]{
+
+    width:100%;
+
+}
 
 .image-preview{
 
@@ -479,28 +389,23 @@ textarea::placeholder{
 
     max-height:220px;
 
-    margin-top:18px;
-
     object-fit:cover;
 
     border-radius:12px;
 
+    margin-top:18px;
+
 }
-
-
 
 /* ==========================================
    Description
 ========================================== */
-
 
 .textarea-box{
 
     position:relative;
 
 }
-
-
 
 .textarea-box .input-icon{
 
@@ -510,15 +415,11 @@ textarea::placeholder{
 
 }
 
-
-
 .textarea-box textarea{
 
     width:100%;
 
-    min-height:130px;
-
-    resize:vertical;
+    min-height:140px;
 
     padding:16px 16px 16px 45px;
 
@@ -526,15 +427,11 @@ textarea::placeholder{
 
     border-radius:12px;
 
+    resize:vertical;
+
     font-size:14px;
 
-    color:#111827;
-
-    line-height:1.6;
-
 }
-
-
 
 .textarea-box textarea:focus{
 
@@ -542,19 +439,18 @@ textarea::placeholder{
 
     border-color:#2563eb;
 
-    box-shadow:
-    0 0 0 3px rgba(37,99,235,.12);
+    box-shadow:0 0 0 3px rgba(37,99,235,.12);
 
 }
-
-
-
 /* ==========================================
    Footer
 ========================================== */
 
-
 .modal-footer{
+
+    position: sticky;
+
+    bottom: 0;
 
     display:flex;
 
@@ -562,26 +458,24 @@ textarea::placeholder{
 
     align-items:center;
 
-    gap:12px;
+    gap:14px;
 
     padding:20px 28px;
 
     border-top:1px solid #edf2f7;
 
-    background:#fff;
+    background:#ffffff;
+
+    z-index:20;
 
 }
-
-
 
 .cancel-btn,
 .save-btn{
 
-    height:46px;
+    height:48px;
 
-    min-width:140px;
-
-    padding:0 22px;
+    min-width:150px;
 
     border:none;
 
@@ -589,23 +483,21 @@ textarea::placeholder{
 
     display:flex;
 
-    align-items:center;
-
     justify-content:center;
+
+    align-items:center;
 
     gap:8px;
 
-    font-size:14px;
+    font-size:15px;
 
     font-weight:600;
 
     cursor:pointer;
 
-    transition:.25s;
+    transition:.3s;
 
 }
-
-
 
 .cancel-btn{
 
@@ -615,28 +507,21 @@ textarea::placeholder{
 
 }
 
-
-
 .cancel-btn:hover{
 
     background:#e2e8f0;
 
 }
 
-
-
 .save-btn{
 
     background:#2563eb;
 
-    color:white;
+    color:#ffffff;
 
-    box-shadow:
-    0 8px 18px rgba(37,99,235,.2);
+    box-shadow:0 8px 18px rgba(37,99,235,.20);
 
 }
-
-
 
 .save-btn:hover{
 
@@ -648,11 +533,9 @@ textarea::placeholder{
 
 
 
-
 /* ==========================================
    Scrollbar
 ========================================== */
-
 
 .course-modal::-webkit-scrollbar{
 
@@ -660,15 +543,11 @@ textarea::placeholder{
 
 }
 
-
-
 .course-modal::-webkit-scrollbar-track{
 
     background:#f8fafc;
 
 }
-
-
 
 .course-modal::-webkit-scrollbar-thumb{
 
@@ -678,12 +557,17 @@ textarea::placeholder{
 
 }
 
+.course-modal::-webkit-scrollbar-thumb:hover{
+
+    background:#94a3b8;
+
+}
+
 
 
 /* ==========================================
    Animations
 ========================================== */
-
 
 @keyframes popup{
 
@@ -691,10 +575,9 @@ textarea::placeholder{
 
         opacity:0;
 
-        transform:translateY(20px) scale(.97);
+        transform:translateY(25px) scale(.96);
 
     }
-
 
     to{
 
@@ -706,8 +589,6 @@ textarea::placeholder{
 
 }
 
-
-
 @keyframes fadeIn{
 
     from{
@@ -715,7 +596,6 @@ textarea::placeholder{
         opacity:0;
 
     }
-
 
     to{
 
@@ -731,16 +611,15 @@ textarea::placeholder{
    Responsive
 ========================================== */
 
-
 @media(max-width:992px){
-
 
     .course-modal{
 
-        width:95%;
+        width:96%;
+
+        max-height:calc(100vh - 110px);
 
     }
-
 
     .form-grid{
 
@@ -750,17 +629,25 @@ textarea::placeholder{
 
 }
 
-
-
 @media(max-width:768px){
 
-
     .modal-overlay{
+
+        top:80px;
 
         padding:15px;
 
     }
 
+    .course-modal{
+
+        width:100%;
+
+        max-height:calc(100vh - 95px);
+
+        border-radius:16px;
+
+    }
 
     .modal-header{
 
@@ -768,13 +655,11 @@ textarea::placeholder{
 
     }
 
-
     .modal-header h2{
 
         font-size:24px;
 
     }
-
 
     .modal-body{
 
@@ -782,13 +667,11 @@ textarea::placeholder{
 
     }
 
-
     .form-card{
 
         padding:16px;
 
     }
-
 
     .modal-footer{
 
@@ -797,7 +680,6 @@ textarea::placeholder{
         padding:18px;
 
     }
-
 
     .cancel-btn,
     .save-btn{
