@@ -4,7 +4,6 @@ import Layout from "./Layout/Layout";
 
 import Dashboard from "./pages/Dashboard";
 import Courses from "./pages/Courses/Courses";
-import CourseForm from "./pages/Courses/CourseForm";
 import Practice from "./pages/Practice";
 import Tests from "./pages/Tests";
 import Sessions from "./pages/Sessions";
@@ -15,14 +14,11 @@ import Settings from "./pages/Settings";
 function App() {
   return (
     <Routes>
-
       <Route element={<Layout />}>
 
         <Route path="/" element={<Dashboard />} />
 
         <Route path="/courses" element={<Courses />} />
-
-        <Route path="/courses/new" element={<CourseForm />} />
 
         <Route path="/practice" element={<Practice />} />
 
@@ -37,7 +33,6 @@ function App() {
         <Route path="/settings" element={<Settings />} />
 
       </Route>
-
     </Routes>
   );
 }

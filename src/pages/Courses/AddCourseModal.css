@@ -1,0 +1,809 @@
+/* ==========================================
+   Google Font
+========================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Inter",sans-serif;
+}
+
+
+/* ==========================================
+   Overlay
+========================================== */
+
+.modal-overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    padding:20px;
+
+    background:rgba(15,23,42,.55);
+
+    backdrop-filter:blur(8px);
+
+    z-index:9999;
+
+    animation:fadeIn .3s ease;
+
+}
+
+
+
+/* ==========================================
+   Modal
+========================================== */
+
+
+.course-modal{
+
+    width:950px;
+
+    max-width:92%;
+
+    max-height:90vh;
+
+    overflow-y:auto;
+
+    background:#ffffff;
+
+    border-radius:22px;
+
+    box-shadow:
+    0 25px 60px rgba(15,23,42,.18);
+
+    animation:popup .35s ease;
+
+}
+
+
+
+
+
+/* ==========================================
+   Header
+========================================== */
+
+
+.modal-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:flex-start;
+
+    padding:26px 32px;
+
+    border-bottom:1px solid #edf2f7;
+
+    background:#fff;
+
+}
+
+
+
+.modal-header h2{
+
+    margin:0;
+
+    font-size:30px;
+
+    font-weight:700;
+
+    color:#111827;
+
+}
+
+
+
+.modal-header p{
+
+    margin-top:6px;
+
+    font-size:14px;
+
+    color:#6b7280;
+
+}
+
+
+
+.close-btn{
+
+    width:40px;
+
+    height:40px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:#f3f4f6;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+
+
+.close-btn:hover{
+
+    background:#2563eb;
+
+    color:white;
+
+    transform:rotate(90deg);
+
+}
+
+
+
+/* ==========================================
+   Body
+========================================== */
+
+
+.modal-body{
+
+    padding:28px;
+
+}
+
+
+
+/* ==========================================
+   Cards
+========================================== */
+
+
+.form-card{
+
+    background:#ffffff;
+
+    border:1px solid #e5e7eb;
+
+    border-radius:16px;
+
+    padding:20px;
+
+    margin-bottom:18px;
+
+}
+
+
+
+
+
+/* ==========================================
+   Section Title
+========================================== */
+
+
+.section-title{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    margin-bottom:20px;
+
+    font-size:20px;
+
+    font-weight:700;
+
+    color:#111827;
+
+}
+
+
+
+.section-title svg{
+
+    color:#2563eb;
+
+}
+
+
+
+
+
+/* ==========================================
+   Form Grid
+========================================== */
+
+
+.form-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:20px;
+
+}
+
+
+
+
+
+/* ==========================================
+   Form Group
+========================================== */
+
+
+.form-group{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+
+
+.form-group label{
+
+    margin-bottom:7px;
+
+    font-size:13px;
+
+    font-weight:600;
+
+    color:#374151;
+
+}
+
+
+
+.form-group label span{
+
+    color:#ef4444;
+
+}
+
+
+
+
+/* ==========================================
+   Input
+========================================== */
+
+
+.input-box{
+
+    position:relative;
+
+}
+
+
+
+.input-icon{
+
+    position:absolute;
+
+    left:15px;
+
+    top:50%;
+
+    transform:translateY(-50%);
+
+    color:#94a3b8;
+
+    font-size:15px;
+
+}
+
+
+
+.input-box input{
+
+    width:100%;
+
+    height:48px;
+
+    border:1px solid #dbe4f0;
+
+    border-radius:12px;
+
+    padding-left:42px;
+
+    padding-right:14px;
+
+    font-size:14px;
+
+    color:#111827;
+
+}
+
+
+
+.input-box input:focus{
+
+    outline:none;
+
+    border-color:#2563eb;
+
+    box-shadow:
+    0 0 0 3px rgba(37,99,235,.12);
+
+}
+
+
+
+
+/* ==========================================
+   Select
+========================================== */
+
+
+.form-group select{
+
+    width:100%;
+
+    height:48px;
+
+    border:1px solid #dbe4f0;
+
+    border-radius:12px;
+
+    padding:0 14px;
+
+    font-size:14px;
+
+    color:#111827;
+
+}
+
+
+.form-group select:focus{
+
+    outline:none;
+
+    border-color:#2563eb;
+
+}
+
+
+input::placeholder,
+textarea::placeholder{
+
+    color:#9ca3af;
+
+}
+/* ==========================================
+   Upload Section
+========================================== */
+
+
+.upload-container{
+
+    border:2px dashed #cbd5e1;
+
+    border-radius:16px;
+
+    background:#fafcff;
+
+    padding:30px;
+
+    text-align:center;
+
+    transition:.3s;
+
+}
+
+
+
+.upload-container:hover{
+
+    border-color:#2563eb;
+
+    background:#f7faff;
+
+}
+
+
+
+.upload-container label{
+
+    display:block;
+
+    margin-bottom:12px;
+
+    font-size:14px;
+
+    font-weight:600;
+
+    color:#374151;
+
+}
+
+
+
+.upload-container input[type="file"]{
+
+    width:100%;
+
+    padding:10px;
+
+    border:1px solid #dbe4f0;
+
+    border-radius:10px;
+
+    background:#fff;
+
+    cursor:pointer;
+
+}
+
+
+
+.upload-icon{
+
+    font-size:44px;
+
+    color:#2563eb;
+
+    margin-bottom:12px;
+
+}
+
+
+
+.image-preview{
+
+    width:100%;
+
+    max-height:220px;
+
+    margin-top:18px;
+
+    object-fit:cover;
+
+    border-radius:12px;
+
+}
+
+
+
+/* ==========================================
+   Description
+========================================== */
+
+
+.textarea-box{
+
+    position:relative;
+
+}
+
+
+
+.textarea-box .input-icon{
+
+    top:18px;
+
+    transform:none;
+
+}
+
+
+
+.textarea-box textarea{
+
+    width:100%;
+
+    min-height:130px;
+
+    resize:vertical;
+
+    padding:16px 16px 16px 45px;
+
+    border:1px solid #dbe4f0;
+
+    border-radius:12px;
+
+    font-size:14px;
+
+    color:#111827;
+
+    line-height:1.6;
+
+}
+
+
+
+.textarea-box textarea:focus{
+
+    outline:none;
+
+    border-color:#2563eb;
+
+    box-shadow:
+    0 0 0 3px rgba(37,99,235,.12);
+
+}
+
+
+
+/* ==========================================
+   Footer
+========================================== */
+
+
+.modal-footer{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    align-items:center;
+
+    gap:12px;
+
+    padding:20px 28px;
+
+    border-top:1px solid #edf2f7;
+
+    background:#fff;
+
+}
+
+
+
+.cancel-btn,
+.save-btn{
+
+    height:46px;
+
+    min-width:140px;
+
+    padding:0 22px;
+
+    border:none;
+
+    border-radius:12px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:8px;
+
+    font-size:14px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+
+
+.cancel-btn{
+
+    background:#f1f5f9;
+
+    color:#475569;
+
+}
+
+
+
+.cancel-btn:hover{
+
+    background:#e2e8f0;
+
+}
+
+
+
+.save-btn{
+
+    background:#2563eb;
+
+    color:white;
+
+    box-shadow:
+    0 8px 18px rgba(37,99,235,.2);
+
+}
+
+
+
+.save-btn:hover{
+
+    background:#1d4ed8;
+
+    transform:translateY(-2px);
+
+}
+
+
+
+
+/* ==========================================
+   Scrollbar
+========================================== */
+
+
+.course-modal::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+
+
+.course-modal::-webkit-scrollbar-track{
+
+    background:#f8fafc;
+
+}
+
+
+
+.course-modal::-webkit-scrollbar-thumb{
+
+    background:#cbd5e1;
+
+    border-radius:20px;
+
+}
+
+
+
+/* ==========================================
+   Animations
+========================================== */
+
+
+@keyframes popup{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(20px) scale(.97);
+
+    }
+
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0) scale(1);
+
+    }
+
+}
+
+
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
+
+    }
+
+
+    to{
+
+        opacity:1;
+
+    }
+
+}
+
+
+
+/* ==========================================
+   Responsive
+========================================== */
+
+
+@media(max-width:992px){
+
+
+    .course-modal{
+
+        width:95%;
+
+    }
+
+
+    .form-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+}
+
+
+
+@media(max-width:768px){
+
+
+    .modal-overlay{
+
+        padding:15px;
+
+    }
+
+
+    .modal-header{
+
+        padding:20px;
+
+    }
+
+
+    .modal-header h2{
+
+        font-size:24px;
+
+    }
+
+
+    .modal-body{
+
+        padding:20px;
+
+    }
+
+
+    .form-card{
+
+        padding:16px;
+
+    }
+
+
+    .modal-footer{
+
+        flex-direction:column-reverse;
+
+        padding:18px;
+
+    }
+
+
+    .cancel-btn,
+    .save-btn{
+
+        width:100%;
+
+    }
+
+}
