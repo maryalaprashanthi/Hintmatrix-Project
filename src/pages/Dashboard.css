@@ -1,91 +1,141 @@
 /* ===========================
-   Dashboard
+   Dashboard Core Layout
 =========================== */
 
-.dashboard{
-    width:100%;
+.dashboard {
+    width: 100%;
 }
 
 /* ===========================
-   Header
+   Header Layout Components
 =========================== */
 
-.dashboard-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:30px;
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
 }
 
-.dashboard-header h1{
-    font-size:38px;
-    font-weight:700;
-    color:#111827;
+.dashboard-header h1 {
+    font-size: 38px;
+    font-weight: 700;
+    color: #111827;
 }
 
-.dashboard-header p{
-    margin-top:8px;
-    color:#6b7280;
-    font-size:17px;
+.dashboard-header p {
+    margin-top: 8px;
+    color: #6b7280;
+    font-size: 17px;
 }
 
 /* ===========================
-   Sections
+   Dynamic Grid Stats Sections
 =========================== */
 
-.stats-section{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:24px;
-    margin-bottom:24px;
+/* Shared base properties for both stats tracks */
+.stats-section {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 24px;
 }
 
-.rank-section{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:24px;
-    margin-bottom:24px;
+/* Unique wrapper overrides for management analytics context */
+.stats-section.management-stats {
+    margin-bottom: 24px;
 }
 
-.bottom-section{
-    display:grid;
-    grid-template-columns:2fr 1fr 1fr;
-    gap:24px;
-    margin-bottom:24px;
+/* Unique wrapper overrides for student progress trackers */
+.stats-section.learning-stats {
+    margin-bottom: 24px;
 }
 
-.upcoming-section{
-    margin-bottom:30px;
+.rank-section {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.bottom-section {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.upcoming-section {
+    margin-bottom: 30px;
 }
 
 /* ===========================
-   Responsive
+   Responsive Viewport Intercepts
 =========================== */
 
-@media(max-width:1200px){
+@media(max-width: 1200px) {
 
-.stats-section{
-grid-template-columns:repeat(2,1fr);
+    .stats-section,
+    .stats-section.management-stats,
+    .stats-section.learning-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .rank-section {
+        grid-template-columns: 1fr;
+    }
+
+    .bottom-section {
+        grid-template-columns: 1fr;
+    }
 }
 
-.rank-section{
-grid-template-columns:1fr;
+@media(max-width: 768px) {
+
+    .dashboard-header h1 {
+        font-size: 30px;
+    }
+
+    .stats-section,
+    .stats-section.management-stats,
+    .stats-section.learning-stats {
+        grid-template-columns: 1fr;
+    }
 }
 
-.bottom-section{
-grid-template-columns:1fr;
+/* ==========================================================
+   Global Modal Display Fixes (Forces Stark White Overrides)
+   ========================================================== */
+
+/* Force the interactive modal container cards to be solid, opaque white */
+.modal-content, 
+.modal-body,
+#collegeModal .modal-content,
+#collegeModal .modal-body {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #212529 !important;
 }
 
+/* Force form inputs to have crisp white backgrounds with dark text */
+#collegeModal .form-control {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #111827 !important;
+    border: 1px solid #cbd5e1 !important;
+    opacity: 1 !important;
 }
 
-@media(max-width:768px){
-
-.dashboard-header h1{
-font-size:30px;
+/* Guarantee dark grey text visibility for headers and semantic descriptions */
+#collegeModal h2,
+#collegeModal .form-label,
+#collegeModal label {
+    color: #1e293b !important;
+    opacity: 1 !important;
 }
 
-.stats-section{
-grid-template-columns:1fr;
-}
-
+/* Style input placeholders with high contrast layout parameters */
+#collegeModal .form-control::placeholder {
+    color: #94a3b8 !important;
+    opacity: 1 !important;
 }

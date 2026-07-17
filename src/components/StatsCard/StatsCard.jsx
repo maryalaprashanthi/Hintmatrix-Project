@@ -7,13 +7,55 @@ import {
   FaClock,
   FaTrophy,
   FaFire,
+  FaUniversity,
+  FaLayerGroup,
+  FaCodeBranch,
+  FaGraduationCap, // Icon specifically chosen for the new management Course card
 } from "react-icons/fa";
 
 function StatsCard({ type }) {
   const cards = {
+    // 1. Core Institutional Context Management Cards
+    college: {
+      icon: <FaUniversity />,
+      title: "Total Colleges",
+      value: "2",
+      subtitle: "Registered campuses",
+      color: "#0284c7", 
+      bg: "#e0f2fe",
+    },
+
+    sections: {
+      icon: <FaLayerGroup />,
+      title: "Total Sections",
+      value: "5",
+      subtitle: "Active student cohorts",
+      color: "#db2777", 
+      bg: "#fce7f3",
+    },
+
+    branch: {
+      icon: <FaCodeBranch />,
+      title: "Total Branches",
+      value: "4",
+      subtitle: "Academic departments",
+      color: "#ea580c", 
+      bg: "#ffedd5",
+    },
+
+    course: { // New Management Mapping added here to clear undefined crashes
+      icon: <FaGraduationCap />,
+      title: "Total Courses",
+      value: "6",
+      subtitle: "Offered curriculums",
+      color: "#0d9488", // Crisp Teal Color Scheme
+      bg: "#ccfbf1",
+    },
+
+    // 2. Learning & Academic Performance Tracking Cards
     courses: {
       icon: <FaBookOpen />,
-      title: "Total Courses",
+      title: "My Courses",
       value: "3",
       subtitle: "+1 this month",
       color: "#2563eb",
@@ -68,7 +110,15 @@ function StatsCard({ type }) {
     },
   };
 
-  const card = cards[type];
+  // Fallback structural safety configuration to prevent undefined page crashes
+  const card = cards[type] || {
+    icon: <FaBookOpen />,
+    title: "Stats",
+    value: "0",
+    subtitle: "No data available",
+    color: "#64748b",
+    bg: "#f1f5f9",
+  };
 
   return (
     <div className="stats-card">
