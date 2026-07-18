@@ -39,6 +39,15 @@
     gap:24px;
     margin-bottom:24px;
 }
+/* Unique wrapper overrides for management analytics context */
+.stats-section.management-stats {
+    margin-bottom: 24px;
+}
+
+/* Unique wrapper overrides for student progress trackers */
+.stats-section.learning-stats {
+    margin-bottom: 24px;
+}
 
 .rank-section{
     display:grid;
@@ -64,7 +73,10 @@
 
 @media(max-width:1200px){
 
-.stats-section{
+.stats-section,
+.stats-section.management-stats,
+.stats-section.learning-stats
+{
 grid-template-columns:repeat(2,1fr);
 }
 
@@ -84,8 +96,10 @@ grid-template-columns:1fr;
 font-size:30px;
 }
 
-.stats-section{
+.stats-section,
+.stats-section.management-stats,
+.stats-section.learning-stats
+{
 grid-template-columns:1fr;
 }
-
 }

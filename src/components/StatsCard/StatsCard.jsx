@@ -11,7 +11,7 @@ import {
 
 function StatsCard({ type }) {
   const cards = {
-    courses: {
+      courses: {
       icon: <FaBookOpen />,
       title: "Total Courses",
       value: "3",
@@ -69,7 +69,10 @@ function StatsCard({ type }) {
   };
 
   const card = cards[type];
-
+  
+  if (!card) {
+  return <div> </div>;
+}
   return (
     <div className="stats-card">
       <div className="stats-top">

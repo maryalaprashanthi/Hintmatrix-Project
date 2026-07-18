@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Courses.css";
 import { FaBookOpen, FaPlus } from "react-icons/fa";
 

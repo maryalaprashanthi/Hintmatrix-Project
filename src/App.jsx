@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import Layout from "./Layout/Layout";
 
 import Dashboard from "./pages/Dashboard";
+import College from "./pages/College/College";
 import Courses from "./pages/Courses/Courses";
 import Practice from "./pages/Practice";
 import Tests from "./pages/Tests";
@@ -17,6 +18,8 @@ function App() {
       <Route element={<Layout />}>
 
         <Route path="/" element={<Dashboard />} />
+         
+         <Route path="/college" element={<College />} />
 
         <Route path="/courses" element={<Courses />} />
 

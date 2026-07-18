@@ -1,5 +1,6 @@
 import "./Sidebar.css";
 import { NavLink } from "react-router-dom";
+import { useState } from "react";
 
 import {
   MdDashboard,
@@ -11,14 +12,22 @@ import {
   MdWorkspacePremium,
   MdSettings,
   MdLogout,
+  MdSchool,
+  MdKeyboardArrowDown,
+  MdKeyboardArrowUp,
+  MdApartment,
+  MdAccountTree,
+  MdLibraryBooks,
+  MdViewModule,
 } from "react-icons/md";
 
 function Sidebar() {
+  const [collegeOpen, setCollegeOpen] = useState(false);
+
   return (
     <aside className="sidebar">
-
       <nav className="sidebar-menu">
-
+        {/* Dashboard */}
         <NavLink
           to="/"
           end
@@ -30,7 +39,71 @@ function Sidebar() {
           <span>Dashboard</span>
         </NavLink>
 
+        {/* College Menu */}
+        <div
+          className={`menu-item ${collegeOpen ? "active" : ""}`}
+          onClick={() => setCollegeOpen(!collegeOpen)}
+          style={{ cursor: "pointer" }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              flex: 1,
+            }}
+          >
+            <MdSchool />
+            <span>College</span>
+          </div>
 
+          {collegeOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
+        </div>
+
+        {collegeOpen && (
+          <div className="submenu">
+            <NavLink
+              to="/college"
+              className={({ isActive }) =>
+                isActive ? "submenu-item active-submenu" : "submenu-item"
+              }
+            >
+              
+            </NavLink>
+
+            <NavLink
+              to="/course"
+              className={({ isActive }) =>
+                isActive ? "submenu-item active-submenu" : "submenu-item"
+              }
+            >
+              <MdLibraryBooks />
+              <span>Course</span>
+            </NavLink>
+
+            <NavLink
+              to="/section"
+              className={({ isActive }) =>
+                isActive ? "submenu-item active-submenu" : "submenu-item"
+              }
+            >
+              <MdViewModule />
+              <span>Section</span>
+            </NavLink>
+
+            <NavLink
+              to="/branch"
+              className={({ isActive }) =>
+                isActive ? "submenu-item active-submenu" : "submenu-item"
+              }
+            >
+              <MdAccountTree />
+              <span>Branch</span>
+            </NavLink>
+          </div>
+        )}
+
+        {/* Courses */}
         <NavLink
           to="/courses"
           className={({ isActive }) =>
@@ -41,7 +114,7 @@ function Sidebar() {
           <span>Courses</span>
         </NavLink>
 
-
+        {/* Practice */}
         <NavLink
           to="/practice"
           className={({ isActive }) =>
@@ -52,7 +125,7 @@ function Sidebar() {
           <span>Practice</span>
         </NavLink>
 
-
+        {/* Tests */}
         <NavLink
           to="/tests"
           className={({ isActive }) =>
@@ -63,8 +136,7 @@ function Sidebar() {
           <span>Tests</span>
         </NavLink>
 
-
-        {/* Sessions Added */}
+        {/* Sessions */}
         <NavLink
           to="/sessions"
           className={({ isActive }) =>
@@ -75,7 +147,7 @@ function Sidebar() {
           <span>Sessions</span>
         </NavLink>
 
-
+        {/* Results */}
         <NavLink
           to="/results"
           className={({ isActive }) =>
@@ -86,7 +158,7 @@ function Sidebar() {
           <span>Results</span>
         </NavLink>
 
-
+        {/* Certificates */}
         <NavLink
           to="/certificates"
           className={({ isActive }) =>
@@ -97,7 +169,7 @@ function Sidebar() {
           <span>Certificates</span>
         </NavLink>
 
-
+        {/* Settings */}
         <NavLink
           to="/settings"
           className={({ isActive }) =>
@@ -107,15 +179,12 @@ function Sidebar() {
           <MdSettings />
           <span>Settings</span>
         </NavLink>
-
       </nav>
-
 
       <div className="logout">
         <MdLogout />
         <span>Logout</span>
       </div>
-
     </aside>
   );
 }

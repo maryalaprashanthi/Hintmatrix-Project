@@ -17,6 +17,14 @@ function Dashboard() {
           <p>Keep learning and keep growing!</p>
         </div>
       </div>
+      { /* Core institution */}
+      <section className="stats-section management-stats">
+        <StatsCard type="college" />
+        <StatsCard type="branch" />
+        <StatsCard type="course" />
+        <StatsCard type="section" />
+      </section>
+
 
       {/* Statistics */}
       <section className="stats-section">
