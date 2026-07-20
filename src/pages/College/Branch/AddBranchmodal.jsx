@@ -14,7 +14,6 @@ import {
 import "./AddBranchModal.css";
 
 function AddBranchModal({ show, onClose, onSave }) {
-  const [collegeName, setCollegeName] = useState("");
   const [branchName, setBranchName] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");

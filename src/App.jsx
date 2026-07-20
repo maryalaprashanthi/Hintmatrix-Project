@@ -12,12 +12,9 @@ import Dashboard from "./pages/Dashboard";
 
 // --- UPDATED EXPORT IMPORTS TO MATCH COMMON NESTED FOLDER ARCHITECTURES ---
 import College from "./components/College";       
-import Section from "./components/Section";       
-import Branch from "./components/Branch";         
+import Section from "./components/Section";               
 import Course from "./components/Course"; // Added singular admin Course management page
-
-import Courses from "./pages/Courses/Courses"; // Plural page for original cards grid view
-import CourseForm from "./pages/Courses/CourseForm";
+import CourseForm from "./pages/College/Courses/CourseForm";
 import Courses from "./pages/College/Courses/Courses";
 import Branch from "./pages/College/Branch/Branch";
 import Practice from "./pages/Practice";

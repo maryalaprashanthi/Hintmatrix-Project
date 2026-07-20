@@ -4,12 +4,12 @@ import { FaBookOpen, FaPlus } from "react-icons/fa";
 import AddCourseModal from "./AddCourseModal";
 
 // Fallback image asset
-import bcom from "../../assets/courses/bcom.png.jpeg";
-import ca from "../../assets/courses/ca-foundation.png.jpeg";
-import cbse from "../../assets/courses/cbse11.png.jpeg";
-import accountancy from "../../assets/courses/jr-accountancy.png.jpeg";
-import combo from "../../assets/courses/combo.png.jpeg";
-import inter from "../../assets/courses/inter.png.jpeg";
+import bcom from "../../../assets/courses/bcom.png.jpeg";
+import ca from "../../../assets/courses/ca-foundation.png.jpeg";
+import cbse from "../../../assets/courses/cbse11.png.jpeg";
+import accountancy from "../../../assets/courses/jr-accountancy.png.jpeg";
+import combo from "../../../assets/courses/combo.png.jpeg";
+import inter from "../../../assets/courses/inter.png.jpeg";
 
 function Courses({ dynamicCourses = [] }) {
   const [showModal, setShowModal] = useState(false);
@@ -124,17 +124,8 @@ function Courses({ dynamicCourses = [] }) {
 
   return (
     <div className="courses-page">
-      <AddCourseModal
-        show={showModal}
-        onClose={() => {
-          setShowModal(false);
-          setEditingCourse(null);
-          setEditingIndex(null);
-        }}
-        onSave={handleSaveCourse}
-        editCourse={editingCourse}
-      />
-
+      
+      <AddCourseModal />
       <div className="courses-header">
         <div className="courses-header-top">
           <div className="courses-title">
@@ -147,9 +138,13 @@ function Courses({ dynamicCourses = [] }) {
             </div>
           </div>
 
-          <button className="add-course-btn" onClick={() => setShowModal(true)}>
-            <FaPlus /> Add Course
-          </button>
+          <button
+          className="add-course-btn"
+          data-bs-toggle="modal"
+          data-bs-target="#addCourseModal"
+>
+  <FaPlus /> Add Course
+</button>
         </div>
       </div>
 
