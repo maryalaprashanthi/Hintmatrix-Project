@@ -1,22 +1,26 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Courses.css";
 import { FaBookOpen, FaPlus } from "react-icons/fa";
-
 import AddCourseModal from "./AddCourseModal";
 
-// Images
-import bcom from "../../../assets/courses/bcom.png.jpeg";
-import ca from "../../../assets/courses/ca-foundation.png.jpeg";
-import cbse from "../../../assets/courses/cbse11.png.jpeg";
-import accountancy from "../../../assets/courses/jr-accountancy.png.jpeg";
-import combo from "../../../assets/courses/combo.png.jpeg";
-import inter from "../../../assets/courses/inter.png.jpeg";
+// Fallback image asset
+import bcom from "../../assets/courses/bcom.png.jpeg";
+import ca from "../../assets/courses/ca-foundation.png.jpeg";
+import cbse from "../../assets/courses/cbse11.png.jpeg";
+import accountancy from "../../assets/courses/jr-accountancy.png.jpeg";
+import combo from "../../assets/courses/combo.png.jpeg";
+import inter from "../../assets/courses/inter.png.jpeg";
 
-function Courses() {
+function Courses({ dynamicCourses = [] }) {
   const [showModal, setShowModal] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingCourse, setEditingCourse] = useState(null);
 
+  // Search & Filter State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All Categories");
+
+  // Initialize course state with static default listings
   const [courses, setCourses] = useState([
     {
       title: "B.Com - 1st Year",
@@ -74,6 +78,13 @@ function Courses() {
     },
   ]);
 
+  // Keep internal courses state synchronized if App.jsx pushes new courses
+  useEffect(() => {
+    if (dynamicCourses && dynamicCourses.length > 0) {
+      setCourses(dynamicCourses);
+    }
+  }, [dynamicCourses]);
+
   const handleSaveCourse = (courseData) => {
     if (editingIndex !== null) {
       const updatedCourses = [...courses];
@@ -82,7 +93,7 @@ function Courses() {
       setEditingIndex(null);
       setEditingCourse(null);
     } else {
-      setCourses([...courses, courseData]);
+      setCourses([courseData, ...courses]);
     }
   };
 
@@ -97,6 +108,19 @@ function Courses() {
     setEditingIndex(index);
     setShowModal(true);
   };
+
+  // Filter Logic: Filters list live by category matching and text queries
+  const filteredCourses = courses.filter((course) => {
+    const matchesCategory =
+      selectedCategory === "All Categories" ||
+      course.category.toLowerCase() === selectedCategory.toLowerCase();
+    
+    const matchesSearch = course.title
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <div className="courses-page">
@@ -117,19 +141,14 @@ function Courses() {
             <div className="title-icon">
               <FaBookOpen />
             </div>
-
             <div>
               <h1>My Courses</h1>
               <p>Explore all available courses</p>
             </div>
           </div>
 
-          <button
-            className="add-course-btn"
-            onClick={() => setShowModal(true)}
-          >
-            <FaPlus />
-            Add Course
+          <button className="add-course-btn" onClick={() => setShowModal(true)}>
+            <FaPlus /> Add Course
           </button>
         </div>
       </div>
@@ -139,9 +158,15 @@ function Courses() {
           type="text"
           placeholder="🔍 Search Courses..."
           className="search-input"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
 
-        <select className="category-select">
+        <select
+          className="category-select"
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+        >
           <option>All Categories</option>
           <option>Commerce</option>
           <option>School Curriculum</option>
@@ -151,33 +176,34 @@ function Courses() {
       </div>
 
       <div className="courses-grid">
-        {courses.map((course, index) => (
+        {filteredCourses.map((course, index) => (
           <div className="course-card" key={index}>
+            {/* Course Banner */}
             <div className="course-banner">
-              <img src={course.image} alt={course.title} />
+              <img src={course.image || bcom} alt={course.title} />
             </div>
 
             <div className="course-content">
               <h3>{course.title}</h3>
-
               <p className="course-category">{course.category}</p>
 
               <div className="course-info">
                 <span className="level">⭐ {course.level}</span>
-
-                <span className="duration">⏳ {course.duration}</span>
+                <span className="duration">⏳ {course.duration || "Self-paced"}</span>
               </div>
 
               <div className="progress">
                 <div
                   className="progress-fill"
-                  style={{ width: course.progress }}
+                  style={{ width: course.progress || "0%" }}
                 ></div>
               </div>
 
-              <p className="progress-text">{course.progress} Completed</p>
+              <p className="progress-text">{course.progress || "0%"} Completed</p>
 
-              <button className="course-btn">{course.button}</button>
+              <button className="course-btn">
+                {course.button || "Continue Learning"}
+              </button>
 
               <div className="course-actions">
                 <button
@@ -186,7 +212,6 @@ function Courses() {
                 >
                   ✏ Edit
                 </button>
-
                 <button
                   className="delete-btn"
                   onClick={() => handleDeleteCourse(index)}

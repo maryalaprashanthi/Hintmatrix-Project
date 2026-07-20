@@ -5,7 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./index.css";
 
-// Bootstrap CSS
+// 1. Load Bootstrap CSS locally
 import "bootstrap/dist/css/bootstrap.min.css";
 
 // Bootstrap JS (Required for Modal, Dropdown, Collapse, etc.)

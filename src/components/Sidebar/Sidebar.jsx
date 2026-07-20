@@ -1,9 +1,13 @@
+import React, { useState, useEffect } from "react";
 import "./Sidebar.css";
-import { NavLink } from "react-router-dom";
-import { useState } from "react";
-
+import { NavLink, useLocation } from "react-router-dom";
 import {
   MdDashboard,
+  MdAccountBalance, // Icon for College
+  MdClass,          // Icon for Sections
+  MdAccountTree,     // Icon for Branch
+  MdBookmarkAdd,    // Icon for Course (Management Panel)
+  MdMenuBook,       // Icon for Courses (Grid Display View)
   MdOutlineEdit,
   MdAssignment,
   MdVideoLibrary,
@@ -11,9 +15,12 @@ import {
   MdWorkspacePremium,
   MdSettings,
   MdLogout,
+  MdExpandMore,     // Sub-menu open indicator chevron icon
+  MdExpandLess,    // Sub-menu close indicator chevron icon
   MdSchool,
   MdKeyboardArrowDown,
   MdKeyboardArrowUp,
+  MdApartment,
   MdAccountTree,
   MdLibraryBooks,
   MdViewModule,
@@ -25,20 +32,18 @@ function Sidebar() {
   return (
     <aside className="sidebar">
       <nav className="sidebar-menu">
-
-        {/* Dashboard */}
-        <NavLink
-          to="/"
-          end
-          className={({ isActive }) =>
-            isActive ? "menu-item active" : "menu-item"
-          }
+        {/* 1. Dashboard */}
+        <NavLink 
+          to="/" 
+          end 
+          className={({ isActive }) => isActive ? "menu-item active" : "menu-item" }
         >
           <MdDashboard />
           <span>Dashboard</span>
         </NavLink>
 
         {/* College Menu */}
+        <NavLink to="/college">
         <div
           className={`menu-item ${collegeOpen ? "active" : ""}`}
           onClick={() => setCollegeOpen(!collegeOpen)}
@@ -58,19 +63,10 @@ function Sidebar() {
 
           {collegeOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
         </div>
+        </NavLink>
 
         {collegeOpen && (
           <div className="submenu">
-
-            <NavLink
-              to="/college"
-              className={({ isActive }) =>
-                isActive ? "submenu-item active-submenu" : "submenu-item"
-              }
-            >
-              <MdSchool />
-              <span>College</span>
-            </NavLink>
 
             <NavLink
               to="/courses"
@@ -105,7 +101,6 @@ function Sidebar() {
 
           </div>
         )}
-
         {/* Practice */}
         <NavLink
           to="/practice"
@@ -117,13 +112,8 @@ function Sidebar() {
           <span>Practice</span>
         </NavLink>
 
-        {/* Tests */}
-        <NavLink
-          to="/tests"
-          className={({ isActive }) =>
-            isActive ? "menu-item active" : "menu-item"
-          }
-        >
+        {/* 5. Tests */}
+        <NavLink to="/tests" className={({ isActive }) => isActive ? "menu-item active" : "menu-item" } >
           <MdAssignment />
           <span>Tests</span>
         </NavLink>

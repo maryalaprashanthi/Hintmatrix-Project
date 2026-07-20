@@ -1,29 +1,27 @@
 import axios from "axios";
 
-// Updated root URL mapping to match the Controller's @RequestMapping("/api/college")
-const BASE_URL = "http://localhost:8080/api/college";
+const BASE_URL = "http://localhost:8080/api/section";
 
-class CollegeService {
-
+class SectionService {
     // Matches @PostMapping
-    saveCollege(collegeRequestDTO) {
+    saveSection(sectionRequestDTO) {
         return axios.post(
             `${BASE_URL}`,
-            collegeRequestDTO,
-            { withCredentials: true } // Passes your active login session cookie
+            sectionRequestDTO,
+            { withCredentials: true }
         );
     }
 
     // Matches @GetMapping
-    getAllColleges() {
+    getAllSections() {
         return axios.get(
             `${BASE_URL}`,
-            { withCredentials: true } // Passes your active login session cookie
+            { withCredentials: true }
         );
     }
 
     // Matches @GetMapping("/{id}")
-    getCollegeById(id) {
+    getSectionById(id) {
         return axios.get(
             `${BASE_URL}/${id}`,
             { withCredentials: true }
@@ -31,17 +29,16 @@ class CollegeService {
     }
 
     // Matches @PutMapping("/{id}")
-    // Takes id for the URL path variable and the DTO payload for the request body
-    updateCollege(id, collegeRequestDTO) {
+    updateSection(id, sectionRequestDTO) {
         return axios.put(
             `${BASE_URL}/${id}`,
-            collegeRequestDTO,
+            sectionRequestDTO,
             { withCredentials: true }
         );
     }
 
     // Matches @DeleteMapping("/{id}")
-    deleteCollege(id) {
+    deleteSection(id) {
         return axios.delete(
             `${BASE_URL}/${id}`,
             { withCredentials: true }
@@ -49,4 +46,4 @@ class CollegeService {
     }
 }
 
-export default new CollegeService();
+export default new SectionService();

@@ -1,16 +1,64 @@
+
+
+
+
+import React, { useState } from "react";
 import "./CourseForm.css";
 
-function CourseForm() {
+function CourseForm({ onSaveCourse }) {
+  const [formData, setFormData] = useState({
+    title: "",
+    category: "Commerce",
+    level: "Beginner",
+    duration: "",
+    instructor: "",
+    price: "",
+    description: "",
+    progress: "0%"
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!formData.title.trim()) {
+      alert("Please enter a course name.");
+      return;
+    }
+
+    if (typeof onSaveCourse === "function") {
+      onSaveCourse({
+        ...formData,
+        id: Date.now()
+      });
+      alert("Course saved successfully!");
+    }
+
+    setFormData({
+      title: "",
+      category: "Commerce",
+      level: "Beginner",
+      duration: "",
+      instructor: "",
+      price: "",
+      description: "",
+      progress: "0%"
+    });
+  };
+
   return (
     <div className="course-form-page">
       <div className="container-fluid">
-
         <div className="row justify-content-center">
-
           <div className="col-lg-10">
-
-            <div className="card course-card shadow-sm">
-
+            <form onSubmit={handleSubmit} className="card course-card shadow-sm">
               <div className="card-header bg-white border-0 pt-4 pb-3">
                 <h2 className="fw-bold mb-1">Create New Course</h2>
                 <p className="text-muted mb-0">
@@ -19,145 +67,116 @@ function CourseForm() {
               </div>
 
               <div className="card-body">
-
                 <div className="row">
-
-                  {/* Course Name */}
                   <div className="col-md-6 mb-4">
-                    <label className="form-label">
-                      Course Name
-                    </label>
-
+                    <label className="form-label">Course Name</label>
                     <input
                       type="text"
+                      name="title"
+                      value={formData.title}
+                      onChange={handleChange}
                       className="form-control"
                       placeholder="Enter Course Name"
                     />
                   </div>
 
-                  {/* Category */}
                   <div className="col-md-6 mb-4">
-                    <label className="form-label">
-                      Category
-                    </label>
-
-                    <select className="form-select">
-                      <option>Select Category</option>
-                      <option>Commerce</option>
-                      <option>School Curriculum</option>
-                      <option>Chartered Accountancy</option>
-                      <option>Integrated Program</option>
+                    <label className="form-label">Category</label>
+                    <select
+                      name="category"
+                      value={formData.category}
+                      onChange={handleChange}
+                      className="form-select"
+                    >
+                      <option value="Commerce">Commerce</option>
+                      <option value="School Curriculum">School Curriculum</option>
+                      <option value="Chartered Accountancy">Chartered Accountancy</option>
+                      <option value="Integrated Program">Integrated Program</option>
                     </select>
                   </div>
 
-                  {/* Level */}
                   <div className="col-md-6 mb-4">
-                    <label className="form-label">
-                      Course Level
-                    </label>
-
-                    <select className="form-select">
-                      <option>Beginner</option>
-                      <option>Intermediate</option>
-                      <option>Advanced</option>
+                    <label className="form-label">Course Level</label>
+                    <select
+                      name="level"
+                      value={formData.level}
+                      onChange={handleChange}
+                      className="form-select"
+                    >
+                      <option value="Beginner">Beginner</option>
+                      <option value="Intermediate">Intermediate</option>
+                      <option value="Advanced">Advanced</option>
                     </select>
                   </div>
 
-                  {/* Duration */}
                   <div className="col-md-6 mb-4">
-                    <label className="form-label">
-                      Duration
-                    </label>
-
+                    <label className="form-label">Duration</label>
                     <input
                       type="text"
+                      name="duration"
+                      value={formData.duration}
+                      onChange={handleChange}
                       className="form-control"
                       placeholder="Example: 30 Lessons"
                     />
                   </div>
 
-                  {/* Instructor */}
                   <div className="col-md-6 mb-4">
-                    <label className="form-label">
-                      Instructor Name
-                    </label>
-
+                    <label className="form-label">Instructor Name</label>
                     <input
                       type="text"
+                      name="instructor"
+                      value={formData.instructor}
+                      onChange={handleChange}
                       className="form-control"
                       placeholder="Instructor Name"
                     />
                   </div>
 
-                  {/* Course Price */}
                   <div className="col-md-6 mb-4">
-                    <label className="form-label">
-                      Course Price
-                    </label>
-
+                    <label className="form-label">Course Price</label>
                     <input
                       type="number"
+                      name="price"
+                      value={formData.price}
+                      onChange={handleChange}
                       className="form-control"
                       placeholder="₹ 0"
                     />
                   </div>
 
-                  {/* Description */}
                   <div className="col-12 mb-4">
-                    <label className="form-label">
-                      Course Description
-                    </label>
-
+                    <label className="form-label">Course Description</label>
                     <textarea
                       rows="5"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleChange}
                       className="form-control"
                       placeholder="Write course description..."
                     ></textarea>
                   </div>
 
-                  {/* Thumbnail */}
                   <div className="col-md-6 mb-4">
-                    <label className="form-label">
-                      Course Thumbnail
-                    </label>
-
-                    <input
-                      type="file"
-                      className="form-control"
-                    />
+                    <label className="form-label">Course Thumbnail</label>
+                    <input type="file" className="form-control" />
                   </div>
 
-                  {/* Banner */}
                   <div className="col-md-6 mb-4">
-                    <label className="form-label">
-                      Course Banner
-                    </label>
-
-                    <input
-                      type="file"
-                      className="form-control"
-                    />
+                    <label className="form-label">Course Banner</label>
+                    <input type="file" className="form-control" />
                   </div>
 
-                  {/* Save Button */}
                   <div className="col-12 text-end">
-
-                    <button className="btn btn-primary px-5">
+                    <button type="submit" className="btn btn-primary px-5">
                       Save Course
                     </button>
-
                   </div>
-
                 </div>
-
               </div>
-
-            </div>
-
+            </form>
           </div>
-
         </div>
-
       </div>
     </div>
   );

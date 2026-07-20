@@ -23,3 +23,40 @@ a {
   text-decoration: none;
   color: inherit;
 }
+
+/* ==========================================================
+   FORCE BOOTSTRAP MODAL TO BE SOLID WHITE WITH DARK TEXT
+   ========================================================== */
+
+/* Fixes the dark/transparent popup box background issue */
+.modal-content, 
+.modal-body {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #212529 !important;
+}
+
+/* Forces form inputs inside the modal to be solid white with dark text */
+.modal-body .form-control {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #111827 !important;
+  border: 1px solid #ced4da !important;
+  opacity: 1 !important;
+}
+
+/* Ensures form labels and heading titles stay visible and dark grey */
+.modal-body label,
+.modal-body h2 {
+  color: #1e293b !important;
+  opacity: 1 !important;
+}
+
+/* Fixes the close 'X' button background styling */
+.modal-header .btn-close {
+  background-color: transparent !important;
+  opacity: 0.5 !important;
+}
+.modal-header .btn-close:hover {
+  opacity: 1 !important;
+}
