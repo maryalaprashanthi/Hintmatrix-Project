@@ -8,7 +8,7 @@ import "./index.css";
 // 1. Load Bootstrap CSS locally
 import "bootstrap/dist/css/bootstrap.min.css";
 
-// 2. Load Bootstrap JS Bundle locally (🌟 REQUIRED FOR POPUP MODALS TO OPEN AND CLOSE OFFLINE)
+// Bootstrap JS (Required for Modal, Dropdown, Collapse, etc.)
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 ReactDOM.createRoot(document.getElementById("root")).render(

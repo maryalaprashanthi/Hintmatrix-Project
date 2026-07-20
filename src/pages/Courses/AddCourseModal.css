@@ -4,7 +4,6 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
-
 *{
     margin:0;
     padding:0;
@@ -12,798 +11,637 @@
     font-family:"Inter",sans-serif;
 }
 
-
 /* ==========================================
    Overlay
 ========================================== */
 
 .modal-overlay{
-
     position:fixed;
-
     inset:0;
+    top:90px;
 
     display:flex;
-
     justify-content:center;
+    align-items:flex-start;
 
-    align-items:center;
-
-    padding:20px;
+    padding:32px;
 
     background:rgba(15,23,42,.55);
-
-    backdrop-filter:blur(8px);
+    backdrop-filter:blur(10px);
 
     z-index:9999;
-
     animation:fadeIn .3s ease;
-
 }
-
-
 
 /* ==========================================
    Modal
 ========================================== */
 
-
 .course-modal{
-
-    width:950px;
-
-    max-width:92%;
-
-    max-height:90vh;
-
-    overflow-y:auto;
+    width:980px;
+    max-width:94%;
 
     background:#ffffff;
 
-    border-radius:22px;
+    border-radius:14px;
+    border:1px solid #e5e7eb;
 
-    box-shadow:
-    0 25px 60px rgba(15,23,42,.18);
+    box-shadow: 0 12px 32px rgba(15,23,42,.15);
+
+        
+    overflow:hidden;
 
     animation:popup .35s ease;
-
 }
-
-
-
-
 
 /* ==========================================
    Header
 ========================================== */
 
-
 .modal-header{
-
     display:flex;
-
     justify-content:space-between;
-
     align-items:flex-start;
 
-    padding:26px 32px;
+    padding:30px 36px;
 
+    background:#ffffff;
     border-bottom:1px solid #edf2f7;
 
-    background:#fff;
-
+    border-radius:14px 14px 0 0;
 }
-
-
 
 .modal-header h2{
-
-    margin:0;
-
-    font-size:30px;
-
+    font-size:32px;
     font-weight:700;
-
     color:#111827;
-
+    margin-bottom:6px;
 }
-
-
 
 .modal-header p{
-
-    margin-top:6px;
-
-    font-size:14px;
-
+    font-size:15px;
     color:#6b7280;
-
+    line-height:1.6;
 }
 
-
-
 .close-btn{
-
-    width:40px;
-
-    height:40px;
+    width:46px;
+    height:46px;
 
     border:none;
+    outline:none;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
 
     border-radius:50%;
 
     background:#f3f4f6;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
+    color:#475569;
 
     cursor:pointer;
-
-    transition:.3s;
-
+    transition:.3s ease;
 }
 
-
+.close-btn svg{
+    font-size:18px;
+}
 
 .close-btn:hover{
-
     background:#2563eb;
-
-    color:white;
-
+    color:#ffffff;
     transform:rotate(90deg);
-
 }
-
-
-
 /* ==========================================
    Body
 ========================================== */
 
-
 .modal-body{
-
-    padding:28px;
-
+    padding:32px 36px;
+    background:#f8fafc;
 }
 
-
-
 /* ==========================================
-   Cards
+   Form Cards
 ========================================== */
 
-
 .form-card{
-
     background:#ffffff;
 
     border:1px solid #e5e7eb;
+    border-radius:18px;
 
-    border-radius:16px;
+    padding:28px;
+    margin-bottom:24px;
 
-    padding:20px;
+    box-shadow:0 4px 12px rgba(15,23,42,.04);
 
-    margin-bottom:18px;
-
+    transition:.3s ease;
 }
 
-
-
-
+.form-card:hover{
+    box-shadow:0 10px 30px rgba(15,23,42,.08);
+}
 
 /* ==========================================
    Section Title
 ========================================== */
 
-
 .section-title{
-
     display:flex;
-
     align-items:center;
+    gap:10px;
 
-    gap:8px;
+    margin-bottom:24px;
 
-    margin-bottom:20px;
-
-    font-size:20px;
-
+    font-size:22px;
     font-weight:700;
 
     color:#111827;
-
 }
-
-
-
-.section-title svg{
-
-    color:#2563eb;
-
-}
-
-
-
-
 
 /* ==========================================
-   Form Grid
+   Grid
 ========================================== */
 
-
 .form-grid{
-
     display:grid;
-
     grid-template-columns:repeat(2,1fr);
-
-    gap:20px;
-
+    gap:24px 28px;
 }
-
-
-
-
 
 /* ==========================================
    Form Group
 ========================================== */
 
-
 .form-group{
-
     display:flex;
-
     flex-direction:column;
-
 }
 
-
-
 .form-group label{
+    margin-bottom:10px;
 
-    margin-bottom:7px;
-
-    font-size:13px;
-
+    font-size:14px;
     font-weight:600;
 
     color:#374151;
-
 }
-
-
 
 .form-group label span{
-
     color:#ef4444;
-
 }
-
-
-
 
 /* ==========================================
-   Input
+   Input Wrapper
 ========================================== */
 
-
 .input-box{
-
     position:relative;
-
 }
 
-
-
 .input-icon{
-
     position:absolute;
 
-    left:15px;
-
+    left:16px;
     top:50%;
 
     transform:translateY(-50%);
 
     color:#94a3b8;
+    font-size:16px;
+
+    pointer-events:none;
+}
+
+/* ==========================================
+   Text Inputs
+========================================== */
+
+.input-box input{
+    width:100%;
+    height:54px;
+
+    border:1px solid #dbe4f0;
+    border-radius:12px;
+
+    background:#ffffff;
+
+    padding-left:46px;
+    padding-right:16px;
 
     font-size:15px;
 
+    transition:.25s ease;
 }
 
-
-
-.input-box input{
-
-    width:100%;
-
-    height:48px;
-
-    border:1px solid #dbe4f0;
-
-    border-radius:12px;
-
-    padding-left:42px;
-
-    padding-right:14px;
-
-    font-size:14px;
-
-    color:#111827;
-
+.input-box input:hover{
+    border-color:#94a3b8;
 }
-
-
 
 .input-box input:focus{
-
     outline:none;
 
     border-color:#2563eb;
 
-    box-shadow:
-    0 0 0 3px rgba(37,99,235,.12);
-
+    box-shadow:0 0 0 4px rgba(37,99,235,.12);
 }
-
-
-
 
 /* ==========================================
    Select
 ========================================== */
 
-
 .form-group select{
-
     width:100%;
-
-    height:48px;
+    height:54px;
 
     border:1px solid #dbe4f0;
-
     border-radius:12px;
 
-    padding:0 14px;
+    background:#ffffff;
 
-    font-size:14px;
+    padding:0 16px;
 
-    color:#111827;
+    font-size:15px;
 
+    transition:.25s ease;
 }
 
+.form-group select:hover{
+    border-color:#94a3b8;
+}
 
 .form-group select:focus{
-
     outline:none;
 
     border-color:#2563eb;
 
+    box-shadow:0 0 0 4px rgba(37,99,235,.12);
 }
 
+/* ==========================================
+   Placeholder
+========================================== */
 
 input::placeholder,
 textarea::placeholder{
-
     color:#9ca3af;
-
 }
 /* ==========================================
    Upload Section
 ========================================== */
 
-
 .upload-container{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+
 
     border:2px dashed #cbd5e1;
+    border-radius:18px;
 
-    border-radius:16px;
-
-    background:#fafcff;
-
-    padding:30px;
+    background:#f8fbff;
 
     text-align:center;
 
-    transition:.3s;
-
+    transition:.3s ease;
 }
-
-
 
 .upload-container:hover{
-
     border-color:#2563eb;
-
-    background:#f7faff;
-
+    background:#f4f8ff;
 }
-
-
-
-.upload-container label{
-
-    display:block;
-
-    margin-bottom:12px;
-
-    font-size:14px;
-
-    font-weight:600;
-
-    color:#374151;
-
-}
-
-
-
-.upload-container input[type="file"]{
-
-    width:100%;
-
-    padding:10px;
-
-    border:1px solid #dbe4f0;
-
-    border-radius:10px;
-
-    background:#fff;
-
-    cursor:pointer;
-
-}
-
-
 
 .upload-icon{
-
-    font-size:44px;
-
+    font-size:58px;
     color:#2563eb;
-
-    margin-bottom:12px;
-
+    margin-bottom:16px;
 }
 
+.upload-container label{
+    font-size:17px;
+    font-weight:600;
+    color:#111827;
+    margin-bottom:10px;
+}
 
+.upload-container input[type="file"]{
+    width:100%;
+    cursor:pointer;
+    font-size:14px;
+}
 
 .image-preview{
-
     width:100%;
+    max-height:260px;
 
-    max-height:220px;
-
-    margin-top:18px;
+    margin-top:22px;
 
     object-fit:cover;
 
-    border-radius:12px;
+    border-radius:14px;
 
+    border:1px solid #e5e7eb;
 }
-
-
 
 /* ==========================================
    Description
 ========================================== */
 
-
 .textarea-box{
-
     position:relative;
-
 }
-
-
 
 .textarea-box .input-icon{
+    position:absolute;
+    left:16px;
+    top:20px;
 
-    top:18px;
+    color:#94a3b8;
 
     transform:none;
-
 }
 
-
-
 .textarea-box textarea{
-
     width:100%;
+    min-height:180px;
 
-    min-height:130px;
+    border:1px solid #dbe4f0;
+    border-radius:12px;
+
+    padding:18px 18px 18px 48px;
+
+    background:#ffffff;
 
     resize:vertical;
 
-    padding:16px 16px 16px 45px;
+    font-size:15px;
+    line-height:1.7;
 
-    border:1px solid #dbe4f0;
-
-    border-radius:12px;
-
-    font-size:14px;
-
-    color:#111827;
-
-    line-height:1.6;
-
+    transition:.25s ease;
 }
 
-
+.textarea-box textarea:hover{
+    border-color:#94a3b8;
+}
 
 .textarea-box textarea:focus{
-
     outline:none;
-
     border-color:#2563eb;
-
-    box-shadow:
-    0 0 0 3px rgba(37,99,235,.12);
-
+    box-shadow:0 0 0 4px rgba(37,99,235,.12);
 }
-
-
 
 /* ==========================================
    Footer
 ========================================== */
 
-
 .modal-footer{
-
     display:flex;
-
     justify-content:flex-end;
-
     align-items:center;
 
-    gap:12px;
+    gap:16px;
 
-    padding:20px 28px;
+    padding:24px 36px;
 
-    border-top:1px solid #edf2f7;
+    background:#ffffff;
 
-    background:#fff;
+    border-top:1px solid #e5e7eb;
+    border-radius:0 0 14px 14px;
 
 }
 
-
-
 .cancel-btn,
 .save-btn{
-
-    height:46px;
-
-    min-width:140px;
-
-    padding:0 22px;
+    height:52px;
+    min-width:170px;
 
     border:none;
-
     border-radius:12px;
 
     display:flex;
-
-    align-items:center;
-
     justify-content:center;
+    align-items:center;
+    gap:10px;
 
-    gap:8px;
-
-    font-size:14px;
-
+    font-size:15px;
     font-weight:600;
 
     cursor:pointer;
 
-    transition:.25s;
-
+    transition:.3s ease;
 }
-
-
 
 .cancel-btn{
-
     background:#f1f5f9;
-
     color:#475569;
-
 }
-
-
 
 .cancel-btn:hover{
-
     background:#e2e8f0;
-
 }
-
-
 
 .save-btn{
-
     background:#2563eb;
+    color:#ffffff;
 
-    color:white;
-
-    box-shadow:
-    0 8px 18px rgba(37,99,235,.2);
-
+    box-shadow:0 10px 24px rgba(37,99,235,.25);
 }
-
-
 
 .save-btn:hover{
-
     background:#1d4ed8;
-
     transform:translateY(-2px);
-
 }
-
-
-
-
 /* ==========================================
-   Scrollbar
+   Smooth Transitions
 ========================================== */
 
+.form-card,
+.input-box input,
+.form-group select,
+.textarea-box textarea,
+.upload-container,
+.cancel-btn,
+.save-btn,
+.close-btn{
+    transition:all .3s ease;
+}
 
-.course-modal::-webkit-scrollbar{
+/* ==========================================
+   Focus States
+========================================== */
 
+input:focus,
+select:focus,
+textarea:focus{
+    outline:none;
+}
+
+/* ==========================================
+   Nice Scrollbar (Only if page scrolls)
+========================================== */
+
+::-webkit-scrollbar{
     width:8px;
-
 }
 
-
-
-.course-modal::-webkit-scrollbar-track{
-
-    background:#f8fafc;
-
+::-webkit-scrollbar-track{
+    background:#f1f5f9;
 }
 
-
-
-.course-modal::-webkit-scrollbar-thumb{
-
+::-webkit-scrollbar-thumb{
     background:#cbd5e1;
-
     border-radius:20px;
-
 }
 
-
+::-webkit-scrollbar-thumb:hover{
+    background:#94a3b8;
+}
 
 /* ==========================================
    Animations
 ========================================== */
 
-
 @keyframes popup{
-
     from{
-
         opacity:0;
-
-        transform:translateY(20px) scale(.97);
-
+        transform:translateY(30px) scale(.96);
     }
-
 
     to{
-
         opacity:1;
-
         transform:translateY(0) scale(1);
-
     }
-
 }
-
-
 
 @keyframes fadeIn{
-
     from{
-
         opacity:0;
-
     }
-
 
     to{
-
         opacity:1;
-
     }
-
 }
-
-
 
 /* ==========================================
-   Responsive
+   Tablet
 ========================================== */
 
-
-@media(max-width:992px){
-
+@media (max-width:992px){
 
     .course-modal{
-
         width:95%;
-
+        border-radius:18px;
     }
 
+    .modal-body{
+        padding:24px;
+    }
+
+    .modal-header,
+    .modal-footer{
+        padding:24px;
+    }
+
+    .form-card{
+        padding:22px;
+    }
 
     .form-grid{
-
         grid-template-columns:1fr;
-
+        gap:20px;
     }
 
 }
 
+/* ==========================================
+   Mobile
+========================================== */
 
-
-@media(max-width:768px){
-
+@media (max-width:768px){
 
     .modal-overlay{
-
-        padding:15px;
-
+        top:70px;
+        padding:12px;
     }
 
+    .course-modal{
+        width:100%;
+        border-radius:16px;
+    }
 
     .modal-header{
-
+        flex-direction:column;
+        gap:16px;
         padding:20px;
-
     }
-
 
     .modal-header h2{
-
-        font-size:24px;
-
+        font-size:26px;
     }
-
 
     .modal-body{
-
-        padding:20px;
-
+        padding:18px;
     }
-
 
     .form-card{
-
-        padding:16px;
-
+        padding:18px;
     }
 
+    .section-title{
+        font-size:18px;
+    }
+
+    .upload-container{
+        padding:24px;
+        min-height:180px;
+    }
 
     .modal-footer{
-
         flex-direction:column-reverse;
-
-        padding:18px;
-
+        padding:20px;
     }
-
 
     .cancel-btn,
     .save-btn{
-
         width:100%;
-
     }
 
+}
+
+/* ==========================================
+   Large Desktop
+========================================== */
+
+@media (min-width:1400px){
+
+    .course-modal{
+        width:1050px;
+    }
+
+}
+
+/* ==========================================
+   Final Polish
+========================================== */
+
+.course-modal{
+    overflow:hidden;
+}
+
+.form-card:last-child{
+    margin-bottom:0;
+}
+
+button{
+    font-family:"Inter",sans-serif;
+}
+
+input,
+select,
+textarea{
+    font-family:"Inter",sans-serif;
 }

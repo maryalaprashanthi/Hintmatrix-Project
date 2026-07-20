@@ -18,6 +18,8 @@ import Course from "./components/Course"; // Added singular admin Course managem
 
 import Courses from "./pages/Courses/Courses"; // Plural page for original cards grid view
 import CourseForm from "./pages/Courses/CourseForm";
+import College from "./pages/College/College";
+import Courses from "./pages/Courses/Courses";
 import Practice from "./pages/Practice";
 import Tests from "./pages/Tests";
 import Sessions from "./pages/Sessions";
