@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>HINTMATRIX - Sign Up</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#EAF4FF,#FFFFFF);
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.signup-box{
+    width:400px;
+    background:#fff;
+    padding:30px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.15);
+}
+
+.logo{
+    text-align:center;
+    margin-bottom:15px;
+}
+
+.logo img{
+    width:80px;
+}
+
+h2{
+    text-align:center;
+    color:#2563EB;
+    margin-bottom:20px;
+}
+
+.input-group{
+    margin-bottom:15px;
+}
+
+.input-group label{
+    display:block;
+    margin-bottom:5px;
+    font-weight:500;
+}
+
+.input-group input{
+    width:100%;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    outline:none;
+}
+
+.input-group input:focus{
+    border-color:#2563EB;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    background:#2563EB;
+    color:white;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#1d4ed8;
+}
+
+.bottom{
+    margin-top:15px;
+    text-align:center;
+}
+
+.bottom a{
+    text-decoration:none;
+    color:#2563EB;
+    font-weight:bold;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="signup-box">
+
+
+
+
+<h2>Create Account</h2>
+
+<form action="RegisterServlet" method="post">
+
+<div class="input-group">
+<label>Full Name</label>
+<input type="text" name="fullname" placeholder="Enter Full Name" required>
+</div>
+
+<div class="input-group">
+<label>Email</label>
+<input type="email" name="email" placeholder="Enter Email" required>
+</div>
+
+<div class="input-group">
+<label>Username</label>
+<input type="text" name="username" placeholder="Enter Username" required>
+</div>
+
+<div class="input-group">
+<label>Password</label>
+<input type="password" name="password" placeholder="Enter Password" required>
+</div>
+
+<div class="input-group">
+<label>Confirm Password</label>
+<input type="password" name="confirmPassword" placeholder="Confirm Password" required>
+</div>
+
+<button type="submit">Sign Up</button>
+
+</form>
+
+<div class="bottom">
+Already have an account?
+<a href="login.html">Login</a>
+</div>
+
+</div>
+
+</body>
+</html>
