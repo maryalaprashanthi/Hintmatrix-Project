@@ -6,8 +6,9 @@ function Course() {
   const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
 
-  // Called when Edit button is clicked
+  // Triggered when clicking 'Edit' in CourseTable
   const handleEditSignal = (courseData) => {
+    // Sets fields matching CourseResponseDTO to pass down to form
     setSelectedCourse(courseData);
 
     const hiddenTriggerButton = document.getElementById(
@@ -19,9 +20,10 @@ function Course() {
     }
   };
 
-  // Called after Save/Update
+  // Triggered after successful POST or PUT in CourseForm
   const handleFormSubmissionComplete = () => {
     setSelectedCourse(null);
+    // Toggles boolean state to force CourseTable to re-run its GET request
     setRefreshTrigger((prev) => !prev);
 
     const modalCloseButton = document.getElementById(
@@ -33,6 +35,11 @@ function Course() {
     }
   };
 
+  // Explicitly resets form fields when user switches from editing to creating
+  const handleAddCourseClick = () => {
+    setSelectedCourse(null);
+  };
+
   return (
     <div
       className="container-fluid p-4"
@@ -41,7 +48,7 @@ function Course() {
         minHeight: "100vh",
       }}
     >
-      {/* Remove Bootstrap Backdrop */}
+      {/* Scope-isolated styles to handle Bootstrap backdrop layout properly */}
       <style>{`
         .modal-backdrop {
           display: none !important;
@@ -53,7 +60,7 @@ function Course() {
         }
       `}</style>
 
-      {/* Hidden Trigger */}
+      {/* Programmatic Hidden Trigger for Edit Actions */}
       <button
         id="hiddenCourseModalTrigger"
         className="d-none"
@@ -62,7 +69,7 @@ function Course() {
         data-bs-backdrop="false"
       ></button>
 
-      {/* Header */}
+      {/* Dashboard Top Header Bar */}
       <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
         <div>
           <h1 className="fw-bold text-dark mb-1">
@@ -80,13 +87,13 @@ function Course() {
           data-bs-toggle="modal"
           data-bs-target="#courseModal"
           data-bs-backdrop="false"
-          onClick={() => setSelectedCourse(null)}
+          onClick={handleAddCourseClick}
         >
           ➕ Add Course
         </button>
       </div>
 
-      {/* Table Card */}
+      {/* Main Table Content Container Card */}
       <div className="card border-0 shadow-sm rounded-3">
         <div className="card-body">
 
@@ -95,6 +102,7 @@ function Course() {
           </h3>
 
           <div className="table-responsive">
+            {/* Table receives refresh trigger to re-fetch CourseResponseDTO arrays */}
             <CourseTable
               onEdit={handleEditSignal}
               refresh={refreshTrigger}
@@ -104,7 +112,7 @@ function Course() {
         </div>
       </div>
 
-      {/* Bootstrap Modal */}
+      {/* Standard Popup Bootstrap Modal */}
       <div
         className="modal fade"
         id="courseModal"
@@ -123,10 +131,12 @@ function Course() {
                 className="btn-close"
                 data-bs-dismiss="modal"
                 aria-label="Close"
+                onClick={() => setSelectedCourse(null)}
               ></button>
             </div>
 
             <div className="modal-body pt-0">
+              {/* Form processes DTO mapping dynamically on change operations */}
               <CourseForm
                 selectedCourseData={selectedCourse}
                 onUpdateComplete={handleFormSubmissionComplete}

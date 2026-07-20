@@ -25,6 +25,7 @@ function CourseTable({ onEdit, refresh }) {
   const loadCourses = () => {
     CourseService.getAllCourses()
       .then((response) => {
+        // Populates ag-Grid rows with the accurate CourseResponseDTO data payload
         setCourses(response.data);
       })
       .catch((error) => {
@@ -44,6 +45,7 @@ function CourseTable({ onEdit, refresh }) {
     );
 
     if (confirmDelete) {
+      // Targets backend delete mapping matching @DeleteMapping("/{id}")
       CourseService.deleteCourse(id)
         .then(() => {
           alert("Course Deleted Successfully");
@@ -55,16 +57,61 @@ function CourseTable({ onEdit, refresh }) {
     }
   };
 
+  // Explicitly mapping column definitions against your backend CourseResponseDTO fields
   const columnDefs = [
-    { field: "courseId", headerName: "Course ID", width: 120 },
-    { field: "branchId", headerName: "Branch ID", width: 120 },
-    { field: "courseName", headerName: "Course Name", flex: 1 },
-    { field: "description", headerName: "Description", flex: 2 },
+    { field: "courseId", headerName: "ID", width: 80 },
+    { field: "name", headerName: "Course Name", flex: 1, minWidth: 150 }, // Remapped from courseName to name
+    { field: "branchName", headerName: "Branch Name", flex: 1, minWidth: 150 }, // Displays readable branch name instead of ID
+    { field: "rowStatus", headerName: "Row Status", width: 120 },
+    { 
+      field: "activeRow", 
+      headerName: "Status", 
+      width: 100,
+      cellRenderer: (params) => {
+        // FIXED: Switched to robust inline CSS layout configurations to handle custom background renders
+        return params.value ? (
+          <span style={{
+            backgroundColor: "#dcfce7",
+            color: "#15803d",
+            border: "1px solid #bbf7d0",
+            padding: "4px 10px",
+            borderRadius: "4px",
+            fontSize: "12px",
+            fontWeight: "600",
+            display: "inline-block",
+            lineHeight: "1"
+          }}>Active</span>
+        ) : (
+          <span style={{
+            backgroundColor: "#fee2e2",
+            color: "#b91c1c",
+            border: "1px solid #fecaca",
+            padding: "4px 10px",
+            borderRadius: "4px",
+            fontSize: "12px",
+            fontWeight: "600",
+            display: "inline-block",
+            lineHeight: "1"
+          }}>Inactive</span>
+        );
+      }
+    },
+    { 
+      field: "createdAt", 
+      headerName: "Created On", 
+      width: 130,
+      valueFormatter: (params) => {
+        if (!params.value) return "";
+        return new Date(params.value).toLocaleDateString();
+      }
+    },
     {
       headerName: "Actions",
-      width: 180,
+      width: 160,
       suppressMenu: true,
       sortable: false,
+      filter: false,
+      pinned: "right",
       cellRenderer: (params) => {
         if (!params.data) return null;
 
@@ -117,8 +164,7 @@ function CourseTable({ onEdit, refresh }) {
   ];
 
   return (
-    <div style={{ marginTop: "20px" }}>
-      <h3>Course List</h3>
+    <div style={{ marginTop: "10px" }}>
       <div className="ag-theme-quartz" style={{ height: "450px", width: "100%" }}>
         <AgGridReact
           rowData={courses}

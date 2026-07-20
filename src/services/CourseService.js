@@ -1,47 +1,49 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8080";
+// Updated root URL mapping to match the Controller's @RequestMapping("/api/course")
+const API_URL = "http://localhost:8080/api/course";
 
 class CourseService {
 
-    // Save Course
-    saveCourse(course) {
+    // Save Course - Matches @PostMapping
+    saveCourse(courseRequestDTO) {
         return axios.post(
-            `${API_URL}/saveCourse`, 
-            course,
-            { withCredentials: true } // ◄— Passes your active login cookie
+            `${API_URL}`, 
+            courseRequestDTO,
+            { withCredentials: true } // Passes your active login session cookie
         );
     }
 
-    // Get All Courses
+    // Get All Courses - Matches @GetMapping
     getAllCourses() {
         return axios.get(
-            `${API_URL}/getAllCourses`,
-            { withCredentials: true } // ◄— Passes your active login cookie
+            `${API_URL}`,
+            { withCredentials: true } // Passes your active login session cookie
         );
     }
 
-    // Get Course By Id
+    // Get Course By Id - Matches @GetMapping("/{id}")
     getCourseById(id) {
         return axios.get(
-            `${API_URL}/getCourseById/${id}`,
+            `${API_URL}/${id}`,
             { withCredentials: true }
         );
     }
 
-    // Update Course
-    updateCourse(course) {
+    // Update Course - Matches @PutMapping("/{id}")
+    // Takes id for the URL path variable and the DTO payload for the request body
+    updateCourse(id, courseRequestDTO) {
         return axios.put(
-            `${API_URL}/updateCourse`, 
-            course,
+            `${API_URL}/${id}`, 
+            courseRequestDTO,
             { withCredentials: true }
         );
     }
 
-    // Delete Course
+    // Delete Course - Matches @DeleteMapping("/{id}")
     deleteCourse(id) {
         return axios.delete(
-            `${API_URL}/deleteCourse/${id}`,
+            `${API_URL}/${id}`,
             { withCredentials: true }
         );
     }

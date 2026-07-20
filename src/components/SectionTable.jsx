@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
-import { getAllSections, deleteSection } from "../services/SectionService";
+import SectionService from "../services/SectionService"; 
 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
@@ -23,7 +23,8 @@ function SectionTable({ onEdit, refresh }) {
   }, [refresh]);
 
   const loadSections = () => {
-    getAllSections()
+    // Linked to the official REST service getter method
+    SectionService.getAllSections()
       .then((response) => {
         setSections(response.data);
       })
@@ -44,7 +45,8 @@ function SectionTable({ onEdit, refresh }) {
     );
 
     if (confirmDelete) {
-      deleteSection(id)
+      // Linked to the updated delete routing method targeting @DeleteMapping("/{id}")
+      SectionService.deleteSection(id)
         .then(() => {
           alert("Section Deleted Successfully");
           loadSections();
@@ -55,18 +57,61 @@ function SectionTable({ onEdit, refresh }) {
     }
   };
 
+  // Explicitly mapping column definitions against your backend SectionResponseDTO fields
   const columnDefs = [
-    { field: "sectionId", headerName: "ID", width: 90 },
-    { field: "courseName", headerName: "Course", flex: 1 },
-    { field: "branchName", headerName: "Branch", flex: 1 },
-    { field: "collegeName", headerName: "College", flex: 1 },
-    { field: "sectionName", headerName: "Section", flex: 1 },
-    { field: "description", headerName: "Description", flex: 2 },
+    { field: "sectionId", headerName: "ID", width: 80 },
+    { field: "sectionName", headerName: "Section Name", flex: 1, minWidth: 130 },
+    { field: "courseName", headerName: "Associated Course", flex: 1, minWidth: 150 }, // Fetched cleanly from DTO
+    { field: "description", headerName: "Description", flex: 2, minWidth: 180 },
+    { 
+      field: "activeRow", 
+      headerName: "Status", 
+      width: 100,
+      cellRenderer: (params) => {
+        // FIXED: Switched to robust inline CSS layout configurations to handle custom background renders
+        return params.value ? (
+          <span style={{
+            backgroundColor: "#dcfce7",
+            color: "#15803d",
+            border: "1px solid #bbf7d0",
+            padding: "4px 10px",
+            borderRadius: "4px",
+            fontSize: "12px",
+            fontWeight: "600",
+            display: "inline-block",
+            lineHeight: "1"
+          }}>Active</span>
+        ) : (
+          <span style={{
+            backgroundColor: "#fee2e2",
+            color: "#b91c1c",
+            border: "1px solid #fecaca",
+            padding: "4px 10px",
+            borderRadius: "4px",
+            fontSize: "12px",
+            fontWeight: "600",
+            display: "inline-block",
+            lineHeight: "1"
+          }}>Inactive</span>
+        );
+      }
+    },
+    { 
+      field: "createdAt", 
+      headerName: "Created On", 
+      width: 130,
+      valueFormatter: (params) => {
+        if (!params.value) return "";
+        return new Date(params.value).toLocaleDateString();
+      }
+    },
     {
       headerName: "Actions",
-      width: 180,
+      width: 160,
       suppressMenu: true,
       sortable: false,
+      filter: false,
+      pinned: "right",
       cellRenderer: (params) => {
         if (!params.data) return null;
 
@@ -119,8 +164,7 @@ function SectionTable({ onEdit, refresh }) {
   ];
 
   return (
-    <div style={{ marginTop: "20px" }}>
-      <h3>All Sections</h3>
+    <div style={{ marginTop: "10px" }}>
       <div className="ag-theme-quartz" style={{ height: "450px", width: "100%" }}>
         <AgGridReact
           rowData={sections}

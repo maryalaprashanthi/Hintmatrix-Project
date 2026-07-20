@@ -1,42 +1,49 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8080";
+// Updated root URL mapping to match the Controller's @RequestMapping("/api/branch")
+const BASE_URL = "http://localhost:8080/api/branch";
 
 class BranchService {
 
-    saveBranch(branch){
+    // Matches @PostMapping
+    saveBranch(branchRequestDTO) {
         return axios.post(
-            `${BASE_URL}/saveBranch`,
-            branch,
-            { withCredentials: true } // ◄— Allows backend session cookies
+            `${BASE_URL}`,
+            branchRequestDTO,
+            { withCredentials: true } // Allows backend session cookies
         );
     }
 
-    getAllBranches(){
+    // Matches @GetMapping
+    getAllBranches() {
         return axios.get(
-            `${BASE_URL}/getAllBranches`,
-            { withCredentials: true } // ◄— Passes authorization cookie
+            `${BASE_URL}`,
+            { withCredentials: true } // Passes authorization cookie
         );
     }
 
-    getBranchById(id){
+    // Matches @GetMapping("/{id}")
+    getBranchById(id) {
         return axios.get(
-            `${BASE_URL}/getBranchById/${id}`,
+            `${BASE_URL}/${id}`,
             { withCredentials: true }
         );
     }
 
-    updateBranch(branch){
+    // Matches @PutMapping("/{id}")
+    // Takes id for the URL path variable and the DTO payload for the request body
+    updateBranch(id, branchRequestDTO) {
         return axios.put(
-            `${BASE_URL}/updateBranch`,
-            branch,
+            `${BASE_URL}/${id}`,
+            branchRequestDTO,
             { withCredentials: true }
         );
     }
 
-    deleteBranch(id){
+    // Matches @DeleteMapping("/{id}")
+    deleteBranch(id) {
         return axios.delete(
-            `${BASE_URL}/deleteBranch/${id}`,
+            `${BASE_URL}/${id}`,
             { withCredentials: true }
         );
     }

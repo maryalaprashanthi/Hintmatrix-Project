@@ -12,62 +12,70 @@ function CollegeForm({ selectedCollegeData, onUpdateComplete }) {
 
   const [college, setCollege] = useState(getEmptyCollege());
 
-  // Load data when Edit button is clicked, or clear it if selection is reset
   useEffect(() => {
     if (selectedCollegeData) {
-      setCollege(selectedCollegeData);
+      setCollege({
+        collegeId: selectedCollegeData.collegeId || "",
+        instituteName: selectedCollegeData.instituteName || "",
+        address: selectedCollegeData.address || "",
+        phoneNumber: selectedCollegeData.phoneNumber || "",
+        email: selectedCollegeData.email || ""
+      });
     } else {
       setCollege(getEmptyCollege());
     }
   }, [selectedCollegeData]);
 
   const handleChange = (e) => {
-    // If typing in phone number field, prevent entering non-numeric characters completely
-    if (e.target.name === "phoneNumber") {
-      const numericValue = e.target.value.replace(/[^0-9]/g, "");
-      setCollege({
-        ...college,
-        [e.target.name]: numericValue
-      });
+    const { name, value } = e.target;
+    if (name === "phoneNumber") {
+      const numericValue = value.replace(/[^0-9]/g, "");
+      setCollege({ ...college, [name]: numericValue });
+      return;
+    }
+    setCollege({ ...college, [name]: value });
+  };
+
+  const handleActionSubmit = (e, actionType) => {
+    if (e) e.preventDefault();
+    
+    if (college.phoneNumber && college.phoneNumber.length !== 10) {
+      alert("Validation Error: Phone Number must be exactly 10 numeric digits long!");
       return;
     }
 
-    setCollege({
-      ...college,
-      [e.target.name]: e.target.value
-    });
-  };
+    // Explicitly shape data matching CollegeRequestDTO structure
+    const collegeRequestDTO = {
+      instituteName: college.instituteName,
+      address: college.address,
+      phoneNumber: college.phoneNumber,
+      email: college.email
+    };
 
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
+    // Aligns signatures matching CollegeService parameter configurations
+    const serviceCall = college.collegeId 
+      ? CollegeService.updateCollege(college.collegeId, collegeRequestDTO) 
+      : CollegeService.saveCollege(collegeRequestDTO);
 
-    // Explicit Front-end Validation Check for 10 digits
-    if (college.phoneNumber.length !== 10) {
-      alert("Validation Error: Phone Number must be exactly 10 numeric digits long!");
-      return; // Stop form submission entirely
-    }
-
-    if (college.collegeId) {
-      // UPDATE COLLEGE (PUT)
-      CollegeService.updateCollege(college)
-        .then(() => {
-          alert("College Updated Successfully!");
+    serviceCall
+      .then((response) => {
+        alert(`College Record Successfully Processed!`);
+        
+        if (actionType === "save") {
           clearForm();
-        })
-        .catch((error) => {
-          console.error("Error updating college:", error);
-        });
-    } else {
-      // SAVE COLLEGE (POST)
-      CollegeService.saveCollege(college)
-        .then(() => {
-          alert("College Saved Successfully!");
-          clearForm();
-        })
-        .catch((error) => {
-          console.error("Error saving college:", error);
-        });
-    }
+        } else if (actionType === "add_another") {
+          setCollege(getEmptyCollege()); // Reset to empty form layout immediately
+          if (onUpdateComplete) onUpdateComplete(); // Tells parent to update list grid background
+        } else if (actionType === "continue_editing") {
+          if (onUpdateComplete) onUpdateComplete(); // Soft updates grid without closing current popup drawer
+        }
+      })
+      .catch((error) => {
+        console.error("Operational failure:", error);
+        if (error.response && error.response.status === 400) {
+          alert("Server Validation Error: " + JSON.stringify(error.response.data));
+        }
+      });
   };
 
   const clearForm = () => {
@@ -78,125 +86,120 @@ function CollegeForm({ selectedCollegeData, onUpdateComplete }) {
   };
 
   return (
-    <div className="w-100 text-start">
-      
-      {/* 🌟 GLOBAL CLASSPATH FIX: Forces any open modal wrapper card on this page to be bright white with solid text */}
+    <div className="w-100 text-start" style={{ color: "#212529" }}>
       <style>{`
-        /* Target the parent modal sheets directly to remove transparent filters */
-        .modal, .modal-dialog, .modal-content, .modal-body {
-          background-color: #ffffff !important;
-          background: #ffffff !important;
-          color: #212529 !important;
+        .form-label-custom {
+          width: 140px;
+          font-weight: 600;
+          color: #1e293b;
+          margin-bottom: 0;
+          font-size: 14px;
         }
-        
-        /* Force text entry containers to render bright white */
-        .modal-body .form-control {
-          background-color: #ffffff !important;
-          background: #ffffff !important;
-          color: #111827 !important;
-          border: 1px solid #cbd5e1 !important;
-          opacity: 1 !important;
+        .form-control-custom {
+          border: 1px solid #cbd5e1;
+          border-radius: 6px;
+          padding: 10px 12px;
+          background-color: #ffffff;
+          color: #0f172a;
         }
-
-        .modal-body .form-control:focus {
-          background-color: #ffffff !important;
-          color: #111827 !important;
-          border-color: #2563eb !important;
-          box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25) !important;
+        .form-control-custom:focus {
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+          outline: 0;
         }
-
-        .modal-body .form-control::placeholder {
-          color: #94a3b8 !important;
-          opacity: 1 !important;
-        }
-
-        .modal-body label, .modal-body h2 {
-          color: #1e293b !important;
-          opacity: 1 !important;
+        .btn-custom-action {
+          border-radius: 6px;
+          padding: 10px 16px;
+          font-weight: 600;
+          font-size: 13px;
+          border: none;
         }
       `}</style>
 
-      {/* Centered Modal Header Typography */}
       <h2 className="fw-bold text-dark fs-4 mb-4 text-center">
         {college.collegeId ? "✍️ Edit College Details" : "🏢 Add New College"}
       </h2>
 
-      <form onSubmit={handleFormSubmit}>
-        {/* Institute Name Field */}
-        <div className="mb-3">
-          <label className="form-label small fw-semibold text-dark">Institute Name</label>
-          <input
-            type="text"
-            name="instituteName"
-            placeholder="Enter Institute Name"
-            value={college.instituteName}
-            onChange={handleChange}
-            required
-            className="form-control"
+      <form onSubmit={(e) => handleActionSubmit(e, "save")}>
+        
+        <div className="d-flex align-items-center mb-3">
+          <label className="form-label-custom">Institute Name</label>
+          <input 
+            type="text" 
+            name="instituteName" 
+            placeholder="Enter Institute Name" 
+            value={college.instituteName} 
+            onChange={handleChange} 
+            required 
+            className="form-control form-control-custom flex-grow-1" 
           />
         </div>
 
-        {/* Address Field */}
-        <div className="mb-3">
-          <label className="form-label small fw-semibold text-dark">Address</label>
-          <input
-            type="text"
-            name="address"
-            placeholder="Enter Location Address"
-            value={college.address}
-            onChange={handleChange}
-            required
-            className="form-control"
+        <div className="d-flex align-items-start mb-3">
+          <label className="form-label-custom pt-2">Address</label>
+          <textarea 
+            name="address" 
+            placeholder="Enter Address" 
+            value={college.address} 
+            onChange={handleChange} 
+            required 
+            className="form-control form-control-custom flex-grow-1" 
+            rows="3" 
           />
         </div>
 
-        {/* Phone Number Field with strict criteria formatting */}
-        <div className="mb-3">
-          <label className="form-label small fw-semibold text-dark">Phone Number</label>
-          <input
-            type="tel"
-            name="phoneNumber"
-            placeholder="Phone Number (10 digits)"
-            value={college.phoneNumber}
-            onChange={handleChange}
-            required
-            pattern="[0-9]{10}"
-            maxLength="10"
-            title="Phone number must be exactly 10 numeric digits long"
-            className="form-control"
+        <div className="d-flex align-items-center mb-3">
+          <label className="form-label-custom">Phone Number</label>
+          <input 
+            type="tel" 
+            name="phoneNumber" 
+            placeholder="Enter Phone Number" 
+            value={college.phoneNumber} 
+            onChange={handleChange} 
+            required 
+            maxLength="10" 
+            className="form-control form-control-custom flex-grow-1" 
           />
         </div>
 
-        {/* Email Field */}
-        <div className="mb-4">
-          <label className="form-label small fw-semibold text-dark">Email Address</label>
-          <input
-            type="email"
-            name="email"
-            placeholder="Enter Email Address"
-            value={college.email}
-            onChange={handleChange}
-            required
-            className="form-control"
+        <div className="d-flex align-items-center mb-4">
+          <label className="form-label-custom">Email</label>
+          <input 
+            type="email" 
+            name="email" 
+            placeholder="Enter Email" 
+            value={college.email} 
+            onChange={handleChange} 
+            required 
+            className="form-control form-control-custom flex-grow-1" 
           />
         </div>
 
-        {/* Dynamic Modal Action Control Footer Buttons */}
-        <div className="d-flex gap-2 justify-content-end">
-          <button
-            type="button"
-            className="btn btn-outline-secondary px-4 fw-semibold"
-            data-bs-dismiss="modal"
-            onClick={clearForm}
+        <div className="d-flex gap-2 justify-content-end pt-2 border-top">
+          <button 
+            type="button" 
+            className="btn btn-custom-action text-white" 
+            style={{ backgroundColor: "#4A5568" }} 
+            onClick={() => handleActionSubmit(null, "add_another")}
           >
-            Close
+            Save and Add Another
           </button>
           
-          <button
-            type="submit"
-            className={`btn px-4 fw-bold text-white ${college.collegeId ? "btn-success" : "btn-primary"}`}
+          <button 
+            type="button" 
+            className="btn btn-custom-action text-white" 
+            style={{ backgroundColor: "#4C51BF" }} 
+            onClick={() => handleActionSubmit(null, "continue_editing")}
           >
-            {college.collegeId ? "Update College" : "Save College"}
+            Save and Continue Editing
+          </button>
+          
+          <button 
+            type="submit" 
+            className="btn btn-custom-action text-white" 
+            style={{ backgroundColor: "#2563eb" }}
+          >
+            Save
           </button>
         </div>
       </form>

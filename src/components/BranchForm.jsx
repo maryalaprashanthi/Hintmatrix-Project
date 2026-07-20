@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import BranchService from "../services/BranchService";
+import CollegeService from "../services/CollegeService";
 
 function BranchForm({ selectedBranchData, onUpdateComplete }) {
   const emptyBranch = {
@@ -9,208 +10,247 @@ function BranchForm({ selectedBranchData, onUpdateComplete }) {
     branchName: "",
     address: "",
     phoneNumber: "",
-    email: ""
+    email: "",
   };
 
   const [branch, setBranch] = useState(emptyBranch);
-  const [collegesList, setCollegesList] = useState([]); // State array storing active PostgreSQL campuses
+  const [collegesList, setCollegesList] = useState([]);
 
-  // 1. Fetch active college items from your database immediately on mount
+  /* ==============================
+          LOAD COLLEGES
+  =============================== */
   useEffect(() => {
-    axios.get("http://localhost:8080/getAllColleges")
-      .then((response) => {
-        if (response.data) {
-          setCollegesList(response.data);
-        }
-      })
-      .catch((error) => {
-        console.error("Failed to populate active colleges lookup list:", error);
-      });
+    loadColleges();
   }, []);
 
-  // Sync data when the user clicks an "Edit" button in the table
+  const loadColleges = () => {
+    axios
+      .get("http://localhost:8080/api/college", {
+        withCredentials: true,
+      })
+      .then((response) => {
+        setCollegesList(response.data || []);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  /* ==============================
+          EDIT DATA
+  =============================== */
   useEffect(() => {
     if (selectedBranchData) {
-      setBranch(selectedBranchData);
+      setBranch({
+        branchId: selectedBranchData.branchId || "",
+        collegeId: selectedBranchData.collegeId || "",
+        branchName: selectedBranchData.branchName || "",
+        address: selectedBranchData.address || "",
+        phoneNumber: selectedBranchData.phoneNumber || "",
+        email: selectedBranchData.email || "",
+      });
     } else {
       setBranch(emptyBranch);
     }
   }, [selectedBranchData]);
 
+  /* ==============================
+        HANDLE CHANGE
+  =============================== */
   const handleChange = (e) => {
-    // Prevent entering non-numeric characters inside the phone input box completely
-    if (e.target.name === "phoneNumber") {
-      const numericValue = e.target.value.replace(/[^0-9]/g, "");
-      setBranch({ ...branch, [e.target.name]: numericValue });
+    const { name, value } = e.target;
+
+    if (name === "phoneNumber") {
+      const onlyNumbers = value.replace(/\D/g, "");
+      setBranch({
+        ...branch,
+        phoneNumber: onlyNumbers,
+      });
       return;
     }
-    setBranch({ ...branch, [e.target.name]: e.target.value });
+
+    if (name === "collegeId") {
+      setBranch({
+        ...branch,
+        collegeId: value === "" ? "" : Number(value),
+      });
+      return;
+    }
+
+    setBranch({
+      ...branch,
+      [name]: value,
+    });
   };
 
+  /* ==============================
+      INLINE EDIT COLLEGE
+  =============================== */
+  const handleInlineCollegeEdit = () => {
+    if (!branch.collegeId) {
+      alert("Please select a college.");
+      return;
+    }
+    alert(`Open College Module to edit College ID : ${branch.collegeId}`);
+  };
+
+  /* ==============================
+      INLINE DELETE COLLEGE
+  =============================== */
+  const handleInlineCollegeDelete = () => {
+    if (!branch.collegeId) {
+      alert("Please select a college.");
+      return;
+    }
+
+    if (window.confirm("Are you sure you want to delete this college?")) {
+      CollegeService.deleteCollege(branch.collegeId)
+        .then(() => {
+          alert("College deleted successfully.");
+          loadColleges();
+          setBranch({ ...branch, collegeId: "" });
+          if (onUpdateComplete) onUpdateComplete();
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+  };
+
+  /* ==============================
+          SAVE / UPDATE
+  =============================== */
   const saveBranch = (e) => {
     e.preventDefault();
 
     if (branch.phoneNumber.length !== 10) {
-      alert("Validation Error: Phone Number must be exactly 10 numeric digits long!");
+      alert("Phone Number must contain exactly 10 digits.");
       return;
     }
 
+    const requestDTO = {
+      collegeId: branch.collegeId,
+      branchName: branch.branchName,
+      address: branch.address,
+      phoneNumber: branch.phoneNumber,
+      email: branch.email,
+    };
+
     if (branch.branchId) {
-      // Execute PUT / Update operation
-      BranchService.updateBranch(branch)
+      BranchService.updateBranch(branch.branchId, requestDTO)
         .then(() => {
           alert("Branch Updated Successfully");
           clearForm();
         })
-        .catch(error => {
-          console.error("Failed to update branch:", error);
+        .catch((err) => {
+          console.error(err);
         });
     } else {
-      // Execute POST / Create operation
-      BranchService.saveBranch(branch)
+      BranchService.saveBranch(requestDTO)
         .then(() => {
           alert("Branch Saved Successfully");
           clearForm();
         })
-        .catch(error => {
-          console.error("Failed to save branch:", error);
+        .catch((err) => {
+          console.error(err);
         });
     }
   };
 
+  /* ==============================
+          CLEAR FORM
+  =============================== */
   const clearForm = () => {
     setBranch(emptyBranch);
     if (onUpdateComplete) {
-      onUpdateComplete(); // Notifies parent to refresh the grid and dismiss popup
+      onUpdateComplete();
     }
   };
 
   return (
-    <div className="w-100 text-start" style={{ color: "#212529" }}>
-      
-      {/* Dynamic Style Wrapper to clear any transparency overrides from layout frameworks */}
+    <div id="branchModal" className="container-fluid" style={{ maxWidth: "900px", margin: "auto" }}>
       <style>{`
-        #branchModal .form-control, #branchModal .form-select {
-          background-color: #ffffff !important;
-          background: #ffffff !important;
-          color: #111827 !important;
-          border: 1px solid #cbd5e1 !important;
-          opacity: 1 !important;
-          padding: 10px 12px;
-        }
-        #branchModal .form-control:focus, #branchModal .form-select:focus {
-          background-color: #ffffff !important;
-          color: #111827 !important;
-        }
-        #branchModal label, #branchModal h2 {
-          color: #1e293b !important;
-          opacity: 1 !important;
-        }
+        #branchModal { color:#212529; }
+        #branchModal .form-control, #branchModal .form-select { height:52px; font-size:16px; padding:12px 15px; border-radius:8px; border:1px solid #ced4da; }
+        #branchModal .form-control:focus, #branchModal .form-select:focus { box-shadow:none; border-color:#0d6efd; }
+        #branchModal label { font-weight:600; color:#1f2937; }
+        .btn-inline { min-width:90px; }
+        .form-card { background:white; padding:30px; border-radius:12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
       `}</style>
 
-      {/* Centered Modal Header */}
-      <h2 className="fw-bold text-dark fs-4 mb-4 text-center">
-        {branch.branchId ? "✍️ Edit Branch Details" : "🌿 Add New Branch"}
-      </h2>
+      <div className="form-card">
+        <h2 className="text-center fw-bold mb-4">
+          {branch.branchId ? "✏ Edit Branch" : "🌿 Add New Branch"}
+        </h2>
 
-      <form onSubmit={saveBranch}>
-        
-        {/* Upgraded Select Dropdown mapping to replace raw inputs */}
-        <div className="mb-3">
-          <label className="form-label small fw-semibold">Parent Academic Institution</label>
-          <select
-            name="collegeId"
-            className="form-select"
-            value={branch.collegeId}
-            onChange={handleChange}
-            required
-          >
-            <option value="">-- Select Associated College --</option>
-            {collegesList.map((college) => (
-              <option key={college.collegeId} value={college.collegeId}>
-                {college.instituteName} (ID: {college.collegeId})
-              </option>
-            ))}
-          </select>
-        </div>
+        <form onSubmit={saveBranch}>
+          {/* ================= Parent College ================= */}
+          <div className="row mb-4 align-items-center">
+            <label className="col-lg-3 col-md-4 fw-semibold">Parent College</label>
+            <div className="col-lg-9 col-md-8">
+              <select name="collegeId" value={branch.collegeId} onChange={handleChange} className="form-select" required>
+                <option value="">---- Select College ----</option>
+                {collegesList.map((college) => (
+                  <option key={college.collegeId} value={college.collegeId}>
+                    {college.instituteName || college.collegeName}
+                  </option>
+                ))}
+              </select>
 
-        {/* Branch Name Input */}
-        <div className="mb-3">
-          <label className="form-label small fw-semibold">Branch Name</label>
-          <input
-            type="text"
-            name="branchName"
-            placeholder="Enter Branch Title (e.g. Computer Science)"
-            value={branch.branchName}
-            onChange={handleChange}
-            required
-            className="form-control"
-          />
-        </div>
+              <div className="d-flex gap-2 mt-3">
+                <button type="button" className="btn btn-outline-primary btn-inline" onClick={handleInlineCollegeEdit}>
+                  Edit
+                </button>
+                <button type="button" className="btn btn-outline-danger btn-inline" onClick={handleInlineCollegeDelete}>
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
 
-        {/* Address Input */}
-        <div className="mb-3">
-          <label className="form-label small fw-semibold">Address Location</label>
-          <input
-            type="text"
-            name="address"
-            placeholder="Enter Branch block / building office location"
-            value={branch.address}
-            onChange={handleChange}
-            required
-            className="form-control"
-          />
-        </div>
+          {/* ================= Branch Name ================= */}
+          <div className="row mb-4 align-items-center">
+            <label className="col-lg-3 col-md-4 fw-semibold">Branch Name</label>
+            <div className="col-lg-9 col-md-8">
+              <input type="text" name="branchName" className="form-control" placeholder="Enter Branch Name" value={branch.branchName} onChange={handleChange} required />
+            </div>
+          </div>
 
-        {/* Phone Number Input */}
-        <div className="mb-3">
-          <label className="form-label small fw-semibold">Phone Number</label>
-          <input
-            type="tel"
-            name="phoneNumber"
-            placeholder="10 digit contact number"
-            value={branch.phoneNumber}
-            onChange={handleChange}
-            required
-            pattern="[0-9]{10}"
-            maxLength="10"
-            className="form-control"
-          />
-        </div>
+          {/* ================= Address ================= */}
+          <div className="row mb-4 align-items-center">
+            <label className="col-lg-3 col-md-4 fw-semibold">Address</label>
+            <div className="col-lg-9 col-md-8">
+              <input type="text" name="address" className="form-control" placeholder="Enter Branch Address" value={branch.address} onChange={handleChange} required />
+            </div>
+          </div>
 
-        {/* Email Input */}
-        <div className="mb-4">
-          <label className="form-label small fw-semibold">Email Address</label>
-          <input
-            type="email"
-            name="email"
-            placeholder="department@institution.edu"
-            value={branch.email}
-            onChange={handleChange}
-            required
-            className="form-control"
-          />
-        </div>
+          {/* ================= Phone Number ================= */}
+          <div className="row mb-4 align-items-center">
+            <label className="col-lg-3 col-md-4 fw-semibold">Phone Number</label>
+            <div className="col-lg-9 col-md-8">
+              <input type="tel" name="phoneNumber" className="form-control" placeholder="Enter 10 Digit Phone Number" value={branch.phoneNumber} onChange={handleChange} maxLength="10" pattern="[0-9]{10}" required />
+            </div>
+          </div>
 
-        {/* Standardized Side-By-Side Control Footer Buttons */}
-        <div className="d-flex gap-2 justify-content-end pt-2">
-          <button
-            type="button"
-            className="btn btn-outline-secondary px-4 fw-semibold"
-            data-bs-dismiss="modal"
-            onClick={clearForm}
-          >
-            Close
-          </button>
-          
-          <button
-            type="submit"
-            className={`btn px-4 fw-bold text-white ${branch.branchId ? "btn-success" : "btn-primary"}`}
-          >
-            {branch.branchId ? "Update Branch" : "Save Branch"}
-          </button>
-        </div>
-      </form>
+          {/* ================= Email ================= */}
+          <div className="row mb-4 align-items-center">
+            <label className="col-lg-3 col-md-4 fw-semibold">Email Address</label>
+            <div className="col-lg-9 col-md-8">
+              <input type="email" name="email" className="form-control" placeholder="Enter Email Address" value={branch.email} onChange={handleChange} required />
+            </div>
+          </div>
+
+          {/* ================= Form Submission Action Buttons ================= */}
+          <div className="d-flex justify-content-end gap-3 mt-4">
+            <button type="button" className="btn btn-secondary px-4 py-2" onClick={clearForm}>
+              Clear
+            </button>
+            <button type="submit" className="btn btn-success px-4 py-2">
+              {branch.branchId ? "Update Branch" : "Save Branch"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

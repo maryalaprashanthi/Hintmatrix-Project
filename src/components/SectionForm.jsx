@@ -1,78 +1,150 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { saveSection, updateSection } from "../services/SectionService";
+import SectionService from "../services/SectionService";
+import BranchService from "../services/BranchService"; 
 
 function SectionForm({ selectedSectionData, onUpdateComplete }) {
   const emptySection = {
     sectionId: "",
-    courseId: "",
+    branchId: "",
     sectionName: "",
     description: ""
   };
 
   const [section, setSection] = useState(emptySection);
-  const [coursesList, setCoursesList] = useState([]); // Array state to track active PostgreSQL courses
+  const [branchesList, setBranchesList] = useState([]);
 
-  // 1. Fetch available global courses from your Spring Boot database on mount
+  /* ==============================
+          LOAD BRANCHES
+  =============================== */
   useEffect(() => {
-    axios.get("http://localhost:8080/getAllCourses")
-      .then((response) => {
-        if (response.data) {
-          setCoursesList(response.data);
-        }
-      })
-      .catch((error) => {
-        console.error("Error retrieving dynamic courses list for select menu:", error);
-      });
+    loadBranches();
   }, []);
 
-  // Monitors parent triggers to inject row selection data when editing is triggered
+  const loadBranches = () => {
+    axios
+      .get("http://localhost:8080/api/branch", {
+        withCredentials: true,
+      })
+      .then((response) => {
+        setBranchesList(response.data || []);
+      })
+      .catch((error) => {
+        console.error("Error retrieving dynamic branches list:", error);
+      });
+  };
+
+  /* ==============================
+          EDIT DATA
+  =============================== */
   useEffect(() => {
     if (selectedSectionData) {
-      setSection(selectedSectionData);
+      setSection({
+        sectionId: selectedSectionData.sectionId || "",
+        branchId: selectedSectionData.branchId || "",
+        sectionName: selectedSectionData.sectionName || "",
+        description: selectedSectionData.description || ""
+      });
     } else {
       setSection(emptySection);
     }
   }, [selectedSectionData]);
 
+  /* ==============================
+        HANDLE CHANGE
+  =============================== */
   const handleChange = (e) => {
-    setSection({
-      ...section,
-      [e.target.name]: e.target.value
-    });
-  };
+    const { name, value } = e.target;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (!section.courseId) {
-      alert("Validation Error: Please select an associated course path from the menu!");
+    if (name === "branchId") {
+      setSection({
+        ...section,
+        branchId: value === "" ? "" : Number(value),
+      });
       return;
     }
 
+    setSection({
+      ...section,
+      [name]: value,
+    });
+  };
+
+  /* ==============================
+      INLINE EDIT BRANCH
+  =============================== */
+  const handleInlineBranchEdit = () => {
+    if (!section.branchId) {
+      alert("Please select a branch department.");
+      return;
+    }
+    alert(`Open Branch Module to edit Branch ID : ${section.branchId}`);
+  };
+
+  /* ==============================
+      INLINE DELETE BRANCH
+  =============================== */
+  const handleInlineBranchDelete = () => {
+    if (!section.branchId) {
+      alert("Please select a branch department.");
+      return;
+    }
+
+    if (window.confirm("Are you sure you want to delete this branch selection and all its sections?")) {
+      BranchService.deleteBranch(section.branchId)
+        .then(() => {
+          alert("Branch deleted successfully.");
+          loadBranches();
+          setSection({ ...section, branchId: "" });
+          if (onUpdateComplete) onUpdateComplete();
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+  };
+
+  /* ==============================
+          SAVE / UPDATE
+  =============================== */
+  const saveSection = (e) => {
+    e.preventDefault();
+
+    if (!section.branchId) {
+      alert("Validation Error: Please select an associated branch path from the menu!");
+      return;
+    }
+
+    const sectionRequestDTO = {
+      branchId: section.branchId,
+      sectionName: section.sectionName,
+      description: section.description
+    };
+
     if (section.sectionId) {
-      // Execute Named Update Operation
-      updateSection(section)
+      SectionService.updateSection(section.sectionId, sectionRequestDTO)
         .then(() => {
           alert("Section Updated Successfully");
           clearForm();
         })
-        .catch((error) => {
-          console.error("Failed to update section:", error);
+        .catch((err) => {
+          console.error(err);
         });
     } else {
-      // Execute Named Save Operation
-      saveSection(section)
+      SectionService.saveSection(sectionRequestDTO)
         .then(() => {
           alert("Section Saved Successfully");
           clearForm();
         })
-        .catch((error) => {
-          console.error("Failed to save section:", error);
+        .catch((err) => {
+          console.error(err);
         });
     }
   };
 
+  /* ==============================
+          CLEAR FORM
+  =============================== */
   const clearForm = () => {
     setSection(emptySection);
     if (onUpdateComplete) {
@@ -81,100 +153,80 @@ function SectionForm({ selectedSectionData, onUpdateComplete }) {
   };
 
   return (
-    <div className="w-100 text-start" style={{ color: "#212529" }}>
-      
-      {/* 🌟 CRITICAL OVERRIDE: Protects modal input fields from transparent background overrides */}
+    <div id="sectionModal" className="container-fluid" style={{ maxWidth: "900px", margin: "auto" }}>
       <style>{`
-        #sectionModal .form-control, #sectionModal .form-select {
-          background-color: #ffffff !important;
-          background: #ffffff !important;
-          color: #111827 !important;
-          border: 1px solid #cbd5e1 !important;
-          opacity: 1 !important;
-          padding: 10px 12px;
-        }
-        #sectionModal .form-control:focus, #sectionModal .form-select:focus {
-          background-color: #ffffff !important;
-          color: #111827 !important;
-        }
-        #sectionModal label, #sectionModal h2 {
-          color: #1e293b !important;
-          opacity: 1 !important;
-        }
+        #sectionModal { color:#212529; }
+        #sectionModal .form-control, #sectionModal .form-select { height:52px; font-size:16px; padding:12px 15px; border-radius:8px; border:1px solid #ced4da; }
+        #sectionModal .form-control:focus, #sectionModal .form-select:focus { box-shadow:none; border-color:#0d6efd; }
+        #sectionModal label { font-weight:600; color:#1f2937; }
+        .btn-inline { min-width:90px; }
+        .form-card { background:white; padding:30px; border-radius:12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
       `}</style>
 
-      {/* Centered Modal Header Typography */}
-      <h2 className="fw-bold text-dark fs-4 mb-4 text-center">
-        {section.sectionId ? "✍️ Edit Section Details" : "👥 Add New Section"}
-      </h2>
+      <div className="form-card">
+        <h2 className="text-center fw-bold mb-4">
+          {section.sectionId ? "✏ Edit Section Details" : "👥 Add New Section"}
+        </h2>
 
-      <form onSubmit={handleSubmit}>
-        
-        {/* Dynamic Course Select Dropdown Menu instead of raw numeric ID box */}
-        <div className="mb-3">
-          <label className="form-label small fw-semibold">Associated Course Curriculum</label>
-          <select
-            name="courseId"
-            className="form-select"
-            value={section.courseId}
-            onChange={handleChange}
-            required
-          >
-            <option value="">-- Choose Course Target Context --</option>
-            {coursesList.map((course) => (
-              <option key={course.courseId} value={course.courseId}>
-                {course.courseName} (ID: {course.courseId})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Section Name Input */}
-        <div className="mb-3">
-          <label className="form-label small fw-semibold">Section Name</label>
-          <input
-            type="text"
-            name="sectionName"
-            placeholder="Enter Section Label (e.g. Section-A)"
-            value={section.sectionName}
-            onChange={handleChange}
-            required
-            className="form-control"
-          />
-        </div>
-
-        {/* Description Textarea */}
-        <div className="mb-4">
-          <label className="form-label small fw-semibold">Description</label>
-          <textarea
-            name="description"
-            placeholder="Write section specifications or cohort details..."
-            value={section.description}
-            onChange={handleChange}
-            className="form-control"
-            rows="4"
-          />
-        </div>
-
-        {/* Standardized Side-By-Side Control Footer Buttons */}
-        <div className="d-flex gap-2 justify-content-end pt-2">
-          <button
-            type="button"
-            className="btn btn-outline-secondary px-4 fw-semibold"
-            data-bs-dismiss="modal"
-            onClick={clearForm}
-          >
-            Close
-          </button>
+        <form onSubmit={saveSection}>
           
-          <button
-            type="submit"
-            className={`btn px-4 fw-bold text-white ${section.sectionId ? "btn-success" : "btn-primary"}`}
-          >
-            {section.sectionId ? "Update Section" : "Save Section"}
-          </button>
-        </div>
-      </form>
+          {/* ================= Associated Branch Department ================= */}
+          <div className="row mb-4 align-items-center">
+            <label className="col-lg-3 col-md-4 fw-semibold">
+              Associated Branch Department
+            </label>
+            <div className="col-lg-9 col-md-8">
+              <select name="branchId" value={section.branchId} onChange={handleChange} className="form-select" required>
+                <option value="">---- Select Branch ----</option>
+                {branchesList.map((branch) => (
+                  <option key={branch.branchId} value={branch.branchId}>
+                    {branch.branchName}
+                  </option>
+                ))}
+              </select>
+
+              <div className="d-flex gap-2 mt-3">
+                <button type="button" className="btn btn-outline-primary btn-inline" onClick={handleInlineBranchEdit}>
+                  Edit
+                </button>
+                <button type="button" className="btn btn-outline-danger btn-inline" onClick={handleInlineBranchDelete}>
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* ================= Section Name ================= */}
+          <div className="row mb-4 align-items-center">
+            <label className="col-lg-3 col-md-4 fw-semibold">
+              Section Name
+            </label>
+            <div className="col-lg-9 col-md-8">
+              <input type="text" name="sectionName" className="form-control" placeholder="Enter Section Label (e.g. Section-A)" value={section.sectionName} onChange={handleChange} required />
+            </div>
+          </div>
+
+          {/* ================= Description ================= */}
+          <div className="row mb-4 align-items-start">
+            <label className="col-lg-3 col-md-4 fw-semibold pt-2">
+              Description
+            </label>
+            <div className="col-lg-9 col-md-8">
+              <textarea name="description" className="form-control" placeholder="Write section specifications or cohort details..." value={section.description} onChange={handleChange} rows="3" style={{ height: "auto" }} />
+            </div>
+          </div>
+
+          {/* ================= Form Submission Action Buttons ================= */}
+          <div className="d-flex justify-content-end gap-3 mt-4">
+            <button type="button" className="btn btn-secondary px-4 py-2" onClick={clearForm}>
+              Clear
+            </button>
+            <button type="submit" className="btn btn-success px-4 py-2">
+              {section.sectionId ? "Update Section" : "Save Section"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

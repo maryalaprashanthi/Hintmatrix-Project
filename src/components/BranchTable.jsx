@@ -25,6 +25,7 @@ function BranchTable({ onEdit, refresh }) {
   const loadBranches = () => {
     BranchService.getAllBranches()
       .then(response => {
+        // Populates rows directly using the array of BranchResponseDTO structures
         setBranches(response.data);
       })
       .catch(error => {
@@ -44,6 +45,7 @@ function BranchTable({ onEdit, refresh }) {
     );
 
     if (confirmDelete) {
+      // Targets backend delete mapping matching @DeleteMapping("/{id}")
       BranchService.deleteBranch(id)
         .then(() => {
           alert("Branch Deleted Successfully");
@@ -55,18 +57,62 @@ function BranchTable({ onEdit, refresh }) {
     }
   };
 
+  // Optimized column sizing maps down cleanly to distribute screen whitespace beautifully
   const columnDefs = [
-    { field: "branchId", headerName: "ID", width: 90 },
-    { field: "collegeId", headerName: "College ID", width: 120 },
-    { field: "branchName", headerName: "Branch Name", flex: 1 },
-    { field: "address", headerName: "Address", flex: 1 },
-    { field: "phoneNumber", headerName: "Phone Number", width: 150 },
-    { field: "email", headerName: "Email", flex: 1 },
+    { field: "branchId", headerName: "ID", width: 70 },
+    { field: "branchName", headerName: "Branch Name", flex: 2, minWidth: 180 }, // Dynamic expansion weight
+    { field: "collegeName", headerName: "Associated College", flex: 1, minWidth: 160 },
+    { field: "address", headerName: "Address", width: 150 },
+    { field: "phoneNumber", headerName: "Phone Number", width: 130 },
+    { field: "email", headerName: "Email Address", width: 180 },
+    { 
+      field: "activeRow", 
+      headerName: "Status", 
+      width: 95,
+      cellRenderer: (params) => {
+        return params.value ? (
+          <span style={{
+            backgroundColor: "#dcfce7",
+            color: "#15803d",
+            border: "1px solid #bbf7d0",
+            padding: "4px 10px",
+            borderRadius: "4px",
+            fontSize: "12px",
+            fontWeight: "600",
+            display: "inline-block",
+            lineHeight: "1"
+          }}>Active</span>
+        ) : (
+          <span style={{
+            backgroundColor: "#fee2e2",
+            color: "#b91c1c",
+            border: "1px solid #fecaca",
+            padding: "4px 10px",
+            borderRadius: "4px",
+            fontSize: "12px",
+            fontWeight: "600",
+            display: "inline-block",
+            lineHeight: "1"
+          }}>Inactive</span>
+        );
+      }
+    },
+    { 
+      field: "createdAt", 
+      headerName: "Created On", 
+      width: 110,
+      valueFormatter: (params) => {
+        if (!params.value) return "";
+        return new Date(params.value).toLocaleDateString();
+      }
+    },
     {
       headerName: "Actions",
-      width: 180,
+      width: 140,
       suppressMenu: true,
       sortable: false,
+      filter: false,
+      pinned: "right", // ◄— FIXED: Keeps action buttons locked to the screen edge seamlessly
       cellRenderer: (params) => {
         if (!params.data) return null;
         
@@ -119,7 +165,7 @@ function BranchTable({ onEdit, refresh }) {
   ];
 
   return (
-    <div className="ag-theme-quartz" style={{ height: "450px", width: "100%", marginTop: "20px" }}>
+    <div className="ag-theme-quartz" style={{ height: "480px", width: "100%", marginTop: "10px" }}>
       <AgGridReact 
         rowData={branches} 
         columnDefs={columnDefs}

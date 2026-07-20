@@ -36,7 +36,6 @@ function Sidebar() {
   }, [location.pathname, isManagementPathActive]);
 
   const handleCollegeToggle = () => {
-    // Removed e.preventDefault() to allow clean routing navigation to /college
     setIsCollegeExpanded((prev) => !prev);
   };
 
@@ -53,7 +52,7 @@ function Sidebar() {
           <span>Dashboard</span>
         </NavLink>
 
-        {/* 2. College Parent Header Link (Wraps nested management views safely) */}
+        {/* 2. College Parent Header Link */}
         <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
           <NavLink 
             to="/college" 
@@ -70,10 +69,21 @@ function Sidebar() {
             </span>
           </NavLink>
 
-          {/* --- Collapsible Sub-Menu Layout Box Container --- */}
+          {/* --- Collapsible Sub-Menu Layout Box Container (Reordered) --- */}
           {isCollegeExpanded && (
             <div className="sidebar-submenu-box" style={{ display: "flex", flexDirection: "column", paddingLeft: "24px", margin: "4px 0", gap: "2px" }}>
-              {/* Sub-menu item 1: Course */}
+              
+              {/* Sub-menu item 1: Branch (Moved to Top) */}
+              <NavLink 
+                to="/branch" 
+                className={({ isActive }) => isActive ? "menu-item active submenu-item" : "menu-item submenu-item" }
+                style={{ fontSize: "14px", padding: "10px 16px" }}
+              >
+                <MdAccountTree />
+                <span>Branch</span>
+              </NavLink>
+
+              {/* Sub-menu item 2: Course (Moved to Middle) */}
               <NavLink 
                 to="/course" 
                 className={({ isActive }) => isActive ? "menu-item active submenu-item" : "menu-item submenu-item" }
@@ -83,7 +93,7 @@ function Sidebar() {
                 <span>Course</span>
               </NavLink>
 
-              {/* Sub-menu item 2: Sections */}
+              {/* Sub-menu item 3: Sections (Moved to Bottom) */}
               <NavLink 
                 to="/sections" 
                 className={({ isActive }) => isActive ? "menu-item active submenu-item" : "menu-item submenu-item" }
@@ -93,20 +103,11 @@ function Sidebar() {
                 <span>Sections</span>
               </NavLink>
 
-              {/* Sub-menu item 3: Branch */}
-              <NavLink 
-                to="/branch" 
-                className={({ isActive }) => isActive ? "menu-item active submenu-item" : "menu-item submenu-item" }
-                style={{ fontSize: "14px", padding: "10px 16px" }}
-              >
-                <MdAccountTree />
-                <span>Branch</span>
-              </NavLink>
             </div>
           )}
         </div>
 
-        {/* 3. Courses (Plural Student Enrolled Cards Interface) */}
+        {/* 3. Courses */}
         <NavLink to="/courses" className={({ isActive }) => isActive ? "menu-item active" : "menu-item" } >
           <MdMenuBook />
           <span>Courses</span>

@@ -1,40 +1,49 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8080";
+const BASE_URL = "http://localhost:8080/api/section";
 
-export const saveSection = (section) => {
-    return axios.post(
-        `${BASE_URL}/saveSection`, 
-        section,
-        { withCredentials: true } // ◄— Passes your active login cookie
-    );
-};
+class SectionService {
+    // Matches @PostMapping
+    saveSection(sectionRequestDTO) {
+        return axios.post(
+            `${BASE_URL}`,
+            sectionRequestDTO,
+            { withCredentials: true }
+        );
+    }
 
-export const getAllSections = () => {
-    return axios.get(
-        `${BASE_URL}/getAllSections`,
-        { withCredentials: true } // ◄— Passes your active login cookie
-    );
-};
+    // Matches @GetMapping
+    getAllSections() {
+        return axios.get(
+            `${BASE_URL}`,
+            { withCredentials: true }
+        );
+    }
 
-export const getSectionById = (id) => {
-    return axios.get(
-        `${BASE_URL}/getSectionById/${id}`,
-        { withCredentials: true }
-    );
-};
+    // Matches @GetMapping("/{id}")
+    getSectionById(id) {
+        return axios.get(
+            `${BASE_URL}/${id}`,
+            { withCredentials: true }
+        );
+    }
 
-export const updateSection = (section) => {
-    return axios.put(
-        `${BASE_URL}/updateSection`, 
-        section,
-        { withCredentials: true }
-    );
-};
+    // Matches @PutMapping("/{id}")
+    updateSection(id, sectionRequestDTO) {
+        return axios.put(
+            `${BASE_URL}/${id}`,
+            sectionRequestDTO,
+            { withCredentials: true }
+        );
+    }
 
-export const deleteSection = (id) => {
-    return axios.delete(
-        `${BASE_URL}/deleteSection/${id}`,
-        { withCredentials: true }
-    );
-};
+    // Matches @DeleteMapping("/{id}")
+    deleteSection(id) {
+        return axios.delete(
+            `${BASE_URL}/${id}`,
+            { withCredentials: true }
+        );
+    }
+}
+
+export default new SectionService();

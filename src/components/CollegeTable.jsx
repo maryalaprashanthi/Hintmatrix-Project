@@ -26,6 +26,7 @@ function CollegeTable({ onEdit, refresh }) {
   const loadColleges = () => {
     CollegeService.getAllColleges()
       .then((response) => {
+        // Populates ag-Grid rows with the accurate CollegeResponseDTO data payload
         setColleges(response.data);
       })
       .catch((error) => {
@@ -42,6 +43,7 @@ function CollegeTable({ onEdit, refresh }) {
   const handleDelete = (id) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this college?");
     if (confirmDelete) {
+      // Targets backend delete mapping matching @DeleteMapping("/{id}")
       CollegeService.deleteCollege(id)
         .then(() => {
           alert("Deleted Successfully");
@@ -53,17 +55,62 @@ function CollegeTable({ onEdit, refresh }) {
     }
   };
 
+  // Explicitly mapping column definitions against your backend CollegeResponseDTO fields
   const columnDefs = [
-    { field: "collegeId", headerName: "ID", width: 90 },
-    { field: "instituteName", headerName: "Name", flex: 1 },
-    { field: "address", headerName: "Address", flex: 1 },
-    { field: "phoneNumber", headerName: "Phone Number", width: 150 },
-    { field: "email", headerName: "Email", flex: 1 },
+    { field: "collegeId", headerName: "ID", width: 80 },
+    { field: "instituteName", headerName: "Institute Name", flex: 1, minWidth: 160 },
+    { field: "address", headerName: "Address", flex: 1, minWidth: 150 },
+    { field: "phoneNumber", headerName: "Phone Number", width: 140 },
+    { field: "email", headerName: "Email Address", flex: 1, minWidth: 160 },
+    { 
+      field: "activeRow", 
+      headerName: "Status", 
+      width: 100,
+      cellRenderer: (params) => {
+        // FIXED: Replaced conflicting global CSS classes with standalone inline styles
+        return params.value ? (
+          <span style={{
+            backgroundColor: "#dcfce7",
+            color: "#15803d",
+            border: "1px solid #bbf7d0",
+            padding: "4px 10px",
+            borderRadius: "4px",
+            fontSize: "12px",
+            fontWeight: "600",
+            display: "inline-block",
+            lineHeight: "1"
+          }}>Active</span>
+        ) : (
+          <span style={{
+            backgroundColor: "#fee2e2",
+            color: "#b91c1c",
+            border: "1px solid #fecaca",
+            padding: "4px 10px",
+            borderRadius: "4px",
+            fontSize: "12px",
+            fontWeight: "600",
+            display: "inline-block",
+            lineHeight: "1"
+          }}>Inactive</span>
+        );
+      }
+    },
+    { 
+      field: "createdAt", 
+      headerName: "Registered On", 
+      width: 130,
+      valueFormatter: (params) => {
+        if (!params.value) return "";
+        return new Date(params.value).toLocaleDateString();
+      }
+    },
     {
       headerName: "Action",
-      width: 180,
+      width: 160,
       suppressMenu: true,
       sortable: false,
+      filter: false,
+      pinned: "right",
       cellRenderer: (params) => {
         if (!params.data) return null;
         return (
@@ -156,6 +203,7 @@ function CollegeTable({ onEdit, refresh }) {
           background-color: #2563eb !important;
           box-shadow: inset 0 0 0 3px white !important;
           border-color: #2563eb !important;
+          content: "" !important;
         }
       `}</style>
 

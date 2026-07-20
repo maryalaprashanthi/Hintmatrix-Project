@@ -6,8 +6,9 @@ function Section() {
   const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [selectedSection, setSelectedSection] = useState(null);
 
-  // Called when Edit button is clicked
+  // Triggered when clicking 'Edit' in SectionTable
   const handleEditSignal = (sectionData) => {
+    // Sets fields matching SectionResponseDTO to pass down to form
     setSelectedSection(sectionData);
 
     const hiddenTriggerButton = document.getElementById(
@@ -19,9 +20,10 @@ function Section() {
     }
   };
 
-  // Called after Save/Update
+  // Triggered after successful POST or PUT in SectionForm
   const handleFormSubmissionComplete = () => {
     setSelectedSection(null);
+    // Toggles boolean state to force SectionTable to re-run its GET request
     setRefreshTrigger((prev) => !prev);
 
     const modalCloseButton = document.getElementById(
@@ -33,6 +35,11 @@ function Section() {
     }
   };
 
+  // Explicitly resets form fields when user switches from editing to creating
+  const handleAddSectionClick = () => {
+    setSelectedSection(null);
+  };
+
   return (
     <div
       className="container-fluid p-4"
@@ -41,7 +48,7 @@ function Section() {
         minHeight: "100vh",
       }}
     >
-      {/* Remove Bootstrap Backdrop */}
+      {/* Scope-isolated styles to handle Bootstrap backdrop layout properly */}
       <style>{`
         .modal-backdrop {
           display: none !important;
@@ -53,7 +60,7 @@ function Section() {
         }
       `}</style>
 
-      {/* Hidden Trigger */}
+      {/* Programmatic Hidden Trigger for Edit Actions */}
       <button
         id="hiddenSectionModalTrigger"
         className="d-none"
@@ -62,7 +69,7 @@ function Section() {
         data-bs-backdrop="false"
       ></button>
 
-      {/* Header */}
+      {/* Dashboard Top Header Bar */}
       <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
         <div>
           <h1 className="fw-bold text-dark mb-1">
@@ -80,13 +87,13 @@ function Section() {
           data-bs-toggle="modal"
           data-bs-target="#sectionModal"
           data-bs-backdrop="false"
-          onClick={() => setSelectedSection(null)}
+          onClick={handleAddSectionClick}
         >
           ➕ Add Section
         </button>
       </div>
 
-      {/* Table Card */}
+      {/* Main Table Content Container Card */}
       <div className="card border-0 shadow-sm rounded-3">
         <div className="card-body">
 
@@ -95,6 +102,7 @@ function Section() {
           </h3>
 
           <div className="table-responsive">
+            {/* Table receives refresh trigger to re-fetch SectionResponseDTO arrays */}
             <SectionTable
               onEdit={handleEditSignal}
               refresh={refreshTrigger}
@@ -104,7 +112,7 @@ function Section() {
         </div>
       </div>
 
-      {/* Bootstrap Modal */}
+      {/* Standard Popup Bootstrap Modal */}
       <div
         className="modal fade"
         id="sectionModal"
@@ -123,10 +131,12 @@ function Section() {
                 className="btn-close"
                 data-bs-dismiss="modal"
                 aria-label="Close"
+                onClick={() => setSelectedSection(null)}
               ></button>
             </div>
 
             <div className="modal-body pt-0">
+              {/* Form processes DTO mapping dynamically on change operations */}
               <SectionForm
                 selectedSectionData={selectedSection}
                 onUpdateComplete={handleFormSubmissionComplete}
