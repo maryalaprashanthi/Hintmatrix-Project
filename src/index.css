@@ -11,7 +11,7 @@
 }
 
 /* ==========================
-   Root
+   Root Context Boundaries
 ========================== */
 
 html,
@@ -23,7 +23,7 @@ body,
 }
 
 /* ==========================
-   Body
+   Body Base Typography
 ========================== */
 
 body {
@@ -33,7 +33,7 @@ body {
 }
 
 /* ==========================
-   Links
+   Links Navigation
 ========================== */
 
 a {
@@ -42,7 +42,7 @@ a {
 }
 
 /* ==========================
-   Images
+   Images Presentation
 ========================== */
 
 img {
@@ -51,29 +51,36 @@ img {
 }
 
 /* ==========================
-   Buttons
+   Buttons Framework Controls
 ========================== */
 
-button {
+/* Scoped strictly to standard raw buttons to protect Bootstrap elements like modals */
+button:not([class*="btn"]) {
   font: inherit;
   cursor: pointer;
   border: none;
   background: none;
 }
 
+/* Fallback fallback rule explicitly forcing standard cursor actions across all classes */
+button {
+  cursor: pointer;
+}
+
 /* ==========================
-   Inputs
+   Inputs Form Controls
 ========================== */
 
-input,
-select,
-textarea {
+/* Scoped strictly to prevent clearing out framework-driven styling classes */
+input:not(.form-control),
+select:not(.form-select),
+textarea:not(.form-control) {
   font: inherit;
   outline: none;
 }
 
 /* ==========================
-   Scrollbar
+   Scrollbar Customization
 ========================== */
 
 ::-webkit-scrollbar {
@@ -91,4 +98,47 @@ textarea {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* ==========================================================
+   Bootstrap Modal Protection (Stark White Content Guarantee)
+   ========================================================== */
+.modal,
+.modal-dialog,
+.modal-content, 
+.modal-body {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #212529 !important;
+}
+
+/* 🌟 FORCES OVERRIDE ON ALL INTERACTIVE FORM CONTROLS INSIDE ANY ACTIVE MODAL */
+.modal-body .form-control {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #111827 !important;
+  border: 1px solid #cbd5e1 !important;
+  opacity: 1 !important;
+}
+
+.modal-body .form-control:focus {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25) !important;
+}
+
+.modal-body .form-control::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+.modal-body label,
+.modal-body h2 {
+  color: #1e293b !important;
+  opacity: 1 !important;
+}
+
+.modal-backdrop {
+  opacity: 0.5 !important;
 }

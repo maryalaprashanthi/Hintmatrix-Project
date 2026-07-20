@@ -1,29 +1,29 @@
 import axios from "axios";
 
-// Updated root URL mapping to match the Controller's @RequestMapping("/api/college")
-const BASE_URL = "http://localhost:8080/api/college";
+// Updated root URL mapping to match the Controller's @RequestMapping("/api/branch")
+const BASE_URL = "http://localhost:8080/api/branch";
 
-class CollegeService {
+class BranchService {
 
     // Matches @PostMapping
-    saveCollege(collegeRequestDTO) {
+    saveBranch(branchRequestDTO) {
         return axios.post(
             `${BASE_URL}`,
-            collegeRequestDTO,
-            { withCredentials: true } // Passes your active login session cookie
+            branchRequestDTO,
+            { withCredentials: true } // Allows backend session cookies
         );
     }
 
     // Matches @GetMapping
-    getAllColleges() {
+    getAllBranches() {
         return axios.get(
             `${BASE_URL}`,
-            { withCredentials: true } // Passes your active login session cookie
+            { withCredentials: true } // Passes authorization cookie
         );
     }
 
     // Matches @GetMapping("/{id}")
-    getCollegeById(id) {
+    getBranchById(id) {
         return axios.get(
             `${BASE_URL}/${id}`,
             { withCredentials: true }
@@ -32,16 +32,16 @@ class CollegeService {
 
     // Matches @PutMapping("/{id}")
     // Takes id for the URL path variable and the DTO payload for the request body
-    updateCollege(id, collegeRequestDTO) {
+    updateBranch(id, branchRequestDTO) {
         return axios.put(
             `${BASE_URL}/${id}`,
-            collegeRequestDTO,
+            branchRequestDTO,
             { withCredentials: true }
         );
     }
 
     // Matches @DeleteMapping("/{id}")
-    deleteCollege(id) {
+    deleteBranch(id) {
         return axios.delete(
             `${BASE_URL}/${id}`,
             { withCredentials: true }
@@ -49,4 +49,4 @@ class CollegeService {
     }
 }
 
-export default new CollegeService();
+export default new BranchService();

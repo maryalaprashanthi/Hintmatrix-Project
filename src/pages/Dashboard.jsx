@@ -26,8 +26,16 @@ function Dashboard() {
       </section>
 
 
-      {/* Statistics */}
-      <section className="stats-section">
+      {/* Core Institutional Context Statistics (New) */}
+      <section className="stats-section management-stats">
+        <StatsCard type="college" />
+        <StatsCard type="sections" />
+        <StatsCard type="branch" />
+        <StatsCard type="course" />
+      </section>
+
+      {/* Learning & Academic Performance Statistics */}
+      <section className="stats-section learning-stats">
         <StatsCard type="courses" />
         <StatsCard type="practice" />
         <StatsCard type="completed" />
@@ -40,7 +48,7 @@ function Dashboard() {
         <StatsCard type="streak" />
       </section>
 
-      {/* Bottom */}
+      {/* Bottom Panel Interactivity */}
       <section className="bottom-section">
         <RecentActivity />
         <TodayPractice />
