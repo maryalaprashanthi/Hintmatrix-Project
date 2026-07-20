@@ -4,7 +4,8 @@ import Layout from "./Layout/Layout";
 
 import Dashboard from "./pages/Dashboard";
 import College from "./pages/College/College";
-import Courses from "./pages/Courses/Courses";
+import Courses from "./pages/College/Courses/Courses";
+import Branch from "./pages/College/Branch/Branch";
 import Practice from "./pages/Practice";
 import Tests from "./pages/Tests";
 import Sessions from "./pages/Sessions";
@@ -16,12 +17,13 @@ function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-
         <Route path="/" element={<Dashboard />} />
-         
-         <Route path="/college" element={<College />} />
+
+        <Route path="/college" element={<College />} />
 
         <Route path="/courses" element={<Courses />} />
+
+        <Route path="/Branch" element={<Branch />} />
 
         <Route path="/practice" element={<Practice />} />
 
@@ -34,7 +36,6 @@ function App() {
         <Route path="/certificates" element={<Certificates />} />
 
         <Route path="/settings" element={<Settings />} />
-
       </Route>
     </Routes>
   );

@@ -1,20 +1,19 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import "./Courses.css";
 import { FaBookOpen, FaPlus } from "react-icons/fa";
 
 import AddCourseModal from "./AddCourseModal";
 
-import bcom from "../../assets/courses/bcom.png.jpeg";
-import ca from "../../assets/courses/ca-foundation.png.jpeg";
-import cbse from "../../assets/courses/cbse11.png.jpeg";
-import accountancy from "../../assets/courses/jr-accountancy.png.jpeg";
-import combo from "../../assets/courses/combo.png.jpeg";
-import inter from "../../assets/courses/inter.png.jpeg";
+// Images
+import bcom from "../../../assets/courses/bcom.png.jpeg";
+import ca from "../../../assets/courses/ca-foundation.png.jpeg";
+import cbse from "../../../assets/courses/cbse11.png.jpeg";
+import accountancy from "../../../assets/courses/jr-accountancy.png.jpeg";
+import combo from "../../../assets/courses/combo.png.jpeg";
+import inter from "../../../assets/courses/inter.png.jpeg";
 
 function Courses() {
   const [showModal, setShowModal] = useState(false);
-
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingCourse, setEditingCourse] = useState(null);
 
@@ -79,9 +78,7 @@ function Courses() {
     if (editingIndex !== null) {
       const updatedCourses = [...courses];
       updatedCourses[editingIndex] = courseData;
-
       setCourses(updatedCourses);
-
       setEditingIndex(null);
       setEditingCourse(null);
     } else {
@@ -103,7 +100,6 @@ function Courses() {
 
   return (
     <div className="courses-page">
-
       <AddCourseModal
         show={showModal}
         onClose={() => {
@@ -116,11 +112,8 @@ function Courses() {
       />
 
       <div className="courses-header">
-
         <div className="courses-header-top">
-
           <div className="courses-title">
-
             <div className="title-icon">
               <FaBookOpen />
             </div>
@@ -129,7 +122,6 @@ function Courses() {
               <h1>My Courses</h1>
               <p>Explore all available courses</p>
             </div>
-
           </div>
 
           <button
@@ -139,13 +131,10 @@ function Courses() {
             <FaPlus />
             Add Course
           </button>
-
         </div>
-
       </div>
 
       <div className="courses-toolbar">
-
         <input
           type="text"
           placeholder="🔍 Search Courses..."
@@ -159,36 +148,24 @@ function Courses() {
           <option>Chartered Accountancy</option>
           <option>Integrated Program</option>
         </select>
-
       </div>
 
       <div className="courses-grid">
-
         {courses.map((course, index) => (
           <div className="course-card" key={index}>
-
             <div className="course-banner">
               <img src={course.image} alt={course.title} />
             </div>
 
             <div className="course-content">
-
               <h3>{course.title}</h3>
 
-              <p className="course-category">
-                {course.category}
-              </p>
+              <p className="course-category">{course.category}</p>
 
               <div className="course-info">
+                <span className="level">⭐ {course.level}</span>
 
-                <span className="level">
-                  ⭐ {course.level}
-                </span>
-
-                <span className="duration">
-                  ⏳ {course.duration}
-                </span>
-
+                <span className="duration">⏳ {course.duration}</span>
               </div>
 
               <div className="progress">
@@ -198,16 +175,11 @@ function Courses() {
                 ></div>
               </div>
 
-              <p className="progress-text">
-                {course.progress} Completed
-              </p>
+              <p className="progress-text">{course.progress} Completed</p>
 
-              <button className="course-btn">
-                {course.button}
-              </button>
+              <button className="course-btn">{course.button}</button>
 
               <div className="course-actions">
-
                 <button
                   className="edit-btn"
                   onClick={() => handleEditCourse(course, index)}
@@ -221,16 +193,11 @@ function Courses() {
                 >
                   🗑 Delete
                 </button>
-
               </div>
-
             </div>
-
           </div>
         ))}
-
       </div>
-
     </div>
   );
 }

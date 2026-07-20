@@ -1,0 +1,169 @@
+/* ==========================================
+   Bootstrap Modal
+========================================== */
+
+.modal-dialog {
+    max-width: 900px;
+}
+
+.modal-content {
+    border: none;
+    border-radius: 18px;
+    box-shadow: 0 15px 40px rgba(0,0,0,.15);
+
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+/* ==========================================
+   Header
+========================================== */
+
+.modal-header{
+    position: relative;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    padding:30px 36px;
+
+    background:#ffffff;
+
+    border-bottom:1px solid #edf2f7;
+}
+
+.modal-header .text-center{
+    width:100%;
+}
+
+.modal-header h2{
+    font-size:32px;
+    font-weight:700;
+    color:#111827;
+    margin-bottom:6px;
+}
+
+.modal-header p{
+    font-size:15px;
+    color:#6b7280;
+    margin:0;
+}
+
+.modal-header .btn-close{
+    position:absolute;
+    right:24px;
+    top:24px;
+}
+
+/* ==========================================
+   Scrollable Body
+========================================== */
+
+.modal-body{
+    padding:30px;
+    overflow-y:auto;
+    max-height:65vh;
+}
+
+.modal-body::-webkit-scrollbar{
+    width:8px;
+}
+
+.modal-body::-webkit-scrollbar-thumb{
+    background:#cbd5e1;
+    border-radius:10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover{
+    background:#94a3b8;
+}
+
+/* ==========================================
+   Cards
+========================================== */
+
+.card{
+    border:none;
+    border-radius:15px;
+    margin-bottom:25px;
+}
+
+.card-header{
+    background:#ffffff;
+    border-bottom:1px solid #edf2f7;
+    font-weight:600;
+}
+
+.card-body{
+    padding:25px;
+}
+
+/* ==========================================
+   Inputs
+========================================== */
+
+.form-control,
+.form-select{
+    border-radius:10px;
+    height:48px;
+}
+
+.form-control:focus,
+.form-select:focus{
+    box-shadow:none;
+    border-color:#2563eb;
+}
+
+/* ==========================================
+   Textarea
+========================================== */
+
+textarea.form-control{
+
+    width:100%;
+
+    min-height:240px;
+
+    resize:vertical;
+}
+
+/* ==========================================
+   File Upload
+========================================== */
+
+input[type="file"]{
+    height:auto;
+    padding:10px;
+}
+
+/* ==========================================
+   Footer
+========================================== */
+
+.modal-footer{
+    padding:20px 30px;
+    border-top:1px solid #edf2f7;
+}
+
+.modal-footer .btn{
+    min-width:130px;
+    height:46px;
+    border-radius:10px;
+}
+
+/* ==========================================
+   Responsive
+========================================== */
+
+@media (max-width:768px){
+
+    .modal-dialog{
+        margin:10px;
+    }
+
+    .modal-body{
+        max-height:60vh;
+    }
+
+}

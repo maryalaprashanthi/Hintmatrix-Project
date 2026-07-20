@@ -4,7 +4,6 @@ import { useState } from "react";
 
 import {
   MdDashboard,
-  MdMenuBook,
   MdOutlineEdit,
   MdAssignment,
   MdVideoLibrary,
@@ -15,18 +14,18 @@ import {
   MdSchool,
   MdKeyboardArrowDown,
   MdKeyboardArrowUp,
-  MdApartment,
   MdAccountTree,
   MdLibraryBooks,
   MdViewModule,
 } from "react-icons/md";
 
 function Sidebar() {
-  const [collegeOpen, setCollegeOpen] = useState(false);
+  const [collegeOpen, setCollegeOpen] = useState(true);
 
   return (
     <aside className="sidebar">
       <nav className="sidebar-menu">
+
         {/* Dashboard */}
         <NavLink
           to="/"
@@ -62,17 +61,19 @@ function Sidebar() {
 
         {collegeOpen && (
           <div className="submenu">
+
             <NavLink
               to="/college"
               className={({ isActive }) =>
                 isActive ? "submenu-item active-submenu" : "submenu-item"
               }
             >
-              
+              <MdSchool />
+              <span>College</span>
             </NavLink>
 
             <NavLink
-              to="/course"
+              to="/courses"
               className={({ isActive }) =>
                 isActive ? "submenu-item active-submenu" : "submenu-item"
               }
@@ -81,7 +82,16 @@ function Sidebar() {
               <span>Course</span>
             </NavLink>
 
-            <NavLink
+             <NavLink
+              to="/Branch"
+              className={({ isActive }) =>
+                isActive ? "submenu-item active-submenu" : "submenu-item"
+              }
+            >
+              <MdAccountTree />
+              <span>Branch</span>
+            </NavLink>
+              <NavLink
               to="/section"
               className={({ isActive }) =>
                 isActive ? "submenu-item active-submenu" : "submenu-item"
@@ -91,28 +101,10 @@ function Sidebar() {
               <span>Section</span>
             </NavLink>
 
-            <NavLink
-              to="/branch"
-              className={({ isActive }) =>
-                isActive ? "submenu-item active-submenu" : "submenu-item"
-              }
-            >
-              <MdAccountTree />
-              <span>Branch</span>
-            </NavLink>
+            
+
           </div>
         )}
-
-        {/* Courses */}
-        <NavLink
-          to="/courses"
-          className={({ isActive }) =>
-            isActive ? "menu-item active" : "menu-item"
-          }
-        >
-          <MdMenuBook />
-          <span>Courses</span>
-        </NavLink>
 
         {/* Practice */}
         <NavLink
@@ -179,6 +171,7 @@ function Sidebar() {
           <MdSettings />
           <span>Settings</span>
         </NavLink>
+
       </nav>
 
       <div className="logout">
