@@ -232,7 +232,7 @@ function CourseForm({ selectedCourseData, onUpdateComplete, onCloseModal }) {
             />
           </div>
         </div>
-
+                                                // here we need to add description .....
         {/* Form Execution Confirmation Area */}
         <div className="d-flex justify-content-center gap-3 mt-4 pt-2">
           <button

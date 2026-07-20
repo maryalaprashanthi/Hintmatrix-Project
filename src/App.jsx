@@ -18,8 +18,8 @@ import Course from "./components/Course"; // Added singular admin Course managem
 
 import Courses from "./pages/Courses/Courses"; // Plural page for original cards grid view
 import CourseForm from "./pages/Courses/CourseForm";
-import College from "./pages/College/College";
-import Courses from "./pages/Courses/Courses";
+//import College from "./pages/College/College";
+//import Courses from "./pages/Courses/Courses";
 import Practice from "./pages/Practice";
 import Tests from "./pages/Tests";
 import Sessions from "./pages/Sessions";
@@ -125,7 +125,7 @@ function App() {
 
         {/* 3. New Context Management View Interfaces */}
         <Route path="/college" element={<College />} />
-        <Route path="/sections" element={<Section />} />
+        <Route path="/section" element={<Section />} />
         <Route path="/branch" element={<Branch />} />
         <Route path="/course" element={<Course />} /> {/* Added singular course admin management route */}
 

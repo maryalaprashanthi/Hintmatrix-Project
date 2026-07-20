@@ -16,12 +16,12 @@ import {
   MdSettings,
   MdLogout,
   MdExpandMore,     // Sub-menu open indicator chevron icon
-  MdExpandLess      // Sub-menu close indicator chevron icon
+  MdExpandLess,    // Sub-menu close indicator chevron icon
   MdSchool,
   MdKeyboardArrowDown,
   MdKeyboardArrowUp,
   MdApartment,
-  MdAccountTree,
+  //MdAccountTree,
   MdLibraryBooks,
   MdViewModule,
 } from "react-icons/md";
@@ -43,6 +43,7 @@ function Sidebar() {
         </NavLink>
 
         {/* College Menu */}
+        <NavLink to="/college">
         <div
           className={`menu-item ${collegeOpen ? "active" : ""}`}
           onClick={() => setCollegeOpen(!collegeOpen)}
@@ -62,17 +63,10 @@ function Sidebar() {
 
           {collegeOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
         </div>
+        </NavLink>
 
         {collegeOpen && (
           <div className="submenu">
-            <NavLink
-              to="/college"
-              className={({ isActive }) =>
-                isActive ? "submenu-item active-submenu" : "submenu-item"
-              }
-            >
-              
-            </NavLink>
 
             <NavLink
               to="/course"
