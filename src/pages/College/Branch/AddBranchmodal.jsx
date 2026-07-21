@@ -14,6 +14,7 @@ import {
 import "./AddBranchModal.css";
 
 function AddBranchModal({ show, onClose, onSave }) {
+  const [collegeId, setCollegeId] = useState("");
   const [branchName, setBranchName] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
@@ -23,7 +24,7 @@ function AddBranchModal({ show, onClose, onSave }) {
 
   const handleSave = () => {
     if (
-      !collegeName.trim() ||
+      !collegeId.trim() ||
       !branchName.trim() ||
       !address.trim() ||
       !phone.trim() ||
@@ -44,7 +45,7 @@ function AddBranchModal({ show, onClose, onSave }) {
     }
 
     const newBranch = {
-      collegeName,
+      collegeId:Number(collegeId),
       branchName,
       address,
       phone,
@@ -53,7 +54,7 @@ function AddBranchModal({ show, onClose, onSave }) {
 
     onSave(newBranch);
 
-    setCollegeName("");
+    setCollegeId("");
     setBranchName("");
     setAddress("");
     setPhone("");
@@ -95,11 +96,11 @@ function AddBranchModal({ show, onClose, onSave }) {
 
             <div className="form-grid">
 
-              {/* College Name */}
+              {/* College Id */}
               <div className="form-group">
 
                 <label>
-                  College Name <span>*</span>
+                  College Id <span>*</span>
                 </label>
 
                 <div className="input-box">
@@ -107,10 +108,10 @@ function AddBranchModal({ show, onClose, onSave }) {
                   <FaUniversity className="input-icon" />
 
                   <input
-                    type="text"
-                    placeholder="Enter College Name"
-                    value={collegeName}
-                    onChange={(e) => setCollegeName(e.target.value)}
+                    type="number"
+                    placeholder="Enter College ID"
+                    value={collegeId}
+                    onChange={(e) => setCollegeId(e.target.value)}
                   />
 
                 </div>
@@ -216,6 +217,7 @@ function AddBranchModal({ show, onClose, onSave }) {
         <div className="modal-footer">
 
           <button
+            type="button"
             className="btn btn-secondary"
             onClick={onClose}
           >
@@ -223,6 +225,7 @@ function AddBranchModal({ show, onClose, onSave }) {
           </button>
 
           <button
+            type="button"
             className="btn btn-primary"
             onClick={handleSave}
           >

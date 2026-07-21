@@ -58,7 +58,7 @@ function Branch() {
                   </td>
                 </tr>
               ) : (
-                Branches.map((branch, index) => (
+                branches.map((branch, index) => (
                   <tr key={index}>
                     <td>{branch.collegeName}</td>
                     <td>{branch.branchName}</td>

@@ -11,7 +11,7 @@ import Layout from "./Layout/Layout";
 import Dashboard from "./pages/Dashboard";
 
 // --- UPDATED EXPORT IMPORTS TO MATCH COMMON NESTED FOLDER ARCHITECTURES ---
-import College from "./components/College";       
+import College from "./pages/College/College";       
 import Section from "./components/Section";               
 import Course from "./components/Course"; // Added singular admin Course management page
 import CourseForm from "./pages/College/Courses/CourseForm";
