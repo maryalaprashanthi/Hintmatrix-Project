@@ -1,0 +1,107 @@
+/* ==========================================
+   Table Attributes Page
+========================================== */
+
+.card {
+    border-radius: 15px;
+}
+
+
+.card-body {
+    padding: 25px;
+}
+
+
+/* Table */
+
+.table {
+    margin-bottom: 0;
+}
+
+
+.table th {
+
+    font-weight: 700;
+
+    color: #0e1323;
+
+}
+
+
+.table td {
+
+    vertical-align: middle;
+
+}
+
+
+.table-hover tbody tr:hover {
+
+    background-color: #f8fafc;
+
+}
+
+
+
+/* Header */
+
+h2 {
+
+    color: #0e1323;
+
+}
+
+
+.text-muted {
+
+    font-size: 15px;
+
+}
+
+
+
+/* Add Button */
+
+.btn-primary {
+
+    padding: 10px 25px;
+
+    border-radius: 8px;
+
+    font-weight: 600;
+
+}
+
+
+
+/* Empty message */
+
+.text-center {
+
+    padding: 20px;
+
+    color: #64748b;
+
+}
+
+
+
+/* Responsive */
+
+@media(max-width:768px){
+
+    .card-body {
+
+        padding:15px;
+
+    }
+
+
+    table {
+
+        font-size:14px;
+
+    }
+
+
+}

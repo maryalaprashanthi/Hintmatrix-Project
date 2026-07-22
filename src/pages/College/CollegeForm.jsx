@@ -246,7 +246,7 @@ function CollegeForm({
             onClick={handleSave}
           >
             <FaSave className="me-2" />
-            {selectedCollegeData ? "Update College" : "Save College"}
+            {selectedCollegeData ? "Update College" : "Save"}
           </button>
 
         </div>

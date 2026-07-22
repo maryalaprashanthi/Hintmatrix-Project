@@ -96,27 +96,38 @@ function AddBranchModal({ show, onClose, onSave }) {
 
             <div className="form-grid">
 
-              {/* College Id */}
-              <div className="form-group">
+              
+             {/* College Id Dropdown */}
+             
 
-                <label>
-                  College Id <span>*</span>
-                </label>
+  <div className="form-group">
 
-                <div className="input-box">
+    <label>
+        College Id <span>*</span>
+    </label>
 
-                  <FaUniversity className="input-icon" />
+    <div className="input-box">
 
-                  <input
-                    type="number"
-                    placeholder="Enter College ID"
-                    value={collegeId}
-                    onChange={(e) => setCollegeId(e.target.value)}
-                  />
+        <FaUniversity className="input-icon" />
+         
+        <select
+            
+            value={collegeId}
+            onChange={(e) => setCollegeId(e.target.value)}
+        >
+            <option value="">
+                 Select College Id
+            </option>
 
-                </div>
+            <option value="1">
+                ------
+            </option>
 
-              </div>
+        </select>
+
+    </div>
+
+</div>
 
               {/* Branch Name */}
               <div className="form-group">
@@ -230,7 +241,7 @@ function AddBranchModal({ show, onClose, onSave }) {
             onClick={handleSave}
           >
             <FaSave className="me-2" />
-            Save Branch
+            Save 
           </button>
 
         </div>

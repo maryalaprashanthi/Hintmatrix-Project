@@ -23,6 +23,9 @@ import Sessions from "./pages/Sessions";
 import Results from "./pages/Results";
 import Certificates from "./pages/Certificates";
 import Settings from "./pages/Settings";
+import TableNames from "./pages/Table/TableNames";
+import TableHeaders from "./pages/Table/TableHeaders";
+import TableAttributes from "./pages/Table/TableAttributes";
 
 // Import your asset images to initialize the shared state list
 import bcom from "./assets/courses/bcom.png.jpeg";
@@ -125,6 +128,11 @@ function App() {
         <Route path="/section" element={<Section />} />
         <Route path="/Branch" element={<Branch />} />
         <Route path="/course" element={<Course />} /> {/* Added singular course admin management route */}
+        
+        {/* Table Details */}
+        <Route path="/table-names" element={<TableNames />} />
+        <Route path="/table-headers" element={<TableHeaders />} />
+        <Route path="/table-attributes" element={<TableAttributes />} />
 
         {/* 4. Pass the dynamic list array state as a prop to your page */}
         <Route path="/courses" element={<Courses dynamicCourses={coursesList} />} />
