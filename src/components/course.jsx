@@ -50,15 +50,13 @@ function Course() {
     >
       {/* Scope-isolated styles to handle Bootstrap backdrop layout properly */}
       <style>{`
-        .modal-backdrop {
-          display: none !important;
-        }
-
-        body.modal-open {
-          overflow: auto !important;
-          padding-right: 0 !important;
-        }
-      `}</style>
+       .modal-backdrop.show {
+        background: rgba(15, 23, 42, 0.25) !important;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+         opacity: 1 !important;
+      }
+     `}</style>
 
       {/* Programmatic Hidden Trigger for Edit Actions */}
       <button
@@ -66,7 +64,7 @@ function Course() {
         className="d-none"
         data-bs-toggle="modal"
         data-bs-target="#courseModal"
-        data-bs-backdrop="false"
+        
       ></button>
 
       {/* Dashboard Top Header Bar */}
@@ -86,7 +84,7 @@ function Course() {
           className="btn btn-primary px-4 py-2 fw-bold shadow-sm rounded-3"
           data-bs-toggle="modal"
           data-bs-target="#courseModal"
-          data-bs-backdrop="false"
+          
           onClick={handleAddCourseClick}
         >
           ➕ Add Course
@@ -117,7 +115,7 @@ function Course() {
         className="modal fade"
         id="courseModal"
         tabIndex="-1"
-        data-bs-backdrop="false"
+        
         aria-labelledby="courseModalLabel"
         aria-hidden="true"
       >

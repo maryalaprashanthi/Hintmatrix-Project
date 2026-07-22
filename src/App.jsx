@@ -8,7 +8,7 @@ import Dashboard from "./pages/Dashboard";
 // --- UPDATED EXPORT IMPORTS TO MATCH COMMON NESTED FOLDER ARCHITECTURES ---
 import College from "./pages/College/College";       
 import Section from "./components/Section";               
-import Course from "./components/Course"; // Added singular admin Course management page
+//import Course from "./components/Course"; // Added singular admin Course management page
 import CourseForm from "./pages/College/Courses/CourseForm";
 import Courses from "./pages/College/Courses/Courses";
 import Chapters from "./pages/Chapters/Chapters";
@@ -162,7 +162,7 @@ function App() {
         <Route path="/college" element={<College />} />
         <Route path="/section" element={<Section />} />
         <Route path="/Branch" element={<Branch />} />
-        <Route path="/course" element={<Course />} /> {/* Added singular course admin management route */}
+        <Route path="/course" element={<Courses dynamicCourses={coursesList}/>} /> {/* Added singular course admin management route */}
         
         {/* Table Details */}
         <Route path="/table-names" element={<TableNames />} />
