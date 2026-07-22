@@ -21,6 +21,9 @@ import Sessions from "./pages/Sessions";
 import Results from "./pages/Results";
 import Certificates from "./pages/Certificates";
 import Settings from "./pages/Settings";
+import TableNames from "./pages/Table/TableNames";
+import TableHeaders from "./pages/Table/TableHeaders";
+import TableAttributes from "./pages/Table/TableAttributes";
 
 // Assets
 import bcom from "./assets/courses/bcom.png.jpeg";
@@ -155,28 +158,16 @@ function App() {
         />
 
 
-        {/* College Management */}
-
-        <Route
-          path="/college"
-          element={<College />}
-        />
-
-        <Route
-          path="/section"
-          element={<Section />}
-        />
-
-        <Route
-          path="/Branch"
-          element={<Branch />}
-        />
-
-        <Route
-          path="/course"
-          element={<Course />}
-        />
-
+        {/* 3. New Context Management View Interfaces */}
+        <Route path="/college" element={<College />} />
+        <Route path="/section" element={<Section />} />
+        <Route path="/Branch" element={<Branch />} />
+        <Route path="/course" element={<Course />} /> {/* Added singular course admin management route */}
+        
+        {/* Table Details */}
+        <Route path="/table-names" element={<TableNames />} />
+        <Route path="/table-headers" element={<TableHeaders />} />
+        <Route path="/table-attributes" element={<TableAttributes />} />
 
         {/* Courses */}
 
