@@ -12,10 +12,7 @@ import Course from "./components/Course"; // Added singular admin Course managem
 import CourseForm from "./pages/College/Courses/CourseForm";
 import Courses from "./pages/College/Courses/Courses";
 import Chapters from "./pages/Chapters/Chapters";
-import Chapters from "./pages/Chapters/Chapters";
 import Branch from "./pages/College/Branch/Branch";
-
-// Other Pages
 
 // Other Pages
 import Practice from "./pages/Practice";
@@ -29,7 +26,6 @@ import TableHeaders from "./pages/Table/TableHeaders";
 import TableAttributes from "./pages/Table/TableAttributes";
 
 // Assets
-// Assets
 import bcom from "./assets/courses/bcom.png.jpeg";
 import ca from "./assets/courses/ca-foundation.png.jpeg";
 import cbse from "./assets/courses/cbse11.png.jpeg";
@@ -38,21 +34,16 @@ import combo from "./assets/courses/combo.png.jpeg";
 import inter from "./assets/courses/inter.png.jpeg";
 
 
-
 function App() {
-
 
   const navigate = useNavigate();
 
 
-
   const [coursesList, setCoursesList] = useState([
-
 
     {
       id: 1,
       title: "B.Com - 1st Year",
-      slug: "bcom",
       slug: "bcom",
       image: bcom,
       category: "Commerce",
@@ -63,12 +54,9 @@ function App() {
     },
 
 
-
-
     {
       id: 2,
       title: "CA Foundation",
-      slug: "ca-foundation",
       slug: "ca-foundation",
       image: ca,
       category: "Chartered Accountancy",
@@ -79,12 +67,9 @@ function App() {
     },
 
 
-
-
     {
       id: 3,
       title: "CBSE Class-11",
-      slug: "cbse-11",
       slug: "cbse-11",
       image: cbse,
       category: "School Curriculum",
@@ -95,12 +80,9 @@ function App() {
     },
 
 
-
-
     {
       id: 4,
       title: "Jr. Accountancy",
-      slug: "jr-accountancy",
       slug: "jr-accountancy",
       image: accountancy,
       category: "Commerce",
@@ -111,12 +93,9 @@ function App() {
     },
 
 
-
-
     {
       id: 5,
       title: "Combo Pack",
-      slug: "combo",
       slug: "combo",
       image: combo,
       category: "Multiple Courses",
@@ -127,12 +106,9 @@ function App() {
     },
 
 
-
-
     {
       id: 6,
       title: "Inter CBSE CAF B.Com",
-      slug: "inter",
       slug: "inter",
       image: inter,
       category: "Integrated Program",
@@ -142,19 +118,13 @@ function App() {
       progress: "60%",
     },
 
-
   ]);
-
 
 
   const handleSaveCourse = (newCourse) => {
 
-
     const courseWithUI = {
       ...newCourse,
-      slug: newCourse.title
-        .toLowerCase()
-        .replaceAll(" ", "-"),
       slug: newCourse.title
         .toLowerCase()
         .replaceAll(" ", "-"),
@@ -168,34 +138,13 @@ function App() {
     ]);
 
 
-
-    setCoursesList((prevList) => [
-      courseWithUI,
-      ...prevList,
-    ]);
-
-
     navigate("/courses");
-
 
   };
   return (
     <Routes>
 
-
       <Route element={<Layout />}>
-
-        {/* Dashboard */}
-        <Route
-          path="/"
-          element={<Dashboard />}
-        />
-
-        <Route
-          path="/dashboard"
-          element={<Dashboard />}
-        />
-
 
         {/* Dashboard */}
         <Route
@@ -288,11 +237,9 @@ function App() {
 
       </Route>
 
-
     </Routes>
   );
 }
-
 
 
 export default App;
