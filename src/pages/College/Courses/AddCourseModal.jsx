@@ -80,25 +80,31 @@ function AddCourseModal({ show, onClose }) {
               className="form-control"
               placeholder="Write course description..."
             ></textarea>
+             <div className="d-flex justify-content-end gap-3 mt-4">
+    <button
+      type="button"
+      className="btn btn-secondary"
+      onClick={onClose}
+    >
+      Cancel
+    </button>
+
+    <button
+      type="submit"
+      className="btn btn-primary"
+    >
+      Save
+    </button>
+  </div>
+</div> 
           </div>
 
         </div>
 
         {/* Footer */}
-        <div className="modal-footer">
-
-          <button className="btn cancel-btn" onClick={onClose}>
-            Cancel
-          </button>
-
-          <button className="btn save-btn">
-            Save Course
-          </button>
-
-        </div>
-
+          
       </div>
-    </div>
+    
   );
 }
 
