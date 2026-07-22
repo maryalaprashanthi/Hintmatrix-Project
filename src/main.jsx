@@ -10,11 +10,13 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 // Bootstrap JS (Required for Modal, Dropdown, Collapse, etc.)
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import { Toaster } from "react-hot-toast";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
       <App />
+      <Toaster/>
     </BrowserRouter>
   </React.StrictMode>
 );

@@ -27,7 +27,6 @@ function AddTableNameModal({ show, onClose, onSave }) {
     onSave(newTableName);
 
     setName("");
-
     onClose();
   };
 

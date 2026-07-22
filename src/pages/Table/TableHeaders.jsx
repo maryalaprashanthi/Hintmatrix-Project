@@ -1,6 +1,8 @@
 import { useState } from "react";
 import "./TableHeaders.css";
 import AddTableHeaderModal from "./AddTableHeaderModal";
+import TableHeaderService from "../../services/TableHeaderService";
+import toast from "react-hot-toast";
 
 function TableHeaders() {
 
@@ -9,16 +11,31 @@ function TableHeaders() {
   const [tableHeaders, setTableHeaders] = useState([]);
 
 
-  const handleSave = (newTableHeader) => {
-
-    setTableHeaders([
-      ...tableHeaders,
-      newTableHeader
-    ]);
-
+  const handleSave = async (newTableHeader) => {
+    try {
+          console.log("Data is ",newTableHeader);
+          const response = await TableHeaderService.create(newTableHeader);
+          toast.success("Data saved successfully");
+          loadTableHeaders();
+        } catch (error) {
+          console.log("Error: ",error);
+          toast.error(error.message);
+        }
   };
 
-
+  const loadTableHeaders = async () => {
+    try {
+      const result = await TableHeaderService.getAll();
+      const data = await result.data;
+      const allTableNames = data.map((obj)=>({"name":obj.name}));
+      console.log(allTableNames);
+      //  const namesOnly = response.data.map((item) => item.name);
+      setTableHeaders(allTableNames);
+    } catch (error) {
+      console.log("Error: ",error);
+      toast.error(error.message);
+    }
+  }
   return (
 
     <div className="container-fluid py-4">

@@ -1,14 +1,45 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./TableNames.css";
 import AddTableNameModal from "./AddTableNameModal";
+import TableNameService from "../../services/TableNameService";
+import toast from "react-hot-toast";
 
 function TableNames() {
   const [showModal, setShowModal] = useState(false);
   const [tableNames, setTableNames] = useState([]);
 
-  const handleSave = (newTableName) => {
-    setTableNames([...tableNames, newTableName]);
+  const handleSave = async (newTableName) => {
+    // setTableNames([...tableNames, newTableName]);
+    // create a new Table name
+    // console.log("Hello ",newTableName);
+    try {
+      const response = await TableNameService.create(newTableName);
+      toast.success("Data saved successfully");
+      loadTableNames();
+    } catch (error) {
+      console.log("Error: ",error);
+      toast.error(error.message);
+    }
+    
   };
+
+  const loadTableNames = async () => {
+    try {
+      const result = await TableNameService.getAll();
+      const data = await result.data;
+      const allTableNames = data.map((obj)=>({"name":obj.name}));
+      console.log(allTableNames);
+      //  const namesOnly = response.data.map((item) => item.name);
+      setTableNames(allTableNames);
+    } catch (error) {
+      console.log("Error: ",error);
+      toast.error(error.message);
+    }
+  }
+
+  useEffect(()=>{
+    loadTableNames();
+  },[])
 
   return (
     <div className="container-fluid py-4">
@@ -68,6 +99,7 @@ function TableNames() {
       <AddTableNameModal
         show={showModal}
         onClose={() => setShowModal(false)}
+        loader={loadTableNames}
         onSave={handleSave}
       />
 

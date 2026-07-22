@@ -1,5 +1,5 @@
 import { useState } from "react";
-import AddBranchModal from "./AddBranchModal";
+import AddBranchModal from "./AddBranchmodal";
 import "./Branch.css";
 
 function Branch() {
