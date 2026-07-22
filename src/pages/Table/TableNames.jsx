@@ -1,13 +1,13 @@
 import { useState } from "react";
-import AddBranchModal from "./AddBranchModal";
-import "./Branch.css";
+import "./TableNames.css";
+import AddTableNameModal from "./AddTableNameModal";
 
-function Branch() {
+function TableNames() {
   const [showModal, setShowModal] = useState(false);
-  const [branches, setBranches] = useState([]);
+  const [tableNames, setTableNames] = useState([]);
 
-  const handleSave = (newBranch) => {
-    setBranches([...branches, newBranch]);
+  const handleSave = (newTableName) => {
+    setTableNames([...tableNames, newTableName]);
   };
 
   return (
@@ -16,9 +16,9 @@ function Branch() {
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 className="fw-bold">Branch Management</h2>
+          <h2 className="fw-bold">Table Name Management</h2>
           <p className="text-muted">
-            Manage all college branches.
+            Manage all table names.
           </p>
         </div>
 
@@ -26,45 +26,34 @@ function Branch() {
           className="btn btn-primary"
           onClick={() => setShowModal(true)}
         >
-          + Add Branch
+          + Add Table Name
         </button>
       </div>
 
-      {/* Branch Table */}
+      {/* Table */}
       <div className="card shadow-sm border-0">
-
         <div className="card-body">
 
           <table className="table table-bordered table-hover align-middle">
 
             <thead className="table-light">
-
               <tr>
-                <th>College Name</th>
-                <th>Branch Name</th>
-                <th>Address</th>
-                <th>Phone</th>
-                <th>Email</th>
+                <th>Table Name</th>
               </tr>
-
             </thead>
 
             <tbody>
 
-              {branches.length === 0 ? (
+              {tableNames.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="text-center">
-                    No Branches Added
+                  <td className="text-center">
+                    No Table Names Added
                   </td>
                 </tr>
               ) : (
-                branches.map((branch, index) => (
+                tableNames.map((table, index) => (
                   <tr key={index}>
-                    <td>{branch.collegeName}</td>
-                    <td>{branch.branchName}</td>
-                    <td>{branch.address}</td>
-                    <td>{branch.phone}</td>
-                    <td>{branch.email}</td>
+                    <td>{table.name}</td>
                   </tr>
                 ))
               )}
@@ -74,10 +63,9 @@ function Branch() {
           </table>
 
         </div>
-
       </div>
 
-      <AddBranchModal
+      <AddTableNameModal
         show={showModal}
         onClose={() => setShowModal(false)}
         onSave={handleSave}
@@ -87,4 +75,4 @@ function Branch() {
   );
 }
 
-export default Branch;
+export default TableNames;

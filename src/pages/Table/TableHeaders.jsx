@@ -1,90 +1,162 @@
 import { useState } from "react";
-import AddBranchModal from "./AddBranchModal";
-import "./Branch.css";
+import "./TableHeaders.css";
+import AddTableHeaderModal from "./AddTableHeaderModal";
 
-function Branch() {
+function TableHeaders() {
+
   const [showModal, setShowModal] = useState(false);
-  const [branches, setBranches] = useState([]);
 
-  const handleSave = (newBranch) => {
-    setBranches([...branches, newBranch]);
+  const [tableHeaders, setTableHeaders] = useState([]);
+
+
+  const handleSave = (newTableHeader) => {
+
+    setTableHeaders([
+      ...tableHeaders,
+      newTableHeader
+    ]);
+
   };
 
+
   return (
+
     <div className="container-fluid py-4">
 
+
       {/* Header */}
+
       <div className="d-flex justify-content-between align-items-center mb-4">
+
+
         <div>
-          <h2 className="fw-bold">Branch Management</h2>
+
+          <h2 className="fw-bold">
+            Table Header Management
+          </h2>
+
+
           <p className="text-muted">
-            Manage all college branches.
+            Manage all table headers.
           </p>
+
+
         </div>
+
+
 
         <button
           className="btn btn-primary"
           onClick={() => setShowModal(true)}
         >
-          + Add Branch
+
+          + Add Table Header
+
         </button>
+
+
       </div>
 
-      {/* Branch Table */}
+
+
+
+
+      {/* Table */}
+
       <div className="card shadow-sm border-0">
+
 
         <div className="card-body">
 
+
           <table className="table table-bordered table-hover align-middle">
+
 
             <thead className="table-light">
 
               <tr>
-                <th>College Name</th>
-                <th>Branch Name</th>
-                <th>Address</th>
-                <th>Phone</th>
-                <th>Email</th>
+
+                <th>
+                  Header Name
+                </th>
+
               </tr>
+
 
             </thead>
 
+
+
+
             <tbody>
 
-              {branches.length === 0 ? (
+
+              {tableHeaders.length === 0 ? (
+
                 <tr>
-                  <td colSpan="5" className="text-center">
-                    No Branches Added
+
+                  <td
+                    colSpan="1"
+                    className="text-center"
+                  >
+                    No Table Headers Added
                   </td>
+
                 </tr>
+
+
               ) : (
-                branches.map((branch, index) => (
+
+
+                tableHeaders.map((header, index) => (
+
                   <tr key={index}>
-                    <td>{branch.collegeName}</td>
-                    <td>{branch.branchName}</td>
-                    <td>{branch.address}</td>
-                    <td>{branch.phone}</td>
-                    <td>{branch.email}</td>
+
+                    <td>
+                      {header.name}
+                    </td>
+
                   </tr>
+
+
                 ))
+
+
               )}
+
+
 
             </tbody>
 
+
           </table>
+
 
         </div>
 
+
       </div>
 
-      <AddBranchModal
+
+
+
+
+      <AddTableHeaderModal
+
         show={showModal}
+
         onClose={() => setShowModal(false)}
+
         onSave={handleSave}
+
       />
 
+
     </div>
+
   );
+
 }
 
-export default Branch;
+
+export default TableHeaders;

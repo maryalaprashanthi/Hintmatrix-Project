@@ -14,6 +14,7 @@ import {
 import "./AddBranchModal.css";
 
 function AddBranchModal({ show, onClose, onSave }) {
+  const [collegeId, setCollegeId] = useState("");
   const [branchName, setBranchName] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
@@ -23,7 +24,7 @@ function AddBranchModal({ show, onClose, onSave }) {
 
   const handleSave = () => {
     if (
-      !collegeName.trim() ||
+      !collegeId.trim() ||
       !branchName.trim() ||
       !address.trim() ||
       !phone.trim() ||
@@ -44,7 +45,7 @@ function AddBranchModal({ show, onClose, onSave }) {
     }
 
     const newBranch = {
-      collegeName,
+      collegeId:Number(collegeId),
       branchName,
       address,
       phone,
@@ -53,7 +54,7 @@ function AddBranchModal({ show, onClose, onSave }) {
 
     onSave(newBranch);
 
-    setCollegeName("");
+    setCollegeId("");
     setBranchName("");
     setAddress("");
     setPhone("");
@@ -95,27 +96,38 @@ function AddBranchModal({ show, onClose, onSave }) {
 
             <div className="form-grid">
 
-              {/* College Name */}
-              <div className="form-group">
+              
+             {/* College Id Dropdown */}
+             
 
-                <label>
-                  College Name <span>*</span>
-                </label>
+  <div className="form-group">
 
-                <div className="input-box">
+    <label>
+        College Id <span>*</span>
+    </label>
 
-                  <FaUniversity className="input-icon" />
+    <div className="input-box">
 
-                  <input
-                    type="text"
-                    placeholder="Enter College Name"
-                    value={collegeName}
-                    onChange={(e) => setCollegeName(e.target.value)}
-                  />
+        <FaUniversity className="input-icon" />
+         
+        <select
+            
+            value={collegeId}
+            onChange={(e) => setCollegeId(e.target.value)}
+        >
+            <option value="">
+                 Select College Id
+            </option>
 
-                </div>
+            <option value="1">
+                ------
+            </option>
 
-              </div>
+        </select>
+
+    </div>
+
+</div>
 
               {/* Branch Name */}
               <div className="form-group">
@@ -216,6 +228,7 @@ function AddBranchModal({ show, onClose, onSave }) {
         <div className="modal-footer">
 
           <button
+            type="button"
             className="btn btn-secondary"
             onClick={onClose}
           >
@@ -223,11 +236,12 @@ function AddBranchModal({ show, onClose, onSave }) {
           </button>
 
           <button
+            type="button"
             className="btn btn-primary"
             onClick={handleSave}
           >
             <FaSave className="me-2" />
-            Save Branch
+            Save 
           </button>
 
         </div>

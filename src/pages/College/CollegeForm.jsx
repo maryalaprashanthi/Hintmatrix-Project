@@ -1,206 +1,260 @@
-import React, { useState, useEffect } from "react";
-import CollegeService from "../../services/CollegeService";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
-function CollegeForm({ selectedCollegeData, onUpdateComplete }) {
-  const getEmptyCollege = () => ({
-    collegeId: "",
+import {
+  FaTimes,
+  FaUniversity,
+  FaPhone,
+  FaEnvelope,
+  FaMapMarkerAlt,
+  FaSave,
+} from "react-icons/fa";
+
+import "./CollegeForm.css";
+
+function CollegeForm({
+  show,
+  onClose,
+  onSave,
+  selectedCollegeData,
+}) {
+  const [college, setCollege] = useState({
     instituteName: "",
     address: "",
     phoneNumber: "",
-    email: ""
+    email: "",
   });
 
-  const [college, setCollege] = useState(getEmptyCollege());
-
-  // Load data when Edit button is clicked, or clear it if selection is reset
   useEffect(() => {
     if (selectedCollegeData) {
-      setCollege(selectedCollegeData);
+      setCollege({
+        instituteName: selectedCollegeData.instituteName || "",
+        address: selectedCollegeData.address || "",
+        phoneNumber: selectedCollegeData.phoneNumber || "",
+        email: selectedCollegeData.email || "",
+      });
     } else {
-      setCollege(getEmptyCollege());
+      setCollege({
+        instituteName: "",
+        address: "",
+        phoneNumber: "",
+        email: "",
+      });
     }
   }, [selectedCollegeData]);
 
-  const handleChange = (e) => {
-    // If typing in phone number field, prevent entering non-numeric characters completely
-    if (e.target.name === "phoneNumber") {
-      const numericValue = e.target.value.replace(/[^0-9]/g, "");
-      setCollege({
-        ...college,
-        [e.target.name]: numericValue
-      });
-      return;
-    }
+  if (!show) return null;
 
+  const handleChange = (e) => {
     setCollege({
       ...college,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-
-    // Explicit Front-end Validation Check for 10 digits
-    if (college.phoneNumber.length !== 10) {
-      alert("Validation Error: Phone Number must be exactly 10 numeric digits long!");
-      return; // Stop form submission entirely
+  const handleSave = () => {
+    if (
+      !college.instituteName.trim() ||
+      !college.address.trim() ||
+      !college.phoneNumber.trim() ||
+      !college.email.trim()
+    ) {
+      alert("Please fill all the fields.");
+      return;
     }
 
-    if (college.collegeId) {
-      // UPDATE COLLEGE (PUT)
-      CollegeService.updateCollege(college)
-        .then(() => {
-          alert("College Updated Successfully!");
-          clearForm();
-        })
-        .catch((error) => {
-          console.error("Error updating college:", error);
-        });
-    } else {
-      // SAVE COLLEGE (POST)
-      CollegeService.saveCollege(college)
-        .then(() => {
-          alert("College Saved Successfully!");
-          clearForm();
-        })
-        .catch((error) => {
-          console.error("Error saving college:", error);
-        });
+    if (!/^\d{10}$/.test(college.phoneNumber)) {
+      alert("Phone number must contain exactly 10 digits.");
+      return;
     }
+
+    if (!/\S+@\S+\.\S+/.test(college.email)) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+
+    onSave(college);
+
+    setCollege({
+      instituteName: "",
+      address: "",
+      phoneNumber: "",
+      email: "",
+    });
+
+    onClose();
   };
 
-  const clearForm = () => {
-    setCollege(getEmptyCollege());
-    if (onUpdateComplete) {
-      onUpdateComplete();
-    }
-  };
+  return createPortal(
+    <div className="modal-overlay">
 
-  return (
-    <div className="w-100 text-start">
-      
-      {/* 🌟 GLOBAL CLASSPATH FIX: Forces any open modal wrapper card on this page to be bright white with solid text */}
-      <style>{`
-        /* Target the parent modal sheets directly to remove transparent filters */
-        .modal, .modal-dialog, .modal-content, .modal-body {
-          background-color: #ffffff !important;
-          background: #ffffff !important;
-          color: #212529 !important;
-        }
-        
-        /* Force text entry containers to render bright white */
-        .modal-body .form-control {
-          background-color: #ffffff !important;
-          background: #ffffff !important;
-          color: #111827 !important;
-          border: 1px solid #cbd5e1 !important;
-          opacity: 1 !important;
-        }
+      <div className="branch-modal">
 
-        .modal-body .form-control:focus {
-          background-color: #ffffff !important;
-          color: #111827 !important;
-          border-color: #2563eb !important;
-          box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25) !important;
-        }
+        {/* Header */}
 
-        .modal-body .form-control::placeholder {
-          color: #94a3b8 !important;
-          opacity: 1 !important;
-        }
+        <div className="modal-header">
 
-        .modal-body label, .modal-body h2 {
-          color: #1e293b !important;
-          opacity: 1 !important;
-        }
-      `}</style>
+          <div>
 
-      {/* Centered Modal Header Typography */}
-      <h2 className="fw-bold text-dark fs-4 mb-4 text-center">
-        {college.collegeId ? "✍️ Edit College Details" : "🏢 Add New College"}
-      </h2>
+            <h2>
+              {selectedCollegeData ? "Update College" : "Add College"}
+            </h2>
 
-      <form onSubmit={handleFormSubmit}>
-        {/* Institute Name Field */}
-        <div className="mb-3">
-          <label className="form-label small fw-semibold text-dark">Institute Name</label>
-          <input
-            type="text"
-            name="instituteName"
-            placeholder="Enter Institute Name"
-            value={college.instituteName}
-            onChange={handleChange}
-            required
-            className="form-control"
-          />
+            <p>
+              Register a new college.
+            </p>
+
+          </div>
+
+          <button
+            className="close-btn"
+            onClick={onClose}
+          >
+            <FaTimes />
+          </button>
+
         </div>
 
-        {/* Address Field */}
-        <div className="mb-3">
-          <label className="form-label small fw-semibold text-dark">Address</label>
-          <input
-            type="text"
-            name="address"
-            placeholder="Enter Location Address"
-            value={college.address}
-            onChange={handleChange}
-            required
-            className="form-control"
-          />
+        {/* Body */}
+
+        <div className="modal-body">
+
+          <div className="form-card">
+
+            <h3 className="section-title">
+              College Information
+            </h3>
+
+            <div className="form-grid">
+
+              {/* College Name */}
+
+              <div className="form-group">
+
+                <label>
+                  College Name <span>*</span>
+                </label>
+
+                <div className="input-box">
+
+                  <FaUniversity className="input-icon" />
+
+                  <input
+                    type="text"
+                    name="instituteName"
+                    placeholder="Enter College Name"
+                    value={college.instituteName}
+                    onChange={handleChange}
+                  />
+
+                </div>
+
+              </div>
+
+              {/* Phone */}
+
+              <div className="form-group">
+
+                <label>
+                  Phone Number <span>*</span>
+                </label>
+
+                <div className="input-box">
+
+                  <FaPhone className="input-icon" />
+
+                  <input
+                    type="tel"
+                    name="phoneNumber"
+                    placeholder="Enter Phone Number"
+                    value={college.phoneNumber}
+                    onChange={handleChange}
+                  />
+
+                </div>
+
+              </div>
+
+              {/* Email */}
+
+              <div className="form-group">
+
+                <label>
+                  Email <span>*</span>
+                </label>
+
+                <div className="input-box">
+
+                  <FaEnvelope className="input-icon" />
+
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="college@gmail.com"
+                    value={college.email}
+                    onChange={handleChange}
+                  />
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* Address */}
+
+          <div className="form-card">
+
+            <h3 className="section-title">
+              Address
+            </h3>
+
+            <div className="textarea-box">
+
+              <FaMapMarkerAlt className="input-icon" />
+
+              <textarea
+                name="address"
+                placeholder="Enter College Address"
+                value={college.address}
+                onChange={handleChange}
+              />
+
+            </div>
+
+          </div>
+
         </div>
 
-        {/* Phone Number Field with strict criteria formatting */}
-        <div className="mb-3">
-          <label className="form-label small fw-semibold text-dark">Phone Number</label>
-          <input
-            type="tel"
-            name="phoneNumber"
-            placeholder="Phone Number (10 digits)"
-            value={college.phoneNumber}
-            onChange={handleChange}
-            required
-            pattern="[0-9]{10}"
-            maxLength="10"
-            title="Phone number must be exactly 10 numeric digits long"
-            className="form-control"
-          />
-        </div>
+        {/* Footer */}
 
-        {/* Email Field */}
-        <div className="mb-4">
-          <label className="form-label small fw-semibold text-dark">Email Address</label>
-          <input
-            type="email"
-            name="email"
-            placeholder="Enter Email Address"
-            value={college.email}
-            onChange={handleChange}
-            required
-            className="form-control"
-          />
-        </div>
+        <div className="modal-footer">
 
-        {/* Dynamic Modal Action Control Footer Buttons */}
-        <div className="d-flex gap-2 justify-content-end">
           <button
             type="button"
-            className="btn btn-outline-secondary px-4 fw-semibold"
-            data-bs-dismiss="modal"
-            onClick={clearForm}
+            className="btn btn-secondary"
+            onClick={onClose}
           >
-            Close
+            Cancel
           </button>
-          
+
           <button
-            type="submit"
-            className={`btn px-4 fw-bold text-white ${college.collegeId ? "btn-success" : "btn-primary"}`}
+            type="button"
+            className="btn btn-primary"
+            onClick={handleSave}
           >
-            {college.collegeId ? "Update College" : "Save College"}
+            <FaSave className="me-2" />
+            {selectedCollegeData ? "Update College" : "Save"}
           </button>
+
         </div>
-      </form>
-    </div>
+
+      </div>
+
+    </div>,
+    document.body
   );
 }
 

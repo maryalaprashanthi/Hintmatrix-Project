@@ -23,11 +23,15 @@ import {
   MdApartment,
   MdLibraryBooks,
   MdViewModule,
+  MdTableChart, 
+  MdTableRows, 
+  MdViewHeadline, 
+  MdListAlt,
 } from "react-icons/md";
 
 function Sidebar() {
   const [collegeOpen, setCollegeOpen] = useState(true);
-
+  const [tableOpen, setTableOpen] = useState(false);
   return (
     <aside className="sidebar">
       <nav className="sidebar-menu">
@@ -100,6 +104,62 @@ function Sidebar() {
 
           </div>
         )}
+        {/* Table Details */}
+<div
+  className={`menu-item ${tableOpen ? "active" : ""}`}
+  onClick={() => setTableOpen(!tableOpen)}
+  style={{ cursor: "pointer" }}
+>
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "12px",
+      flex: 1,
+    }}
+  >
+    <MdTableChart />
+    <span>Table Details</span>
+  </div>
+
+  {tableOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
+</div>
+
+{tableOpen && (
+  <div className="submenu">
+    <NavLink
+      to="/table-names"
+      className={({ isActive }) =>
+        isActive ? "submenu-item active-submenu" : "submenu-item"
+      }
+    >
+      <MdTableRows />
+      <span>Table Names</span>
+    </NavLink>
+
+    <NavLink
+      to="/table-headers"
+      className={({ isActive }) =>
+        isActive ? "submenu-item active-submenu" : "submenu-item"
+      }
+    >
+      <MdViewHeadline />
+      <span>Table Headers</span>
+    </NavLink>
+
+    <NavLink
+      to="/table-attributes"
+      className={({ isActive }) =>
+        isActive ? "submenu-item active-submenu" : "submenu-item"
+      }
+    >
+      <MdListAlt />
+      <span>Table Attributes</span>
+    </NavLink>
+  </div>
+)}
+
+
         {/* Practice */}
         <NavLink
           to="/practice"
