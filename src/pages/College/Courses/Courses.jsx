@@ -1,225 +1,367 @@
-import React, { useState, useEffect } from "react";
-import "./Courses.css";
-import { FaBookOpen, FaPlus } from "react-icons/fa";
-import AddCourseModal from "./AddCourseModal";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-// Fallback image asset
+import {
+  FaBookOpen,
+  FaCheckCircle,
+  FaPlayCircle,
+  FaPlus,
+  FaSearch,
+  FaClock,
+  FaUsers,
+  FaLayerGroup,
+} from "react-icons/fa";
+
+import "./Courses.css";
+
 import bcom from "../../../assets/courses/bcom.png.jpeg";
 import ca from "../../../assets/courses/ca-foundation.png.jpeg";
 import cbse from "../../../assets/courses/cbse11.png.jpeg";
-import accountancy from "../../../assets/courses/jr-accountancy.png.jpeg";
+import jrAccountancy from "../../../assets/courses/jr-accountancy.png.jpeg";
 import combo from "../../../assets/courses/combo.png.jpeg";
 import inter from "../../../assets/courses/inter.png.jpeg";
 
-function Courses({ dynamicCourses = [] }) {
-  const [showModal, setShowModal] = useState(false);
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [editingCourse, setEditingCourse] = useState(null);
+function Courses() {
 
-  // Search & Filter State
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const navigate = useNavigate();
 
-  // Initialize course state with static default listings
-  const [courses, setCourses] = useState([
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
+
+  const courses = [
     {
-      title: "B.Com - 1st Year",
+      id: "bcom",
+      title: "B.Com",
       image: bcom,
       category: "Commerce",
-      level: "Beginner",
-      duration: "Self-paced",
-      button: "Continue Learning",
-      progress: "70%",
+      level: "Under Graduation",
+      duration: "3 Years",
+      students: 240,
+      chapters: 48,
     },
     {
+      id: "ca-foundation",
       title: "CA Foundation",
       image: ca,
-      category: "Chartered Accountancy",
-      level: "Intermediate",
-      duration: "Self-paced",
-      button: "Continue Learning",
-      progress: "55%",
+      category: "Professional",
+      level: "Foundation Level",
+      duration: "6 Months",
+      students: 180,
+      chapters: 32,
     },
     {
-      title: "CBSE Class-11",
+      id: "cbse-11",
+      title: "CBSE Class 11",
       image: cbse,
-      category: "School Curriculum",
-      level: "Beginner",
-      duration: "Academic Year",
-      button: "View Course",
-      progress: "40%",
+      category: "School",
+      level: "Intermediate",
+      duration: "1 Year",
+      students: 320,
+      chapters: 25,
     },
     {
-      title: "Jr. Accountancy",
-      image: accountancy,
+      id: "jr-accountancy",
+      title: "Junior Accountancy",
+      image: jrAccountancy,
       category: "Commerce",
       level: "Beginner",
-      duration: "30 Lessons",
-      button: "Continue Learning",
-      progress: "85%",
+      duration: "6 Months",
+      students: 150,
+      chapters: 20,
     },
     {
-      title: "Combo Pack",
+      id: "combo",
+      title: "Commerce Combo",
       image: combo,
-      category: "Multiple Courses",
-      level: "All Levels",
-      duration: "Unlimited Access",
-      button: "View Details",
-      progress: "25%",
+      category: "Combo Course",
+      level: "Complete Package",
+      duration: "2 Years",
+      students: 210,
+      chapters: 60,
     },
     {
-      title: "Inter CBSE CAF B.Com",
+      id: "inter",
+      title: "Intermediate",
       image: inter,
-      category: "Integrated Program",
-      level: "Intermediate",
-      duration: "Full Program",
-      button: "Continue Learning",
-      progress: "60%",
+      category: "Commerce",
+      level: "Advanced",
+      duration: "1 Year",
+      students: 190,
+      chapters: 36,
     },
-  ]);
+  ];
 
-  // Keep internal courses state synchronized if App.jsx pushes new courses
-  useEffect(() => {
-    if (dynamicCourses && dynamicCourses.length > 0) {
-      setCourses(dynamicCourses);
-    }
-  }, [dynamicCourses]);
-
-  const handleSaveCourse = (courseData) => {
-    if (editingIndex !== null) {
-      const updatedCourses = [...courses];
-      updatedCourses[editingIndex] = courseData;
-      setCourses(updatedCourses);
-      setEditingIndex(null);
-      setEditingCourse(null);
-    } else {
-      setCourses([courseData, ...courses]);
-    }
-  };
-
-  const handleDeleteCourse = (index) => {
-    if (window.confirm("Are you sure you want to delete this course?")) {
-      setCourses(courses.filter((_, i) => i !== index));
-    }
-  };
-
-  const handleEditCourse = (course, index) => {
-    setEditingCourse(course);
-    setEditingIndex(index);
-    setShowModal(true);
-  };
-
-  // Filter Logic: Filters list live by category matching and text queries
   const filteredCourses = courses.filter((course) => {
-    const matchesCategory =
-      selectedCategory === "All Categories" ||
-      course.category.toLowerCase() === selectedCategory.toLowerCase();
-    
-    const matchesSearch = course.title
+
+    const searchMatch = course.title
       .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+      .includes(search.toLowerCase());
 
-    return matchesCategory && matchesSearch;
+    const categoryMatch =
+      category === "All" ||
+      course.category === category;
+
+    return searchMatch && categoryMatch;
+
   });
+    return (
 
-  return (
-    <div className="courses-page">
-      
-      <AddCourseModal />
+    <div className="container-fluid courses-page">
+
+      {/* ================= HEADER ================= */}
+
       <div className="courses-header">
-        <div className="courses-header-top">
-          <div className="courses-title">
-            <div className="title-icon">
+
+        <div className="courses-title">
+
+          <div className="courses-icon">
+            <FaBookOpen />
+          </div>
+
+          <div>
+
+            <h2>Courses Management</h2>
+
+            <p>
+              Create, organize and manage all your learning programs.
+            </p>
+
+          </div>
+
+        </div>
+
+        <button className="btn add-course-btn">
+
+          <FaPlus className="me-2" />
+
+          Add Course
+
+        </button>
+
+      </div>
+
+      {/* ================= STATISTICS ================= */}
+
+      <div className="row g-4 stats-row">
+
+        <div className="col-xl-3 col-lg-6 col-md-6">
+
+          <div className="modern-stat-card">
+
+            <div className="stat-icon blue">
               <FaBookOpen />
             </div>
+
             <div>
-              <h1>My Courses</h1>
-              <p>Explore all available courses</p>
+
+              <small>Total Courses</small>
+
+              <h3>{courses.length}</h3>
+
+              <span>Available Courses</span>
+
             </div>
+
           </div>
 
-          <button
-          className="add-course-btn"
-          data-bs-toggle="modal"
-          data-bs-target="#addCourseModal"
->
-  <FaPlus /> Add Course
-</button>
         </div>
+
+        <div className="col-xl-3 col-lg-6 col-md-6">
+
+          <div className="modern-stat-card">
+
+            <div className="stat-icon green">
+              <FaPlayCircle />
+            </div>
+
+            <div>
+
+              <small>Active Courses</small>
+
+              <h3>5</h3>
+
+              <span>Currently Running</span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div className="col-xl-3 col-lg-6 col-md-6">
+
+          <div className="modern-stat-card">
+
+            <div className="stat-icon purple">
+              <FaUsers />
+            </div>
+
+            <div>
+
+              <small>Total Students</small>
+
+              <h3>1290</h3>
+
+              <span>Across All Courses</span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div className="col-xl-3 col-lg-6 col-md-6">
+
+          <div className="modern-stat-card">
+
+            <div className="stat-icon orange">
+              <FaLayerGroup />
+            </div>
+
+            <div>
+
+              <small>Total Chapters</small>
+
+              <h3>221</h3>
+
+              <span>Learning Modules</span>
+
+            </div>
+
+          </div>
+
+        </div>
+
       </div>
 
-      <div className="courses-toolbar">
-        <input
-          type="text"
-          placeholder="🔍 Search Courses..."
-          className="search-input"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+      {/* ================= SEARCH ================= */}
+
+      <div className="course-toolbar">
+
+        <div className="search-box">
+
+          <FaSearch />
+
+          <input
+            type="text"
+            placeholder="Search courses..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+        </div>
 
         <select
-          className="category-select"
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="form-select category-filter"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
         >
-          <option>All Categories</option>
-          <option>Commerce</option>
-          <option>School Curriculum</option>
-          <option>Chartered Accountancy</option>
-          <option>Integrated Program</option>
+
+          <option value="All">All Categories</option>
+          <option value="Commerce">Commerce</option>
+          <option value="Professional">Professional</option>
+          <option value="School">School</option>
+          <option value="Combo Course">Combo Course</option>
+
         </select>
+
       </div>
 
-      <div className="courses-grid">
-        {filteredCourses.map((course, index) => (
-          <div className="course-card" key={index}>
-            {/* Course Banner */}
-            <div className="course-banner">
-              <img src={course.image || bcom} alt={course.title} />
+            {/* ================= COURSES GRID ================= */}
+
+      <div className="row">
+
+        {filteredCourses.map((course) => (
+
+          <div
+            className="col-12 col-md-6 col-lg-4 mb-4"
+            key={course.id}
+          >
+
+            <div className="course-card h-100">
+
+              {/* ================= IMAGE ================= */}
+
+              <div className="course-banner">
+
+                <img
+                  src={course.image}
+                  alt={course.title}
+                />
+
+              </div>
+
+              {/* ================= CONTENT ================= */}
+
+              <div className="course-content">
+
+                <h4>{course.title}</h4>
+
+                <p className="course-level">
+                  {course.level}
+                </p>
+
+                <div className="course-details">
+
+                  <div>
+                    <FaUsers />
+                    <span>{course.students} Students</span>
+                  </div>
+
+                  <div>
+                    <FaLayerGroup />
+                    <span>{course.chapters} Chapters</span>
+                  </div>
+
+                  <div>
+                    <FaClock />
+                    <span>{course.duration}</span>
+                  </div>
+
+                </div>
+
+                <button
+                  className="course-btn mt-auto"
+                  onClick={() =>
+                    navigate(`/chapters/${course.id}`)
+                  }
+                >
+
+                  <FaBookOpen />
+
+                  <span>View Chapters</span>
+
+                </button>
+
+              </div>
+
             </div>
 
-            <div className="course-content">
-              <h3>{course.title}</h3>
-              <p className="course-category">{course.category}</p>
-
-              <div className="course-info">
-                <span className="level">⭐ {course.level}</span>
-                <span className="duration">⏳ {course.duration || "Self-paced"}</span>
-              </div>
-
-              <div className="progress">
-                <div
-                  className="progress-fill"
-                  style={{ width: course.progress || "0%" }}
-                ></div>
-              </div>
-
-              <p className="progress-text">{course.progress || "0%"} Completed</p>
-
-              <button className="course-btn">
-                {course.button || "Continue Learning"}
-              </button>
-
-              <div className="course-actions">
-                <button
-                  className="edit-btn"
-                  onClick={() => handleEditCourse(course, index)}
-                >
-                  ✏ Edit
-                </button>
-                <button
-                  className="delete-btn"
-                  onClick={() => handleDeleteCourse(index)}
-                >
-                  🗑 Delete
-                </button>
-              </div>
-            </div>
           </div>
+
         ))}
+
       </div>
+            {/* ================= EMPTY STATE ================= */}
+
+      {filteredCourses.length === 0 && (
+
+        <div className="empty-state">
+
+          <h4>No Courses Found</h4>
+
+          <p>
+            Try another search keyword or select a different category.
+          </p>
+
+        </div>
+
+      )}
+
     </div>
+
   );
+
 }
 
 export default Courses;
