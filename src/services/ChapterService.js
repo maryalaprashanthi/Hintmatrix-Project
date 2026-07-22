@@ -1,16 +1,16 @@
 import axios from "axios";
 
-// Matches the Spring Boot Controller's @RequestMapping("/api/table-names")
-const BASE_URL = "http://localhost:8080/api/table-names";
+// Matches the Spring Boot Controller's @RequestMapping("/api/chapter")
+const BASE_URL = "http://localhost:8080/api/chapter";
 
-class TableNameService {
+class ChapterService {
 
     // Matches @PostMapping
-    // Takes the TableNameRequestDTO payload profile for the request body
-    create(tableNameRequestDTO) {
+    // Takes the ChapterRequestDTO payload profile for the request body
+    create(chapterRequestDTO) {
         return axios.post(
             `${BASE_URL}`,
-            tableNameRequestDTO,
+            chapterRequestDTO,
             { withCredentials: true } // Allows backend session cookies/CORS handshakes
         );
     }
@@ -33,10 +33,10 @@ class TableNameService {
 
     // Matches @PutMapping("/{id}")
     // Takes id for the URL path variable and the DTO payload for the request body
-    update(id, tableNameRequestDTO) {
+    update(id, chapterRequestDTO) {
         return axios.put(
             `${BASE_URL}/${id}`,
-            tableNameRequestDTO,
+            chapterRequestDTO,
             { withCredentials: true }
         );
     }
@@ -51,4 +51,4 @@ class TableNameService {
 }
 
 // Export an instantiated instance of the service architecture directly
-export default new TableNameService();
+export default new ChapterService();
