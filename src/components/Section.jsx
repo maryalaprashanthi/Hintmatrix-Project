@@ -1,153 +1,112 @@
+// NOTE:
+// This is a starter Section.jsx template showing a custom React modal.
+// Replace your existing Section.jsx with this and adapt imports/logic as needed.
+
 import React, { useState } from "react";
 import SectionForm from "./SectionForm";
 import SectionTable from "./SectionTable";
 
-function Section() {
+export default function Section() {
+  const [showModal, setShowModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [selectedSection, setSelectedSection] = useState(null);
 
-  // Triggered when clicking 'Edit' in SectionTable
   const handleEditSignal = (sectionData) => {
-    // Sets fields matching SectionResponseDTO to pass down to form
     setSelectedSection(sectionData);
-
-    const hiddenTriggerButton = document.getElementById(
-      "hiddenSectionModalTrigger"
-    );
-
-    if (hiddenTriggerButton) {
-      hiddenTriggerButton.click();
-    }
+    setShowModal(true);
   };
 
-  // Triggered after successful POST or PUT in SectionForm
-  const handleFormSubmissionComplete = () => {
-    setSelectedSection(null);
-    // Toggles boolean state to force SectionTable to re-run its GET request
-    setRefreshTrigger((prev) => !prev);
-
-    const modalCloseButton = document.getElementById(
-      "sectionModalCloseButton"
-    );
-
-    if (modalCloseButton) {
-      modalCloseButton.click();
-    }
-  };
-
-  // Explicitly resets form fields when user switches from editing to creating
   const handleAddSectionClick = () => {
     setSelectedSection(null);
+    setShowModal(true);
+  };
+
+  const handleFormSubmissionComplete = () => {
+    setSelectedSection(null);
+    setRefreshTrigger(v => !v);
+    setShowModal(false);
   };
 
   return (
-    <div
-      className="container-fluid p-4"
-      style={{
-        backgroundColor: "#f8fafc",
-        minHeight: "100vh",
-      }}
-    >
-      {/* Scope-isolated styles to handle Bootstrap backdrop layout properly */}
+    <div className="container-fluid p-4" style={{background:"#f8fafc",minHeight:"100vh"}}>
       <style>{`
-        .modal-backdrop {
-          display: none !important;
+        .overlay{
+          position:fixed; inset:0;
+          background:rgba(15,23,42,.35);
+          backdrop-filter:blur(8px);
+          -webkit-backdrop-filter:blur(8px);
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          z-index:2000;
         }
+        .modal-box{
+          width:min(900px,95vw);
+          background:#fff;
+          border-radius:18px;
+          box-shadow:0 20px 60px rgba(0,0,0,.25);
+          max-height:90vh;
+          overflow:auto;
+          position:relative;
+        }
+        .close-btn{
+          position:absolute;
+          top:15px;
+          right:18px;
+          width:40px;
+          height:40px;
+          border:none;
+          border-radius:50%;
+          background:#f1f5f9;
+          color:#334155;
+          font-size:24px;
+          font-weight:bold;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          cursor:pointer;
+          z-index:9999;
+          transition:all .2s ease;
+}
 
-        body.modal-open {
-          overflow: auto !important;
-          padding-right: 0 !important;
-        }
+          .close-btn:hover{
+            background:#ef4444;
+            color:#fff;
+            
+}
       `}</style>
 
-      {/* Programmatic Hidden Trigger for Edit Actions */}
-      <button
-        id="hiddenSectionModalTrigger"
-        className="d-none"
-        data-bs-toggle="modal"
-        data-bs-target="#sectionModal"
-        data-bs-backdrop="false"
-      ></button>
-
-      {/* Dashboard Top Header Bar */}
-      <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-        <div>
-          <h1 className="fw-bold text-dark mb-1">
-            Section Management Dashboard
-          </h1>
-
-          <p className="text-muted mb-0">
-            Configure system-wide student cohorts and manage active academic
-            sections.
-          </p>
-        </div>
-
-        <button
-          className="btn btn-primary px-4 py-2 fw-bold shadow-sm rounded-3"
-          data-bs-toggle="modal"
-          data-bs-target="#sectionModal"
-          data-bs-backdrop="false"
-          onClick={handleAddSectionClick}
-        >
-          ➕ Add Section
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2>Section Management Dashboard</h2>
+        <button className="btn btn-primary" onClick={handleAddSectionClick}>
+          + Add Section
         </button>
       </div>
 
-      {/* Main Table Content Container Card */}
-      <div className="card border-0 shadow-sm rounded-3">
+      <div className="card shadow-sm">
         <div className="card-body">
+          <SectionTable
+            refresh={refreshTrigger}
+            onEdit={handleEditSignal}
+          />
+        </div>
+      </div>
 
-          <h3 className="fw-bold text-dark fs-5 mb-3">
-            Registered Student Sections
-          </h3>
-
-          <div className="table-responsive">
-            {/* Table receives refresh trigger to re-fetch SectionResponseDTO arrays */}
-            <SectionTable
-              onEdit={handleEditSignal}
-              refresh={refreshTrigger}
+      {showModal && (
+        <div className="overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setShowModal(false)}>
+              aria-label="Close"
+              ×
+              
+            </button>
+            <SectionForm
+              selectedSectionData={selectedSection}
+              onUpdateComplete={handleFormSubmissionComplete}
             />
           </div>
-
         </div>
-      </div>
-
-      {/* Standard Popup Bootstrap Modal */}
-      <div
-        className="modal fade"
-        id="sectionModal"
-        tabIndex="-1"
-        data-bs-backdrop="false"
-        aria-labelledby="sectionModalLabel"
-        aria-hidden="true"
-      >
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content border-0 shadow rounded-3">
-
-            <div className="modal-header border-0">
-              <button
-                id="sectionModalCloseButton"
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-                onClick={() => setSelectedSection(null)}
-              ></button>
-            </div>
-
-            <div className="modal-body pt-0">
-              {/* Form processes DTO mapping dynamically on change operations */}
-              <SectionForm
-                selectedSectionData={selectedSection}
-                onUpdateComplete={handleFormSubmissionComplete}
-              />
-            </div>
-
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
-
-export default Section;

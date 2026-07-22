@@ -1,102 +1,160 @@
 /* ==========================================
-   Bootstrap Modal
+   Background Overlay
 ========================================== */
 
-.modal-dialog {
-    max-width: 900px;
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 30px;
+  z-index: 9999;
 }
 
-.modal-content {
-    border: none;
-    border-radius: 18px;
-    box-shadow: 0 15px 40px rgba(0,0,0,.15);
+/* ==========================================
+   Modal Container
+========================================== */
 
-    max-height: 90vh;
-    overflow: hidden;
+.course-modal {
+  width: 100%;
+  max-width: 1000px;
+  height: 90vh;
+
+  background: #fff;
+
+  border-radius: 20px;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
 }
 
 /* ==========================================
    Header
 ========================================== */
 
-.modal-header{
-    position: relative;
+.modal-header {
+  position: relative;
 
-    display:flex;
-    justify-content:center;
-    align-items:center;
+  flex-shrink: 0;
 
-    padding:30px 36px;
+  padding: 28px;
 
-    background:#ffffff;
+  border-bottom: 1px solid #e5e7eb;
 
-    border-bottom:1px solid #edf2f7;
+  text-align: center;
+
+  background: #fff;
 }
 
-.modal-header .text-center{
-    width:100%;
+.modal-title h2 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  color: #111827;
 }
 
-.modal-header h2{
-    font-size:32px;
-    font-weight:700;
-    color:#111827;
-    margin-bottom:6px;
-}
-
-.modal-header p{
-    font-size:15px;
-    color:#6b7280;
-    margin:0;
-}
-
-.modal-header .btn-close{
-    position:absolute;
-    right:24px;
-    top:24px;
+.modal-title p {
+  margin-top: 8px;
+  color: #6b7280;
+  font-size: 15px;
 }
 
 /* ==========================================
-   Scrollable Body
+   Close Button
 ========================================== */
 
-.modal-body{
-    padding:30px;
-    overflow-y:auto;
-    max-height:65vh;
+.close-btn {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+
+  width: 40px;
+  height: 40px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: #f3f4f6;
+
+  font-size: 28px;
+  cursor: pointer;
+
+  transition: .3s;
 }
 
-.modal-body::-webkit-scrollbar{
-    width:8px;
+.close-btn:hover {
+  background: #ef4444;
+  color: #fff;
 }
 
-.modal-body::-webkit-scrollbar-thumb{
-    background:#cbd5e1;
-    border-radius:10px;
+/* ==========================================
+   Body
+========================================== */
+
+.modal-body {
+  height: calc(90vh);
+  overflow-y: auto;
+  padding: 25px;
+  min-height: 0;
+}
+.modal-body::-webkit-scrollbar {
+  width: 8px;
 }
 
-.modal-body::-webkit-scrollbar-thumb:hover{
-    background:#94a3b8;
+.modal-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
 }
 
 /* ==========================================
    Cards
 ========================================== */
 
-.card{
-    border:none;
-    border-radius:15px;
-    margin-bottom:25px;
+.card-box {
+  background: #fff;
+
+  border-radius: 15px;
+
+  padding: 25px;
+
+  margin-bottom: 25px;
+
+  box-shadow: 0 5px 18px rgba(0,0,0,.06);
 }
 
-.card-header{
-    background:#ffffff;
-    border-bottom:1px solid #edf2f7;
-    font-weight:600;
+.card-box h4 {
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 700;
 }
 
-.card-body{
-    padding:25px;
+/* ==========================================
+   Form Grid
+========================================== */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #374151;
 }
 
 /* ==========================================
@@ -104,66 +162,114 @@
 ========================================== */
 
 .form-control,
-.form-select{
-    border-radius:10px;
-    height:48px;
+.form-select {
+  height: 48px;
+
+  border-radius: 10px;
+
+  border: 1px solid #d1d5db;
+}
+
+textarea.form-control {
+  min-height: 220px;
+  resize: vertical;
+  padding-top: 12px;
 }
 
 .form-control:focus,
-.form-select:focus{
-    box-shadow:none;
-    border-color:#2563eb;
-}
-
-/* ==========================================
-   Textarea
-========================================== */
-
-textarea.form-control{
-
-    width:100%;
-
-    min-height:240px;
-
-    resize:vertical;
-}
-
-/* ==========================================
-   File Upload
-========================================== */
-
-input[type="file"]{
-    height:auto;
-    padding:10px;
+.form-select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.15);
 }
 
 /* ==========================================
    Footer
 ========================================== */
 
-.modal-footer{
-    padding:20px 30px;
-    border-top:1px solid #edf2f7;
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+
+  padding: 20px 30px;
+
+  background: #fff;
+
+  border-top: 1px solid #e5e7eb;
+
+  flex-shrink: 0;
 }
 
-.modal-footer .btn{
-    min-width:130px;
-    height:46px;
-    border-radius:10px;
+/* ==========================================
+   Buttons
+========================================== */
+
+.btn {
+  min-width: 140px;
+  height: 46px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background: #fff;
+  border: 1px solid #d1d5db;
+}
+
+.cancel-btn:hover {
+  background: #f3f4f6;
+}
+
+.save-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+}
+
+.save-btn:hover {
+  background: #1d4ed8;
+}
+
+/* ==========================================
+   Animation
+========================================== */
+
+@keyframes popup {
+
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
 }
 
 /* ==========================================
    Responsive
 ========================================== */
 
-@media (max-width:768px){
+@media (max-width:768px) {
 
-    .modal-dialog{
-        margin:10px;
-    }
+  .course-modal {
+    width: 95%;
+    height: 95vh;
+  }
 
-    .modal-body{
-        max-height:60vh;
-    }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
 
 }

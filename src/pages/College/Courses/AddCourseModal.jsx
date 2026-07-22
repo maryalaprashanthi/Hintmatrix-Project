@@ -1,182 +1,105 @@
 import React from "react";
+import "./AddCourseModal.css";
 
-function AddCourseModal() {
+function AddCourseModal({ show, onClose }) {
+  if (!show) return null;
+
   return (
-    <div
-      className="modal fade"
-      id="addCourseModal"
-      tabIndex="-1"
-      aria-labelledby="addCourseModalLabel"
-      aria-hidden="true"
-    >
-      <div className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-        <div className="modal-content border-0 shadow rounded-4">
+    <div className="modal-overlay">
+      <div className="course-modal">
 
-          {/* Header */}
-          <div className="modal-header">
-            <div className="text-center w-100">
-              <h2
-                id="addCourseModalLabel"
-                className="fw-bold mb-2"
-              >
-                Add New Course
-              </h2>
-
-              <p className="text-muted mb-0">
-                Create a new course for HintMatrix students.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              className="btn-close position-absolute top-0 end-0 m-4"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+        {/* Header */}
+        <div className="modal-header">
+          <div className="modal-title">
+            <h2>Add New Course</h2>
+            <p>Create a new course for HintMatrix students.</p>
           </div>
 
-          {/* Body */}
-          <div className="modal-body">
+          <button className="close-btn" onClick={onClose}>
+            &times;
+          </button>
+        </div>
 
-            {/* Course Information */}
-            <div className="card border-0 shadow-sm mb-4">
+        {/* Body */}
+        <div className="modal-body">
 
-              <div className="card-header bg-white">
-                <h5 className="fw-bold mb-0">
-                  📚 Course Information
-                </h5>
-              </div>
+          <div className="card-box">
+            <h4>📚 Course Information</h4>
 
-              <div className="card-body">
+            <div className="form-grid">
 
-                <div className="row">
-
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label">
-                      Course Name
-                    </label>
-
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Enter course name"
-                    />
-                  </div>
-
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label">
-                      Category
-                    </label>
-
-                    <select className="form-select">
-                      <option>Select Category</option>
-                      <option>Degree</option>
-                      <option>Intermediate</option>
-                      <option>Professional</option>
-                    </select>
-                  </div>
-
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label">
-                      Level
-                    </label>
-
-                    <select className="form-select">
-                      <option>Select Level</option>
-                      <option>Beginner</option>
-                      <option>Intermediate</option>
-                      <option>Advanced</option>
-                    </select>
-                  </div>
-
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label">
-                      Duration
-                    </label>
-
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Ex : 3 Months"
-                    />
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-            {/* Thumbnail */}
-
-            <div className="card border-0 shadow-sm mb-4">
-
-              <div className="card-header bg-white">
-                <h5 className="fw-bold mb-0">
-                  🖼 Course Thumbnail
-                </h5>
-              </div>
-
-              <div className="card-body">
-
+              <div className="form-group">
+                <label>Course Name</label>
                 <input
-                  type="file"
+                  type="text"
                   className="form-control"
+                  placeholder="Enter Course Name"
                 />
-
               </div>
 
-            </div>
-
-            {/* Description */}
-
-            <div className="card border-0 shadow-sm">
-
-              <div className="card-header bg-white">
-                <h5 className="fw-bold mb-0">
-                  📝 Course Description
-                </h5>
+              <div className="form-group">
+                <label>Category</label>
+                <select className="form-select">
+                  <option>Commerce</option>
+                  <option>Professional</option>
+                  <option>School</option>
+                </select>
               </div>
 
-              <div className="card-body">
+              <div className="form-group">
+                <label>Level</label>
+                <select className="form-select">
+                  <option>Beginner</option>
+                  <option>Intermediate</option>
+                  <option>Advanced</option>
+                </select>
+              </div>
 
-                <textarea
+              <div className="form-group">
+                <label>Duration</label>
+                <input
+                  type="text"
                   className="form-control"
-                  rows="8"
-                  placeholder="Write course description..."
-                ></textarea>
-
+                  placeholder="3 Months"
+                />
               </div>
 
             </div>
-
           </div>
 
-          {/* Footer */}
+          <div className="card-box">
+            <h4>🖼 Course Thumbnail</h4>
+            <input type="file" className="form-control" />
+          </div>
 
-          <div className="modal-footer">
+          <div className="card-box">
+            <h4>📝 Course Description</h4>
 
-            <button
-              type="button"
-              className="btn btn-outline-secondary"
-              data-bs-dismiss="modal"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="button"
-              className="btn btn-primary"
-            >
-              Save Course
-            </button>
-
+            <textarea
+              rows="7"
+              className="form-control"
+              placeholder="Write course description..."
+            ></textarea>
           </div>
 
         </div>
+
+        {/* Footer */}
+        <div className="modal-footer">
+
+          <button className="btn cancel-btn" onClick={onClose}>
+            Cancel
+          </button>
+
+          <button className="btn save-btn">
+            Save Course
+          </button>
+
+        </div>
+
       </div>
     </div>
   );
 }
 
-export default AddCourseModal;  
+export default AddCourseModal;
