@@ -1,109 +1,239 @@
+/* =====================================
+   NAVBAR
+===================================== */
+
 .navbar{
-    position:fixed;
+    position:absolute;
     top:0;
     left:0;
-    width:100%;
-    height:82px;
+    right:0;
 
-    background:#fff;
+    height:95px;
+
+    background:#ffffff;
+    border-bottom:1px solid #e5e7eb;
 
     display:flex;
     align-items:center;
     justify-content:space-between;
 
-    border-bottom:1px solid #e5e7eb;
+    padding:0 32px;
 
-    z-index:1000;
+    z-index:100;
 }
 
+/* =====================================
+   LEFT
+===================================== */
+
 .navbar-left{
-    width:270px;
-    height:82px;
+    display:none;
+}
+
+.menu-btn{
+    width:42px;
+    height:42px;
+
+    border:none;
+    background:transparent;
 
     display:flex;
     align-items:center;
     justify-content:center;
 
-    border-right:1px solid #e5e7eb;
+    cursor:pointer;
 }
 
-.logo{
-    width:170px;
+.menu-btn svg{
+    font-size:24px;
+    color:#475569;
 }
+
+/* =====================================
+   SEARCH
+===================================== */
 
 .navbar-center{
     flex:1;
+
     display:flex;
     justify-content:center;
+    align-items:center;
+
+    margin-right:40px;
 }
 
 .search-box{
-    width:520px;
-    height:44px;
+    width:100%;
+    max-width:650px;
+    height:48px;
 
     display:flex;
     align-items:center;
 
-    padding:0 18px;
+    background:#f8fafc;
 
-    border:1px solid #dbe4f0;
-    border-radius:999px;
+    border:1px solid #e2e8f0;
+    border-radius:12px;
+
+    padding:0 16px;
+}
+
+.search-icon{
+    font-size:20px;
+    color:#64748b;
+    margin-right:12px;
 }
 
 .search-box input{
     flex:1;
+
     border:none;
     outline:none;
-    margin-left:10px;
+
+    background:transparent;
+
+    font-size:15px;
+    color:#0f172a;
 }
 
-.search-icon{
-    color:#94a3b8;
-}
+/* =====================================
+   RIGHT
+===================================== */
 
 .navbar-right{
-    width:270px;
-
     display:flex;
-    justify-content:flex-end;
     align-items:center;
-
-    gap:25px;
-    padding-right:30px;
+    gap:22px;
 }
 
-.notification{
+.nav-icon{
+    width:42px;
+    height:42px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:50%;
+    cursor:pointer;
+
+    color:#475569;
+}
+
+.nav-icon:hover{
+    background:#f1f5f9;
+}
+
+.nav-icon svg{
+    font-size:22px;
+}
+
+/* =====================================
+   PROFILE
+===================================== */
+
+.profile{
     position:relative;
 }
 
-.badge{
+.profile-trigger{
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    cursor:pointer;
+}
+
+.profile-trigger img{
+    width:44px;
+    height:44px;
+
+    border-radius:50%;
+    object-fit:cover;
+}
+
+.profile-info{
+    display:flex;
+    flex-direction:column;
+}
+
+.profile-name{
+    font-size:15px;
+    font-weight:600;
+    color:#0f172a;
+}
+
+.profile-role{
+    font-size:12px;
+    color:#64748b;
+}
+
+.profile-dropdown{
     position:absolute;
-    top:-6px;
-    right:-8px;
+    top:62px;
+    right:0;
 
-    width:18px;
-    height:18px;
+    width:220px;
 
-    border-radius:50%;
+    background:#ffffff;
 
-    background:#7c3aed;
-    color:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:12px;
 
-    display:flex;
-    justify-content:center;
-    align-items:center;
+    padding:8px;
 
-    font-size:10px;
+    box-shadow:0 12px 30px rgba(0,0,0,.12);
 }
 
-.profile{
+.profile-dropdown button{
+    width:100%;
+
     display:flex;
     align-items:center;
-    gap:10px;
+    gap:12px;
+
+    padding:12px;
+
+    border:none;
+    border-radius:8px;
+
+    background:none;
+
+    cursor:pointer;
+
+    font-size:14px;
 }
 
-.profile img{
-    width:42px;
-    height:42px;
-    border-radius:50%;
+.profile-dropdown button:hover{
+    background:#f1f5f9;
+}
+
+.logout-btn{
+    color:#dc2626;
+}
+
+/* =====================================
+   MOBILE
+===================================== */
+
+@media (max-width:768px){
+
+    .navbar{
+        left:0;
+        right:0;
+        padding:0 20px;
+    }
+
+    .navbar-left{
+        display:block;
+    }
+
+    .navbar-center{
+        display:none;
+    }
+
+    .profile-info{
+        display:none;
+    }
 }
