@@ -72,27 +72,25 @@
 ========================================== */
 
 .close-btn {
-  position: absolute;
-  top: 18px;
-  right: 18px;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: #f3f4f6;
 
-  width: 40px;
-  height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  border: none;
-  border-radius: 50%;
-
-  background: #f3f4f6;
-
-  font-size: 28px;
-  cursor: pointer;
-
-  transition: .3s;
+    font-size: 30px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .close-btn:hover {
-  background: #ef4444;
-  color: #fff;
+    background: #ef4444;
+    color: #fff;
 }
 
 /* ==========================================
