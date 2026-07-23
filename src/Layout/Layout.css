@@ -1,6 +1,6 @@
-/* ================================
+/* ==========================================
    GLOBAL RESET
-================================ */
+========================================== */
 
 *,
 *::before,
@@ -10,109 +10,75 @@
     box-sizing:border-box;
 }
 
-
 html,
 body,
 #root{
     width:100%;
-    min-height:100%;
+    height:100%;
 }
-
 
 body{
-
-    font-family:Inter, sans-serif;
-
+    font-family:Inter,sans-serif;
     background:#f8fafc;
-
-    overflow-x:hidden;
-
+    overflow:hidden;
 }
 
-
-
-/* ================================
+/* ==========================================
    APP LAYOUT
-================================ */
-
+========================================== */
 
 .app-layout{
-
     width:100%;
-
-    min-height:100vh;
-
+    height:100vh;
+    overflow:hidden;
 }
 
-
-
-/* ================================
-   MAIN AREA
-================================ */
-
+/* ==========================================
+   MAIN LAYOUT
+========================================== */
 
 .main-layout{
+    position:fixed;
+    top:0;
+    left:280px;
+    right:0;
+    bottom:0;
 
-    margin-left:280px;
-
-    width:calc(100% - 280px);
-
-    min-height:100vh;
-
+    overflow:hidden;
 }
 
-
-
-/* ================================
+/* ==========================================
    PAGE CONTENT
-================================ */
-
+========================================== */
 
 .page-content{
+    position:absolute;
+    top:95px;
+    left:0;
+    right:0;
+    bottom:0;
 
-    width:100%;
+    overflow-y:auto;
+    overflow-x:hidden;
 
-    min-height:100vh;
+    padding:20px 30px 30px;
 
-    padding:30px;
-
-    padding-top:120px;
-
+    background:#f8fafc;
 }
 
-
-
-/* ================================
+/* ==========================================
    MOBILE
-================================ */
+========================================== */
 
+@media (max-width:768px){
 
-@media(max-width:1024px){
+    .main-layout{
+        left:0;
+    }
 
-
-.main-layout{
-
-    margin-left:0;
-
-    width:100%;
-
-}
-
-
-}
-
-
-
-@media(max-width:768px){
-
-
-.page-content{
-
-    padding:20px;
-
-    padding-top:110px;
-
-}
-
+    .page-content{
+        padding:20px;
+        width:100;
+    }
 
 }

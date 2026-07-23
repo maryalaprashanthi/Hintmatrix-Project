@@ -8,10 +8,10 @@ import UpcomingTests from "../components/UpcomingTests/UpcomingTests";
 
 function Dashboard() {
   return (
-    <div className="dashboard">
+    <div className="dashboard container-fluid">
 
       {/* Welcome */}
-      <div className="dashboard-header">
+      <div className="dashboard-header mb-4">
         <div>
           <h1>Welcome to DashBoard👋</h1>
           <p>Welcome back! Here's your learning overview.</p>
@@ -19,38 +19,77 @@ function Dashboard() {
       </div>
 
       {/* Institution Statistics */}
-      <section className="stats-section">
-        <StatsCard type="college" />
-        <StatsCard type="branch" />
-        <StatsCard type="sections" />
-        <StatsCard type="course" />
-      </section>
+      <div className="row g-4 mb-4">
+        <div className="col-12 col-sm-6 col-lg-3">
+          <StatsCard type="college" />
+        </div>
+
+        <div className="col-12 col-sm-6 col-lg-3">
+          <StatsCard type="branch" />
+        </div>
+
+        <div className="col-12 col-sm-6 col-lg-3">
+          <StatsCard type="sections" />
+        </div>
+
+        <div className="col-12 col-sm-6 col-lg-3">
+          <StatsCard type="course" />
+        </div>
+      </div>
 
       {/* Learning Statistics */}
-      <section className="stats-section">
-        <StatsCard type="courses" />
-        <StatsCard type="practice" />
-        <StatsCard type="completed" />
-        <StatsCard type="pending" />
-      </section>
+      <div className="row g-4 mb-4">
+        <div className="col-12 col-sm-6 col-lg-3">
+          <StatsCard type="courses" />
+        </div>
+
+        <div className="col-12 col-sm-6 col-lg-3">
+          <StatsCard type="practice" />
+        </div>
+
+        <div className="col-12 col-sm-6 col-lg-3">
+          <StatsCard type="completed" />
+        </div>
+
+        <div className="col-12 col-sm-6 col-lg-3">
+          <StatsCard type="pending" />
+        </div>
+      </div>
 
       {/* Rank & Streak */}
-      <section className="rank-section">
-        <StatsCard type="rank" />
-        <StatsCard type="streak" />
-      </section>
+      <div className="row g-4 mb-4">
+        <div className="col-12 col-lg-6">
+          <StatsCard type="rank" />
+        </div>
+
+        <div className="col-12 col-lg-6">
+          <StatsCard type="streak" />
+        </div>
+      </div>
 
       {/* Bottom Section */}
-      <section className="bottom-section">
-        <RecentActivity />
-        <TodayPractice />
-        <LeaderBoard />
-      </section>
+      <div className="row g-4 mb-4">
+
+        <div className="col-12 col-xl-6">
+          <RecentActivity />
+        </div>
+
+        <div className="col-12 col-md-6 col-xl-3">
+          <TodayPractice />
+        </div>
+
+        <div className="col-12 col-md-6 col-xl-3">
+          <LeaderBoard />
+        </div>
+
+      </div>
 
       {/* Upcoming Tests */}
-      <section className="upcoming-section">
-        <UpcomingTests />
-      </section>
+      <div className="row">
+        <div className="col-12">
+          <UpcomingTests />
+        </div>
+      </div>
 
     </div>
   );

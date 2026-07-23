@@ -233,3 +233,21 @@
     border-top:1px solid #e5e7eb;
 
 }
+
+/* =====================================
+   MOBILE RESPONSIVE
+===================================== */
+
+@media (max-width:768px){
+
+    .sidebar{
+        left:-280px;
+        transition:left .3s ease;
+        box-shadow:0 10px 30px rgba(0,0,0,.15);
+    }
+
+    .sidebar.show{
+        left:0;
+    }
+
+}

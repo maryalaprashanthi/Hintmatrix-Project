@@ -1,62 +1,141 @@
-.stats-card {
-  background: #ffffff;
-  border-radius: 20px;
-  padding: 24px;
-  min-height: 155px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
-  transition: 0.3s ease;
+/* ==========================================
+   STATS CARD
+========================================== */
+
+.stats-card{
+    background:#ffffff;
+    border-radius:20px;
+    padding:24px;
+    min-height:170px;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+
+    box-shadow:0 8px 24px rgba(15,23,42,.05);
+    transition:.3s ease;
+
+    width:100%;
 }
 
-.stats-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+.stats-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 12px 32px rgba(15,23,42,.08);
 }
 
-.stats-top {
-  display: flex;
-  align-items: center;
-  gap: 18px;
+/* ==========================================
+   TOP
+========================================== */
+
+.stats-top{
+    display:flex;
+    align-items:center;
+    gap:18px;
 }
 
-.stats-icon {
-  width: 62px;
-  height: 62px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26px;
+.stats-icon{
+    width:62px;
+    height:62px;
+
+    border-radius:50%;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-size:26px;
+
+    flex-shrink:0;
 }
 
-.stats-info h4 {
-  font-size: 18px;
-  color: #1f2937;
-  margin-bottom: 6px;
+.stats-info{
+    flex:1;
+    min-width:0;
 }
 
-.stats-info h2 {
-  font-size: 42px;
-  font-weight: 700;
+.stats-info h4{
+    font-size:18px;
+    color:#1f2937;
+    margin-bottom:6px;
+    font-weight:600;
 }
 
-.stats-card p {
-  color: #6b7280;
-  font-size: 15px;
-  margin-top: 10px;
+.stats-info h2{
+    font-size:42px;
+    font-weight:700;
+    line-height:1.1;
 }
 
-.progress {
-  width: 100%;
-  height: 10px;
-  background: #edf2f7;
-  border-radius: 999px;
-  overflow: hidden;
+.stats-card p{
+    color:#6b7280;
+    font-size:15px;
+    margin-top:14px;
 }
 
-.progress-fill {
-  height: 100%;
-  border-radius: 999px;
+/* ==========================================
+   PROGRESS
+========================================== */
+
+.progress{
+    width:100%;
+    height:10px;
+    background:#edf2f7;
+    border-radius:999px;
+    overflow:hidden;
+}
+
+.progress-fill{
+    height:100%;
+    border-radius:999px;
+}
+
+/* ==========================================
+   TABLET
+========================================== */
+
+@media (max-width:992px){
+
+    .stats-card{
+        min-height:160px;
+    }
+
+    .stats-info h2{
+        font-size:36px;
+    }
+
+}
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width:768px){
+
+    .stats-card{
+        padding:20px;
+        min-height:auto;
+    }
+
+    .stats-top{
+        gap:15px;
+    }
+
+    .stats-icon{
+        width:55px;
+        height:55px;
+        font-size:22px;
+    }
+
+    .stats-info h4{
+        font-size:16px;
+    }
+
+    .stats-info h2{
+        font-size:32px;
+    }
+
+    .stats-card p{
+        font-size:14px;
+    }
+
 }
