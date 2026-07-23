@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import {
@@ -8,15 +8,20 @@ import {
 } from "react-icons/fa";
 
 import "./AddTableNameModal.css";
+import toast from "react-hot-toast";
 
-function AddTableNameModal({ show, onClose, onSave }) {
+function AddTableNameModal({ show, onClose, onSave,Inputname }) {
   const [name, setName] = useState("");
+
+  useEffect(()=>{
+    setName(Inputname||"");
+  },[Inputname]);
 
   if (!show) return null;
 
   const handleSave = () => {
     if (!name.trim()) {
-      alert("Please enter Table Name.");
+      toast.error("Please enter Table Name.");
       return;
     }
 
@@ -39,8 +44,8 @@ function AddTableNameModal({ show, onClose, onSave }) {
         <div className="modal-header">
 
           <div>
-            <h2>Add Table Name</h2>
-            <p>Create a new table name.</p>
+            <h2>{Inputname==""?"Add Table name":"Update table name"}</h2>
+            <p>{Inputname==""?"Create a new table name.":"Update existing table"}</p>
           </div>
 
           <button
@@ -107,7 +112,7 @@ function AddTableNameModal({ show, onClose, onSave }) {
             onClick={handleSave}
           >
             <FaSave className="me-2" />
-            Save
+            {Inputname==""?"Save":"Update table name"}
           </button>
 
         </div>
