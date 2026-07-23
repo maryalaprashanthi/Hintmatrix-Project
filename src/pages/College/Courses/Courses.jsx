@@ -132,12 +132,12 @@ function Courses() {
         </div>
 
         <button
-          className=" add-course-btn"
-          onClick={() => setShowModal(true)}
-         >
-         <FaPlus />
-         <span>Add Course</span>
-        </button>
+  className="btn btn-primary px-4"
+  onClick={() => setShowModal(true)}
+>
+  
+  + Add Course
+</button>
 
       </div>
 

@@ -15,9 +15,14 @@ function AddCourseModal({ show, onClose }) {
             <p>Create a new course for HintMatrix students.</p>
           </div>
 
-          <button className="close-btn" onClick={onClose}>
-            &times;
-          </button>
+            <button
+  type="button"
+  className="close-btn"
+  onClick={onClose}
+>
+  X
+</button>
+    
         </div>
 
         {/* Body */}
