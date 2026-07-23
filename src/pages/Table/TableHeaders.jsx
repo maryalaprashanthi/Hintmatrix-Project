@@ -14,30 +14,26 @@ function TableHeaders() {
   const [name, setName] = useState("");
 
   const handleSave = async (newTableHeader) => {
-    if(id==null)
-    {
-      try {
-          const response = await TableHeaderService.create(newTableHeader);
-          toast.success("Data saved successfully");
+    try {
+          if(id==null)
+          {
+            const response = await TableHeaderService.create(newTableHeader);
+            toast.success("Data saved successfully");
+          }
+          else
+          {
+            const reposnse = await TableHeaderService.update(id, newTableHeader);
+            const data = await reposnse.data;
+            toast.success("Data updated successfully");
+          }
+          setId(null);
+          setName("");
+          setShowModal(false);
           loadTableHeaders();
         } catch (error) {
-          console.log("Error: ",error);
+          console.error("Error: ", error);
           toast.error(error.message);
         }
-    }
-    else
-    {
-      try {
-          const response = await TableHeaderService.update(id,newTableHeader);
-          toast.success("Data saved successfully");
-          loadTableHeaders();
-        } catch (error) {
-          console.log("Error: ",error);
-          toast.error(error.message);
-        }
-    }
-    setId(null);
-    setName("")
   };
 
   const handleDelete = async (id) => {
@@ -173,85 +169,6 @@ function TableHeaders() {
 
       </div>
 
-
-
-
-
-      {/* Table */}
-
-      {/* {<div className="card shadow-sm border-0">
-
-
-        <div className="card-body">
-
-
-          <table className="table table-bordered table-hover align-middle">
-
-
-            <thead className="table-light">
-
-              <tr>
-
-                <th>
-                  Header Name
-                </th>
-
-              </tr>
-
-
-            </thead>
-
-
-
-
-            <tbody>
-
-
-              {tableHeaders.length === 0 ? (
-
-                <tr>
-
-                  <td
-                    colSpan="1"
-                    className="text-center"
-                  >
-                    No Table Headers Added
-                  </td>
-
-                </tr>
-
-
-              ) : (
-
-
-                tableHeaders.map((header, index) => (
-
-                  <tr key={index}>
-
-                    <td>
-                      {header.name}
-                    </td>
-
-                  </tr>
-
-
-                ))
-
-
-              )}
-
-
-
-            </tbody>
-
-
-          </table>
-
-
-        </div>
-
-
-      </div>} */}
 
     <DataGrid rowData={tableHeaders} columnDefs={columnDefs} />
 

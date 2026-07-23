@@ -11,28 +11,28 @@ function TableNames() {
   const [id, setId] = useState(null);
   const [name, setName] = useState("");
   const handleSave = async (newTableName) => {
-    if (id == null) {
-      try {
+    try {
+      if(id==null)
+      {
+        console.log("I got here");
+        
         const response = await TableNameService.create(newTableName);
         toast.success("Data saved successfully");
-        loadTableNames();
-      } catch (error) {
-        console.log("Error: ", error);
-        toast.error(error.message);
       }
-    } else {
-      try {
+      else
+      {
         const reposnse = await TableNameService.update(id, newTableName);
         const data = await reposnse.data;
         toast.success("Data updated successfully");
-        loadTableNames();
-      } catch (error) {
-        console.error("Error: ", error);
-        toast.error(error.message);
       }
+      setId(null);
+      setName("");
+      setShowModal(false);
+      loadTableNames();
+    } catch (error) {
+      console.error("Error: ", error);
+      toast.error(error.message);
     }
-    setId(null);
-    setName(null);
   };
 
   const handleDelete = async (id) => {
@@ -146,56 +146,13 @@ function TableNames() {
           className="btn btn-primary"
           onClick={() => {
             setId(null);
-            setName(null);
+            setName("");
             setShowModal(true);
           }}
         >
           + Add Table Name
         </button>
       </div>
-
-      {/* Table */}
-      {/* <div className="card shadow-sm border-0">
-        <div className="card-body">
-
-          <table className="table table-bordered table-hover align-middle">
-
-            <thead className="table-light">
-              <tr>
-                <th>Table Name</th>
-                <th>Table name id</th>
-                <th>active row</th>
-                <th>created at</th>
-                <th>updated at</th>
-              </tr>
-            </thead>
-
-            <tbody>
-
-              {tableNames.length === 0 ? (
-                <tr>
-                  <td className="text-center">
-                    No Table Names Added
-                  </td>
-                </tr>
-              ) : (
-                tableNames.map((table, index) => (
-                  <tr key={index}>
-                    <td>{table.name}</td>
-                    <td>{table.id}</td>
-                    <td>{table.activeRow==true?"✅":"❌"}</td>
-                    <td>{table.createdAt}</td>
-                    <td>{table.updatedAt}</td>
-                  </tr>
-                ))
-              )}
-
-            </tbody>
-
-          </table>
-
-        </div>
-      </div> */}
 
       <DataGrid rowData={tableNames} columnDefs={columnDefs} />
 
@@ -204,7 +161,7 @@ function TableNames() {
         onClose={() => {
           setShowModal(false);
           setId(null);
-          setName(null);
+          setName("");
         }}
         onSave={handleSave}
         Inputname={name}

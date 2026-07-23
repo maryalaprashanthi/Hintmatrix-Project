@@ -19,7 +19,7 @@ function AddTableNameModal({ show, onClose, onSave,Inputname }) {
 
   if (!show) return null;
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) {
       toast.error("Please enter Table Name.");
       return;
@@ -29,10 +29,7 @@ function AddTableNameModal({ show, onClose, onSave,Inputname }) {
       name,
     };
 
-    onSave(newTableName);
-
-    setName("");
-    onClose();
+    await onSave(newTableName);
   };
 
   return createPortal(
@@ -112,7 +109,7 @@ function AddTableNameModal({ show, onClose, onSave,Inputname }) {
             onClick={handleSave}
           >
             <FaSave className="me-2" />
-            {Inputname==""?"Save":"Update table name"}
+            {Inputname==""?"Save":"Update"}
           </button>
 
         </div>

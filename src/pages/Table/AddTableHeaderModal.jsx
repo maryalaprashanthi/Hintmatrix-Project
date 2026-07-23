@@ -37,11 +37,6 @@ function AddTableHeaderModal({ show, onClose, onSave,Inputdata }) {
 
     onSave(newTableHeader);
 
-
-    setName("");
-
-    onClose();
-
   };
 
 
@@ -170,7 +165,7 @@ function AddTableHeaderModal({ show, onClose, onSave,Inputdata }) {
 
             <FaSave className="me-2" />
 
-            {Inputdata==""?"Save":"Update table headers"}
+            {Inputdata==""?"Save":"Update"}
 
           </button>
 

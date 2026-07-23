@@ -111,29 +111,7 @@ function TableAttributes() {
       },
     },
   ];
-  // const handleSave = async (newAttribute) => {
   
-  //   if (id!=null) {
-  //     try {
-  //       const response = await TableAttributeService.update(id,newAttribute);
-  //       toast.success("Data updated successfully");
-  //     } catch (error) {
-  //       console.error("Error: ", error);
-  //       toast.error(error.message);
-  //     }
-  //   } else {
-  //     try {
-  //       const response = await TableAttributeService.create(newAttribute);
-  //       toast.success("Data saved successfully");
-  //     } catch (error) {
-  //       console.error("Error: ", error);
-  //       toast.error(error.message);
-  //     }
-  //   }
-  //   setEditingAttribute(null);
-  //   setId(null);
-  //   loadTableAttributes();
-  // };
   const handleSave = async (newAttribute) => {
   try {
     if (id != null) {
