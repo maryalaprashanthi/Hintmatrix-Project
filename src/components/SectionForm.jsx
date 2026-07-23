@@ -1,9 +1,21 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import SectionService from "../services/SectionService";
-import BranchService from "../services/BranchService"; 
+import BranchService from "../services/BranchService";
 
-function SectionForm({ selectedSectionData, onUpdateComplete }) {
+import {
+  FaCodeBranch,
+  FaLayerGroup,
+  FaAlignLeft,
+  FaSave
+} from "react-icons/fa";
+
+function SectionForm({
+  selectedSectionData,
+  onUpdateComplete,
+  onCancel
+}) {
+
   const emptySection = {
     sectionId: "",
     branchId: "",
@@ -14,9 +26,10 @@ function SectionForm({ selectedSectionData, onUpdateComplete }) {
   const [section, setSection] = useState(emptySection);
   const [branchesList, setBranchesList] = useState([]);
 
-  /* ==============================
-          LOAD BRANCHES
+  /* ===============================
+      LOAD BRANCHES
   =============================== */
+
   useEffect(() => {
     loadBranches();
   }, []);
@@ -30,13 +43,14 @@ function SectionForm({ selectedSectionData, onUpdateComplete }) {
         setBranchesList(response.data || []);
       })
       .catch((error) => {
-        console.error("Error retrieving dynamic branches list:", error);
+        console.error(error);
       });
   };
 
-  /* ==============================
-          EDIT DATA
+  /* ===============================
+      EDIT MODE
   =============================== */
+
   useEffect(() => {
     if (selectedSectionData) {
       setSection({
@@ -50,185 +64,246 @@ function SectionForm({ selectedSectionData, onUpdateComplete }) {
     }
   }, [selectedSectionData]);
 
-  /* ==============================
-        HANDLE CHANGE
+  /* ===============================
+      HANDLE CHANGE
   =============================== */
+
   const handleChange = (e) => {
+
     const { name, value } = e.target;
 
     if (name === "branchId") {
+
       setSection({
         ...section,
-        branchId: value === "" ? "" : Number(value),
+        branchId: value === "" ? "" : Number(value)
       });
+
       return;
     }
 
     setSection({
       ...section,
-      [name]: value,
+      [name]: value
     });
+
   };
 
-  /* ==============================
-      INLINE EDIT BRANCH
+  /* ===============================
+      SAVE / UPDATE
   =============================== */
-  const handleInlineBranchEdit = () => {
-    if (!section.branchId) {
-      alert("Please select a branch department.");
-      return;
-    }
-    alert(`Open Branch Module to edit Branch ID : ${section.branchId}`);
-  };
 
-  /* ==============================
-      INLINE DELETE BRANCH
-  =============================== */
-  const handleInlineBranchDelete = () => {
-    if (!section.branchId) {
-      alert("Please select a branch department.");
-      return;
-    }
-
-    if (window.confirm("Are you sure you want to delete this branch selection and all its sections?")) {
-      BranchService.deleteBranch(section.branchId)
-        .then(() => {
-          alert("Branch deleted successfully.");
-          loadBranches();
-          setSection({ ...section, branchId: "" });
-          if (onUpdateComplete) onUpdateComplete();
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-    }
-  };
-
-  /* ==============================
-          SAVE / UPDATE
-  =============================== */
   const saveSection = (e) => {
+
     e.preventDefault();
 
     if (!section.branchId) {
-      alert("Validation Error: Please select an associated branch path from the menu!");
+      alert("Please select a branch.");
       return;
     }
 
-    const sectionRequestDTO = {
+    const requestDTO = {
+
       branchId: section.branchId,
       sectionName: section.sectionName,
       description: section.description
+
     };
 
     if (section.sectionId) {
-      SectionService.updateSection(section.sectionId, sectionRequestDTO)
+
+      SectionService.updateSection(
+        section.sectionId,
+        requestDTO
+      )
         .then(() => {
           alert("Section Updated Successfully");
           clearForm();
         })
-        .catch((err) => {
-          console.error(err);
-        });
+        .catch(console.error);
+
     } else {
-      SectionService.saveSection(sectionRequestDTO)
+
+      SectionService.saveSection(requestDTO)
         .then(() => {
           alert("Section Saved Successfully");
           clearForm();
         })
-        .catch((err) => {
-          console.error(err);
-        });
+        .catch(console.error);
+
     }
+
   };
 
-  /* ==============================
-          CLEAR FORM
+  /* ===============================
+      CLEAR FORM
   =============================== */
+
   const clearForm = () => {
+
     setSection(emptySection);
+
     if (onUpdateComplete) {
       onUpdateComplete();
     }
+
   };
 
   return (
-    <div id="sectionModal" className="container-fluid" style={{ maxWidth: "900px", margin: "auto" }}>
-      <style>{`
-        #sectionModal { color:#212529; }
-        #sectionModal .form-control, #sectionModal .form-select { height:52px; font-size:16px; padding:12px 15px; border-radius:8px; border:1px solid #ced4da; }
-        #sectionModal .form-control:focus, #sectionModal .form-select:focus { box-shadow:none; border-color:#0d6efd; }
-        #sectionModal label { font-weight:600; color:#1f2937; }
-        .btn-inline { min-width:90px; }
-        .form-card { background:white; padding:30px; border-radius:12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-      `}</style>
 
-      <div className="form-card">
-        <h2 className="text-center fw-bold mb-4">
-          {section.sectionId ? "✏ Edit Section Details" : "👥 Add New Section"}
-        </h2>
+    <form onSubmit={saveSection}>
 
-        <form onSubmit={saveSection}>
-          
-          {/* ================= Associated Branch Department ================= */}
-          <div className="row mb-4 align-items-center">
-            <label className="col-lg-3 col-md-4 fw-semibold">
-              Associated Branch Department
-            </label>
-            <div className="col-lg-9 col-md-8">
-              <select name="branchId" value={section.branchId} onChange={handleChange} className="form-select" required>
-                <option value="">---- Select Branch ----</option>
-                {branchesList.map((branch) => (
-                  <option key={branch.branchId} value={branch.branchId}>
-                    {branch.branchName}
+      {/* Branch Information Card */}
+
+      <div className="card shadow-sm border-0 mb-4">
+
+        <div className="card-body">
+
+          <h5 className="fw-bold mb-4">
+
+            Section Information
+
+          </h5>
+
+          <div className="row g-3">
+
+            {/* Branch */}
+
+            <div className="col-md-6">
+
+              <label className="form-label fw-semibold">
+
+                Branch
+                <span className="text-danger">
+                  *
+                </span>
+
+              </label>
+
+              <div className="input-group">
+
+                <span className="input-group-text">
+
+                  <FaCodeBranch />
+
+                </span>
+
+                <select
+                  className="form-select"
+                  name="branchId"
+                  value={section.branchId}
+                  onChange={handleChange}
+                  required
+                >
+
+                  <option value="">
+
+                    Select Branch
+
                   </option>
-                ))}
-              </select>
 
-              <div className="d-flex gap-2 mt-3">
-                <button type="button" className="btn btn-outline-primary btn-inline" onClick={handleInlineBranchEdit}>
-                  Edit
-                </button>
-                <button type="button" className="btn btn-outline-danger btn-inline" onClick={handleInlineBranchDelete}>
-                  Delete
-                </button>
+                  {branchesList.map((branch) => (
+
+                    <option
+                      key={branch.branchId}
+                      value={branch.branchId}
+                    >
+
+                      {branch.branchName}
+
+                    </option>
+
+                  ))}
+
+                </select>
+
               </div>
+
             </div>
+
+            {/* Section Name */}
+
+            <div className="col-md-6">
+
+              <label className="form-label fw-semibold">
+
+                Section Name
+                <span className="text-danger">
+                  *
+                </span>
+
+              </label>
+
+              <div className="input-group">
+
+                <span className="input-group-text">
+
+                  <FaLayerGroup />
+
+                </span>
+
+                <input
+                  type="text"
+                  className="form-control"
+                  name="sectionName"
+                  placeholder="Enter Section Name"
+                  value={section.sectionName}
+                  onChange={handleChange}
+                  required
+                />
+
+              </div>
+
+            </div>
+                        {/* Description */}
+
+            <div className="col-12">
+
+              <label className="form-label fw-semibold">
+                Description
+              </label>
+
+              <div className="input-group">
+
+                <span className="input-group-text align-items-start pt-3">
+                  <FaAlignLeft />
+                </span>
+
+                <textarea
+                  className="form-control"
+                  name="description"
+                  rows="4"
+                  placeholder="Enter Section Description"
+                  value={section.description}
+                  onChange={handleChange}
+                ></textarea>
+
+              </div>
+
+            </div>
+
           </div>
 
-          {/* ================= Section Name ================= */}
-          <div className="row mb-4 align-items-center">
-            <label className="col-lg-3 col-md-4 fw-semibold">
-              Section Name
-            </label>
-            <div className="col-lg-9 col-md-8">
-              <input type="text" name="sectionName" className="form-control" placeholder="Enter Section Label (e.g. Section-A)" value={section.sectionName} onChange={handleChange} required />
-            </div>
-          </div>
+        </div>
 
-          {/* ================= Description ================= */}
-          <div className="row mb-4 align-items-start">
-            <label className="col-lg-3 col-md-4 fw-semibold pt-2">
-              Description
-            </label>
-            <div className="col-lg-9 col-md-8">
-              <textarea name="description" className="form-control" placeholder="Write section specifications or cohort details..." value={section.description} onChange={handleChange} rows="3" style={{ height: "auto" }} />
-            </div>
-          </div>
-
-          {/* ================= Form Submission Action Buttons ================= */}
-          <div className="d-flex justify-content-end gap-3 mt-4">
-            <button type="button" className="btn btn-secondary px-4 py-2" onClick={clearForm}>
-              Clear
-            </button>
-            <button type="submit" className="btn btn-success px-4 py-2">
-              {section.sectionId ? "Update Section" : "Save Section"}
-            </button>
-          </div>
-        </form>
       </div>
-    </div>
+      
+      {/* Footer */}
+
+      <div className="mt-4 d-flex justify-content-end gap-2">
+  <button type="button" className="btn btn-secondary">
+    Cancel
+  </button>
+
+  <button type="submit" className="btn btn-primary">
+    Save
+  </button>
+</div>
+
+    </form>
+
   );
+
 }
 
 export default SectionForm;
