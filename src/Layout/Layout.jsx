@@ -1,20 +1,119 @@
+import { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
-import Navbar from "../components/Navbar/Navbar";
+
 import Sidebar from "../components/Sidebar/Sidebar";
+import Navbar from "../components/Navbar/Navbar";
+
 import "./Layout.css";
 
-function Layout() {
-  return (
-    <div className="app-layout">
-      <Navbar />
 
-      <Sidebar />
+export default function Layout(){
 
-      <main className="page-content">
-        <Outlet />
-      </main>
-    </div>
-  );
+const [sidebarOpen,setSidebarOpen] = useState(
+    window.innerWidth > 768
+);
+
+
+useEffect(()=>{
+
+const handleResize=()=>{
+
+if(window.innerWidth > 768){
+
+setSidebarOpen(true);
+
+}
+else{
+
+setSidebarOpen(false);
+
 }
 
-export default Layout;
+};
+
+
+window.addEventListener(
+"resize",
+handleResize
+);
+
+
+return()=>{
+
+window.removeEventListener(
+"resize",
+handleResize
+);
+
+};
+
+
+},[]);
+
+
+
+return(
+
+<div className="app-layout">
+
+
+<Sidebar
+
+sidebarOpen={sidebarOpen}
+
+setSidebarOpen={setSidebarOpen}
+
+/>
+
+
+
+<div className="main-layout">
+
+
+<Navbar
+
+sidebarOpen={sidebarOpen}
+
+setSidebarOpen={setSidebarOpen}
+
+/>
+
+
+
+<main className="page-content">
+
+<Outlet/>
+
+</main>
+
+
+
+</div>
+
+
+
+{
+sidebarOpen &&
+window.innerWidth <=768 &&
+(
+
+<div
+
+className="sidebar-overlay"
+
+onClick={()=>setSidebarOpen(false)}
+
+></div>
+
+)
+
+}
+
+
+</div>
+
+
+);
+
+
+}

@@ -13,29 +13,21 @@ function Dashboard() {
       {/* Welcome */}
       <div className="dashboard-header">
         <div>
-          <h1>Welcome To Dashboard 👋</h1>
-          <p>Keep learning and keep growing!</p>
+          <h1>Welcome to DashBoard👋</h1>
+          <p>Welcome back! Here's your learning overview.</p>
         </div>
       </div>
-      { /* Core institution */}
-      <section className="stats-section management-stats">
+
+      {/* Institution Statistics */}
+      <section className="stats-section">
         <StatsCard type="college" />
         <StatsCard type="branch" />
-        <StatsCard type="course" />
-        <StatsCard type="section" />
-      </section>
-
-
-      {/* Core Institutional Context Statistics (New) */}
-      <section className="stats-section management-stats">
-        <StatsCard type="college" />
         <StatsCard type="sections" />
-        <StatsCard type="branch" />
         <StatsCard type="course" />
       </section>
 
-      {/* Learning & Academic Performance Statistics */}
-      <section className="stats-section learning-stats">
+      {/* Learning Statistics */}
+      <section className="stats-section">
         <StatsCard type="courses" />
         <StatsCard type="practice" />
         <StatsCard type="completed" />
@@ -48,7 +40,7 @@ function Dashboard() {
         <StatsCard type="streak" />
       </section>
 
-      {/* Bottom Panel Interactivity */}
+      {/* Bottom Section */}
       <section className="bottom-section">
         <RecentActivity />
         <TodayPractice />

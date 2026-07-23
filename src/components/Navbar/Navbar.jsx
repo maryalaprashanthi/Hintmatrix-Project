@@ -1,56 +1,197 @@
+import { useState, useRef, useEffect } from "react";
 import "./Navbar.css";
-import logo from "../../assets/hintmatrix-logo.png";
 
-import {FiSearch,FiBell,FiChevronDown} from "react-icons/fi";
+import {
+  FiSearch,
+  FiBell,
+  FiChevronDown,
+  FiUser,
+  FiSettings,
+  FiLogOut,
+  FiMenu,
+} from "react-icons/fi";
 
-export default function Navbar(){
 
-return(
+export default function Navbar({
+  sidebarOpen,
+  setSidebarOpen
+}) {
+
+
+const [showMenu,setShowMenu]=useState(false);
+
+const menuRef=useRef(null);
+
+
+useEffect(()=>{
+
+
+function close(e){
+
+if(
+menuRef.current &&
+!menuRef.current.contains(e.target)
+){
+
+setShowMenu(false);
+
+}
+
+}
+
+
+document.addEventListener(
+"mousedown",
+close
+);
+
+
+return()=>{
+
+document.removeEventListener(
+"mousedown",
+close
+);
+
+};
+
+
+},[]);
+
+
+
+return (
 
 <header className="navbar">
 
+
 <div className="navbar-left">
-<img src={logo} className="logo" alt="logo"/>
+
+
+<button
+className="menu-btn"
+onClick={()=>setSidebarOpen(!sidebarOpen)}
+>
+
+<FiMenu/>
+
+</button>
+
+
 </div>
+
+
 
 <div className="navbar-center">
 
+
 <div className="search-box">
+
 
 <FiSearch className="search-icon"/>
 
+
 <input
-placeholder="Search for courses, topics..."
+placeholder="Search courses, topics..."
 />
 
-</div>
 
 </div>
 
-<div className="navbar-right">
 
-<div className="notification">
+</div>
+
+
+
+
+<div className="navbar-left">
+
+
+<div className="nav-icon">
 
 <FiBell/>
 
-<span className="badge">3</span>
-
 </div>
 
-<div className="profile">
+
+
+<div
+className="profile"
+ref={menuRef}
+>
+
+
+<div
+className="profile-trigger"
+onClick={()=>setShowMenu(!showMenu)}
+>
+
 
 <img
 src="https://i.pravatar.cc/150?img=32"
-alt=""
+alt="profile"
 />
 
-<span>Prashanthi</span>
+
+<div className="profile-info">
+
+
+<span className="profile-name">
+Prashanthi
+</span>
+
+
+<span className="profile-role">
+Student
+</span>
+
+
+</div>
+
 
 <FiChevronDown/>
 
-</div>
 
 </div>
+
+
+
+
+{
+showMenu &&
+
+<div className="profile-dropdown">
+
+
+<button>
+<FiUser/>
+My Profile
+</button>
+
+
+<button>
+<FiSettings/>
+Settings
+</button>
+
+
+<button className="logout-btn">
+<FiLogOut/>
+Logout
+</button>
+
+
+</div>
+
+}
+
+
+
+</div>
+
+
+</div>
+
 
 </header>
 

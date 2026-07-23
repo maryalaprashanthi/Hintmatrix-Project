@@ -1,170 +1,235 @@
-/* ==========================
-   Sidebar
-========================== */
+/* =====================================
+   SIDEBAR
+===================================== */
 
-.sidebar {
-    position: fixed;
-    top: 82px;
-    left: 0;
 
-    width: 270px;
-    height: calc(100vh - 82px);
+.sidebar{
 
-    background: #ffffff;
-    border-right: 1px solid #e5e7eb;
+    position:fixed;
 
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    top:0;
 
-    padding: 20px 16px;
+    left:0;
 
-    overflow-y: auto;
+    width:280px;
+
+    height:100vh;
+
+    background:white;
+
+    border-right:1px solid #e5e7eb;
+
+    display:flex;
+
+    flex-direction:column;
+
+    z-index:1000;
+
 }
 
-/* ==========================
-   Menu
-========================== */
 
-.sidebar-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+
+/* =====================================
+   HEADER
+===================================== */
+
+
+.sidebar-header{
+
+    height:95px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-bottom:1px solid #e5e7eb;
+
+    padding:0 20px;
+
 }
 
-/* ==========================
-   Main Menu Item
-========================== */
 
-.menu-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
 
-    height: 40px;
+.sidebar-logo{
 
-    padding: 0 18px;
+    width:190px;
 
-    border-radius: 14px;
+    height:auto;
 
-    color: #475569;
-    text-decoration: none;
-
-    transition: all 0.3s ease;
 }
 
-.menu-item:hover {
-    background: #f8fafc;
-    color: #2563eb;
+
+
+/* =====================================
+   CONTENT
+===================================== */
+
+
+.sidebar-content{
+
+    flex:1;
+
+    overflow-y:auto;
+
+    padding:20px 15px;
+
 }
 
-.menu-item.active {
-    background: #edf4ff;
-    color: #2563eb;
+
+
+/* =====================================
+   MENU
+===================================== */
+
+
+.sidebar-menu{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
 }
 
-/* Left side (Icon + Text) */
 
-.menu-item div {
-    display: flex;
-    align-items: center;
-    gap: 15px;
+
+.menu-item{
+
+    height:48px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    padding:0 16px;
+
+    border-radius:12px;
+
+    text-decoration:none;
+
+    color:#475569;
+
 }
 
-.menu-item svg {
-    font-size: 22px;
+
+
+.menu-item.active{
+
+    background:#eff6ff;
+
+    color:#2563eb;
+
 }
 
-.menu-item span {
-    font-size: 17px;
-    font-weight: 500;
+
+
+.menu-left{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
 }
 
-/* ==========================
-   Submenu
-========================== */
 
-.submenu {
-    display: flex;
-    flex-direction: column;
 
-    margin-left: 28px;
-    margin-top: 3px;
-    margin-bottom: 5px;
+.menu-left svg{
 
-    gap: 4px;
+    font-size:20px;
+
 }
 
-.submenu-item {
-    display: flex;
-    align-items: center;
 
-    gap: 6px;
 
-    padding: 6px 16px;
+.menu-left span{
 
-    border-radius: 10px;
+    font-size:15px;
 
-    color: #475569;
-    text-decoration: none;
+    font-weight:600;
 
-    transition: all 0.3s ease;
 }
 
-.submenu-item:hover {
-    background: #edf4ff;
-    color: #2563eb;
+
+
+/* =====================================
+   SUB MENU
+===================================== */
+
+
+.submenu{
+
+    margin-left:20px;
+
+    padding-left:14px;
+
+    border-left:2px solid #e2e8f0;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:6px;
+
 }
 
-.active-submenu {
-    background: #2563eb;
-    color: #ffffff !important;
+
+
+.submenu-item{
+
+    height:38px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    padding:0 12px;
+
+    text-decoration:none;
+
+    color:#64748b;
+
+    border-radius:10px;
+
 }
 
-.submenu-item svg {
-    font-size: 18px;
+
+
+.active-submenu{
+
+    background:#2563eb;
+
+    color:white;
+
 }
 
-.submenu-item span {
-    font-size: 15px;
-    font-weight: 500;
-}
 
-/* ==========================
-   Logout
-========================== */
 
-.logout {
-    display: flex;
-    align-items: center;
+/* =====================================
+   LOGOUT
+===================================== */
 
-    gap: 8px;
 
-    height: 45px;
+.logout{
 
-    padding: 0 20px;
+    height:60px;
 
-    margin-top:10px;
+    display:flex;
 
-    color: #475569;
+    align-items:center;
 
-    cursor: pointer;
+    gap:12px;
 
-    border-radius: 12px;
+    padding:0 20px;
 
-    transition: all 0.3s ease;
-}
+    border-top:1px solid #e5e7eb;
 
-.logout:hover {
-    background: #fef2f2;
-    color: #dc2626;
-}
-
-.logout svg {
-    font-size: 22px;
-}
-
-.logout span {
-    font-size: 17px;
-    font-weight: 500;
 }

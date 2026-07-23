@@ -1,13 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
-import { NavLink, useLocation } from "react-router-dom";
+
+import logo from "../../assets/hintmatrix-logo.png";
+
 import {
   MdDashboard,
-  MdAccountBalance, // Icon for College
-  MdClass,          // Icon for Sections
-  MdAccountTree,     // Icon for Branch
-  MdBookmarkAdd,    // Icon for Course (Management Panel)
-  MdMenuBook,       // Icon for Courses (Grid Display View)
+  MdSchool,
+  MdAccountTree,
+  MdLibraryBooks,
+  MdViewModule,
+  MdTableChart,
+  MdTableRows,
+  MdViewHeadline,
+  MdListAlt,
   MdOutlineEdit,
   MdAssignment,
   MdVideoLibrary,
@@ -15,220 +21,248 @@ import {
   MdWorkspacePremium,
   MdSettings,
   MdLogout,
-  MdExpandMore,     // Sub-menu open indicator chevron icon
-  MdExpandLess,    // Sub-menu close indicator chevron icon
-  MdSchool,
   MdKeyboardArrowDown,
   MdKeyboardArrowUp,
-  MdApartment,
-  MdLibraryBooks,
-  MdViewModule,
-  MdTableChart, 
-  MdTableRows, 
-  MdViewHeadline, 
-  MdListAlt,
 } from "react-icons/md";
 
-function Sidebar() {
+export default function Sidebar({
+  sidebarOpen,
+  setSidebarOpen,
+}) {
   const [collegeOpen, setCollegeOpen] = useState(true);
   const [tableOpen, setTableOpen] = useState(false);
+
+  const closeSidebar = () => {
+    if (window.innerWidth <= 768) {
+      setSidebarOpen(false);
+    }
+  };
+
+  const menuClass = ({ isActive }) =>
+    isActive ? "menu-item active" : "menu-item";
+
+  const subMenuClass = ({ isActive }) =>
+    isActive
+      ? "submenu-item active-submenu"
+      : "submenu-item";
+
   return (
-    <aside className="sidebar">
-      <nav className="sidebar-menu">
-        {/* 1. Dashboard */}
-        <NavLink 
-          to="/" 
-          end 
-          className={({ isActive }) => isActive ? "menu-item active" : "menu-item" }
-        >
-          <MdDashboard />
-          <span>Dashboard</span>
-        </NavLink>
+    <aside
+      className={`sidebar ${
+        sidebarOpen ? "show" : ""
+      }`}
+    >
+      {/* Logo */}
 
-        {/* College Menu */}
-        <NavLink to="/college">
-        <div
-          className={`menu-item ${collegeOpen ? "active" : ""}`}
-          onClick={() => setCollegeOpen(!collegeOpen)}
-          style={{ cursor: "pointer" }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              flex: 1,
-            }}
+      <div className="sidebar-header">
+        <img
+          src={logo}
+          alt="HintMatrix"
+          className="sidebar-logo"
+        />
+      </div>
+
+      {/* Menu */}
+
+      <div className="sidebar-content">
+        <nav className="sidebar-menu">
+
+          <NavLink
+            to="/"
+            end
+            className={menuClass}
+            onClick={closeSidebar}
           >
-            <MdSchool />
-            <span>College</span>
+            <div className="menu-left">
+              <MdDashboard />
+              <span>Dashboard</span>
+            </div>
+          </NavLink>
+
+          {/* College */}
+
+          <div
+            className={`menu-item ${
+              collegeOpen ? "active" : ""
+            }`}
+            onClick={() =>
+              setCollegeOpen(!collegeOpen)
+            }
+          >
+            <div className="menu-left">
+              <MdSchool />
+              <span>College</span>
+            </div>
+
+            {collegeOpen ? (
+              <MdKeyboardArrowUp />
+            ) : (
+              <MdKeyboardArrowDown />
+            )}
           </div>
 
-          {collegeOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
-        </div>
-        </NavLink>
+          {collegeOpen && (
+            <div className="submenu">
 
-        {collegeOpen && (
-          <div className="submenu">
-
-            <NavLink
-              to="/courses"
-              className={({ isActive }) =>
-                isActive ? "submenu-item active-submenu" : "submenu-item"
-              }
-            >
-              <MdLibraryBooks />
-              <span>Course</span>
-            </NavLink>
-
-             <NavLink
-              to="/Branch"
-              className={({ isActive }) =>
-                isActive ? "submenu-item active-submenu" : "submenu-item"
-              }
-            >
-              <MdAccountTree />
-              <span>Branch</span>
-            </NavLink>
               <NavLink
-              to="/section"
-              className={({ isActive }) =>
-                isActive ? "submenu-item active-submenu" : "submenu-item"
-              }
-            >
-              <MdViewModule />
-              <span>Section</span>
-            </NavLink>
+                to="/branch"
+                className={subMenuClass}
+                onClick={closeSidebar}
+              >
+                <MdAccountTree />
+                <span>Branch</span>
+              </NavLink>
 
-            
+              <NavLink
+                to="/courses"
+                className={subMenuClass}
+                onClick={closeSidebar}
+              >
+                <MdLibraryBooks />
+                <span>Course</span>
+              </NavLink>
 
+              <NavLink
+                to="/section"
+                className={subMenuClass}
+                onClick={closeSidebar}
+              >
+                <MdViewModule />
+                <span>Section</span>
+              </NavLink>
+
+            </div>
+          )}
+
+          {/* Table */}
+
+          <div
+            className={`menu-item ${
+              tableOpen ? "active" : ""
+            }`}
+            onClick={() =>
+              setTableOpen(!tableOpen)
+            }
+          >
+            <div className="menu-left">
+              <MdTableChart />
+              <span>Table Details</span>
+            </div>
+
+            {tableOpen ? (
+              <MdKeyboardArrowUp />
+            ) : (
+              <MdKeyboardArrowDown />
+            )}
           </div>
-        )}
-        {/* Table Details */}
-<div
-  className={`menu-item ${tableOpen ? "active" : ""}`}
-  onClick={() => setTableOpen(!tableOpen)}
-  style={{ cursor: "pointer" }}
->
-  <div
-    style={{
-      display: "flex",
-      alignItems: "center",
-      gap: "12px",
-      flex: 1,
-    }}
-  >
-    <MdTableChart />
-    <span>Table Details</span>
-  </div>
 
-  {tableOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
-</div>
+          {tableOpen && (
+            <div className="submenu">
 
-{tableOpen && (
-  <div className="submenu">
-    <NavLink
-      to="/table-names"
-      className={({ isActive }) =>
-        isActive ? "submenu-item active-submenu" : "submenu-item"
-      }
-    >
-      <MdTableRows />
-      <span>Table Names</span>
-    </NavLink>
+              <NavLink
+                to="/table-names"
+                className={subMenuClass}
+                onClick={closeSidebar}
+              >
+                <MdTableRows />
+                <span>Table Names</span>
+              </NavLink>
 
-    <NavLink
-      to="/table-headers"
-      className={({ isActive }) =>
-        isActive ? "submenu-item active-submenu" : "submenu-item"
-      }
-    >
-      <MdViewHeadline />
-      <span>Table Headers</span>
-    </NavLink>
+              <NavLink
+                to="/table-headers"
+                className={subMenuClass}
+                onClick={closeSidebar}
+              >
+                <MdViewHeadline />
+                <span>Table Headers</span>
+              </NavLink>
 
-    <NavLink
-      to="/table-attributes"
-      className={({ isActive }) =>
-        isActive ? "submenu-item active-submenu" : "submenu-item"
-      }
-    >
-      <MdListAlt />
-      <span>Table Attributes</span>
-    </NavLink>
-  </div>
-)}
+              <NavLink
+                to="/table-attributes"
+                className={subMenuClass}
+                onClick={closeSidebar}
+              >
+                <MdListAlt />
+                <span>Table Attributes</span>
+              </NavLink>
 
+            </div>
+          )}
 
-        {/* Practice */}
-        <NavLink
-          to="/practice"
-          className={({ isActive }) =>
-            isActive ? "menu-item active" : "menu-item"
-          }
-        >
-          <MdOutlineEdit />
-          <span>Practice</span>
-        </NavLink>
+          <NavLink
+            to="/practice"
+            className={menuClass}
+            onClick={closeSidebar}
+          >
+            <div className="menu-left">
+              <MdOutlineEdit />
+              <span>Practice</span>
+            </div>
+          </NavLink>
 
-        {/* 5. Tests */}
-        <NavLink to="/tests" className={({ isActive }) => isActive ? "menu-item active" : "menu-item" } >
-          <MdAssignment />
-          <span>Tests</span>
-        </NavLink>
+          <NavLink
+            to="/tests"
+            className={menuClass}
+            onClick={closeSidebar}
+          >
+            <div className="menu-left">
+              <MdAssignment />
+              <span>Tests</span>
+            </div>
+          </NavLink>
 
-        {/* Sessions */}
-        <NavLink
-          to="/sessions"
-          className={({ isActive }) =>
-            isActive ? "menu-item active" : "menu-item"
-          }
-        >
-          <MdVideoLibrary />
-          <span>Sessions</span>
-        </NavLink>
+          <NavLink
+            to="/sessions"
+            className={menuClass}
+            onClick={closeSidebar}
+          >
+            <div className="menu-left">
+              <MdVideoLibrary />
+              <span>Sessions</span>
+            </div>
+          </NavLink>
 
-        {/* Results */}
-        <NavLink
-          to="/results"
-          className={({ isActive }) =>
-            isActive ? "menu-item active" : "menu-item"
-          }
-        >
-          <MdBarChart />
-          <span>Results</span>
-        </NavLink>
+          <NavLink
+            to="/results"
+            className={menuClass}
+            onClick={closeSidebar}
+          >
+            <div className="menu-left">
+              <MdBarChart />
+              <span>Results</span>
+            </div>
+          </NavLink>
 
-        {/* Certificates */}
-        <NavLink
-          to="/certificates"
-          className={({ isActive }) =>
-            isActive ? "menu-item active" : "menu-item"
-          }
-        >
-          <MdWorkspacePremium />
-          <span>Certificates</span>
-        </NavLink>
+          <NavLink
+            to="/certificates"
+            className={menuClass}
+            onClick={closeSidebar}
+          >
+            <div className="menu-left">
+              <MdWorkspacePremium />
+              <span>Certificates</span>
+            </div>
+          </NavLink>
 
-        {/* Settings */}
-        <NavLink
-          to="/settings"
-          className={({ isActive }) =>
-            isActive ? "menu-item active" : "menu-item"
-          }
-        >
-          <MdSettings />
-          <span>Settings</span>
-        </NavLink>
+          <NavLink
+            to="/settings"
+            className={menuClass}
+            onClick={closeSidebar}
+          >
+            <div className="menu-left">
+              <MdSettings />
+              <span>Settings</span>
+            </div>
+          </NavLink>
 
-      </nav>
+        </nav>
+      </div>
 
       <div className="logout">
         <MdLogout />
         <span>Logout</span>
       </div>
+
     </aside>
   );
 }
-
-export default Sidebar;
