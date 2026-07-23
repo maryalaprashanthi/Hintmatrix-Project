@@ -13,21 +13,20 @@ import toast from "react-hot-toast";
 import TableHeaderService from "../../services/TableHeaderService";
 
 
-function AddTableAttributeModal({ show, onClose, onSave }) {
+function AddTableAttributeModal({ show, onClose, onSave,initialData }) {
 
-  const [name, setName] = useState("");
-  const [shortName, setShortName] = useState("");
-  const [tableHeaderName, setTableHeaderName] = useState("");
+    const [formData, setFormData] = useState({
+    name: "",
+    shortName: "",
+    tableHeaderName: "",
+  });
   const [tableHeaders,setTableHeaders] = useState([]);
 
   const loadTableHeaders = async () => {
     try {
       const result = await TableHeaderService.getAll();
       const data = await result.data;
-      console.log("all data ",data);
       const allTableNames = data.map((obj)=>({"name":obj.name}));
-      console.log("Final data is ",allTableNames);
-      //  const namesOnly = response.data.map((item) => item.name);
       setTableHeaders(allTableNames);
     } catch (error) {
       console.log("Error: ",error);
@@ -37,38 +36,27 @@ function AddTableAttributeModal({ show, onClose, onSave }) {
 
     useEffect(()=>{
     loadTableHeaders();
-  },[]);
+    setFormData(initialData||{
+    name: "",
+    shortName: "",
+    tableHeaderName: "",
+  });
+  },[initialData]);
 
   if (!show) return null;
 
 
-  const handleSave = () => {
+  const handleSave = async () => {
 
     if (
-      !name.trim() ||
-      !tableHeaderName.trim()
+      !formData.name.trim() ||
+      !formData.tableHeaderName.trim()
     ) {
       toast.error("Please fill all the fields.");
       return;
     }
 
-
-    const newTableAttribute = {
-      name,
-      shortName,
-      tableHeaderName,
-    };
-
-
-    onSave(newTableAttribute);
-
-
-    setName("");
-    setShortName("");
-    setTableHeaderName("");
-
-    onClose();
-
+    await onSave(formData);
   };
 
   return createPortal(
@@ -86,11 +74,11 @@ function AddTableAttributeModal({ show, onClose, onSave }) {
           <div>
 
             <h2>
-              Add Table Attribute
+              {initialData==null?"Add Table Attribute":"Edit Table Attribute"}
             </h2>
 
             <p>
-              Create a new table attribute.
+              {initialData==null?"Create a new table attribute.":"Edit an existing Table Attribute"}
             </p>
 
           </div>
@@ -144,9 +132,9 @@ function AddTableAttributeModal({ show, onClose, onSave }) {
                   <input
                     type="text"
                     placeholder="Enter Attribute Name"
-                    value={name}
+                    value={formData.name}
                     onChange={(e) =>
-                      setName(e.target.value)
+                      setFormData({...formData,name:e.target.value})
                     }
                   />
 
@@ -174,9 +162,9 @@ function AddTableAttributeModal({ show, onClose, onSave }) {
                   <input
                     type="text"
                     placeholder="Enter Short Name"
-                    value={shortName}
+                    value={formData.shortName}
                     onChange={(e) =>
-                      setShortName(e.target.value)
+                      setFormData({...formData,shortName:e.target.value})
                     }
                   />
 
@@ -202,9 +190,9 @@ function AddTableAttributeModal({ show, onClose, onSave }) {
 
 
                   <select
-                    value={tableHeaderName}
+                    value={formData.tableHeaderName}
                     onChange={(e) =>
-                      setTableHeaderName(e.target.value)
+                      setFormData({...formData,tableHeaderName:e.target.value})
                     }
                   >
                     <option value="">Select an option</option>
@@ -254,7 +242,7 @@ function AddTableAttributeModal({ show, onClose, onSave }) {
 
             <FaSave className="me-2" />
 
-            Save
+            {initialData==null?"Save":"Update"}
 
           </button>
 

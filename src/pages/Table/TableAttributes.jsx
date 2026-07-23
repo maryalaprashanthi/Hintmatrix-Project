@@ -7,29 +7,19 @@ import DataGrid from "../../components/DataGrid";
 
 function TableAttributes() {
   const [showModal, setShowModal] = useState(false);
-  const [id, setId] = useState("");
-  const [name, setName] = useState("");
-  const [shortName, setShortName] = useState("");
-  const [tableHeader, setTableHeader] = useState("");
+  const [editingAttribute, setEditingAttribute] = useState(null);
   const [tableAttributes, setTableAttributes] = useState([]);
-
-  const getDemoData = () => {
-    return {};
-  };
-
+  const [id,setId] = useState(null);
   const loadTableAttributes = async () => {
     try {
       const result = await TableAttributeService.getAll();
       const data = await result.data;
-      // console.log("all data ",data);
       const allTableAttributes = data.map((obj) => ({
         name: obj.name,
         id: obj.attributeId,
-        tableHeader: obj.tableHeaderName,
+        tableHeaderName: obj.tableHeaderName,
         shortName: obj.shortName,
       }));
-      console.log("All my table attributes: ", allTableAttributes);
-      //  const namesOnly = response.data.map((item) => item.name);
       setTableAttributes(allTableAttributes);
     } catch (error) {
       console.log("Error: ", error);
@@ -42,7 +32,6 @@ function TableAttributes() {
   }, []);
 
   const handleDelete = async (id) => {
-    console.log("Delete is called with this data ", id);
     try {
       const reposnse = await TableAttributeService.delete(id);
       const data = await reposnse.data;
@@ -57,7 +46,7 @@ function TableAttributes() {
   const columnDefs = [
     { field: "id", headerName: "ID", width: 80, flex: 1 },
     { field: "name", headerName: "Table Attribute Name", flex: 1 },
-    { field: "tableHeader", headerName: "Table Header Name", flex: 1 },
+    { field: "tableHeaderName", headerName: "Table Header Name", flex: 1 },
     { field: "shortName", headerName: "Short Name", flex: 1 },
     {
       headerName: "Action",
@@ -76,12 +65,10 @@ function TableAttributes() {
             <button
               // onClick={() => handleEdit(params.data.id,params.data)}
               onClick={() => {
+                let editedData = {"name":params.data.name,"shortName":params.data.shortName,"tableHeaderName":params.data.tableHeaderName};
+                setEditingAttribute(editedData);
                 setId(params.data.id);
-                setName(params.data.name);
-                setShortName(params.data.shortName);
-                setTableHeader(params.data.tableHeader);
                 setShowModal(true);
-                console.log("reached edit");
               }}
               style={{
                 background: "#2563eb",
@@ -124,35 +111,48 @@ function TableAttributes() {
       },
     },
   ];
-
+  // const handleSave = async (newAttribute) => {
+  
+  //   if (id!=null) {
+  //     try {
+  //       const response = await TableAttributeService.update(id,newAttribute);
+  //       toast.success("Data updated successfully");
+  //     } catch (error) {
+  //       console.error("Error: ", error);
+  //       toast.error(error.message);
+  //     }
+  //   } else {
+  //     try {
+  //       const response = await TableAttributeService.create(newAttribute);
+  //       toast.success("Data saved successfully");
+  //     } catch (error) {
+  //       console.error("Error: ", error);
+  //       toast.error(error.message);
+  //     }
+  //   }
+  //   setEditingAttribute(null);
+  //   setId(null);
+  //   loadTableAttributes();
+  // };
   const handleSave = async (newAttribute) => {
-    // setTableAttributes([
-    //   ...tableAttributes,
-    //   newAttribute
-    // ]);
-    if (id == null) {
-      try {
-        const response = await TableAttributeService.create(newAttribute);
-        toast.success("Data saved successfully");
-      } catch (error) {
-        console.error("Error: ", error);
-        toast.error(error.message);
-      }
+  try {
+    if (id != null) {
+      await TableAttributeService.update(id, newAttribute);
+      toast.success("Data updated successfully");
     } else {
-      try {
-        const response = await TableAttributeService.update(id,newAttribute);
-        toast.success("Data updated successfully");
-      } catch (error) {
-        console.error("Error: ", error);
-        toast.error(error.message);
-      }
+      await TableAttributeService.create(newAttribute);
+      toast.success("Data saved successfully");
     }
+
+    setEditingAttribute(null);
     setId(null);
-    setName("");
-    setShortName("");
-    setTableHeader("");
+    setShowModal(false);
     loadTableAttributes();
-  };
+  } catch (error) {
+    console.error("Error: ", error);
+    toast.error(error.message);
+  }
+};
 
   return (
     <div className="container-fluid py-4">
@@ -168,10 +168,8 @@ function TableAttributes() {
         <button
           className="btn btn-primary"
           onClick={() => {
+            setEditingAttribute(null);
             setId(null);
-            setName("");
-            setShortName("");
-            setTableHeader("");
             setShowModal(true);
           }}
         >
@@ -179,111 +177,17 @@ function TableAttributes() {
         </button>
       </div>
 
-      {/* Table */}
-
-      {/* <div className="card shadow-sm border-0">
-
-
-        <div className="card-body">
-
-
-          <table className="table table-bordered table-hover align-middle">
-
-
-            <thead className="table-light">
-
-              <tr>
-
-                <th>Name</th>
-
-                <th>Short Name</th>
-
-                <th>Table Header Name</th>
-
-              </tr>
-
-
-            </thead>
-
-
-
-
-            <tbody>
-
-
-              {tableAttributes.length === 0 ? (
-
-                <tr>
-
-                  <td
-                    colSpan="3"
-                    className="text-center"
-                  >
-                    No Table Attributes Added
-                  </td>
-
-                </tr>
-
-
-              ) : (
-
-
-                tableAttributes.map((attribute, index) => (
-
-                  <tr key={index}>
-
-                    <td>
-                      {attribute.name}
-                    </td>
-
-
-                    <td>
-                      {attribute.shortName}
-                    </td>
-
-
-                    <td>
-                      {attribute.tableHeaderName}
-                    </td>
-
-
-                  </tr>
-
-
-                ))
-
-
-              )}
-
-
-
-            </tbody>
-
-
-          </table>
-
-
-        </div>
-
-
-      </div> */}
-
       <DataGrid rowData={tableAttributes} columnDefs={columnDefs} />
 
       <AddTableAttributeModal
         show={showModal}
         onClose={() => {
           setShowModal(false);
+          setEditingAttribute(null);
           setId(null);
-          setName("");
-          setShortName("");
-          setTableHeader("");
         }}
         onSave={handleSave}
-        id={id}
-        Inputname={name}
-        InputshortName={shortName}
-        InputtableHeaderName={tableHeader}
+        initialData={editingAttribute}
       />
     </div>
   );

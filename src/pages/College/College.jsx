@@ -22,8 +22,8 @@ function College() {
 
   // Save / Update College
   const handleSave = (collegeData) => {
-    console.log("College Saved:", collegeData);
 
+    console.log("Data saved:",collegeData);
     // Your API save/update will be handled inside CollegeForm
     setRefreshTrigger((prev) => !prev);
 

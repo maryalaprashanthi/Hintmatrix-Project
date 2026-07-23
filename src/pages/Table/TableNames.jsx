@@ -11,9 +11,6 @@ function TableNames() {
   const [id, setId] = useState(null);
   const [name, setName] = useState("");
   const handleSave = async (newTableName) => {
-    // setTableNames([...tableNames, newTableName]);
-    // create a new Table name
-    // console.log("Hello ",newTableName);
     if (id == null) {
       try {
         const response = await TableNameService.create(newTableName);
@@ -24,7 +21,6 @@ function TableNames() {
         toast.error(error.message);
       }
     } else {
-      console.log("Edit is called with this id ", id);
       try {
         const reposnse = await TableNameService.update(id, newTableName);
         const data = await reposnse.data;
@@ -40,7 +36,6 @@ function TableNames() {
   };
 
   const handleDelete = async (id) => {
-    console.log("Delete is called with this data ", id);
     try {
       const reposnse = await TableNameService.delete(id);
       const data = await reposnse.data;
@@ -56,13 +51,10 @@ function TableNames() {
     try {
       const result = await TableNameService.getAll();
       const data = await result.data;
-      // console.log(data);
       const allTableNames = data.map((obj) => ({
         name: obj.name,
         id: obj.tableNameId,
       }));
-      console.log("Full data", allTableNames);
-      //  const namesOnly = response.data.map((item) => item.name);
       setTableNames(allTableNames);
     } catch (error) {
       console.log("Error: ", error);
@@ -97,7 +89,6 @@ function TableNames() {
                 setId(params.data.id);
                 setName(params.data.name);
                 setShowModal(true);
-                console.log("reach");
                 
               }}
               style={{

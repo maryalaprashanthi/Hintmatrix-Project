@@ -17,7 +17,6 @@ function TableHeaders() {
     if(id==null)
     {
       try {
-          console.log("Data is ",newTableHeader);
           const response = await TableHeaderService.create(newTableHeader);
           toast.success("Data saved successfully");
           loadTableHeaders();
@@ -29,7 +28,6 @@ function TableHeaders() {
     else
     {
       try {
-          console.log("Data is ",newTableHeader);
           const response = await TableHeaderService.update(id,newTableHeader);
           toast.success("Data saved successfully");
           loadTableHeaders();
@@ -43,7 +41,6 @@ function TableHeaders() {
   };
 
   const handleDelete = async (id) => {
-    console.log("Delete is called with this data ", id);
     try {
       const reposnse = await TableHeaderService.delete(id);
       const data = await reposnse.data;
@@ -63,10 +60,7 @@ function TableHeaders() {
     try {
       const result = await TableHeaderService.getAll();
       const data = await result.data;
-      console.log("all data ",data);
       const allTableNames = data.map((obj)=>({"name":obj.name,"id":obj.headerId}));
-      console.log(allTableNames);
-      //  const namesOnly = response.data.map((item) => item.name);
       setTableHeaders(allTableNames);
     } catch (error) {
       console.log("Error: ",error);
@@ -97,7 +91,6 @@ function TableHeaders() {
                 setId(params.data.id);
                 setName(params.data.name);
                 setShowModal(true);
-                console.log("reach");
                 
               }}
               style={{

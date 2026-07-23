@@ -15,7 +15,6 @@ function AddTableHeaderModal({ show, onClose, onSave,Inputdata }) {
   const [name, setName] = useState("");
 
   useEffect(()=>{
-    console.log("I reached here with this data ",Inputdata);
     
     setName(Inputdata||"");
   },[Inputdata]);
