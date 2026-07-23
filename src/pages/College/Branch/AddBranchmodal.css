@@ -29,21 +29,21 @@
 ========================================== */
 
 .branch-modal {
-    width: 850px;
-    max-width: 95%;
+    width: min(850px, 95vw);   /* Responsive width */
+    max-width: 95vw;
 
     background: #fff;
-
     border-radius: 16px;
 
     display: flex;
     flex-direction: column;
 
-    max-height: calc(100vh - 140px);
+    height: auto;
+    max-height: 90vh;          /* Responsive height */
 
     overflow: hidden;
 
-    margin: 0 auto;      /* Center horizontally */
+    margin: 0 auto;
 
     box-shadow: 0 20px 60px rgba(0,0,0,.25);
 
@@ -352,4 +352,17 @@ width:100%;
 
 }
 
+}
+/* Laptops with smaller height (1366x768, etc.) */
+@media (max-height: 800px) {
+    .branch-modal {
+        max-height: 86vh;
+    }
+}
+
+/* Very small laptop screens */
+@media (max-height: 700px) {
+    .branch-modal {
+        max-height: 82vh;
+    }
 }

@@ -182,17 +182,18 @@ function AddTableAttributeModal({ show, onClose, onSave }) {
 
                   <FaColumns className="input-icon" />
 
+                  <select
+                      value={tableHeaderName}
+                      onChange={(e) => setTableHeaderName(e.target.value)}
+                  >
+                     <option value="">Select Table Header Name</option>
+                     <option value="1">
+                        ------
+                      </option>
+      
+                  </select>
 
-                  <input
-                    type="text"
-                    placeholder="Enter Table Header Name"
-                    value={tableHeaderName}
-                    onChange={(e) =>
-                      setTableHeaderName(e.target.value)
-                    }
-                  />
-
-                </div>
+                  </div>
 
               </div>
 
