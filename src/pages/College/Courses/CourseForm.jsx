@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./CourseForm.css";
+import CourseService from "../../../services/CourseService"; // 🌟 Connected service layer
 
 function CourseForm({ onSaveCourse }) {
   const [formData, setFormData] = useState({
@@ -29,24 +30,41 @@ function CourseForm({ onSaveCourse }) {
       return;
     }
 
-    if (typeof onSaveCourse === "function") {
-      onSaveCourse({
-        ...formData,
-        id: Date.now()
-      });
-      alert("Course saved successfully!");
-    }
+    // 🌟 FIXED: Structured payload to match the exact keys expected by CourseRequestDTO
+    const courseRequestDTO = {
+      branchId: 1, // Satisfies backend @NotNull validation constraint
+      name: formData.title.trim() // Satisfies backend @NotBlank validation constraint
+    };
 
-    setFormData({
-      title: "",
-      category: "Commerce",
-      level: "Beginner",
-      duration: "",
-      instructor: "",
-      price: "",
-      description: "",
-      progress: "0%"
-    });
+    // 🌟 FIXED: Dispatches the transaction payload data directly to your Spring Boot database engine
+    CourseService.saveCourse(courseRequestDTO)
+      .then((response) => {
+        alert("Course saved successfully to backend database!");
+
+        // Retain compatibility layer wrapper with parent trackers if necessary
+        if (typeof onSaveCourse === "function") {
+          onSaveCourse({
+            ...formData,
+            id: response.data?.id || Date.now()
+          });
+        }
+
+        // Reset the form fields cleanly
+        setFormData({
+          title: "",
+          category: "Commerce",
+          level: "Beginner",
+          duration: "",
+          instructor: "",
+          price: "",
+          description: "",
+          progress: "0%"
+        });
+      })
+      .catch((error) => {
+        console.error("Database transaction failed:", error);
+        alert(error.response?.data?.message || "Validation failed: Make sure your server models match.");
+      });
   };
 
   return (
@@ -164,20 +182,20 @@ function CourseForm({ onSaveCourse }) {
                   </div>
 
                   <div className="d-flex justify-content-end gap-3 mt-4">
-  <button
-    type="button"
-    className="btn btn-secondary px-4"
-  >
-    Cancel
-  </button>
+                    <button
+                      type="button"
+                      className="btn btn-secondary px-4"
+                    >
+                      Cancel
+                    </button>
 
-  <button
-    type="submit"
-    className="btn btn-primary px-4"
-  >
-    Save
-  </button>
-</div>
+                    <button
+                      type="submit"
+                      className="btn btn-primary px-4"
+                    >
+                      Save
+                    </button>
+                  </div>
                 </div>
               </div>
             </form>

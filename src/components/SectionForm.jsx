@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import SectionService from "../services/SectionService";
-import BranchService from "../services/BranchService";
+
 
 import {
   FaCodeBranch,
@@ -18,29 +18,29 @@ function SectionForm({
 
   const emptySection = {
     sectionId: "",
-    branchId: "",
+    courseId: "",
     sectionName: "",
     description: ""
   };
 
   const [section, setSection] = useState(emptySection);
-  const [branchesList, setBranchesList] = useState([]);
+  const [coursesList, setCoursesList] = useState([]);
 
   /* ===============================
       LOAD BRANCHES
   =============================== */
 
   useEffect(() => {
-    loadBranches();
+    loadCourses();
   }, []);
 
-  const loadBranches = () => {
+  const loadCourses = () => {
     axios
-      .get("http://localhost:8080/api/branch", {
+      .get("http://localhost:8080/api/course", {
         withCredentials: true,
       })
       .then((response) => {
-        setBranchesList(response.data || []);
+        setCoursesList(response.data || []);
       })
       .catch((error) => {
         console.error(error);
@@ -55,7 +55,7 @@ function SectionForm({
     if (selectedSectionData) {
       setSection({
         sectionId: selectedSectionData.sectionId || "",
-        branchId: selectedSectionData.branchId || "",
+        courseId: selectedSectionData.courseId || "",
         sectionName: selectedSectionData.sectionName || "",
         description: selectedSectionData.description || ""
       });
@@ -72,11 +72,11 @@ function SectionForm({
 
     const { name, value } = e.target;
 
-    if (name === "branchId") {
+    if (name === "courseId") {
 
       setSection({
         ...section,
-        branchId: value === "" ? "" : Number(value)
+        courseId: value === "" ? "" : Number(value)
       });
 
       return;
@@ -97,14 +97,14 @@ function SectionForm({
 
     e.preventDefault();
 
-    if (!section.branchId) {
-      alert("Please select a branch.");
+    if (!section.courseId) {
+      alert("Please select an associate course.");
       return;
     }
 
     const requestDTO = {
 
-      branchId: section.branchId,
+      courseId: section.courseId,
       sectionName: section.sectionName,
       description: section.description
 
@@ -167,13 +167,13 @@ function SectionForm({
 
           <div className="row g-3">
 
-            {/* Branch */}
+            {/* course*/}
 
             <div className="col-md-6">
 
               <label className="form-label fw-semibold">
 
-                Branch
+                Course
                 <span className="text-danger">
                   *
                 </span>
@@ -190,26 +190,28 @@ function SectionForm({
 
                 <select
                   className="form-select"
-                  name="branchId"
-                  value={section.branchId}
+                  name="courseId"
+                  value={section.courseId}
                   onChange={handleChange}
                   required
                 >
 
                   <option value="">
 
-                    Select Branch
+                    Select Course
 
                   </option>
 
-                  {branchesList.map((branch) => (
+                  {coursesList.map((course) => (
 
-                    <option
-                      key={branch.branchId}
-                      value={branch.branchId}
+                     <option
+                      //  FIXED: Gracefully checks all common backend ID variants
+                      key={course.courseId || course.id}
+                      value={course.courseId || course.id}
                     >
 
-                      {branch.branchName}
+                      {/* FIXED: Changed from course.courseName to course.name to match your Java DTO string model property fields */}
+                      {course.name || course.title || course.courseName}
 
                     </option>
 

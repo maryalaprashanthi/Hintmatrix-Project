@@ -1,5 +1,8 @@
-import "./Chapters.css";
+import { useState, useEffect } from "react"; // 🌟 FIXED: Added state and effect hooks for dynamic data loading
 import { useParams, useNavigate } from "react-router-dom";
+import ChapterService from "../../services/ChapterService";
+ // 🌟 FIXED: Hooked up your dedicated service module
+import "./Chapters.css";
 
 import {
   FaArrowLeft,
@@ -9,333 +12,117 @@ import {
   FaPlayCircle
 } from "react-icons/fa";
 
-
 function Chapters() {
-
   const { courseId } = useParams();
   const navigate = useNavigate();
 
+  // 🌟 FIXED: State placeholder setup to dynamically read live tracking profiles from your database
+  const [course, setCourse] = useState({
+    name: "Loading Course...",
+    chapters: []
+  });
 
-  const courseData = {
+  // 🌟 FIXED: Live transaction pipeline fetch loop linked directly to ChapterService operations
+  useEffect(() => {
+    if (!courseId) return;
 
-    "bcom": {
-      name: "B.Com",
-      chapters: [
-        {
-          title: "Financial Accounting",
-          lessons: 12,
-          progress: "80%"
-        },
-        {
-          title: "Business Economics",
-          lessons: 10,
-          progress: "60%"
-        },
-        {
-          title: "Corporate Accounting",
-          lessons: 15,
-          progress: "45%"
-        },
-        {
-          title: "Cost Accounting",
-          lessons: 14,
-          progress: "70%"
-        },
-        {
-          title: "Business Law",
-          lessons: 8,
-          progress: "55%"
-        },
-        {
-          title: "Taxation",
-          lessons: 18,
-          progress: "30%"
-        }
-      ]
-    },
-
-
-    "ca-foundation": {
-
-      name:"CA Foundation",
-
-      chapters:[
-        {
-          title:"Principles of Accounting",
-          lessons:20,
-          progress:"75%"
-        },
-        {
-          title:"Business Laws",
-          lessons:16,
-          progress:"50%"
-        },
-        {
-          title:"Economics",
-          lessons:12,
-          progress:"40%"
-        },
-        {
-          title:"Quantitative Aptitude",
-          lessons:22,
-          progress:"65%"
-        }
-      ]
-
-    },
-
-
-    "cbse-11": {
-
-      name:"CBSE Class 11",
-
-      chapters:[
-        {
-          title:"Accountancy",
-          lessons:18,
-          progress:"60%"
-        },
-        {
-          title:"Business Studies",
-          lessons:15,
-          progress:"50%"
-        },
-        {
-          title:"Economics",
-          lessons:14,
-          progress:"45%"
-        }
-      ]
-
-    },
-
-
-    "jr-accountancy": {
-
-      name:"Junior Accountancy",
-
-      chapters:[
-        {
-          title:"Basic Accounting",
-          lessons:10,
-          progress:"70%"
-        },
-        {
-          title:"Journal Entries",
-          lessons:12,
-          progress:"55%"
-        },
-        {
-          title:"Ledger",
-          lessons:8,
-          progress:"40%"
-        }
-      ]
-
-    },
-
-
-    "combo": {
-
-      name:"Commerce Combo",
-
-      chapters:[
-        {
-          title:"Accounting Basics",
-          lessons:15,
-          progress:"80%"
-        },
-        {
-          title:"Commerce Concepts",
-          lessons:20,
-          progress:"65%"
-        },
-        {
-          title:"Exam Preparation",
-          lessons:12,
-          progress:"35%"
-        }
-      ]
-
-    },
-
-
-    "inter": {
-
-      name:"Intermediate",
-
-      chapters:[
-        {
-          title:"Advanced Accounting",
-          lessons:20,
-          progress:"60%"
-        },
-        {
-          title:"Corporate Law",
-          lessons:15,
-          progress:"50%"
-        },
-        {
-          title:"Financial Management",
-          lessons:18,
-          progress:"45%"
-        }
-      ]
-
-    }
-
-  };
-
-
-
-  const course = courseData[courseId] || {
-    name:"Course",
-    chapters:[]
-  };
-
-
-
+    ChapterService.getById(courseId)
+      .then((response) => {
+        const fetchedData = response.data || {};
+        
+        setCourse({
+          // Maps seamlessly to your dynamic backend data properties or string definitions
+          name: fetchedData.name || fetchedData.courseName || "Course Details",
+          // Maps array mapping variables directly from relational backend tables
+          chapters: fetchedData.chapters || (Array.isArray(fetchedData) ? fetchedData : [])
+        });
+      })
+      .catch((error) => {
+        console.error("Dynamic chapter retrieval processing failed:", error);
+        setCourse({
+          name: "Error Loading Data",
+          chapters: []
+        });
+      });
+  }, [courseId]);
 
   return (
-
     <div className="chapters-page">
-
 
       <button
         className="back-btn"
-        onClick={()=>navigate("/courses")}
+        onClick={() => navigate("/courses")}
       >
-
-        <FaArrowLeft/>
+        <FaArrowLeft />
         Back to Courses
-
       </button>
 
-
-
-
       <div className="chapter-header">
-
-
         <h2>
           {course.name} Chapters
         </h2>
-
-
         <p>
           Select a chapter and start learning
         </p>
-
-
       </div>
 
-
-
-
-
       <div className="row g-4">
-
-
-      {
-        course.chapters.map((chapter,index)=>(
-
-
+        {course.chapters.map((chapter, index) => (
           <div
             className="col-xl-4 col-lg-4 col-md-6"
-            key={index}
+            key={chapter.chapterId || chapter.id || index}
           >
-
-
             <div className="chapter-card">
-
-
-
               <div className="chapter-icon">
-
-                <FaBookOpen/>
-
+                <FaBookOpen />
               </div>
 
-
-
-
+              {/* 🌟 FIXED: Dynamically handles typical response key structures like chapterName or title */}
               <h4>
-                {chapter.title}
+                {chapter.chapterName || chapter.title || chapter.name || "Untitled Chapter"}
               </h4>
 
-
-
-
               <div className="chapter-info">
-
-
                 <span>
-                  <FaClock/>
-                  {chapter.lessons} Lessons
+                  <FaClock />
+                  {chapter.lessons || 0} Lessons
                 </span>
 
-
                 <span>
-                  <FaCheckCircle/>
-                  {chapter.progress}
+                  <FaCheckCircle />
+                  {chapter.progress || "0% Completed"}
                 </span>
-
-
               </div>
 
-
-
-
-
               <div className="progress">
-
-
                 <div
                   className="progress-bar"
                   style={{
-                    width:chapter.progress
+                    width: chapter.progress || "0%"
                   }}
-                >
-
-                </div>
-
-
+                ></div>
               </div>
 
-
-
-
-              <button
-                className="start-btn"
-              >
-
-                <FaPlayCircle/>
+              <button className="start-btn">
+                <FaPlayCircle />
                 Start Learning
-
               </button>
-
-
-
-
             </div>
-
-
           </div>
-
-
-        ))
-      }
-
-
+        ))}
       </div>
 
-
+      {/* Dynamic empty helper node when zero relational rows are bound to the list collection */}
+      {course.chapters.length === 0 && (
+        <div className="text-center w-100 py-5 text-muted">
+          <FaBookOpen size={40} className="mb-3 d-block mx-auto text-light" />
+          <h5>No Chapters Added Yet</h5>
+          <p>Please register chapters or section modules for this course in the database manager.</p>
+        </div>
+      )}
 
     </div>
-
   );
-
 }
-
 
 export default Chapters;

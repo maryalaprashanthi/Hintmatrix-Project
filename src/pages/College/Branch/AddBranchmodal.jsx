@@ -1,5 +1,7 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import CollegeService from "../../../services/CollegeService"; 
 
 import {
   FaTimes,
@@ -13,28 +15,59 @@ import {
 
 import "./AddBranchModal.css";
 
-function AddBranchModal({ show, onClose, onSave }) {
+function AddBranchModal({ show, onClose, onSave,selectedBranchData }) {
   const [collegeId, setCollegeId] = useState("");
   const [branchName, setBranchName] = useState("");
   const [address, setAddress] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
+
+  const [collegesList, setCollegesList] = useState([]); // 🌟 ADDED: State store for backend colleges lookup
+  // 🌟 ADDED: Fetch available colleges whenever modal opens up
+  useEffect(() => {
+    if (show) {
+      CollegeService.getAllColleges()
+        .then((response) => {
+          setCollegesList(response.data || []);
+        })
+        .catch((error) => {
+          console.error("Failed to load college dropdown indices:", error);
+        });
+    }
+  }, [show]);
+
+  // 🌟 ADDED: Sync inputs when editing an existing record
+  useEffect(() => {
+    if (selectedBranchData) {
+      setCollegeId(selectedBranchData.collegeId || "");
+      setBranchName(selectedBranchData.branchName || "");
+      setAddress(selectedBranchData.address || "");
+      setPhoneNumber(selectedBranchData.phoneNumber || "");
+      setEmail(selectedBranchData.email || "");
+    } else {
+      setCollegeId("");
+      setBranchName("");
+      setAddress("");
+      setPhoneNumber("");
+      setEmail("");
+    }
+  }, [selectedBranchData, show]);
 
   if (!show) return null;
 
   const handleSave = () => {
     if (
-      !collegeId.trim() ||
+      !String(collegeId).trim() ||
       !branchName.trim() ||
       !address.trim() ||
-      !phone.trim() ||
+      !phoneNumber.trim() ||
       !email.trim()
     ) {
       alert("Please fill all the fields.");
       return;
     }
 
-    if (!/^\d{10}$/.test(phone)) {
+    if (!/^\d{10}$/.test(phoneNumber)) {
       alert("Phone number must contain exactly 10 digits.");
       return;
     }
@@ -44,20 +77,23 @@ function AddBranchModal({ show, onClose, onSave }) {
       return;
     }
 
-    const newBranch = {
-      collegeId:Number(collegeId),
-      branchName,
-      address,
-      phone,
-      email,
+   // Creates the payload structure matching BranchRequestDTO signatures exactly
+    const branchData = {
+      // If editing, preserve the branchId tracking key reference string
+      ...(selectedBranchData && { branchId: selectedBranchData.branchId }),
+      collegeId: Number(collegeId),
+      branchName: branchName.trim(),
+      address: address.trim(),
+      phoneNumber: phoneNumber.trim(), // 🌟 FIXED: Changed 'phone' to 'phoneNumber' to match backend DTO field name exactly
+      email: email.trim(),
     };
 
-    onSave(newBranch);
+    onSave(branchData);
 
     setCollegeId("");
     setBranchName("");
     setAddress("");
-    setPhone("");
+    setPhoneNumber("");
     setEmail("");
 
     onClose();
@@ -119,9 +155,12 @@ function AddBranchModal({ show, onClose, onSave }) {
                  Select College Id
             </option>
 
-            <option value="1">
-                ------
-            </option>
+             {/*  FIXED: Dynamically map the fetched data to options */}
+                    {collegesList.map((college) => (
+                      <option key={college.collegeId} value={college.collegeId}>
+                        {college.instituteName || `College ID: ${college.collegeId}`}
+                      </option>
+                    ))}
 
         </select>
 
@@ -165,8 +204,8 @@ function AddBranchModal({ show, onClose, onSave }) {
                   <input
                     type="tel"
                     placeholder="9876543210"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
                   />
 
                 </div>

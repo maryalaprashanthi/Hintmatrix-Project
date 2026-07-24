@@ -80,16 +80,20 @@ export default function Sidebar({
           </NavLink>
 
           {/* College */}
-
+          <NavLink to="/college">
+        <div
+          className={`menu-item ${collegeOpen ? "active" : ""}`}
+          onClick={() => setCollegeOpen(!collegeOpen)}
+          style={{ cursor: "pointer" }}
+        >
           <div
-            className={`menu-item ${
-              collegeOpen ? "active" : ""
-            }`}
-            onClick={() =>
-              setCollegeOpen(!collegeOpen)
-            }
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              flex: 1,
+            }}
           >
-            <div className="menu-left">
               <MdSchool />
               <span>College</span>
             </div>
@@ -100,6 +104,7 @@ export default function Sidebar({
               <MdKeyboardArrowDown />
             )}
           </div>
+          </NavLink>
 
           {collegeOpen && (
             <div className="submenu">

@@ -25,8 +25,20 @@ function BranchTable({ onEdit, refresh }) {
   const loadBranches = () => {
     BranchService.getAllBranches()
       .then(response => {
-        // Populates rows directly using the array of BranchResponseDTO structures
-        setBranches(response.data);
+        //  Map and transform keys to ensure structural safety with your DTO configurations
+        const rawData = response.data || [];
+        
+        const sanitizedData = rawData.map((item) => ({
+          ...item,
+          branchId: item.branchId ?? item.id,
+          collegeId: item.collegeId,
+          branchName: item.branchName ?? item.name,
+          address: item.address,
+          phoneNumber: item.phoneNumber ?? item.phone,
+          email: item.email
+        }));
+
+        setBranches(sanitizedData);
       })
       .catch(error => {
         console.error("Error retrieving branch data:", error);
@@ -40,6 +52,10 @@ function BranchTable({ onEdit, refresh }) {
   };
 
   const handleDelete = (id) => {
+     if (!id) {
+      alert("Cannot delete: Branch ID is missing or undefined.");
+      return;
+    }
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this branch?"
     );
