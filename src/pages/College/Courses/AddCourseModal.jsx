@@ -1,10 +1,11 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import "./AddCourseModal.css";
 
 function AddCourseModal({ show, onClose }) {
   if (!show) return null;
 
-  return (
+  return createPortal(
     <div className="modal-overlay">
       <div className="course-modal">
 
@@ -15,21 +16,21 @@ function AddCourseModal({ show, onClose }) {
             <p>Create a new course for HintMatrix students.</p>
           </div>
 
-            <button
-  type="button"
-  className="close-btn"
-  onClick={onClose}
->
-  X
-</button>
-    
+          <button
+            type="button"
+            className="close-btn"
+            onClick={onClose}
+          >
+            ✕
+          </button>
         </div>
 
         {/* Body */}
         <div className="modal-body">
 
+          {/* Course Information */}
           <div className="card-box">
-            <h4>📚 Course Information</h4>
+            <h4>Course Information</h4>
 
             <div className="form-grid">
 
@@ -72,44 +73,41 @@ function AddCourseModal({ show, onClose }) {
             </div>
           </div>
 
+          {/* Thumbnail */}
           <div className="card-box">
-            <h4>🖼 Course Thumbnail</h4>
-            <input type="file" className="form-control" />
-          </div>
+            <h4>Course Thumbnail</h4>
 
-          <div className="card-box">
-            <h4>📝 Course Description</h4>
-
-            <textarea
-              rows="7"
+            <input
+              type="file"
               className="form-control"
-              placeholder="Write course description..."
-            ></textarea>
-             <div className="d-flex justify-content-end gap-3 mt-4">
-    <button
-      type="button"
-      className="btn btn-secondary"
-      onClick={onClose}
-    >
-      Cancel
-    </button>
-
-    <button
-      type="submit"
-      className="btn btn-primary"
-    >
-      Save
-    </button>
-  </div>
-</div> 
+            />
           </div>
 
         </div>
 
         {/* Footer */}
-          
+        <div className="modal-footer d-flex justify-content-end gap-3">
+
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-primary"
+          >
+            Save
+          </button>
+
+        </div>
+
       </div>
-    
+    </div>,
+    document.body
   );
 }
 

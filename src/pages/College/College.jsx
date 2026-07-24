@@ -87,22 +87,25 @@ function College() {
          type="file"
          id="collegeUpload"
          accept=".csv,.xlsx,.xls"
-         style={{ display: "none" }}
+         style={{ display: "none"}}
          onChange={handleFileUpload}
         />
 
-          <button
-          className="btn btn-outline-primary "
-           onClick={() => document.getElementById("collegeUpload").click()}
-          >
-          Upload 
-          </button>
-          <button
-          className="btn btn-primary"
-          onClick={handleAddCollege}
-          >
-          + Add College
-        </button>
+          <div className="d-flex gap-2">
+  <button
+    className="btn btn-primary"
+    onClick={() => document.getElementById("collegeUpload").click()}
+  >
+    ⬆ Upload
+  </button>
+
+  <button
+    className="btn btn-primary"
+    onClick={handleAddCollege}
+  >
+    + Add College
+  </button>
+</div>
       </div>
       </div>
 

@@ -1,0 +1,261 @@
+.question-category-page{
+
+    padding:30px;
+
+    background:#f5f7fb;
+
+    min-height:100vh;
+
+}
+
+
+
+/* HEADER */
+
+.page-header{
+
+    background:white;
+
+    padding:25px;
+
+    border-radius:12px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:25px;
+
+    border:1px solid #e5e7eb;
+
+}
+
+
+.page-header h1{
+
+    font-size:26px;
+
+    color:#111827;
+
+    margin:0;
+
+}
+
+
+.page-header p{
+
+    margin-top:8px;
+
+    color:#6b7280;
+
+}
+
+
+
+/* BUTTON */
+
+
+.add-category-btn{
+
+    background:#2563eb;
+
+    color:white;
+
+    border:none;
+
+    padding:12px 22px;
+
+    border-radius:8px;
+
+    font-size:15px;
+
+    cursor:pointer;
+
+}
+
+
+.add-category-btn:hover{
+
+    background:#1d4ed8;
+
+}
+
+
+
+/* TABLE */
+
+
+.category-table{
+
+    background:white;
+
+    border-radius:12px;
+
+    overflow:hidden;
+
+    border:1px solid #e5e7eb;
+
+}
+
+
+
+.table-header{
+
+    display:grid;
+
+    grid-template-columns:1fr 150px;
+
+    padding:18px 25px;
+
+    background:#f9fafb;
+
+    font-weight:600;
+
+    color:#374151;
+
+    border-bottom:1px solid #e5e7eb;
+
+}
+
+
+
+.category-row{
+
+    display:grid;
+
+    grid-template-columns:1fr 150px;
+
+    align-items:center;
+
+    padding:18px 25px;
+
+    border-bottom:1px solid #f0f0f0;
+
+    transition:.2s;
+
+}
+
+
+.category-row:hover{
+
+    background:#f8fafc;
+
+}
+
+
+
+.category-name{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    font-size:15px;
+
+    color:#1f2937;
+
+}
+
+
+.category-name input{
+
+    width:16px;
+
+    height:16px;
+
+}
+
+
+
+
+.actions{
+
+    display:flex;
+
+    gap:10px;
+
+}
+
+
+
+.actions button{
+
+    border:none;
+
+    padding:7px 14px;
+
+    border-radius:6px;
+
+    cursor:pointer;
+
+    font-size:13px;
+
+}
+
+
+
+.edit-btn{
+
+    background:#dbeafe;
+
+    color:#1d4ed8;
+
+}
+
+
+.delete-btn{
+
+    background:#fee2e2;
+
+    color:#dc2626;
+
+}
+
+
+
+/* MOBILE */
+
+
+@media(max-width:768px){
+
+
+    .question-category-page{
+
+        padding:15px;
+
+    }
+
+
+    .page-header{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+        gap:15px;
+
+    }
+
+
+    .category-row,
+    .table-header{
+
+        grid-template-columns:1fr;
+
+        gap:15px;
+
+    }
+
+
+    .actions{
+
+        justify-content:flex-start;
+
+    }
+
+
+}

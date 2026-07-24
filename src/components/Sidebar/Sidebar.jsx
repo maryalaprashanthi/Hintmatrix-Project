@@ -23,6 +23,10 @@ import {
   MdLogout,
   MdKeyboardArrowDown,
   MdKeyboardArrowUp,
+  MdQuiz,
+  MdMenuBook,
+  MdCategory,
+  MdHelpOutline,
 } from "react-icons/md";
 
 export default function Sidebar({
@@ -31,6 +35,7 @@ export default function Sidebar({
 }) {
   const [collegeOpen, setCollegeOpen] = useState(true);
   const [tableOpen, setTableOpen] = useState(false);
+  const [questionOpen, setQuestionOpen] = useState(true);
 
   const closeSidebar = () => {
     if (window.innerWidth <= 768) {
@@ -67,6 +72,8 @@ export default function Sidebar({
       <div className="sidebar-content">
         <nav className="sidebar-menu">
 
+          {/* Dashboard */}
+
           <NavLink
             to="/"
             end
@@ -79,8 +86,11 @@ export default function Sidebar({
             </div>
           </NavLink>
 
-          {/* College */}
+          
 
+
+          {/* College */}
+          <NavLink to="/college">
           <div
             className={`menu-item ${
               collegeOpen ? "active" : ""
@@ -100,6 +110,7 @@ export default function Sidebar({
               <MdKeyboardArrowDown />
             )}
           </div>
+          </NavLink>
 
           {collegeOpen && (
             <div className="submenu">
@@ -130,6 +141,67 @@ export default function Sidebar({
                 <MdViewModule />
                 <span>Section</span>
               </NavLink>
+
+            </div>
+          )}
+
+          {/* Questions */}
+
+          <div
+            className={`menu-item ${
+              questionOpen ? "active" : ""
+            }`}
+            onClick={() =>
+              setQuestionOpen(!questionOpen)
+            }
+          >
+            <div className="menu-left">
+              <MdQuiz />
+              <span>Questions</span>
+            </div>
+
+            {questionOpen ? (
+              <MdKeyboardArrowUp />
+            ) : (
+              <MdKeyboardArrowDown />
+            )}
+          </div>
+
+          {questionOpen && (
+            <div className="submenu">
+
+              <NavLink
+  to="/questions/chapters"
+  className={subMenuClass}
+  onClick={closeSidebar}
+>
+  <MdMenuBook />
+  <span>Chapters</span>
+</NavLink>
+
+<NavLink
+  to="/questions/question-categories"
+  className={subMenuClass}
+  onClick={closeSidebar}
+>
+  <MdCategory />
+  <span>Question Categories</span>
+</NavLink>
+
+<NavLink
+  to="/questions"
+  className={subMenuClass}
+  onClick={closeSidebar}
+>
+  <MdHelpOutline />
+  <span>Questions</span>
+</NavLink>
+
+
+
+
+
+
 
             </div>
           )}
