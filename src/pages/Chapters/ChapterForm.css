@@ -4,7 +4,6 @@
 
 .modal-overlay {
     position: fixed;
-
     top: 82px;
     left: 0;
     right: 0;
@@ -27,7 +26,7 @@
    Modal
 ========================================== */
 
-.course-modal {
+.chapter-modal {
     width: min(850px, 95vw);
     max-width: 95vw;
 
@@ -58,8 +57,11 @@
     justify-content: center;
     align-items: center;
     position: relative;
+
     padding: 50px 28px 22px;
+
     border-bottom: 1px solid #e5e7eb;
+
     background: #fff;
 }
 
@@ -81,10 +83,6 @@
     color: #0e1323;
 }
 
-/* ==========================================
-   Close Button
-========================================== */
-
 .close-btn {
     width: 30px;
     height: 30px;
@@ -101,6 +99,7 @@
 
 .close-btn:hover {
     background: #ef4444;
+    color: white;
 }
 
 /* ==========================================
@@ -121,7 +120,7 @@
    Card
 ========================================== */
 
-.card-box {
+.form-card {
     background: white;
 
     border-radius: 14px;
@@ -137,7 +136,7 @@
    Section Title
 ========================================== */
 
-.card-box h4 {
+.section-title {
     margin-bottom: 22px;
 
     font-size: 20px;
@@ -170,36 +169,55 @@
     font-weight: 600;
 }
 
+.form-group span {
+    color: red;
+}
+
 /* ==========================================
-   Inputs
+   Input
 ========================================== */
 
-.form-control,
-.form-select {
+.input-box {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+
+    left: 15px;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    color: #64748b;
+}
+
+.input-box input,
+.input-box select {
     width: 100%;
 
-    height: 45px;
+    height: 50px;
 
     border: 1px solid #dbe4f0;
 
-    border-radius: 10px;
+    border-radius: 12px;
+
+    padding-left: 45px;
 
     font-size: 15px;
+
+    outline: none;
+
+    transition: .3s;
+
+    background: white;
 }
 
-.form-control:focus,
-.form-select:focus {
+.input-box input:focus,
+.input-box select:focus {
     border-color: #356bdf;
 
     box-shadow: 0 0 0 3px rgba(53,107,223,0.12);
-}
-
-textarea.form-control {
-    min-height: 80px;
-
-    resize: vertical;
-
-    padding-top: 12px;
 }
 
 /* ==========================================
@@ -209,6 +227,10 @@ textarea.form-control {
 .modal-footer {
     margin-right: 20px;
     margin-bottom: 10px;
+
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
 }
 
 .modal-footer .btn {
@@ -222,38 +244,9 @@ textarea.form-control {
     justify-content: center;
 
     border-radius: 10px;
+
     font-size: 15px;
     font-weight: 600;
-}
-
-/* ==========================================
-   Bootstrap Button Styling
-========================================== */
-
-.btn {
-    border-radius: 10px;
-
-    padding: 10px 22px;
-
-    font-weight: 600;
-}
-
-/* ==========================================
-   Animation
-========================================== */
-
-@keyframes popup {
-
-    from {
-        opacity: 0;
-        transform: translateY(-20px) scale(.96);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-
 }
 
 /* ==========================================
@@ -262,42 +255,36 @@ textarea.form-control {
 
 @media(max-width:768px){
 
-    .form-grid{
-        grid-template-columns:1fr;
-    }
+.form-grid{
+grid-template-columns:1fr;
+}
 
-    .course-modal{
-        width:95%;
-    }
+.chapter-modal{
+width:95%;
+}
 
-    .modal-header h2{
-        font-size:22px;
-    }
+.modal-header h2{
+font-size:22px;
+}
 
-    .modal-footer{
-        flex-direction:column;
-    }
+.modal-footer{
+flex-direction:column;
+}
 
-    .btn{
-        width:100%;
-    }
+.modal-footer .btn{
+width:100%;
+}
 
 }
 
-/* Laptops with smaller height */
-
-@media (max-height:800px) {
-
-    .course-modal {
-        max-height:86vh;
-    }
-
+@media (max-height:800px){
+.chapter-modal{
+max-height:86vh;
+}
 }
 
-@media (max-height:700px) {
-
-    .course-modal {
-        max-height:82vh;
-    }
-
+@media (max-height:700px){
+.chapter-modal{
+max-height:82vh;
+}
 }

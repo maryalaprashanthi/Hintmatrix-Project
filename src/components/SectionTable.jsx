@@ -1,21 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
-import SectionService from "../services/SectionService"; 
+import SectionService from "../services/SectionService";
 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 
-// Register ag-Grid community modules explicitly
+// Register AG Grid Modules
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-function SectionTable({ onEdit, refresh }) {
+function SectionTable({ refresh, onEdit }) {
   const [sections, setSections] = useState([]);
 
   const defaultColDef = {
     sortable: true,
     filter: true,
-    resizable: true
+    resizable: true,
   };
 
   useEffect(() => {
@@ -23,149 +23,132 @@ function SectionTable({ onEdit, refresh }) {
   }, [refresh]);
 
   const loadSections = () => {
-    // Linked to the official REST service getter method
     SectionService.getAllSections()
       .then((response) => {
         setSections(response.data);
       })
       .catch((error) => {
-        console.error("Error retrieving sections:", error);
+        console.error("Error loading sections:", error);
       });
   };
 
-  const handleEdit = (section) => {
-    if (onEdit) {
-      onEdit(section);
-    }
-  };
-
-  const deleteSectionData = (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this section?"
-    );
-
-    if (confirmDelete) {
-      // Linked to the updated delete routing method targeting @DeleteMapping("/{id}")
+  const deleteSection = (id) => {
+    if (window.confirm("Are you sure you want to delete this section?")) {
       SectionService.deleteSection(id)
         .then(() => {
           alert("Section Deleted Successfully");
           loadSections();
         })
         .catch((error) => {
-          console.error("Error deleting section:", error);
+          console.error(error);
         });
     }
   };
 
-  // Explicitly mapping column definitions against your backend SectionResponseDTO fields
   const columnDefs = [
-    { field: "sectionId", headerName: "ID", width: 80 },
-    { field: "sectionName", headerName: "Section Name", flex: 1, minWidth: 130 },
-    { field: "courseName", headerName: "Associated Course", flex: 1, minWidth: 150 }, // Fetched cleanly from DTO
-    { field: "description", headerName: "Description", flex: 2, minWidth: 180 },
-    { 
-      field: "activeRow", 
-      headerName: "Status", 
-      width: 100,
-      cellRenderer: (params) => {
-        // FIXED: Switched to robust inline CSS layout configurations to handle custom background renders
-        return params.value ? (
-          <span style={{
-            backgroundColor: "#dcfce7",
-            color: "#15803d",
-            border: "1px solid #bbf7d0",
-            padding: "4px 10px",
-            borderRadius: "4px",
-            fontSize: "12px",
-            fontWeight: "600",
-            display: "inline-block",
-            lineHeight: "1"
-          }}>Active</span>
-        ) : (
-          <span style={{
-            backgroundColor: "#fee2e2",
-            color: "#b91c1c",
-            border: "1px solid #fecaca",
-            padding: "4px 10px",
-            borderRadius: "4px",
-            fontSize: "12px",
-            fontWeight: "600",
-            display: "inline-block",
-            lineHeight: "1"
-          }}>Inactive</span>
-        );
-      }
+    {
+      field: "sectionId",
+      headerName: "ID",
+      width: 90,
     },
-    { 
-      field: "createdAt", 
-      headerName: "Created On", 
-      width: 130,
+    {
+      field: "sectionName",
+      headerName: "Section Name",
+      flex: 1,
+    },
+    {
+      field: "courseName",
+      headerName: "Course",
+      flex: 1,
+    },
+    {
+      field: "description",
+      headerName: "Description",
+      flex: 2,
+    },
+    {
+      field: "activeRow",
+      headerName: "Status",
+      width: 120,
+      cellRenderer: (params) =>
+        params.value ? (
+          <span
+            style={{
+              background: "#dcfce7",
+              color: "#15803d",
+              padding: "4px 10px",
+              borderRadius: "6px",
+              fontSize: "12px",
+              fontWeight: "600",
+            }}
+          >
+            Active
+          </span>
+        ) : (
+          <span
+            style={{
+              background: "#fee2e2",
+              color: "#b91c1c",
+              padding: "4px 10px",
+              borderRadius: "6px",
+              fontSize: "12px",
+              fontWeight: "600",
+            }}
+          >
+            Inactive
+          </span>
+        ),
+    },
+    {
+      field: "createdAt",
+      headerName: "Created On",
+      width: 140,
       valueFormatter: (params) => {
         if (!params.value) return "";
         return new Date(params.value).toLocaleDateString();
-      }
+      },
     },
     {
       headerName: "Actions",
-      width: 160,
-      suppressMenu: true,
+      width: 170,
       sortable: false,
       filter: false,
-      pinned: "right",
-      cellRenderer: (params) => {
-        if (!params.data) return null;
+      cellRenderer: (params) => (
+        <div
+          style={{
+            display: "flex",
+            gap: "8px",
+            alignItems: "center",
+            height: "100%",
+          }}
+        >
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={() => onEdit(params.data)}
+          >
+            Edit
+          </button>
 
-        return (
-          <div style={{ display: "flex", alignItems: "center", height: "100%", gap: "8px" }}>
-            <button
-              onClick={() => handleEdit(params.data)}
-              style={{
-                background: "#2563eb",
-                color: "white",
-                border: "none",
-                padding: "2px 10px",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "12px",
-                lineHeight: "1",
-                height: "26px",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center"
-              }}
-            >
-              Edit
-            </button>
-            <button
-              onClick={() => deleteSectionData(params.data.sectionId)}
-              style={{
-                background: "#dc2626",
-                color: "white",
-                border: "none",
-                padding: "2px 10px",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "12px",
-                lineHeight: "1",
-                height: "26px",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center"
-              }}
-            >
-              Delete
-            </button>
-          </div>
-        );
-      }
-    }
+          <button
+            className="btn btn-danger btn-sm"
+            onClick={() => deleteSection(params.data.sectionId)}
+          >
+            Delete
+          </button>
+        </div>
+      ),
+    },
   ];
 
   return (
     <div style={{ marginTop: "10px" }}>
-      <div className="ag-theme-quartz" style={{ height: "450px", width: "100%" }}>
+      <div
+        className="ag-theme-quartz"
+        style={{
+          width: "100%",
+          height: "450px",
+        }}
+      >
         <AgGridReact
           rowData={sections}
           columnDefs={columnDefs}

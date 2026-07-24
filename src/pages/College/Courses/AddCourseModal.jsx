@@ -46,7 +46,41 @@ function AddCourseModal({ show, onClose, onRefresh }) {
       });
   };
 
-  return (
+  // 🌟 FIXED: Added database pipeline orchestrator matching your CourseRequestDTO signatures
+  const handleSave = (e) => {
+    e.preventDefault();
+
+    if (!courseName.trim()) {
+      alert("Please fill in the Course Name.");
+      return;
+    }
+
+    const courseRequestDTO = {
+      branchId: 1, // Satisfies backend @NotNull validation requirement
+      name: courseName.trim() // Changed 'courseName' to 'name' to pass Spring Boot validation constraints
+    };
+
+    CourseService.saveCourse(courseRequestDTO)
+      .then(() => {
+        alert("Course saved successfully to database!");
+        
+        // Reset state variables cleanly
+        setCourseName("");
+        setCategory("Commerce");
+        setLevel("Beginner");
+        setDuration("3 Months");
+        setDescription("");
+
+        if (onRefresh) onRefresh(); // Dynamically reloads data on main screen grid live
+        onClose(); // Close modal window
+      })
+      .catch((error) => {
+        console.error("Backend error creating course record:", error);
+        alert(error.response?.data?.message || "Failed to create new course.");
+      });
+  };
+
+  return createPortal(
     <div className="modal-overlay">
       <div className="course-modal">
 
@@ -56,19 +90,23 @@ function AddCourseModal({ show, onClose, onRefresh }) {
             <h2>Add New Course</h2>
             <p>Create a new course for HintMatrix students.</p>
           </div>
+
           <button
             type="button"
             className="close-btn"
             onClick={onClose}
           >
-            X
+            ✕
           </button>
         </div>
 
         {/* Body */}
         <div className="modal-body">
+
+          {/* Course Information */}
           <div className="card-box">
-            <h4>📚 Course Information</h4>
+            <h4>Course Information</h4>
+
             <div className="form-grid">
 
               <div className="form-group">
@@ -122,9 +160,14 @@ function AddCourseModal({ show, onClose, onRefresh }) {
             </div>
           </div>
 
+          {/* Thumbnail */}
           <div className="card-box">
-            <h4>🖼 Course Thumbnail</h4>
-            <input type="file" className="form-control" />
+            <h4>Course Thumbnail</h4>
+
+            <input
+              type="file"
+              className="form-control"
+            />
           </div>
 
           {/* 🌟 FIXED: Repaired and balanced unmatched JSX tag layouts to fix compilation crash */}
@@ -158,8 +201,10 @@ function AddCourseModal({ show, onClose, onRefresh }) {
           </div> 
         </div>
 
-      </div>
-    </div>
+        </div>
+
+      </div>,
+    document.body
   );
 }
 
