@@ -1,6 +1,7 @@
 import React, { useState } from "react"; // 🌟 FIXED: Imported useState for tracking inputs
 import "./AddCourseModal.css";
 import CourseService from "../../../services/CourseService";
+import { createPortal } from "react-dom";
 
 function AddCourseModal({ show, onClose, onRefresh }) {
   // 🌟 FIXED: Created tracking state hooks for your form data
@@ -46,39 +47,6 @@ function AddCourseModal({ show, onClose, onRefresh }) {
       });
   };
 
-  // 🌟 FIXED: Added database pipeline orchestrator matching your CourseRequestDTO signatures
-  const handleSave = (e) => {
-    e.preventDefault();
-
-    if (!courseName.trim()) {
-      alert("Please fill in the Course Name.");
-      return;
-    }
-
-    const courseRequestDTO = {
-      branchId: 1, // Satisfies backend @NotNull validation requirement
-      name: courseName.trim() // Changed 'courseName' to 'name' to pass Spring Boot validation constraints
-    };
-
-    CourseService.saveCourse(courseRequestDTO)
-      .then(() => {
-        alert("Course saved successfully to database!");
-        
-        // Reset state variables cleanly
-        setCourseName("");
-        setCategory("Commerce");
-        setLevel("Beginner");
-        setDuration("3 Months");
-        setDescription("");
-
-        if (onRefresh) onRefresh(); // Dynamically reloads data on main screen grid live
-        onClose(); // Close modal window
-      })
-      .catch((error) => {
-        console.error("Backend error creating course record:", error);
-        alert(error.response?.data?.message || "Failed to create new course.");
-      });
-  };
 
   return createPortal(
     <div className="modal-overlay">
@@ -170,35 +138,26 @@ function AddCourseModal({ show, onClose, onRefresh }) {
             />
           </div>
 
-          {/* 🌟 FIXED: Repaired and balanced unmatched JSX tag layouts to fix compilation crash */}
-          <div className="card-box">
-            <h4>📝 Course Description</h4>
-            <textarea
-              rows="7"
-              className="form-control"
-              placeholder="Write course description..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            ></textarea>
-            
-            <div className="d-flex justify-content-end gap-3 mt-4">
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={onClose}
-              >
-                Cancel
-              </button>
+          {/* Footer */}
+        <div className="modal-footer d-flex justify-content-end gap-3">
 
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={handleSave}
-              >
-                Save
-              </button>
-            </div>
-          </div> 
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-primary"
+          >
+            Save
+          </button>
+
+        </div>
+      
         </div>
 
         </div>
