@@ -1,5 +1,6 @@
 import "./Chapters.css";
 import { useState } from "react";
+import ChapterForm from "./ChapterForm";
 import {
   useParams,
   useNavigate,
@@ -320,7 +321,7 @@ const course = isQuestionsModule
 
         <FaArrowLeft/>
 
-        Back to Courses
+        Back 
 
 
       </button>
@@ -517,7 +518,13 @@ const course = isQuestionsModule
 
 
       </div>
-      
+      <ChapterForm
+  show={showAddChapter}
+  onClose={() => setShowAddChapter(false)}
+  onSave={(newChapter) => {
+    console.log(newChapter);
+  }}
+/>
 </div>
 
 

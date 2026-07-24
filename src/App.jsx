@@ -17,7 +17,7 @@ import Branch from "./pages/College/Branch/Branch";
 import Chapters from "./pages/Chapters/Chapters";
 
 import QuestionCategories from "./pages/QuestionCategories/QuestionCategories";
-import Questions from "./pages/Questions/Questions";
+
 
 // Other Pages
 import Practice from "./pages/Practice";
@@ -184,10 +184,7 @@ return (
       path="/questions/question-categories"
       element={<QuestionCategories />}
     />
-    <Route
-    path="/questions"
-    element={<Questions />}
-/>
+    
 
     {/* Add Course */}
     <Route

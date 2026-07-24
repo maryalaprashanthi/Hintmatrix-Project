@@ -187,22 +187,6 @@ export default function Sidebar({
   <MdCategory />
   <span>Question Categories</span>
 </NavLink>
-
-<NavLink
-  to="/questions"
-  className={subMenuClass}
-  onClick={closeSidebar}
->
-  <MdHelpOutline />
-  <span>Questions</span>
-</NavLink>
-
-
-
-
-
-
-
             </div>
           )}
 
