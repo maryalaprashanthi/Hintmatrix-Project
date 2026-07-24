@@ -13,6 +13,7 @@ import {
 } from "react-icons/fa";
 
 import "./Courses.css";
+import AddCourseModal from "./AddCourseModal";
 
 import bcom from "../../../assets/courses/bcom.png.jpeg";
 import ca from "../../../assets/courses/ca-foundation.png.jpeg";
@@ -27,7 +28,7 @@ function Courses() {
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
-
+  const [showModal, setShowModal] = useState(false);
   const courses = [
     {
       id: "bcom",
@@ -130,13 +131,13 @@ function Courses() {
 
         </div>
 
-        <button className="btn add-course-btn">
-
-          <FaPlus className="me-2" />
-
-          Add Course
-
-        </button>
+        <button
+  className="btn btn-primary px-4"
+  onClick={() => setShowModal(true)}
+>
+  
+  + Add Course
+</button>
 
       </div>
 
@@ -357,7 +358,10 @@ function Courses() {
         </div>
 
       )}
-
+       <AddCourseModal
+        show={showModal}
+        onClose={() => setShowModal(false)}
+      />
     </div>
 
   );

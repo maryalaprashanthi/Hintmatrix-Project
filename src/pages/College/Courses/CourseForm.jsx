@@ -163,11 +163,21 @@ function CourseForm({ onSaveCourse }) {
                     <input type="file" className="form-control" />
                   </div>
 
-                  <div className="col-12 text-end">
-                    <button type="submit" className="btn btn-primary px-5">
-                      Save Course
-                    </button>
-                  </div>
+                  <div className="d-flex justify-content-end gap-3 mt-4">
+  <button
+    type="button"
+    className="btn btn-secondary px-4"
+  >
+    Cancel
+  </button>
+
+  <button
+    type="submit"
+    className="btn btn-primary px-4"
+  >
+    Save
+  </button>
+</div>
                 </div>
               </div>
             </form>

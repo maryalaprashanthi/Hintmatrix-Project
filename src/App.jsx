@@ -162,7 +162,7 @@ function App() {
         <Route path="/college" element={<College />} />
         <Route path="/section" element={<Section />} />
         <Route path="/Branch" element={<Branch />} />
-        <Route path="/course" element={<Course />} /> {/* Added singular course admin management route */}
+        <Route path="/course" element={<Courses dynamicCourses={coursesList}/>} /> {/* Added singular course admin management route */}
         
         {/* Table Details */}
         <Route path="/table-names" element={<TableNames />} />

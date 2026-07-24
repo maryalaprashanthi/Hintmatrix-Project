@@ -3,149 +3,180 @@ import SectionForm from "./SectionForm";
 import SectionTable from "./SectionTable";
 
 function Section() {
-  const [refreshTrigger, setRefreshTrigger] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [selectedSection, setSelectedSection] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
 
-  // Triggered when clicking 'Edit' in SectionTable
-  const handleEditSignal = (sectionData) => {
-    // Sets fields matching SectionResponseDTO to pass down to form
+  const handleAddSection = () => {
+    setSelectedSection(null);
+    setShowModal(true);
+  };
+
+  const handleEditSection = (sectionData) => {
     setSelectedSection(sectionData);
-
-    const hiddenTriggerButton = document.getElementById(
-      "hiddenSectionModalTrigger"
-    );
-
-    if (hiddenTriggerButton) {
-      hiddenTriggerButton.click();
-    }
+    setShowModal(true);
   };
 
-  // Triggered after successful POST or PUT in SectionForm
-  const handleFormSubmissionComplete = () => {
+  const handleUpdateComplete = () => {
     setSelectedSection(null);
-    // Toggles boolean state to force SectionTable to re-run its GET request
+    setShowModal(false);
     setRefreshTrigger((prev) => !prev);
-
-    const modalCloseButton = document.getElementById(
-      "sectionModalCloseButton"
-    );
-
-    if (modalCloseButton) {
-      modalCloseButton.click();
-    }
   };
 
-  // Explicitly resets form fields when user switches from editing to creating
-  const handleAddSectionClick = () => {
+  const handleClose = () => {
     setSelectedSection(null);
+    setShowModal(false);
   };
 
   return (
-    <div
-      className="container-fluid p-4"
-      style={{
-        backgroundColor: "#f8fafc",
-        minHeight: "100vh",
-      }}
-    >
-      {/* Scope-isolated styles to handle Bootstrap backdrop layout properly */}
+    <div className="container-fluid py-4 px-4 bg-light min-vh-100">
+
+      {/* Local Styles */}
       <style>{`
-        .modal-backdrop {
-          display: none !important;
-        }
+        .modal-overlay {
+    position: fixed;
+    top: 82px;
+    left: 0;
+    right: 0;
+    bottom: 0;
 
-        body.modal-open {
-          overflow: auto !important;
-          padding-right: 0 !important;
-        }
-      `}</style>
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
 
-      {/* Programmatic Hidden Trigger for Edit Actions */}
-      <button
-        id="hiddenSectionModalTrigger"
-        className="d-none"
-        data-bs-toggle="modal"
-        data-bs-target="#sectionModal"
-        data-bs-backdrop="false"
-      ></button>
+    padding-top: 40px;
 
-      {/* Dashboard Top Header Bar */}
-      <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    background: rgba(15, 23, 42, 0.35);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    overflow-y: auto;   /* Allows scrolling */
+    z-index: 9999;
+}
+
+     .section-modal {
+    width: 900px;
+    max-width: 95%;
+
+    background: #fff;
+
+    border-radius: 18px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+
+    max-height: calc(100vh - 140px);
+    
+    display: flex;
+    flex-direction: column;
+    overflow-y: hidden;   /* Scroll inside the modal */
+    
+        /* Above the overlay */
+}
+        .modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+`}</style>
+
+      {/* Header */}
+
+      <div className="d-flex justify-content-between align-items-center mb-4">
+
         <div>
-          <h1 className="fw-bold text-dark mb-1">
-            Section Management Dashboard
-          </h1>
+
+          <h2 className="fw-bold mb-1">
+            Section Management
+          </h2>
 
           <p className="text-muted mb-0">
-            Configure system-wide student cohorts and manage active academic
-            sections.
+            Manage all sections from one place.
           </p>
+
         </div>
 
         <button
-          className="btn btn-primary px-4 py-2 fw-bold shadow-sm rounded-3"
-          data-bs-toggle="modal"
-          data-bs-target="#sectionModal"
-          data-bs-backdrop="false"
-          onClick={handleAddSectionClick}
+          className="btn btn-primary px-4"
+          onClick={handleAddSection}
         >
-          ➕ Add Section
+          + Add Section
         </button>
+
       </div>
 
-      {/* Main Table Content Container Card */}
-      <div className="card border-0 shadow-sm rounded-3">
+      {/* Table */}
+
+      <div className="card section-card">
+
         <div className="card-body">
 
-          <h3 className="fw-bold text-dark fs-5 mb-3">
-            Registered Student Sections
-          </h3>
-
-          <div className="table-responsive">
-            {/* Table receives refresh trigger to re-fetch SectionResponseDTO arrays */}
-            <SectionTable
-              onEdit={handleEditSignal}
-              refresh={refreshTrigger}
-            />
-          </div>
+          <SectionTable
+            refresh={refreshTrigger}
+            onEdit={handleEditSection}
+          />
 
         </div>
+
       </div>
 
-      {/* Standard Popup Bootstrap Modal */}
-      <div
-        className="modal fade"
-        id="sectionModal"
-        tabIndex="-1"
-        data-bs-backdrop="false"
-        aria-labelledby="sectionModalLabel"
-        aria-hidden="true"
-      >
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content border-0 shadow rounded-3">
+      {/* Bootstrap Modal */}
 
-            <div className="modal-header border-0">
-              <button
-                id="sectionModalCloseButton"
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-                onClick={() => setSelectedSection(null)}
-              ></button>
-            </div>
+      {showModal && (
 
-            <div className="modal-body pt-0">
-              {/* Form processes DTO mapping dynamically on change operations */}
-              <SectionForm
-                selectedSectionData={selectedSection}
-                onUpdateComplete={handleFormSubmissionComplete}
-              />
-            </div>
+        <div
+          className="modal-overlay"
+          tabIndex="-1"
+          style={{
+            background: "rgba(15,23,42,.35)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)"
+          }}
+        >
 
-          </div>
+          <div className="section-modal">
+
+    {/* Header */}
+
+    <div className="modal-header">
+
+        <div className="w-100 text-center">
+
+            <h3 className="fw-bold mb-1">
+                {selectedSection ? "Edit Section" : "Add New Section"}
+            </h3>
+
+            <p className="text-muted mb-0">
+                Create or update section information.
+            </p>
+
         </div>
-      </div>
+
+        <button
+            type="button"
+            className="btn-close position-absolute end-0 me-3"
+            onClick={handleClose}
+        ></button>
+
+    </div>
+
+    {/* Body */}
+
+    <div className="modal-body">
+
+        <SectionForm
+            selectedSectionData={selectedSection}
+            onUpdateComplete={handleUpdateComplete}
+            onCancel={handleClose}
+        />
+
+    </div>
+
+</div>
+           
+          </div>
+            
+        
+
+      )}
+
     </div>
   );
 }

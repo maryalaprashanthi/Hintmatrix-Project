@@ -1,59 +1,108 @@
+import { useState, useRef, useEffect } from "react";
 import "./Navbar.css";
-import logo from "../../assets/hintmatrix-logo.png";
 
-import {FiSearch,FiBell,FiChevronDown} from "react-icons/fi";
+import {
+  FiSearch,
+  FiBell,
+  FiChevronDown,
+  FiUser,
+  FiSettings,
+  FiLogOut,
+  FiMenu,
+} from "react-icons/fi";
 
-export default function Navbar(){
+export default function Navbar({ sidebarOpen, setSidebarOpen }) {
+  const [showMenu, setShowMenu] = useState(false);
 
-return(
+  const menuRef = useRef(null);
 
-<header className="navbar">
+  useEffect(() => {
+    function close(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setShowMenu(false);
+      }
+    }
 
-<div className="navbar-left">
-<img src={logo} className="logo" alt="logo"/>
-</div>
+    document.addEventListener("mousedown", close);
 
-<div className="navbar-center">
+    return () => {
+      document.removeEventListener("mousedown", close);
+    };
+  }, []);
 
-<div className="search-box">
+  return (
+    <header className="navbar">
+      {/* Mobile Menu */}
+      <div className="navbar-left">
+        <button
+          className="menu-btn"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+        >
+          <FiMenu />
+        </button>
+      </div>
 
-<FiSearch className="search-icon"/>
+      {/* Search */}
+      <div className="navbar-center">
+        <div className="search-box">
+          <FiSearch className="search-icon" />
 
-<input
-placeholder="Search for courses, topics..."
-/>
+          <input
+            type="text"
+            placeholder="Search courses, topics..."
+          />
+        </div>
+      </div>
 
-</div>
+      {/* Right Side */}
+      <div className="navbar-right">
+        <div className="nav-icon">
+          <FiBell />
+        </div>
 
-</div>
+        <div className="profile" ref={menuRef}>
+          <div
+            className="profile-trigger"
+            onClick={() => setShowMenu(!showMenu)}
+          >
+            <img
+              src="https://i.pravatar.cc/150?img=32"
+              alt="Profile"
+            />
 
-<div className="navbar-right">
+            <div className="profile-info">
+              <span className="profile-name">
+                Prashanthi
+              </span>
 
-<div className="notification">
+              <span className="profile-role">
+                Student
+              </span>
+            </div>
 
-<FiBell/>
+            <FiChevronDown />
+          </div>
 
-<span className="badge">3</span>
+          {showMenu && (
+            <div className="profile-dropdown">
+              <button>
+                <FiUser />
+                My Profile
+              </button>
 
-</div>
+              <button>
+                <FiSettings />
+                Settings
+              </button>
 
-<div className="profile">
-
-<img
-src="https://i.pravatar.cc/150?img=32"
-alt=""
-/>
-
-<span>Prashanthi</span>
-
-<FiChevronDown/>
-
-</div>
-
-</div>
-
-</header>
-
-);
-
+              <button className="logout-btn">
+                <FiLogOut />
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  );
 }
