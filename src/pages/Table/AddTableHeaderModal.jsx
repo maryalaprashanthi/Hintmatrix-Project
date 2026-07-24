@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import {
@@ -10,10 +10,14 @@ import {
 import "./AddTableHeaderModal.css";
 
 
-function AddTableHeaderModal({ show, onClose, onSave }) {
+function AddTableHeaderModal({ show, onClose, onSave,Inputdata }) {
 
   const [name, setName] = useState("");
 
+  useEffect(()=>{
+    
+    setName(Inputdata||"");
+  },[Inputdata]);
 
   if (!show) return null;
 
@@ -32,11 +36,6 @@ function AddTableHeaderModal({ show, onClose, onSave }) {
 
 
     onSave(newTableHeader);
-
-
-    setName("");
-
-    onClose();
 
   };
 
@@ -57,11 +56,11 @@ function AddTableHeaderModal({ show, onClose, onSave }) {
           <div>
 
             <h2>
-              Add Table Header
+              {Inputdata==""?"Add Table Header":"Update table headers"}
             </h2>
 
             <p>
-              Create a new table header.
+              {Inputdata==""?"Create a new table header.":"Update an existing table header"}
             </p>
 
           </div>
@@ -166,7 +165,7 @@ function AddTableHeaderModal({ show, onClose, onSave }) {
 
             <FaSave className="me-2" />
 
-            Save
+            {Inputdata==""?"Save":"Update"}
 
           </button>
 

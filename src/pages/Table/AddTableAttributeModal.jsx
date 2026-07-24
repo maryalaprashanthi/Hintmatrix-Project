@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-
 import {
   FaTimes,
   FaTable,
@@ -10,48 +9,52 @@ import {
 } from "react-icons/fa";
 
 import "./AddTableAttributeModal.css";
+import TableHeaderService from "../../services/TableHeaderService";
 
 
-function AddTableAttributeModal({ show, onClose, onSave }) {
+function AddTableAttributeModal({ show, onClose, onSave,initialData }) {
 
-  const [name, setName] = useState("");
-  const [shortName, setShortName] = useState("");
-  const [tableHeaderName, setTableHeaderName] = useState("");
+    const [formData, setFormData] = useState({
+    name: "",
+    shortName: "",
+    tableHeaderName: "",
+  });
+  const [tableHeaders,setTableHeaders] = useState([]);
 
+  const loadTableHeaders = async () => {
+    try {
+      const result = await TableHeaderService.getAll();
+      const data = await result.data;
+      const allTableNames = data.map((obj)=>({"name":obj.name}));
+      setTableHeaders(allTableNames);
+    } catch (error) {
+      console.log("Error: ",error);
+    }
+  }
+
+    useEffect(()=>{
+    loadTableHeaders();
+    setFormData(initialData||{
+    name: "",
+    shortName: "",
+    tableHeaderName: "",
+  });
+  },[initialData]);
 
   if (!show) return null;
 
 
-  const handleSave = () => {
+  const handleSave = async () => {
 
     if (
-      !name.trim() ||
-      !shortName.trim() ||
-      !tableHeaderName.trim()
+      !formData.name.trim() ||
+      !formData.tableHeaderName.trim()
     ) {
-      alert("Please fill all the fields.");
       return;
     }
 
-
-    const newTableAttribute = {
-      name,
-      shortName,
-      tableHeaderName,
-    };
-
-
-    onSave(newTableAttribute);
-
-
-    setName("");
-    setShortName("");
-    setTableHeaderName("");
-
-    onClose();
-
+    await onSave(formData);
   };
-
 
   return createPortal(
 
@@ -68,11 +71,11 @@ function AddTableAttributeModal({ show, onClose, onSave }) {
           <div>
 
             <h2>
-              Add Table Attribute
+              {initialData==null?"Add Table Attribute":"Edit Table Attribute"}
             </h2>
 
             <p>
-              Create a new table attribute.
+              {initialData==null?"Create a new table attribute.":"Edit an existing Table Attribute"}
             </p>
 
           </div>
@@ -126,9 +129,9 @@ function AddTableAttributeModal({ show, onClose, onSave }) {
                   <input
                     type="text"
                     placeholder="Enter Attribute Name"
-                    value={name}
+                    value={formData.name}
                     onChange={(e) =>
-                      setName(e.target.value)
+                      setFormData({...formData,name:e.target.value})
                     }
                   />
 
@@ -144,7 +147,7 @@ function AddTableAttributeModal({ show, onClose, onSave }) {
               <div className="form-group">
 
                 <label>
-                  Short Name <span>*</span>
+                  Short Name
                 </label>
 
 
@@ -156,9 +159,9 @@ function AddTableAttributeModal({ show, onClose, onSave }) {
                   <input
                     type="text"
                     placeholder="Enter Short Name"
-                    value={shortName}
+                    value={formData.shortName}
                     onChange={(e) =>
-                      setShortName(e.target.value)
+                      setFormData({...formData,shortName:e.target.value})
                     }
                   />
 
@@ -182,18 +185,20 @@ function AddTableAttributeModal({ show, onClose, onSave }) {
 
                   <FaColumns className="input-icon" />
 
+
                   <select
-                      value={tableHeaderName}
-                      onChange={(e) => setTableHeaderName(e.target.value)}
+                    value={formData.tableHeaderName}
+                    onChange={(e) =>
+                      setFormData({...formData,tableHeaderName:e.target.value})
+                    }
                   >
-                     <option value="">Select Table Header Name</option>
-                     <option value="1">
-                        ------
-                      </option>
-      
+                    <option value="">Select an option</option>
+                    {tableHeaders.map((el,key)=>(
+                      <option value={el.name} key={key}>{el.name}</option>
+                    ))}
                   </select>
 
-                  </div>
+                </div>
 
               </div>
 
@@ -234,7 +239,7 @@ function AddTableAttributeModal({ show, onClose, onSave }) {
 
             <FaSave className="me-2" />
 
-            Save
+            {initialData==null?"Save":"Update"}
 
           </button>
 
