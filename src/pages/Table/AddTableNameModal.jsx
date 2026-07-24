@@ -8,7 +8,6 @@ import {
 } from "react-icons/fa";
 
 import "./AddTableNameModal.css";
-import toast from "react-hot-toast";
 
 function AddTableNameModal({ show, onClose, onSave,Inputname }) {
   const [name, setName] = useState("");
@@ -21,7 +20,6 @@ function AddTableNameModal({ show, onClose, onSave,Inputname }) {
 
   const handleSave = async () => {
     if (!name.trim()) {
-      toast.error("Please enter Table Name.");
       return;
     }
 

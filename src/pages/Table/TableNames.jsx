@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import "./TableNames.css";
 import AddTableNameModal from "./AddTableNameModal";
 import TableNameService from "../../services/TableNameService";
-import toast, { ToastBar } from "react-hot-toast";
 import DataGrid from "../../components/DataGrid";
 
 function TableNames() {
@@ -17,13 +16,11 @@ function TableNames() {
         console.log("I got here");
         
         const response = await TableNameService.create(newTableName);
-        toast.success("Data saved successfully");
       }
       else
       {
         const reposnse = await TableNameService.update(id, newTableName);
         const data = await reposnse.data;
-        toast.success("Data updated successfully");
       }
       setId(null);
       setName("");
@@ -31,7 +28,6 @@ function TableNames() {
       loadTableNames();
     } catch (error) {
       console.error("Error: ", error);
-      toast.error(error.message);
     }
   };
 
@@ -39,10 +35,8 @@ function TableNames() {
     try {
       const reposnse = await TableNameService.delete(id);
       const data = await reposnse.data;
-      toast.success("Data deleted successfully");
     } catch (error) {
       console.error("Error: ", error);
-      toast.error(error.message);
     }
     loadTableNames();
   };
@@ -58,7 +52,6 @@ function TableNames() {
       setTableNames(allTableNames);
     } catch (error) {
       console.log("Error: ", error);
-      toast.error(error.message);
     }
   };
 

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import AddTableAttributeModal from "./AddTableAttributeModal";
 import "./TableAttributes.css";
 import TableAttributeService from "../../services/TableAttributeService";
-import toast from "react-hot-toast";
 import DataGrid from "../../components/DataGrid";
 
 function TableAttributes() {
@@ -23,7 +22,6 @@ function TableAttributes() {
       setTableAttributes(allTableAttributes);
     } catch (error) {
       console.log("Error: ", error);
-      toast.error(error.message);
     }
   };
 
@@ -35,10 +33,8 @@ function TableAttributes() {
     try {
       const reposnse = await TableAttributeService.delete(id);
       const data = await reposnse.data;
-      toast.success("Data deleted successfully");
     } catch (error) {
       console.error("Error: ", error);
-      toast.error(error.message);
     }
     loadTableAttributes();
   };
@@ -116,10 +112,8 @@ function TableAttributes() {
   try {
     if (id != null) {
       await TableAttributeService.update(id, newAttribute);
-      toast.success("Data updated successfully");
     } else {
       await TableAttributeService.create(newAttribute);
-      toast.success("Data saved successfully");
     }
 
     setEditingAttribute(null);
@@ -128,7 +122,6 @@ function TableAttributes() {
     loadTableAttributes();
   } catch (error) {
     console.error("Error: ", error);
-    toast.error(error.message);
   }
 };
 

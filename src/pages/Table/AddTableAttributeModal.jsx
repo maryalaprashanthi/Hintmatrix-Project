@@ -9,7 +9,6 @@ import {
 } from "react-icons/fa";
 
 import "./AddTableAttributeModal.css";
-import toast from "react-hot-toast";
 import TableHeaderService from "../../services/TableHeaderService";
 
 
@@ -30,7 +29,6 @@ function AddTableAttributeModal({ show, onClose, onSave,initialData }) {
       setTableHeaders(allTableNames);
     } catch (error) {
       console.log("Error: ",error);
-      toast.error(error.message);
     }
   }
 
@@ -52,7 +50,6 @@ function AddTableAttributeModal({ show, onClose, onSave,initialData }) {
       !formData.name.trim() ||
       !formData.tableHeaderName.trim()
     ) {
-      toast.error("Please fill all the fields.");
       return;
     }
 

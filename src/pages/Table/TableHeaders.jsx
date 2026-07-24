@@ -2,7 +2,6 @@ import { useState,useEffect } from "react";
 import "./TableHeaders.css";
 import AddTableHeaderModal from "./AddTableHeaderModal";
 import TableHeaderService from "../../services/TableHeaderService";
-import toast from "react-hot-toast";
 import DataGrid from "../../components/DataGrid";
 
 function TableHeaders() {
@@ -18,13 +17,11 @@ function TableHeaders() {
           if(id==null)
           {
             const response = await TableHeaderService.create(newTableHeader);
-            toast.success("Data saved successfully");
           }
           else
           {
             const reposnse = await TableHeaderService.update(id, newTableHeader);
             const data = await reposnse.data;
-            toast.success("Data updated successfully");
           }
           setId(null);
           setName("");
@@ -32,7 +29,6 @@ function TableHeaders() {
           loadTableHeaders();
         } catch (error) {
           console.error("Error: ", error);
-          toast.error(error.message);
         }
   };
 
@@ -40,10 +36,8 @@ function TableHeaders() {
     try {
       const reposnse = await TableHeaderService.delete(id);
       const data = await reposnse.data;
-      toast.success("Data deleted successfully");
     } catch (error) {
       console.error("Error: ", error);
-      toast.error(error.message);
     }
     loadTableHeaders();
   };
@@ -60,7 +54,6 @@ function TableHeaders() {
       setTableHeaders(allTableNames);
     } catch (error) {
       console.log("Error: ",error);
-      toast.error(error.message);
     }
   }
 
