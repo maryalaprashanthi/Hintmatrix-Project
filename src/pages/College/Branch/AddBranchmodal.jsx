@@ -13,7 +13,7 @@ import {
   FaSave,
 } from "react-icons/fa";
 
-import "./AddBranchModal.css";
+import "./AddBranchmodal.css";
 
 function AddBranchModal({ show, onClose, onSave,selectedBranchData }) {
   const [collegeId, setCollegeId] = useState("");

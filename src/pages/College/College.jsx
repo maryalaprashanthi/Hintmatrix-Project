@@ -24,7 +24,7 @@ function College() {
 
   // Save / Update College
   const handleSave = (collegeData) => {
-    console.log("College Saved:", collegeData);
+  console.log("College Saved:", collegeData);
 
     // Checks if record has a collegeId to determine UPDATE (PUT) vs CREATE (POST)
     if (collegeData.collegeId) {
