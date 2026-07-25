@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
 import { createPortal } from "react-dom";
 import {
   FaTimes,
@@ -8,11 +9,30 @@ import {
 } from "react-icons/fa";
 
 import "./ChapterForm.css";
-
+import CourseService from "../../services/CourseService";
 function ChapterForm({ show, onClose, onSave }) {
   const [courseId, setCourseId] = useState("");
   const [chapterName, setChapterName] = useState("");
+  const [courses, setCourses] = useState([]);
 
+  useEffect(() => {
+  loadCourses();
+}, []);
+
+const loadCourses = () => {
+  console.log("Loading courses...");
+
+  CourseService.getAllCourses()
+    .then((response) => {
+      console.log("Courses Response:", response);
+      console.log("Courses Data:", response.data);
+
+      setCourses(response.data);
+    })
+    .catch((error) => {
+      console.error("Error retrieving courses:", error);
+    });
+};
   if (!show) return null;
 
   const handleSave = () => {
@@ -22,9 +42,9 @@ function ChapterForm({ show, onClose, onSave }) {
     }
 
     const newChapter = {
-      courseId: Number(courseId),
-      chapterName,
-    };
+  courseId: Number(courseId),
+  name: chapterName,
+};
 
     onSave(newChapter);
 
@@ -85,9 +105,11 @@ function ChapterForm({ show, onClose, onSave }) {
                       Select Course Id
                     </option>
 
-                    <option value="1">Course 1</option>
-                    <option value="2">Course 2</option>
-                    <option value="3">Course 3</option>
+                    {courses.map((course) => (
+  <option key={course.courseId} value={course.courseId}>
+    {course.name}
+  </option>
+))}
 
                   </select>
 

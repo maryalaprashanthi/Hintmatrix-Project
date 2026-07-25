@@ -1,5 +1,6 @@
 import "./Chapters.css";
-import { useState } from "react";
+import ChapterService from "../../services/ChapterService";
+import { useState, useEffect } from "react";
 import ChapterForm from "./ChapterForm";
 import {
   useParams,
@@ -28,258 +29,51 @@ function Chapters() {
 const isQuestionsModule =
   location.pathname.startsWith("/questions");
 const [showAddChapter, setShowAddChapter] = useState(false);
-
-
-  const courseData = {
-
-
-
-    bcom: {
-
-      name:"B.Com",
-
-      chapters:[
-
-        {
-          title:"Financial Accounting",
-          lessons:12,
-          progress:"80%"
-        },
-
-        {
-          title:"Business Economics",
-          lessons:10,
-          progress:"60%"
-        },
-
-        {
-          title:"Corporate Accounting",
-          lessons:15,
-          progress:"45%"
-        },
-
-        {
-          title:"Cost Accounting",
-          lessons:14,
-          progress:"70%"
-        },
-
-        {
-          title:"Business Law",
-          lessons:8,
-          progress:"55%"
-        },
-
-        {
-          title:"Taxation",
-          lessons:18,
-          progress:"30%"
-        }
-
-      ]
-
-    },
-
-    "ca-foundation": {
-
-
-      name:"CA Foundation",
-
-
-      chapters:[
-
-        {
-          title:"Principles of Accounting",
-          lessons:20,
-          progress:"75%"
-        },
-
-        {
-          title:"Business Laws",
-          lessons:16,
-          progress:"50%"
-        },
-
-        {
-          title:"Economics",
-          lessons:12,
-          progress:"40%"
-        },
-
-        {
-          title:"Quantitative Aptitude",
-          lessons:22,
-          progress:"65%"
-        }
-
-      ]
-
-    },
-
-    "cbse-11": {
-
-
-      name:"CBSE Class 11",
-
-
-      chapters:[
-
-        {
-          title:"Accountancy",
-          lessons:18,
-          progress:"60%"
-        },
-
-        {
-          title:"Business Studies",
-          lessons:15,
-          progress:"50%"
-        },
-
-        {
-          title:"Economics",
-          lessons:14,
-          progress:"45%"
-        }
-
-      ]
-
-    },
-
-
-    "jr-accountancy": {
-
-
-      name:"Junior Accountancy",
-
-
-      chapters:[
-
-        {
-          title:"Basic Accounting",
-          lessons:10,
-          progress:"70%"
-        },
-
-        {
-          title:"Journal Entries",
-          lessons:12,
-          progress:"55%"
-        },
-
-        {
-          title:"Ledger",
-          lessons:8,
-          progress:"40%"
-        }
-
-      ]
-
-    },
-
-    combo:{
-
-
-      name:"Commerce Combo",
-
-
-      chapters:[
-
-        {
-          title:"Accounting Basics",
-          lessons:15,
-          progress:"80%"
-        },
-
-        {
-          title:"Commerce Concepts",
-          lessons:20,
-          progress:"65%"
-        },
-
-        {
-          title:"Exam Preparation",
-          lessons:12,
-          progress:"35%"
-        }
-
-      ]
-
-    },
-
-    inter:{
-
-
-      name:"Intermediate",
-
-
-      chapters:[
-
-        {
-          title:"Advanced Accounting",
-          lessons:20,
-          progress:"60%"
-        },
-
-        {
-          title:"Corporate Law",
-          lessons:15,
-          progress:"50%"
-        },
-
-        {
-          title:"Financial Management",
-          lessons:18,
-          progress:"45%"
-        }
-
-      ]
-
-    }
-
-
-
-  };
-
-const defaultCourse = {
-  name: "All Chapters",
-  chapters: [
-    {
-      title: "Financial Accounting",
-      lessons: 12,
-      progress: "80%",
-    },
-    {
-      title: "Business Economics",
-      lessons: 10,
-      progress: "60%",
-    },
-    {
-      title: "Corporate Accounting",
-      lessons: 15,
-      progress: "45%",
-    },
-    {
-      title: "Cost Accounting",
-      lessons: 14,
-      progress: "70%",
-    },
-    {
-      title: "Business Law",
-      lessons: 8,
-      progress: "55%",
-    },
-    {
-      title: "Taxation",
-      lessons: 18,
-      progress: "30%",
-    },
-  ],
+const [chapters, setChapters] = useState([]);
+
+  const loadChapters = async () => {
+  try {
+    const response = await ChapterService.getAll();
+
+    console.log("Status:", response.status);
+console.log("Data:", response.data);
+
+    setChapters(response.data);
+  } catch (error) {
+    console.error("Error fetching chapters:", error);
+  }
 };
 
-const course = isQuestionsModule
-  ? defaultCourse
-  : courseData[courseId] || defaultCourse;
+useEffect(() => {
+    loadChapters();
+}, []);
+
+  const handleSaveChapter = async (newChapter) => {
+  try {
+    console.log("Sending:", newChapter);
+
+    console.log("Before API Call");
+    const response = await ChapterService.create(newChapter);
+    loadChapters();
+
+    console.log("After API Call");
+    console.log("HTTP Status:", response.status);
+    console.log("Success:", response.data);
+
+    alert("Chapter created successfully");
+
+    setShowAddChapter(false);
+
+  } catch (error) {
+
+    console.error("Full Error:", error);
+    console.log("Error Response:", error.response);
+    console.log("Error Data:", error.response?.data);
+    console.log("Error Status:", error.response?.status);
+
+    alert("Failed to create chapter");
+  }
+};
 
   // Chapter -> Question Categories
 
@@ -329,7 +123,7 @@ const course = isQuestionsModule
       <div className="chapter-header d-flex justify-content-between align-items-center flex-wrap gap-3">
 
   <div>
-    <h2>{course.name} Chapters</h2>
+    <h2>All Chapters</h2>
     <p className="mb-0">
       Select a chapter and start learning
     </p>
@@ -346,11 +140,10 @@ const course = isQuestionsModule
 
       <div className="row g-4">
 
+{console.log("Chapters State:", chapters)}
 
-
-      {
-
-      course.chapters.map((chapter,index)=>(
+{
+  chapters.map((chapter,index)=>(
 
 
 
@@ -393,7 +186,7 @@ const course = isQuestionsModule
             <h4>
 
 
-              {chapter.title}
+              {chapter.name}
 
 
             </h4>
@@ -481,7 +274,7 @@ const course = isQuestionsModule
             className="start-btn"
 
 
-            onClick={()=>openCategories(chapter.title)}
+            onClick={()=>openCategories(chapter.name)}
 
 
             >
@@ -519,9 +312,7 @@ const course = isQuestionsModule
       <ChapterForm
   show={showAddChapter}
   onClose={() => setShowAddChapter(false)}
-  onSave={(newChapter) => {
-    console.log(newChapter);
-  }}
+  onSave={handleSaveChapter}
 />
 </div>
 
