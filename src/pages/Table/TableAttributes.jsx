@@ -9,6 +9,16 @@ function TableAttributes() {
   const [editingAttribute, setEditingAttribute] = useState(null);
   const [tableAttributes, setTableAttributes] = useState([]);
   const [id,setId] = useState(null);
+   // Upload Handler
+  const handleFileUpload = (e) => {
+  const file = e.target.files[0];
+
+  if (file) {
+    alert(`Selected File: ${file.name}`);
+    // TODO: Upload API logic
+  }
+};
+
   const loadTableAttributes = async () => {
     try {
       const result = await TableAttributeService.getAll();
@@ -135,7 +145,26 @@ function TableAttributes() {
 
           <p className="text-muted">Manage all table attributes.</p>
         </div>
+        <div className="d-flex gap-2">
 
+    {/* Hidden Upload Input */}
+    <input
+      type="file"
+      id="courseUpload"
+      accept=".csv,.xlsx,.xls"
+      style={{ display: "none" }}
+      onChange={handleFileUpload}
+    />
+
+    {/* Upload Button */}
+    <button
+      className="btn btn-primary"
+      onClick={() =>
+        document.getElementById("courseUpload").click()
+      }
+    >
+      ⬆ Upload
+    </button>
         <button
           className="btn btn-primary"
           onClick={() => {
@@ -146,6 +175,7 @@ function TableAttributes() {
         >
           + Add Table Attribute
         </button>
+      </div>
       </div>
 
       <DataGrid rowData={tableAttributes} columnDefs={columnDefs} />

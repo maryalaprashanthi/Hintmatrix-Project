@@ -9,6 +9,16 @@ function TableNames() {
   const [tableNames, setTableNames] = useState([]);
   const [id, setId] = useState(null);
   const [name, setName] = useState("");
+   // Upload Handler
+  const handleFileUpload = (e) => {
+  const file = e.target.files[0];
+
+  if (file) {
+    alert(`Selected File: ${file.name}`);
+    // TODO: Upload API logic
+  }
+};
+
   const handleSave = async (newTableName) => {
     try {
       if(id==null)
@@ -134,6 +144,26 @@ function TableNames() {
           <h2 className="fw-bold">Table Name Management</h2>
           <p className="text-muted">Manage all table names.</p>
         </div>
+        <div className="d-flex gap-2">
+
+    {/* Hidden Upload Input */}
+    <input
+      type="file"
+      id="courseUpload"
+      accept=".csv,.xlsx,.xls"
+      style={{ display: "none" }}
+      onChange={handleFileUpload}
+    />
+
+    {/* Upload Button */}
+    <button
+      className="btn btn-primary"
+      onClick={() =>
+        document.getElementById("courseUpload").click()
+      }
+    >
+      ⬆ Upload
+    </button>
 
         <button
           className="btn btn-primary"
@@ -145,6 +175,7 @@ function TableNames() {
         >
           + Add Table Name
         </button>
+      </div>
       </div>
 
       <DataGrid rowData={tableNames} columnDefs={columnDefs} />

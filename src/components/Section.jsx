@@ -10,6 +10,17 @@ function Section() {
   const [selectedSection, setSelectedSection] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
 
+   // Upload Handler
+  const handleFileUpload = (e) => {
+  const file = e.target.files[0];
+
+  if (file) {
+    alert(`Selected File: ${file.name}`);
+    // TODO: Upload API logic
+  }
+};
+
+
   const handleAddSection = () => {
     setSelectedSection(null);
     setShowModal(true);
@@ -47,15 +58,35 @@ function Section() {
             Manage all sections from one place.
           </p>
         </div>
+        <div className="d-flex gap-2">
 
-        <button
+       {/* Hidden Upload Input */}
+      <input
+      type="file"
+      id="courseUpload"
+      accept=".csv,.xlsx,.xls"
+      style={{ display: "none" }}
+      onChange={handleFileUpload}
+      />
+
+      {/* Upload Button */}
+      <button
+      className="btn btn-primary"
+      onClick={() =>
+        document.getElementById("courseUpload").click()
+      }
+      >
+      ⬆ Upload
+      </button>
+       <button
           className="btn btn-primary px-4"
           onClick={handleAddSection}
         >
           + Add Section
         </button>
-
+    
       </div>
+    </div>  
 
       {/* Table */}
 

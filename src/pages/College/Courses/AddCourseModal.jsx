@@ -1,15 +1,66 @@
-import React from "react";
-import { createPortal } from "react-dom";
+import React, { useState } from "react";
 import "./AddCourseModal.css";
+import CourseService from "../../../services/CourseService";
+import { createPortal } from "react-dom";
 
-function AddCourseModal({ show, onClose }) {
+import {
+  FaTimes,
+  FaBookOpen,
+  FaLayerGroup,
+  FaSignal,
+  FaClock,
+  FaImage,
+  FaSave,
+} from "react-icons/fa";
+
+function AddCourseModal({ show, onClose, onRefresh }) {
+  const [courseName, setCourseName] = useState("");
+  const [category, setCategory] = useState("Commerce");
+  const [level, setLevel] = useState("Beginner");
+  const [duration, setDuration] = useState("3 Months");
+
   if (!show) return null;
+
+  const handleSave = (e) => {
+    e.preventDefault();
+
+    if (!courseName.trim()) {
+      alert("Please enter Course Name");
+      return;
+    }
+
+    const courseRequestDTO = {
+      branchId: 1,
+      name: courseName.trim(),
+    };
+
+    CourseService.saveCourse(courseRequestDTO)
+      .then(() => {
+        alert("Course saved successfully!");
+
+        setCourseName("");
+        setCategory("Commerce");
+        setLevel("Beginner");
+        setDuration("3 Months");
+
+        if (onRefresh) onRefresh();
+
+        onClose();
+      })
+      .catch((error) => {
+        console.error(error);
+
+        alert(
+          error.response?.data?.message ||
+          "Failed to create course."
+        );
+      });
+  };
 
   return createPortal(
     <div className="modal-overlay">
       <div className="course-modal">
 
-        {/* Header */}
         <div className="modal-header">
           <div className="modal-title">
             <h2>Add New Course</h2>
@@ -17,79 +68,108 @@ function AddCourseModal({ show, onClose }) {
           </div>
 
           <button
-            type="button"
             className="close-btn"
             onClick={onClose}
           >
-            ✕
+            <FaTimes />
           </button>
         </div>
 
-        {/* Body */}
         <div className="modal-body">
 
-          {/* Course Information */}
-          <div className="card-box">
-            <h4>Course Information</h4>
+          <div className="form-card">
+            <h4 className="section-title">Course Information</h4>
 
             <div className="form-grid">
 
               <div className="form-group">
                 <label>Course Name</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Enter Course Name"
-                />
+
+                <div className="input-box">
+                  <FaBookOpen className="input-icon" />
+
+                  <input
+                    type="text"
+                    placeholder="Enter Course Name"
+                    value={courseName}
+                    onChange={(e) => setCourseName(e.target.value)}
+                  />
+                </div>
               </div>
 
               <div className="form-group">
                 <label>Category</label>
-                <select className="form-select">
-                  <option>Commerce</option>
-                  <option>Professional</option>
-                  <option>School</option>
-                </select>
+
+                <div className="input-box">
+                  <FaLayerGroup className="input-icon" />
+
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                  >
+                    <option value="Commerce">Commerce</option>
+                    <option value="Professional">Professional</option>
+                    <option value="School">School</option>
+                  </select>
+                </div>
               </div>
 
               <div className="form-group">
                 <label>Level</label>
-                <select className="form-select">
-                  <option>Beginner</option>
-                  <option>Intermediate</option>
-                  <option>Advanced</option>
-                </select>
+
+                <div className="input-box">
+                  <FaSignal className="input-icon" />
+
+                  <select
+                    value={level}
+                    onChange={(e) => setLevel(e.target.value)}
+                  >
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                  </select>
+                </div>
               </div>
 
               <div className="form-group">
                 <label>Duration</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="3 Months"
-                />
+
+                <div className="input-box">
+                  <FaClock className="input-icon" />
+
+                  <input
+                    type="text"
+                    placeholder="3 Months"
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
+                  />
+                </div>
               </div>
 
             </div>
           </div>
 
-          {/* Thumbnail */}
-          <div className="card-box">
-            <h4>Course Thumbnail</h4>
+          <div className="form-card">
+            <h4 className="section-title">Course Thumbnail</h4>
 
-            <input
-              type="file"
-              className="form-control"
-            />
+            <div className="form-group">
+              <label>Upload Thumbnail</label>
+
+              <div className="input-box">
+                <FaImage className="input-icon" />
+
+                <input
+                  type="file"
+                  accept="image/*"
+                />
+              </div>
+            </div>
           </div>
 
         </div>
 
-        {/* Footer */}
-        <div className="modal-footer d-flex justify-content-end gap-3">
-
+        <div className="modal-footer">
           <button
-            type="button"
             className="btn btn-secondary"
             onClick={onClose}
           >
@@ -97,12 +177,12 @@ function AddCourseModal({ show, onClose }) {
           </button>
 
           <button
-            type="button"
             className="btn btn-primary"
+            onClick={handleSave}
           >
+            <FaSave className="me-2" />
             Save
           </button>
-
         </div>
 
       </div>

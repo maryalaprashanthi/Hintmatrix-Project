@@ -11,6 +11,16 @@ function TableHeaders() {
   const [tableHeaders, setTableHeaders] = useState([]);
   const [id, setId] = useState(null);
   const [name, setName] = useState("");
+   // Upload Handler
+  const handleFileUpload = (e) => {
+  const file = e.target.files[0];
+
+  if (file) {
+    alert(`Selected File: ${file.name}`);
+    // TODO: Upload API logic
+  }
+};
+
 
   const handleSave = async (newTableHeader) => {
     try {
@@ -147,7 +157,26 @@ function TableHeaders() {
 
 
         </div>
+        <div className="d-flex gap-2">
 
+    {/* Hidden Upload Input */}
+    <input
+      type="file"
+      id="courseUpload"
+      accept=".csv,.xlsx,.xls"
+      style={{ display: "none" }}
+      onChange={handleFileUpload}
+    />
+
+    {/* Upload Button */}
+    <button
+      className="btn btn-primary"
+      onClick={() =>
+        document.getElementById("courseUpload").click()
+      }
+    >
+      ⬆ Upload
+    </button>
 
 
         <button
@@ -158,7 +187,7 @@ function TableHeaders() {
           + Add Table Header
 
         </button>
-
+      </div>
 
       </div>
 

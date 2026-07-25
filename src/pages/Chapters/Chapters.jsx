@@ -1,535 +1,618 @@
 import "./Chapters.css";
+
 import { useState } from "react";
-import ChapterForm from "./ChapterForm";
-import {
+
+import { 
   useParams,
-  useNavigate,
-  useLocation,
+  useNavigate
 } from "react-router-dom";
 
+
 import {
-  FaArrowLeft,
   FaBookOpen,
   FaClock,
   FaCheckCircle,
-  FaPlayCircle
+  FaPlayCircle,
+  FaPen,
+  FaTrash
 } from "react-icons/fa";
 
 
+import ChapterForm from "./ChapterForm";
 
-function Chapters() {
 
 
-  const { courseId } = useParams();
+function Chapters(){
 
-  const navigate = useNavigate();
-  const location = useLocation();
 
-const isQuestionsModule =
-  location.pathname.startsWith("/questions");
-const [showAddChapter, setShowAddChapter] = useState(false);
+const {courseId}=useParams();
 
+const navigate=useNavigate();
 
-  const courseData = {
 
 
+const [showAddChapter,setShowAddChapter]=useState(false);
 
-    bcom: {
 
-      name:"B.Com",
 
-      chapters:[
+const handleFileUpload=(e)=>{
 
-        {
-          title:"Financial Accounting",
-          lessons:12,
-          progress:"80%"
-        },
+const file=e.target.files[0];
 
-        {
-          title:"Business Economics",
-          lessons:10,
-          progress:"60%"
-        },
+if(file){
 
-        {
-          title:"Corporate Accounting",
-          lessons:15,
-          progress:"45%"
-        },
+alert(`Selected File: ${file.name}`);
 
-        {
-          title:"Cost Accounting",
-          lessons:14,
-          progress:"70%"
-        },
+}
 
-        {
-          title:"Business Law",
-          lessons:8,
-          progress:"55%"
-        },
-
-        {
-          title:"Taxation",
-          lessons:18,
-          progress:"30%"
-        }
-
-      ]
-
-    },
-
-    "ca-foundation": {
-
-
-      name:"CA Foundation",
-
-
-      chapters:[
-
-        {
-          title:"Principles of Accounting",
-          lessons:20,
-          progress:"75%"
-        },
-
-        {
-          title:"Business Laws",
-          lessons:16,
-          progress:"50%"
-        },
-
-        {
-          title:"Economics",
-          lessons:12,
-          progress:"40%"
-        },
-
-        {
-          title:"Quantitative Aptitude",
-          lessons:22,
-          progress:"65%"
-        }
-
-      ]
-
-    },
-
-    "cbse-11": {
-
-
-      name:"CBSE Class 11",
-
-
-      chapters:[
-
-        {
-          title:"Accountancy",
-          lessons:18,
-          progress:"60%"
-        },
-
-        {
-          title:"Business Studies",
-          lessons:15,
-          progress:"50%"
-        },
-
-        {
-          title:"Economics",
-          lessons:14,
-          progress:"45%"
-        }
-
-      ]
-
-    },
-
-
-    "jr-accountancy": {
-
-
-      name:"Junior Accountancy",
-
-
-      chapters:[
-
-        {
-          title:"Basic Accounting",
-          lessons:10,
-          progress:"70%"
-        },
-
-        {
-          title:"Journal Entries",
-          lessons:12,
-          progress:"55%"
-        },
-
-        {
-          title:"Ledger",
-          lessons:8,
-          progress:"40%"
-        }
-
-      ]
-
-    },
-
-    combo:{
-
-
-      name:"Commerce Combo",
-
-
-      chapters:[
-
-        {
-          title:"Accounting Basics",
-          lessons:15,
-          progress:"80%"
-        },
-
-        {
-          title:"Commerce Concepts",
-          lessons:20,
-          progress:"65%"
-        },
-
-        {
-          title:"Exam Preparation",
-          lessons:12,
-          progress:"35%"
-        }
-
-      ]
-
-    },
-
-    inter:{
-
-
-      name:"Intermediate",
-
-
-      chapters:[
-
-        {
-          title:"Advanced Accounting",
-          lessons:20,
-          progress:"60%"
-        },
-
-        {
-          title:"Corporate Law",
-          lessons:15,
-          progress:"50%"
-        },
-
-        {
-          title:"Financial Management",
-          lessons:18,
-          progress:"45%"
-        }
-
-      ]
-
-    }
-
-
-
-  };
-
-const defaultCourse = {
-  name: "All Chapters",
-  chapters: [
-    {
-      title: "Financial Accounting",
-      lessons: 12,
-      progress: "80%",
-    },
-    {
-      title: "Business Economics",
-      lessons: 10,
-      progress: "60%",
-    },
-    {
-      title: "Corporate Accounting",
-      lessons: 15,
-      progress: "45%",
-    },
-    {
-      title: "Cost Accounting",
-      lessons: 14,
-      progress: "70%",
-    },
-    {
-      title: "Business Law",
-      lessons: 8,
-      progress: "55%",
-    },
-    {
-      title: "Taxation",
-      lessons: 18,
-      progress: "30%",
-    },
-  ],
 };
 
-const course = isQuestionsModule
-  ? defaultCourse
-  : courseData[courseId] || defaultCourse;
-
-  // Chapter -> Question Categories
-
-  const openCategories = (chapterTitle)=>{
 
 
-    const chapterSlug = chapterTitle
-
-    .toLowerCase()
-
-    .replaceAll(" ","-");
-
-      if (isQuestionsModule) {
-  navigate("/questions/question-categories");
-} else {
-  navigate(
-    `/question-categories/${courseId}/${chapterSlug}`
-  );
-}
-  };
-  return (
 
 
-    <div className="chapters-page">
+const handleEdit=(chapter)=>{
 
-      <button
+console.log("Edit:",chapter);
 
-        className="back-btn"
-         onClick={() =>
-  navigate(
-    isQuestionsModule
-      ? "/questions"
-      : "/courses"
-  )
+alert(`Edit ${chapter.title}`);
+
+};
+
+
+
+
+
+const handleDelete=(chapter)=>{
+
+
+if(window.confirm(`Delete ${chapter.title}?`)){
+
+
+console.log("Delete:",chapter);
+
+
 }
 
-      >
+
+};
 
 
-        <FaArrowLeft/>
-
-        Back 
 
 
-      </button>
-      
-      <div className="chapter-header d-flex justify-content-between align-items-center flex-wrap gap-3">
 
-  <div>
-    <h2>{course.name} Chapters</h2>
-    <p className="mb-0">
-      Select a chapter and start learning
-    </p>
-  </div>
 
-  <button
-    className="btn btn-primary"
-    onClick={() => setShowAddChapter(true)}
-  >
-    + Add Chapter
-  </button>
+const courses={
+
+
+bcom:{
+
+name:"B.Com",
+
+chapters:[
+
+{
+title:"Financial Accounting",
+lessons:12,
+progress:"80%"
+},
+
+{
+title:"Business Economics",
+lessons:10,
+progress:"60%"
+},
+
+{
+title:"Corporate Accounting",
+lessons:15,
+progress:"45%"
+},
+
+{
+title:"Cost Accounting",
+lessons:14,
+progress:"70%"
+},
+
+{
+title:"Business Law",
+lessons:8,
+progress:"55%"
+},
+
+{
+title:"Taxation",
+lessons:18,
+progress:"30%"
+}
+
+]
+
+},
+
+
+
+"ca-foundation":{
+
+name:"CA Foundation",
+
+chapters:[
+
+{
+title:"Principles of Accounting",
+lessons:20,
+progress:"75%"
+},
+
+{
+title:"Business Laws",
+lessons:16,
+progress:"50%"
+},
+
+{
+title:"Economics",
+lessons:12,
+progress:"40%"
+}
+
+]
+
+},
+
+
+
+"cbse-11":{
+
+name:"CBSE Class 11",
+
+chapters:[
+
+{
+title:"Accountancy",
+lessons:18,
+progress:"60%"
+},
+
+{
+title:"Business Studies",
+lessons:15,
+progress:"50%"
+}
+
+]
+
+},
+
+
+
+"jr-accountancy":{
+
+name:"Junior Accountancy",
+
+chapters:[
+
+{
+title:"Basic Accounting",
+lessons:10,
+progress:"70%"
+},
+
+{
+title:"Journal Entries",
+lessons:12,
+progress:"55%"
+}
+
+]
+
+},
+
+
+
+combo:{
+
+name:"Commerce Combo",
+
+chapters:[
+
+{
+title:"Accounting Basics",
+lessons:15,
+progress:"80%"
+},
+
+{
+title:"Commerce Concepts",
+lessons:20,
+progress:"65%"
+}
+
+]
+
+},
+
+
+
+inter:{
+
+name:"Intermediate",
+
+chapters:[
+
+{
+title:"Advanced Accounting",
+lessons:20,
+progress:"60%"
+},
+
+{
+title:"Corporate Law",
+lessons:15,
+progress:"50%"
+}
+
+]
+
+}
+
+
+
+};
+
+
+
+
+
+const course =
+courses[courseId] || courses.bcom;
+
+
+
+
+
+
+
+const openCategories=(title)=>{
+
+
+const slug=
+title
+.toLowerCase()
+.replaceAll(" ","-");
+
+
+navigate(
+`/question-categories/${courseId}/${slug}`
+);
+
+
+};
+
+
+
+
+
+
+
+return(
+
+
+<div className="chapters-page">
+
+
+
+<div className="chapter-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+
+<div>
+
+<h2>
+{course.name}
+</h2>
+
+
+<p>
+Select a chapter and start learning
+</p>
+
 
 </div>
 
-      <div className="row g-4">
 
 
 
-      {
 
-      course.chapters.map((chapter,index)=>(
+<div className="d-flex gap-2">
 
 
 
-        <div
+<input
 
-        className="col-xl-4 col-lg-4 col-md-6"
+type="file"
 
-        key={index}
+id="chapterUpload"
 
-        >
+accept=".csv,.xlsx,.xls"
 
+style={{display:"none"}}
 
+onChange={handleFileUpload}
 
-
-
-          <div className="chapter-card">
-
-
-
-
-
-
-
-            <div className="chapter-icon">
-
-
-              <FaBookOpen/>
-
-
-            </div>
-
-
-
-
-
-
-
-
-
-            <h4>
-
-
-              {chapter.title}
-
-
-            </h4>
-
-
-
-
-
-
-
-
-
-            <div className="chapter-info">
-
-
-
-              <span>
-
-                <FaClock/>
-
-                {chapter.lessons} Lessons
-
-              </span>
-
-
-
-
-
-
-              <span>
-
-
-                <FaCheckCircle/>
-
-                {chapter.progress}
-
-
-              </span>
-
-
-
-            </div>
-
-
-
-
-
-
-
-
-
-            <div className="progress">
-
-
-
-              <div
-
-              className="progress-bar"
-
-              style={{
-
-                width:chapter.progress
-
-              }}
-
-              >
-
-              </div>
-
-
-
-            </div>
-
-
-
-
-
-
-
-
-
-            <button
-
-
-            className="start-btn"
-
-
-            onClick={()=>openCategories(chapter.title)}
-
-
-            >
-
-
-
-              <FaPlayCircle/>
-
-              Start Learning
-
-
-
-            </button>
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-        </div>
-
-
-
-      ))
-
-      }
-
-
-
-      </div>
-      <ChapterForm
-  show={showAddChapter}
-  onClose={() => setShowAddChapter(false)}
-  onSave={(newChapter) => {
-    console.log(newChapter);
-  }}
 />
+
+
+
+
+<button
+
+className="btn btn-primary"
+
+onClick={()=>
+document
+.getElementById("chapterUpload")
+.click()
+}
+
+>
+
+⬆ Upload
+
+</button>
+
+
+
+
+
+<button
+
+className="btn btn-primary"
+
+onClick={()=>
+setShowAddChapter(true)
+}
+
+>
+
++ Add Chapter
+
+</button>
+
+
+
 </div>
 
 
 
-  );
+</div>
+
+
+
+
+
+
+
+
+
+<div className="row g-4">
+
+
+{
+
+course.chapters.map((chapter,index)=>(
+
+
+<div
+
+className="col-xl-4 col-lg-4 col-md-6"
+
+key={index}
+
+>
+
+
+<div className="chapter-card">
+
+
+
+
+
+<div className="chapter-icon">
+
+<FaBookOpen/>
+
+</div>
+
+
+
+
+
+<h4>
+
+{chapter.title}
+
+</h4>
+
+
+
+
+
+<div className="chapter-info">
+
+
+<span>
+
+<FaClock/>
+
+{chapter.lessons} Lessons
+
+</span>
+
+
+
+<span>
+
+<FaCheckCircle/>
+
+{chapter.progress}
+
+</span>
+
+
+
+</div>
+
+
+
+
+
+
+
+<div className="progress">
+
+
+<div
+
+className="progress-bar"
+
+style={{
+width:chapter.progress
+}}
+
+>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<button
+
+className="start-btn"
+
+onClick={()=>
+openCategories(chapter.title)
+}
+
+>
+
+<FaPlayCircle/>
+
+Start Learning
+
+
+</button>
+
+
+
+
+
+
+
+<div className="d-flex gap-2 mt-3">
+
+
+<button
+
+className="btn btn-sm btn-outline-primary"
+
+onClick={()=>
+handleEdit(chapter)
+}
+
+>
+
+<FaPen/>
+
+&nbsp; Edit
+
+</button>
+
+
+
+
+
+<button
+
+className="btn btn-sm btn-outline-danger"
+
+onClick={()=>
+handleDelete(chapter)
+}
+
+>
+
+<FaTrash/>
+
+&nbsp; Delete
+
+</button>
+
+
+
+</div>
+
+
+
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+))
+
+
+}
+
+
+
+</div>
+
+
+
+
+
+
+
+
+<ChapterForm
+
+show={showAddChapter}
+
+onClose={()=>
+setShowAddChapter(false)
+}
+
+
+onSave={(data)=>{
+
+console.log(data);
+
+}}
+
+
+/>
+
+
+
+</div>
+
+
+);
 
 
 }

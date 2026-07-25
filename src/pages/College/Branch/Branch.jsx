@@ -1,5 +1,5 @@
 import { useState } from "react";
-import AddBranchModal from "./AddBranchmodal";
+import AddBranchModal from "./AddBranchModal";
 import "./Branch.css";
 
 function Branch() {
@@ -8,6 +8,16 @@ function Branch() {
 
   const handleSave = (newBranch) => {
     setBranches([...branches, newBranch]);
+  };
+
+  // Upload Handler
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+
+    if (file) {
+      alert(`Selected File: ${file.name}`);
+      // TODO: Upload API logic
+    }
   };
 
   return (
@@ -22,23 +32,42 @@ function Branch() {
           </p>
         </div>
 
-        <button
-          className="btn btn-primary"
-          onClick={() => setShowModal(true)}
-        >
-          + Add Branch
-        </button>
+        <div className="d-flex gap-2">
+
+          <input
+            type="file"
+            id="collegeUpload"
+            accept=".csv,.xlsx,.xls"
+            style={{ display: "none" }}
+            onChange={handleFileUpload}
+          />
+
+          <button
+            className="btn btn-primary"
+            onClick={() =>
+              document.getElementById("collegeUpload").click()
+            }
+          >
+            ⬆ Upload
+          </button>
+
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowModal(true)}
+          >
+            + Add Branch
+          </button>
+
+        </div>
       </div>
 
       {/* Branch Table */}
       <div className="card shadow-sm border-0">
-
         <div className="card-body">
 
           <table className="table table-bordered table-hover align-middle">
 
             <thead className="table-light">
-
               <tr>
                 <th>College Name</th>
                 <th>Branch Name</th>
@@ -46,11 +75,9 @@ function Branch() {
                 <th>Phone</th>
                 <th>Email</th>
               </tr>
-
             </thead>
 
             <tbody>
-
               {branches.length === 0 ? (
                 <tr>
                   <td colSpan="5" className="text-center">
@@ -68,13 +95,11 @@ function Branch() {
                   </tr>
                 ))
               )}
-
             </tbody>
 
           </table>
 
         </div>
-
       </div>
 
       <AddBranchModal
