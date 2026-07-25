@@ -13,7 +13,7 @@ import {
   FaGraduationCap, // Icon specifically chosen for the new management Course card
 } from "react-icons/fa";
 
-function StatsCard({ type }) {
+function StatsCard({ type,data }) {
   const cards = {
     // 1. Core Institutional Context Management Cards
     college: {
@@ -141,7 +141,7 @@ function StatsCard({ type }) {
               color: card.color,
             }}
           >
-            {card.value}
+            {data==null?card.value:data}
           </h2>
         </div>
       </div>
