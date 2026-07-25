@@ -5,8 +5,29 @@ import RecentActivity from "../components/RecentActivity/RecentActivity";
 import TodayPractice from "../components/TodayPractice/TodayPractice";
 import LeaderBoard from "../components/LeaderBoard/LeaderBoard";
 import UpcomingTests from "../components/UpcomingTests/UpcomingTests";
+import { useEffect, useState } from "react";
+import DashboardService from "../services/DashboardService";
 
 function Dashboard() {
+
+  useEffect(()=>{
+    loadData();
+  },[]);
+
+  const loadData = async () =>
+  {
+    const response = await DashboardService.getDashboardData();
+    const data = await response.data;
+    setDashboardData(data);
+  }
+
+  const [dashboardData,setDashboardData] = useState({
+    totalColleges:null,
+    totalBranches:null,
+    totalCourses:null,
+    totalSections:null
+  });
+
   return (
     <div className="dashboard container-fluid">
 
@@ -21,19 +42,19 @@ function Dashboard() {
       {/* Institution Statistics */}
       <div className="row g-4 mb-4">
         <div className="col-12 col-sm-6 col-lg-3">
-          <StatsCard type="college" />
+          <StatsCard type="college" data={dashboardData.totalColleges}/>
         </div>
 
         <div className="col-12 col-sm-6 col-lg-3">
-          <StatsCard type="branch" />
+          <StatsCard type="branch" data={dashboardData.totalBranches}/>
         </div>
 
         <div className="col-12 col-sm-6 col-lg-3">
-          <StatsCard type="sections" />
+          <StatsCard type="sections" data={dashboardData.totalSections}/>
         </div>
 
         <div className="col-12 col-sm-6 col-lg-3">
-          <StatsCard type="course" />
+          <StatsCard type="course" data={dashboardData.totalCourses} />
         </div>
       </div>
 
