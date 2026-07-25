@@ -26,7 +26,19 @@ function CollegeTable({ onEdit, refresh }) {
   const loadColleges = () => {
     CollegeService.getAllColleges()
       .then((response) => {
-        setColleges(response.data);
+         const rawData = response.data || [];
+        
+        const sanitizedData = rawData.map((item) => ({
+          ...item,
+          // Checks for alternative naming formats commonly used in DTO files
+          collegeId: item.collegeId ?? item.id, 
+          instituteName: item.instituteName ?? item.name,
+          address: item.address,
+          phoneNumber: item.phoneNumber ?? item.phone,
+          email: item.email
+        }));
+
+        setColleges(sanitizedData);
       })
       .catch((error) => {
         console.error("Error retrieving college data:", error);
@@ -40,6 +52,10 @@ function CollegeTable({ onEdit, refresh }) {
   };
 
   const handleDelete = (id) => {
+     if (!id) {
+      alert("Cannot delete: College ID is missing or undefined.");
+      return;
+    }
     const confirmDelete = window.confirm("Are you sure you want to delete this college?");
     if (confirmDelete) {
       CollegeService.deleteCollege(id)

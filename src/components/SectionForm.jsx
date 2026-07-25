@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import SectionService from "../services/SectionService";
-import BranchService from "../services/BranchService";
+
 
 import {
   FaCodeBranch,
@@ -18,44 +18,38 @@ function SectionForm({
 
   const emptySection = {
     sectionId: "",
-    branchId: "",
+    courseId: "",
     sectionName: "",
     description: ""
   };
 
   const [section, setSection] = useState(emptySection);
-  const [branchesList, setBranchesList] = useState([]);
+  const [coursesList, setCoursesList] = useState([]);
 
   /* ===============================
       LOAD BRANCHES
   =============================== */
 
   useEffect(() => {
-    loadBranches();
+    loadCourses();
   }, []);
 
-  const loadBranches = () => {
+  const loadCourses = () => {
     axios
-      .get("http://localhost:8080/api/branch", {
+      .get("http://localhost:8080/api/course", {
         withCredentials: true,
       })
       .then((response) => {
-        setBranchesList(response.data || []);
+        setCoursesList(response.data || []);
       })
-      .catch((error) => {
-        console.error(error);
-      });
+      .catch(console.error);
   };
-
-  /* ===============================
-      EDIT MODE
-  =============================== */
 
   useEffect(() => {
     if (selectedSectionData) {
       setSection({
         sectionId: selectedSectionData.sectionId || "",
-        branchId: selectedSectionData.branchId || "",
+        courseId: selectedSectionData.courseId || "",
         sectionName: selectedSectionData.sectionName || "",
         description: selectedSectionData.description || ""
       });
@@ -64,19 +58,14 @@ function SectionForm({
     }
   }, [selectedSectionData]);
 
-  /* ===============================
-      HANDLE CHANGE
-  =============================== */
-
   const handleChange = (e) => {
-
     const { name, value } = e.target;
 
-    if (name === "branchId") {
+    if (name === "courseId") {
 
       setSection({
         ...section,
-        branchId: value === "" ? "" : Number(value)
+        courseId: value === "" ? "" : Number(value)
       });
 
       return;
@@ -84,34 +73,36 @@ function SectionForm({
 
     setSection({
       ...section,
-      [name]: value
+      [name]: name === "branchId"
+        ? (value === "" ? "" : Number(value))
+        : value
     });
-
   };
 
-  /* ===============================
-      SAVE / UPDATE
-  =============================== */
+  const clearForm = () => {
+    setSection(emptySection);
+
+    if (onUpdateComplete) {
+      onUpdateComplete();
+    }
+  };
 
   const saveSection = (e) => {
-
     e.preventDefault();
 
-    if (!section.branchId) {
-      alert("Please select a branch.");
+    if (!section.courseId) {
+      alert("Please select an associate course.");
       return;
     }
 
     const requestDTO = {
 
-      branchId: section.branchId,
+      courseId: section.courseId,
       sectionName: section.sectionName,
       description: section.description
-
     };
 
     if (section.sectionId) {
-
       SectionService.updateSection(
         section.sectionId,
         requestDTO
@@ -121,164 +112,98 @@ function SectionForm({
           clearForm();
         })
         .catch(console.error);
-
     } else {
-
       SectionService.saveSection(requestDTO)
         .then(() => {
           alert("Section Saved Successfully");
           clearForm();
         })
         .catch(console.error);
-
     }
-
-  };
-
-  /* ===============================
-      CLEAR FORM
-  =============================== */
-
-  const clearForm = () => {
-
-    setSection(emptySection);
-
-    if (onUpdateComplete) {
-      onUpdateComplete();
-    }
-
   };
 
   return (
-
     <form onSubmit={saveSection}>
 
-      {/* Branch Information Card */}
+      <div className="form-card">
 
-      <div className="card shadow-sm border-0 mb-4">
+        <h3 className="section-title">
+          Section Information
+        </h3>
 
-        <div className="card-body">
+        <div className="form-grid">
 
-          <h5 className="fw-bold mb-4">
+            {/* course*/}
 
-            Section Information
-
-          </h5>
-
-          <div className="row g-3">
-
-            {/* Branch */}
-
-            <div className="col-md-6">
+          <div className="form-group">
 
               <label className="form-label fw-semibold">
 
-                Branch
+                Course
                 <span className="text-danger">
                   *
                 </span>
 
               </label>
 
-              <div className="input-group">
+            <div className="input-box">
 
-                <span className="input-group-text">
-
-                  <FaCodeBranch />
-
-                </span>
+              <FaCodeBranch className="input-icon" />
 
                 <select
                   className="form-select"
-                  name="branchId"
-                  value={section.branchId}
+                  name="courseId"
+                  value={section.courseId}
                   onChange={handleChange}
                   required
                 >
 
                   <option value="">
 
-                    Select Branch
+                    Select Course
 
                   </option>
 
-                  {branchesList.map((branch) => (
+                  {coursesList.map((course) => (
 
-                    <option
-                      key={branch.branchId}
-                      value={branch.branchId}
+                     <option
+                      //  FIXED: Gracefully checks all common backend ID variants
+                      key={course.courseId || course.id}
+                      value={course.courseId || course.id}
                     >
 
-                      {branch.branchName}
+                      {/* FIXED: Changed from course.courseName to course.name to match your Java DTO string model property fields */}
+                      {course.name || course.title || course.courseName}
 
                     </option>
 
-                  ))}
+                ))}
 
-                </select>
-
-              </div>
+              </select>
 
             </div>
 
-            {/* Section Name */}
+          </div>
 
-            <div className="col-md-6">
+          {/* Section Name */}
 
-              <label className="form-label fw-semibold">
+          <div className="form-group">
 
-                Section Name
-                <span className="text-danger">
-                  *
-                </span>
+            <label>
+              Section Name <span>*</span>
+            </label>
 
-              </label>
+            <div className="input-box">
 
-              <div className="input-group">
+              <FaLayerGroup className="input-icon" />
 
-                <span className="input-group-text">
-
-                  <FaLayerGroup />
-
-                </span>
-
-                <input
-                  type="text"
-                  className="form-control"
-                  name="sectionName"
-                  placeholder="Enter Section Name"
-                  value={section.sectionName}
-                  onChange={handleChange}
-                  required
-                />
-
-              </div>
-
-            </div>
-                        {/* Description */}
-
-            <div className="col-12">
-
-              <label className="form-label fw-semibold">
-                Description
-              </label>
-
-              <div className="input-group">
-
-                <span className="input-group-text align-items-start pt-3">
-                  <FaAlignLeft />
-                </span>
-
-                <textarea
-                  className="form-control"
-                  name="description"
-                  rows="4"
-                  placeholder="Enter Section Description"
-                  value={section.description}
-                  onChange={handleChange}
-                ></textarea>
-
-              </div>
+              <input
+                type="text"
+                name="sectionName"
+                placeholder="Enter Section Name"
+                value={section.sectionName}
+                onChange={handleChange}
+              />
 
             </div>
 
@@ -287,23 +212,50 @@ function SectionForm({
         </div>
 
       </div>
-      
-      {/* Footer */}
 
-      <div className="mt-4 d-flex justify-content-end gap-2">
-  <button type="button" className="btn btn-secondary">
-    Cancel
-  </button>
+      <div className="form-card">
 
-  <button type="submit" className="btn btn-primary">
-    Save
-  </button>
-</div>
+        <h3 className="section-title">
+          Description
+        </h3>
+
+        <div className="textarea-box">
+
+          <FaAlignLeft className="input-icon" />
+
+          <textarea
+            name="description"
+            placeholder="Enter Section Description"
+            value={section.description}
+            onChange={handleChange}
+          />
+
+        </div>
+
+      </div>
+
+      <div className="modal-footer">
+
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          className="btn btn-primary"
+        >
+          <FaSave className="me-2" />
+          Save
+        </button>
+
+      </div>
 
     </form>
-
   );
-
 }
 
 export default SectionForm;

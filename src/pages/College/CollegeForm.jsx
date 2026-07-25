@@ -28,6 +28,7 @@ function CollegeForm({
   useEffect(() => {
     if (selectedCollegeData) {
       setCollege({
+        ...selectedCollegeData, // 🌟 FIXED: Retains backend indexing fields (like collegeId) safely across states
         instituteName: selectedCollegeData.instituteName || "",
         address: selectedCollegeData.address || "",
         phoneNumber: selectedCollegeData.phoneNumber || "",
@@ -41,7 +42,7 @@ function CollegeForm({
         email: "",
       });
     }
-  }, [selectedCollegeData]);
+  }, [selectedCollegeData, show]); // Added show dependency to ensure clean initialization on form toggles
 
   if (!show) return null;
 

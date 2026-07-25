@@ -52,6 +52,28 @@
     font-size:15px;
 }
 
+.add-course-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+
+    border: none !important;
+    border-radius: 12px;
+
+    padding: 12px 22px;
+    min-width: 30px;
+    height: 40px;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
 
 .add-course-btn:hover {
     background-color: #1d4ed8 !important;
@@ -328,6 +350,47 @@
 .course-btn svg{
     font-size:16px;
 }
+
+/* =====================================
+   COURSE ACTION BUTTONS
+===================================== */
+
+.course-actions {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.course-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 80px;
+    height: 34px;
+
+    padding: 4px 12px;
+
+    border-radius: 8px;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    transition: all 0.25s ease;
+}
+
+.course-actions .btn svg {
+    font-size: 12px;
+}
+
+.course-actions .btn-outline-primary:hover,
+.course-actions .btn-outline-danger:hover {
+    transform: translateY(-1px);
+}
+
+
 
 /* =====================================
    REMOVE UNUSED PROGRESS STYLES
