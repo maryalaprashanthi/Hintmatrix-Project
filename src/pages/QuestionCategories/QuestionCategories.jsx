@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-
+import DataGrid from "../../components/DataGrid";
 import "./QuestionCategories.css";
 import "./AddQuestionCategoryModal.css";
+import QuestionCategoryService from "../../services/QuestionCategoryService";
 
 import AddQuestionCategoryModal from "./AddQuestionCategoryModal";
 
@@ -11,19 +12,95 @@ export default function QuestionCategories() {
     const { chapterName } = useParams();
 
     const [showModal, setShowModal] = useState(false);
+     const [categories, setCategories] = useState([]);
 
-    const categories = [
-        "B.Com Model Questions",
-        "CA Foundation - Journal Entries",
-        "Easy Model Questions",
-        "State Board Model Questions",
-        "CBSE Model Questions",
-        "Company A/c's - CA Foundation - Journal Entries",
-        "Bills of Exchange - CA Foundation - Journal Entries",
-        "Consignment - CA Foundation - Journal Entries",
-        "Sale on approval or Return basis - CA Foundation - Journal Entries",
-        "Workshop for academic and corporate accounting"
-    ];
+    const [loading, setLoading] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState(null);
+const handleEdit = (category) => {
+    setSelectedCategory(category);
+    setShowModal(true);
+};
+
+    // ==============================
+    // GET QUESTION CATEGORIES
+    // ==============================
+
+    const loadCategories = async () => {
+
+        try {
+
+            setLoading(true);
+
+            const response =
+                await QuestionCategoryService.getAll();
+
+            console.log(
+                "Categories from backend:",
+                response.data
+            );
+
+            setCategories(response.data);
+
+        } catch (error) {
+
+            console.error(
+                "Error fetching categories:",
+                error
+            );
+
+        } finally {
+
+            setLoading(false);
+
+        }
+    };
+
+
+    useEffect(() => {
+        loadCategories();
+    }, []);
+
+const columnDefs = [
+    {
+        headerName: "ID",
+        field: "categoryId",
+        width: 100,
+    },
+    {
+        headerName: "Category Name",
+        field: "name",
+        flex: 1,
+    },
+    {
+        headerName: "Actions",
+        width: 200,
+        sortable: false,
+        filter: false,
+
+        cellRenderer: (params) => (
+            <div className="d-flex gap-2 align-items-center h-100">
+
+                <button
+                    className="btn btn-sm btn-primary"
+                   onClick={() => handleEdit(params.data)}
+                >
+                    Edit
+                </button>
+
+                <button
+                    className="btn btn-sm btn-danger"
+                    onClick={() =>
+                        console.log("Delete ID:", params.data.categoryId)
+                    }
+                >
+                    Delete
+                </button>
+
+            </div>
+        ),
+    },
+];
+    
 
     return (
 
@@ -40,82 +117,44 @@ export default function QuestionCategories() {
                     </p>
 
                 </div>
-
-                <button
-                    className="add-category-btn"
-                    onClick={() => setShowModal(true)}
-                >
-                    + Add Category
-                </button>
-
-            </div>
-
-
-
-            <div className="category-table">
-
-                <div className="table-header">
-
-                    <div>
-                        Category Name
-                    </div>
-
-                    <div>
-                        Actions
-                    </div>
-
-                </div>
-
-
-
-                {categories.map((category, index) => (
-
-                    <div
-                        className="category-row"
-                        key={index}
-                    >
-
-                        <div className="category-name">
-
-                            <input
-                                type="checkbox"
-                            />
-
-                            <span>
-                                {category}
-                            </span>
-
-                        </div>
-
-
-
-                        <div className="actions">
-
-                            <button className="edit-btn">
-                                Edit
-                            </button>
-
-                            <button className="delete-btn">
-                                Delete
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                ))}
+<button
+    className="add-category-btn"
+    onClick={() => {
+        setSelectedCategory(null);
+        setShowModal(true);
+    }}
+>
+    + Add Category
+</button>
 
             </div>
+
+
+
+            
+            {/* AG GRID */}
+
+            <DataGrid
+                rowData={categories}
+                columnDefs={columnDefs}
+                height={500}
+                pageSize={10}
+                loading={loading}
+            />
 
 
 
             {/* Add Question Category Modal */}
 
-            <AddQuestionCategoryModal
-                show={showModal}
-                closeModal={() => setShowModal(false)}
-                chapterName={chapterName}
-            />
+          <AddQuestionCategoryModal
+    show={showModal}
+    closeModal={() => {
+        setShowModal(false);
+        setSelectedCategory(null);
+    }}
+    chapterName={chapterName}
+    initialData={selectedCategory}
+/>
 
         </div>
 

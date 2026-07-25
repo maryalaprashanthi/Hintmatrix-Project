@@ -1,13 +1,25 @@
+import { useEffect, useState } from "react";
 import { FaTimes, FaSave } from "react-icons/fa";
 import { createPortal } from "react-dom";
 import "./QuestionCategories.css"
+
+
 
 function AddQuestionCategoryModal({
   show,
   closeModal,
   chapterName,
-}) {
+  initialData,
+}) { 
   if (!show) return null;
+  const [categoryName, setCategoryName] = useState("");
+  useEffect(() => {
+  if (initialData) {
+    setCategoryName(initialData.name || "");
+  } else {
+    setCategoryName("");
+  }
+}, [initialData]);
 
   return  createPortal(
     <div className="modal-overlay">
@@ -16,8 +28,15 @@ function AddQuestionCategoryModal({
         {/* Header */}
         <div className="modal-header">
           <div>
-            <h2>Add Question Category</h2>
-            <p>Create a new question category.</p>
+            <h2>
+  {initialData ? "Edit Question Category" : "Add Question Category"}
+</h2>
+
+<p>
+  {initialData
+    ? "Update the question category."
+    : "Create a new question category."}
+</p>
           </div>
 
           <button
@@ -84,10 +103,12 @@ function AddQuestionCategoryModal({
                   </label>
 
                   <div className="input-box">
-                    <input
-                      type="text"
-                      placeholder="Enter Category Name"
-                    />
+                   <input
+  type="text"
+  placeholder="Enter Category Name"
+  value={categoryName}
+  onChange={(e) => setCategoryName(e.target.value)}
+/>
                   </div>
                 </div>
 
@@ -156,7 +177,7 @@ function AddQuestionCategoryModal({
             className="btn btn-primary d-flex align-items-center gap-2"
           >
             <FaSave />
-            Save
+{initialData ? "Update" : "Save"}
           </button>
 
         </div>
