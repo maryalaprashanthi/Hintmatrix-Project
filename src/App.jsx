@@ -18,7 +18,7 @@ import Chapters from "./pages/Chapters/Chapters";
 
 import QuestionCategories from "./pages/QuestionCategories/QuestionCategories";
 
-
+import Login from "./pages/Auth/Login";
 // Other Pages
 import Practice from "./pages/Practice";
 import Tests from "./pages/Tests";
@@ -41,6 +41,7 @@ import cbse from "./assets/courses/cbse11.png.jpeg";
 import accountancy from "./assets/courses/jr-accountancy.png.jpeg";
 import combo from "./assets/courses/combo.png.jpeg";
 import inter from "./assets/courses/inter.png.jpeg";
+import Landing from "./pages/Landing/Landing";
 
 function App() {
 const navigate = useNavigate();
@@ -139,10 +140,13 @@ navigate("/courses");
 };
 return (
 <Routes>
+   <Route path="/" element={<Landing />} />
+  
+    <Route path="/login" element={<Login />} />
   <Route element={<Layout />}>
 
     {/* Dashboard */}
-    <Route path="/" element={<Dashboard />} />
+    
     <Route path="/dashboard" element={<Dashboard />} />
 
     {/* College */}
