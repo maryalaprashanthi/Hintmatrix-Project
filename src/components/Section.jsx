@@ -10,6 +10,20 @@ function Section() {
   const [selectedSection, setSelectedSection] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
 
+  // Upload (Frontend Only)
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+
+    if (!file) return;
+
+    console.log("Selected File:", file);
+
+    alert(`Selected file: ${file.name}`);
+
+    // Reset input
+    event.target.value = "";
+  };
+
   const handleAddSection = () => {
     setSelectedSection(null);
     setShowModal(true);
@@ -48,12 +62,34 @@ function Section() {
           </p>
         </div>
 
-        <button
-          className="btn btn-primary px-4"
-          onClick={handleAddSection}
-        >
-          + Add Section
-        </button>
+        {/* Hidden Upload Input */}
+        <input
+          type="file"
+          id="sectionUpload"
+          accept=".csv,.xlsx,.xls"
+          style={{ display: "none" }}
+          onChange={handleFileUpload}
+        />
+
+        <div className="d-flex gap-2">
+
+          <button
+            className="btn btn-primary"
+            onClick={() =>
+              document.getElementById("sectionUpload").click()
+            }
+          >
+            ⬆ Upload
+          </button>
+
+          <button
+            className="btn btn-primary"
+            onClick={handleAddSection}
+          >
+            + Add Section
+          </button>
+
+        </div>
 
       </div>
 

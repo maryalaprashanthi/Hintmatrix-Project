@@ -8,17 +8,20 @@ function TableAttributes() {
   const [showModal, setShowModal] = useState(false);
   const [editingAttribute, setEditingAttribute] = useState(null);
   const [tableAttributes, setTableAttributes] = useState([]);
-  const [id,setId] = useState(null);
+  const [id, setId] = useState(null);
+
   const loadTableAttributes = async () => {
     try {
       const result = await TableAttributeService.getAll();
       const data = await result.data;
+
       const allTableAttributes = data.map((obj) => ({
         name: obj.name,
         id: obj.attributeId,
         tableHeaderName: obj.tableHeaderName,
         shortName: obj.shortName,
       }));
+
       setTableAttributes(allTableAttributes);
     } catch (error) {
       console.log("Error: ", error);
@@ -31,24 +34,42 @@ function TableAttributes() {
 
   const handleDelete = async (id) => {
     try {
-      const reposnse = await TableAttributeService.delete(id);
-      const data = await reposnse.data;
+      await TableAttributeService.delete(id);
     } catch (error) {
       console.error("Error: ", error);
     }
+
     loadTableAttributes();
+  };
+
+  // Upload Button
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    console.log("Selected File:", file);
+
+    // TODO: Upload API
+
+    e.target.value = "";
   };
 
   const columnDefs = [
     { field: "id", headerName: "ID", width: 80, flex: 1 },
     { field: "name", headerName: "Table Attribute Name", flex: 1 },
-    { field: "tableHeaderName", headerName: "Table Header Name", flex: 1 },
+    {
+      field: "tableHeaderName",
+      headerName: "Table Header Name",
+      flex: 1,
+    },
     { field: "shortName", headerName: "Short Name", flex: 1 },
     {
       headerName: "Action",
       flex: 1,
       cellRenderer: (params) => {
         if (!params.data) return null;
+
         return (
           <div
             style={{
@@ -59,9 +80,13 @@ function TableAttributes() {
             }}
           >
             <button
-              // onClick={() => handleEdit(params.data.id,params.data)}
               onClick={() => {
-                let editedData = {"name":params.data.name,"shortName":params.data.shortName,"tableHeaderName":params.data.tableHeaderName};
+                let editedData = {
+                  name: params.data.name,
+                  shortName: params.data.shortName,
+                  tableHeaderName: params.data.tableHeaderName,
+                };
+
                 setEditingAttribute(editedData);
                 setId(params.data.id);
                 setShowModal(true);
@@ -83,6 +108,7 @@ function TableAttributes() {
             >
               Edit
             </button>
+
             <button
               onClick={() => handleDelete(params.data.id)}
               style={{
@@ -107,48 +133,86 @@ function TableAttributes() {
       },
     },
   ];
-  
-  const handleSave = async (newAttribute) => {
-  try {
-    if (id != null) {
-      await TableAttributeService.update(id, newAttribute);
-    } else {
-      await TableAttributeService.create(newAttribute);
-    }
+    const handleSave = async (newAttribute) => {
+    try {
+      if (id != null) {
+        await TableAttributeService.update(id, newAttribute);
+      } else {
+        await TableAttributeService.create(newAttribute);
+      }
 
-    setEditingAttribute(null);
-    setId(null);
-    setShowModal(false);
-    loadTableAttributes();
-  } catch (error) {
-    console.error("Error: ", error);
-  }
-};
+      setEditingAttribute(null);
+      setId(null);
+      setShowModal(false);
+      loadTableAttributes();
+    } catch (error) {
+      console.error("Error: ", error);
+    }
+  };
 
   return (
     <div className="container-fluid py-4">
+
       {/* Header */}
 
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2 className="fw-bold">Table Attribute Management</h2>
 
-          <p className="text-muted">Manage all table attributes.</p>
+        <div>
+          <h2 className="fw-bold">
+            Table Attribute Management
+          </h2>
+
+          <p className="text-muted">
+            Manage all table attributes.
+          </p>
         </div>
 
-        <button
-          className="btn btn-primary"
-          onClick={() => {
-            setEditingAttribute(null);
-            setId(null);
-            setShowModal(true);
-          }}
-        >
-          + Add Table Attribute
-        </button>
+        {/* Hidden Upload Input */}
+
+        <input
+          type="file"
+          id="tableAttributeUpload"
+          accept=".csv,.xlsx,.xls"
+          style={{ display: "none" }}
+          onChange={handleFileUpload}
+        />
+
+        <div className="d-flex gap-2">
+
+          <button
+            className="btn btn-primary"
+            onClick={() =>
+              document
+                .getElementById("tableAttributeUpload")
+                .click()
+            }
+          >
+            ⬆ Upload
+          </button>
+
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setEditingAttribute(null);
+              setId(null);
+              setShowModal(true);
+            }}
+          >
+            + Add Table Attribute
+          </button>
+
+        </div>
+
       </div>
 
-      <DataGrid rowData={tableAttributes} columnDefs={columnDefs} />
+      {/* Data Grid */}
+
+      <DataGrid
+        rowData={tableAttributes}
+        columnDefs={columnDefs}
+      />
+
+      {/* Modal */}
 
       <AddTableAttributeModal
         show={showModal}
@@ -160,6 +224,7 @@ function TableAttributes() {
         onSave={handleSave}
         initialData={editingAttribute}
       />
+
     </div>
   );
 }
