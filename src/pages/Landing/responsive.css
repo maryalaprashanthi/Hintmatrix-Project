@@ -1,0 +1,457 @@
+/* =========================================================
+   HINTMATRIX LANDING PAGE - RESPONSIVE CSS
+   All styles scoped to .landing-page
+========================================================= */
+
+
+/* =========================================================
+   TABLET - MAX WIDTH 992px
+========================================================= */
+
+@media screen and (max-width: 992px) {
+
+    .landing-page .slider {
+        width: 90%;
+    }
+
+    .landing-page .slides {
+        height: 420px;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE / TABLET - MAX WIDTH 768px
+========================================================= */
+
+@media screen and (max-width: 768px) {
+
+
+    /* =========================
+       NAVBAR
+    ========================= */
+
+    .landing-page .navbar {
+        height: 80px;
+
+        padding: 0 20px;
+
+        position: fixed;
+        top: 0;
+        left: 0;
+
+        width: 100%;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        z-index: 9999;
+    }
+
+
+    /* Logo */
+
+    .landing-page .logo {
+        margin: 0;
+
+        display: flex;
+        align-items: center;
+    }
+
+    .landing-page .logo img {
+        width: auto;
+        height: 50px;
+
+        display: block;
+    }
+
+
+    /* Hamburger */
+
+    .landing-page .menu-toggle {
+        display: block;
+
+        font-size: 30px;
+        line-height: 1;
+
+        cursor: pointer;
+
+        z-index: 10000;
+    }
+
+
+    /* Mobile menu */
+
+    .landing-page .nav-menu {
+        position: absolute;
+
+        top: 80px;
+        left: 0;
+
+        width: 100%;
+
+        background: #ffffff;
+
+        display: none;
+
+        flex-direction: column;
+        align-items: center;
+
+        padding: 25px 20px;
+
+        gap: 25px;
+
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    }
+
+
+    .landing-page .nav-menu.active {
+        display: flex;
+    }
+
+
+    /* Navigation links */
+
+    .landing-page .nav-links {
+        display: flex;
+
+        flex-direction: column;
+        align-items: center;
+
+        gap: 20px;
+
+        margin: 0;
+        padding: 0;
+
+        width: 100%;
+    }
+
+
+    .landing-page .nav-links li {
+        width: 100%;
+
+        text-align: center;
+    }
+
+
+    .landing-page .nav-links a {
+        display: block;
+
+        width: 100%;
+
+        text-align: center;
+    }
+
+
+    /* Login / Signup */
+
+    .landing-page .nav-buttons {
+        display: flex;
+
+        flex-direction: column;
+        align-items: center;
+
+        gap: 15px;
+
+        width: 100%;
+    }
+
+
+    .landing-page .login-btn,
+    .landing-page .signup-btn {
+        width: 180px;
+
+        text-align: center;
+    }
+
+
+
+    /* =========================
+       HERO
+    ========================= */
+
+    .landing-page .hero {
+        min-height: auto;
+
+        padding: 120px 20px 60px;
+    }
+
+
+    .landing-page .hero-content {
+        flex-direction: column-reverse;
+
+        align-items: center;
+
+        text-align: center;
+
+        gap: 35px;
+    }
+
+
+    .landing-page .hero-text,
+    .landing-page .hero-image {
+        width: 100%;
+    }
+
+
+    .landing-page .hero-text h1 {
+        font-size: 42px;
+
+        line-height: 1.2;
+
+        margin-bottom: 20px;
+    }
+
+
+    .landing-page .hero-text p {
+        font-size: 18px;
+
+        line-height: 1.7;
+
+        margin-bottom: 25px;
+    }
+
+
+    .landing-page .hero-buttons {
+        display: flex;
+
+        flex-direction: column;
+
+        align-items: center;
+
+        gap: 15px;
+    }
+
+
+    .landing-page .hero-image {
+        display: flex;
+
+        justify-content: center;
+
+        align-items: center;
+    }
+
+
+    .landing-page .hero-image img {
+        width: 100%;
+
+        max-width: 350px;
+
+        height: auto;
+    }
+
+
+
+    /* =========================
+       COURSES
+    ========================= */
+
+    .landing-page .courses {
+        padding: 70px 5%;
+    }
+
+
+    .landing-page .courses .section-title h2 {
+        font-size: 32px;
+    }
+
+
+    .landing-page .courses .section-title p {
+        font-size: 16px;
+    }
+
+
+    .landing-page .courses-image img {
+        width: 100%;
+
+        height: auto;
+    }
+
+
+
+    /* =========================
+       PRACTICE
+    ========================= */
+
+    .landing-page .practice-images {
+        grid-template-columns: 1fr;
+
+        gap: 20px;
+    }
+
+
+    .landing-page .practice-images img {
+        width: 100%;
+
+        height: auto;
+    }
+
+
+
+    /* =========================
+       SLIDER
+    ========================= */
+
+    .landing-page .slider {
+        width: 95%;
+
+        border-radius: 18px;
+    }
+
+
+    .landing-page .slides {
+        height: 300px;
+    }
+
+
+    .landing-page .prev,
+    .landing-page .next {
+        width: 45px;
+
+        height: 45px;
+
+        font-size: 24px;
+    }
+
+
+
+    /* =========================
+       CONTACT
+    ========================= */
+
+    .landing-page .contact-container {
+        flex-direction: column;
+    }
+
+
+    .landing-page .contact-info,
+    .landing-page .contact-form {
+        width: 100%;
+    }
+
+
+    .landing-page .contact .section-title h2 {
+        font-size: 34px;
+    }
+
+}
+
+
+
+/* =========================================================
+   SMALL MOBILE - MAX WIDTH 576px
+========================================================= */
+
+@media screen and (max-width: 576px) {
+
+
+    /* Navbar */
+
+    .landing-page .navbar {
+        height: 70px;
+
+        padding: 0 15px;
+    }
+
+
+    .landing-page .logo img {
+        height: 42px;
+    }
+
+
+    .landing-page .menu-toggle {
+        font-size: 27px;
+    }
+
+
+    .landing-page .nav-menu {
+        top: 70px;
+    }
+
+
+
+    /* Hero */
+
+    .landing-page .hero {
+        padding: 100px 15px 50px;
+    }
+
+
+    .landing-page .hero-text h1 {
+        font-size: 34px;
+    }
+
+
+    .landing-page .hero-text p {
+        font-size: 16px;
+
+        line-height: 1.7;
+    }
+
+
+    .landing-page .hero-image img {
+        max-width: 280px;
+    }
+
+
+    .landing-page .primary-btn,
+    .landing-page .secondary-btn {
+        width: 200px;
+
+        padding: 12px 20px;
+    }
+
+
+
+    /* Slider */
+
+    .landing-page .slides {
+        height: 220px;
+    }
+
+
+    .landing-page .prev,
+    .landing-page .next {
+        width: 40px;
+
+        height: 40px;
+
+        font-size: 20px;
+    }
+
+
+    .landing-page .dots {
+        margin-top: 18px;
+    }
+
+
+    .landing-page .dot {
+        width: 10px;
+
+        height: 10px;
+    }
+
+
+
+    /* Courses */
+
+    .landing-page .courses {
+        padding: 50px 15px;
+    }
+
+
+    .landing-page .courses .section-title h2 {
+        font-size: 28px;
+    }
+
+
+
+    /* Contact */
+
+    .landing-page .contact .section-title h2 {
+        font-size: 28px;
+    }
+
+}

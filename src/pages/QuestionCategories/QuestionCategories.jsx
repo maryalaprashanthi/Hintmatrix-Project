@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import DataGrid from "../../components/DataGrid";
+import {
+    FaBookOpen,
+    FaPen,
+    FaTrash,
+    FaArrowRight
+} from "react-icons/fa";
 import "./QuestionCategories.css";
 import "./AddQuestionCategoryModal.css";
 import QuestionCategoryService from "../../services/QuestionCategoryService";
@@ -16,6 +21,8 @@ export default function QuestionCategories() {
 
     const [loading, setLoading] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState(null);
+    const [searchTerm, setSearchTerm] = useState("");
+const [statusFilter, setStatusFilter] = useState("All");
 const handleEdit = (category) => {
     setSelectedCategory(category);
     setShowModal(true);
@@ -60,46 +67,7 @@ const handleEdit = (category) => {
         loadCategories();
     }, []);
 
-const columnDefs = [
-    {
-        headerName: "ID",
-        field: "categoryId",
-        width: 100,
-    },
-    {
-        headerName: "Category Name",
-        field: "name",
-        flex: 1,
-    },
-    {
-        headerName: "Actions",
-        width: 200,
-        sortable: false,
-        filter: false,
 
-        cellRenderer: (params) => (
-            <div className="d-flex gap-2 align-items-center h-100">
-
-                <button
-                    className="btn btn-sm btn-primary"
-                   onClick={() => handleEdit(params.data)}
-                >
-                    Edit
-                </button>
-
-                <button
-                    className="btn btn-sm btn-danger"
-                    onClick={() =>
-                        console.log("Delete ID:", params.data.categoryId)
-                    }
-                >
-                    Delete
-                </button>
-
-            </div>
-        ),
-    },
-];
     
 
     return (
@@ -132,15 +100,92 @@ const columnDefs = [
 
 
             
-            {/* AG GRID */}
+           {/* CATEGORY CARDS */}
 
-            <DataGrid
-                rowData={categories}
-                columnDefs={columnDefs}
-                height={500}
-                pageSize={10}
-                loading={loading}
-            />
+{loading ? (
+
+    <div className="text-center py-5">
+        Loading categories...
+    </div>
+
+) : (
+
+    <div className="row g-3">
+
+        <div className="category-grid">
+
+    {categories.map((category, index) => (
+
+        <div
+            className="category-card"
+            key={category.categoryId || index}
+        >
+
+            {/* TOP CONTENT */}
+            <div className="category-card-content">
+
+                <div className={`category-icon icon-${index % 6}`}>
+                    <FaBookOpen />
+                </div>
+
+                <div className="category-info">
+
+                    <h3>
+                        {category.name}
+                    </h3>
+
+                </div>
+
+                <button
+                    type="button"
+                    className="category-menu"
+                >
+                    ⋮
+                </button>
+                
+
+            </div>
+
+
+            {/* BOTTOM ACTIONS */}
+            <div className="category-card-footer">
+
+                <button className="open-question-btn">
+                    Open Questions
+                    <FaArrowRight />
+                </button>
+
+                <div className="category-actions">
+
+                    <button
+                        className="edit-category-btn"
+                        onClick={() => handleEdit(category)}
+                        title="Edit"
+                    >
+                        <FaPen />
+                    </button>
+
+                    <button
+                        className="delete-category-btn"
+                        onClick={() => handleDelete(category.categoryId)}
+                        title="Delete"
+                    >
+                        <FaTrash />
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    ))}
+
+</div>
+
+    </div>
+
+)}
 
 
 
