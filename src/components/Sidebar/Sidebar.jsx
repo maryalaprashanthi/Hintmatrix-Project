@@ -27,15 +27,16 @@ import {
   MdMenuBook,
   MdCategory,
   MdHelpOutline,
+  MdSecurity,
+  MdPersonOutline,
+  MdAdminPanelSettings,
 } from "react-icons/md";
 
-export default function Sidebar({
-  sidebarOpen,
-  setSidebarOpen,
-}) {
+export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const [collegeOpen, setCollegeOpen] = useState(true);
   const [tableOpen, setTableOpen] = useState(false);
   const [questionOpen, setQuestionOpen] = useState(true);
+  const [adminOpen, setAdminOpen] = useState(false);
 
   const closeSidebar = () => {
     if (window.innerWidth <= 768) {
@@ -47,31 +48,20 @@ export default function Sidebar({
     isActive ? "menu-item active" : "menu-item";
 
   const subMenuClass = ({ isActive }) =>
-    isActive
-      ? "submenu-item active-submenu"
-      : "submenu-item";
+    isActive ? "submenu-item active-submenu" : "submenu-item";
 
   return (
-    <aside
-      className={`sidebar ${
-        sidebarOpen ? "show" : ""
-      }`}
-    >
+    <aside className={`sidebar ${sidebarOpen ? "show" : ""}`}>
       {/* Logo */}
 
       <div className="sidebar-header">
-        <img
-          src={logo}
-          alt="HintMatrix"
-          className="sidebar-logo"
-        />
+        <img src={logo} alt="HintMatrix" className="sidebar-logo" />
       </div>
 
       {/* Menu */}
 
       <div className="sidebar-content">
         <nav className="sidebar-menu">
-
           {/* Dashboard */}
 
           <NavLink
@@ -86,35 +76,23 @@ export default function Sidebar({
             </div>
           </NavLink>
 
-          
-
-
           {/* College */}
           <NavLink to="/college">
-          <div
-            className={`menu-item ${
-              collegeOpen ? "active" : ""
-            }`}
-            onClick={() =>
-              setCollegeOpen(!collegeOpen)
-            }
-          >
-            <div className="menu-left">
-              <MdSchool />
-              <span>College</span>
-            </div>
+            <div
+              className={`menu-item ${collegeOpen ? "active" : ""}`}
+              onClick={() => setCollegeOpen(!collegeOpen)}
+            >
+              <div className="menu-left">
+                <MdSchool />
+                <span>College</span>
+              </div>
 
-            {collegeOpen ? (
-              <MdKeyboardArrowUp />
-            ) : (
-              <MdKeyboardArrowDown />
-            )}
-          </div>
+              {collegeOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
+            </div>
           </NavLink>
 
           {collegeOpen && (
             <div className="submenu">
-
               <NavLink
                 to="/branch"
                 className={subMenuClass}
@@ -141,80 +119,108 @@ export default function Sidebar({
                 <MdViewModule />
                 <span>Section</span>
               </NavLink>
+            </div>
+          )}
 
+          {/* Admin */}
+
+          {/* Admin */}
+
+          <div
+            className={`menu-item ${adminOpen ? "active" : ""}`}
+            onClick={() => setAdminOpen(!adminOpen)}
+          >
+            <div className="menu-left">
+              <MdAdminPanelSettings />
+              <span>Admin</span>
+            </div>
+
+            {adminOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
+          </div>
+
+          {adminOpen && (
+            <div className="submenu">
+              <NavLink
+                to="/admin/branch-admin"
+                className={subMenuClass}
+                onClick={closeSidebar}
+              >
+                <MdAccountTree />
+                <span>Branch Admin</span>
+              </NavLink>
+
+              <NavLink
+                to="/admin/super-admin"
+                className={subMenuClass}
+                onClick={closeSidebar}
+              >
+                <MdSecurity />
+                <span>Super Admin</span>
+              </NavLink>
+
+              <NavLink
+                to="/admin/student-user"
+                className={subMenuClass}
+                onClick={closeSidebar}
+              >
+                <MdSchool />
+                <span>Student User</span>
+              </NavLink>
             </div>
           )}
 
           {/* Questions */}
 
           <div
-            className={`menu-item ${
-              questionOpen ? "active" : ""
-            }`}
-            onClick={() =>
-              setQuestionOpen(!questionOpen)
-            }
+            className={`menu-item ${questionOpen ? "active" : ""}`}
+            onClick={() => setQuestionOpen(!questionOpen)}
           >
             <div className="menu-left">
               <MdQuiz />
               <span>Questions</span>
             </div>
 
-            {questionOpen ? (
-              <MdKeyboardArrowUp />
-            ) : (
-              <MdKeyboardArrowDown />
-            )}
+            {questionOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
           </div>
 
           {questionOpen && (
             <div className="submenu">
+              <NavLink
+                to="/questions/chapters"
+                className={subMenuClass}
+                onClick={closeSidebar}
+              >
+                <MdMenuBook />
+                <span>Chapters</span>
+              </NavLink>
 
               <NavLink
-  to="/questions/chapters"
-  className={subMenuClass}
-  onClick={closeSidebar}
->
-  <MdMenuBook />
-  <span>Chapters</span>
-</NavLink>
-
-<NavLink
-  to="/questions/question-categories"
-  className={subMenuClass}
-  onClick={closeSidebar}
->
-  <MdCategory />
-  <span>Question Categories</span>
-</NavLink>
+                to="/questions/question-categories"
+                className={subMenuClass}
+                onClick={closeSidebar}
+              >
+                <MdCategory />
+                <span>Question Categories</span>
+              </NavLink>
             </div>
           )}
 
           {/* Table */}
 
           <div
-            className={`menu-item ${
-              tableOpen ? "active" : ""
-            }`}
-            onClick={() =>
-              setTableOpen(!tableOpen)
-            }
+            className={`menu-item ${tableOpen ? "active" : ""}`}
+            onClick={() => setTableOpen(!tableOpen)}
           >
             <div className="menu-left">
               <MdTableChart />
               <span>Table Details</span>
             </div>
 
-            {tableOpen ? (
-              <MdKeyboardArrowUp />
-            ) : (
-              <MdKeyboardArrowDown />
-            )}
+            {tableOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
           </div>
 
           {tableOpen && (
             <div className="submenu">
-
               <NavLink
                 to="/table-names"
                 className={subMenuClass}
@@ -241,48 +247,31 @@ export default function Sidebar({
                 <MdListAlt />
                 <span>Table Attributes</span>
               </NavLink>
-
             </div>
           )}
 
-          <NavLink
-            to="/practice"
-            className={menuClass}
-            onClick={closeSidebar}
-          >
+          <NavLink to="/practice" className={menuClass} onClick={closeSidebar}>
             <div className="menu-left">
               <MdOutlineEdit />
               <span>Practice</span>
             </div>
           </NavLink>
 
-          <NavLink
-            to="/tests"
-            className={menuClass}
-            onClick={closeSidebar}
-          >
+          <NavLink to="/tests" className={menuClass} onClick={closeSidebar}>
             <div className="menu-left">
               <MdAssignment />
               <span>Tests</span>
             </div>
           </NavLink>
 
-          <NavLink
-            to="/sessions"
-            className={menuClass}
-            onClick={closeSidebar}
-          >
+          <NavLink to="/sessions" className={menuClass} onClick={closeSidebar}>
             <div className="menu-left">
               <MdVideoLibrary />
               <span>Sessions</span>
             </div>
           </NavLink>
 
-          <NavLink
-            to="/results"
-            className={menuClass}
-            onClick={closeSidebar}
-          >
+          <NavLink to="/results" className={menuClass} onClick={closeSidebar}>
             <div className="menu-left">
               <MdBarChart />
               <span>Results</span>
@@ -300,17 +289,12 @@ export default function Sidebar({
             </div>
           </NavLink>
 
-          <NavLink
-            to="/settings"
-            className={menuClass}
-            onClick={closeSidebar}
-          >
+          <NavLink to="/settings" className={menuClass} onClick={closeSidebar}>
             <div className="menu-left">
               <MdSettings />
               <span>Settings</span>
             </div>
           </NavLink>
-
         </nav>
       </div>
 
@@ -318,7 +302,6 @@ export default function Sidebar({
         <MdLogout />
         <span>Logout</span>
       </div>
-
     </aside>
   );
 }
