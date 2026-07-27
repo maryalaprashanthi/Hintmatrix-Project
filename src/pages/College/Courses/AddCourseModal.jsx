@@ -1,15 +1,31 @@
-import React, { useState } from "react"; // 🌟 FIXED: Imported useState for tracking inputs
+import React, { useState,useEffect } from "react"; // 🌟 FIXED: Imported useState for tracking inputs
 import "./AddCourseModal.css";
 import CourseService from "../../../services/CourseService";
 import { createPortal } from "react-dom";
 
-function AddCourseModal({ show, onClose, onRefresh }) {
+function AddCourseModal({ show, onClose, onRefresh,selectedCourseData }) {
   // 🌟 FIXED: Created tracking state hooks for your form data
   const [courseName, setCourseName] = useState("");
   const [category, setCategory] = useState("Commerce");
   const [level, setLevel] = useState("Beginner");
   const [duration, setDuration] = useState("3 Months");
   const [description, setDescription] = useState("");
+
+useEffect(() => {
+    if (selectedCourseData) {
+      setCourseName(selectedCourseData.name || selectedCourseData.title || "");
+      setCategory(selectedCourseData.category || "Commerce");
+      setLevel(selectedCourseData.level || "Beginner");
+      setDuration(selectedCourseData.duration || "3 Months");
+      setDescription(selectedCourseData.description || "");
+    } else {
+      setCourseName("");
+      setCategory("Commerce");
+      setLevel("Beginner");
+      setDuration("3 Months");
+      setDescription("");
+    }
+  }, [selectedCourseData, show]);
 
   if (!show) return null;
 
@@ -27,10 +43,22 @@ function AddCourseModal({ show, onClose, onRefresh }) {
       name: courseName.trim() // Changed 'courseName' to 'name' to pass Spring Boot validation constraints
     };
 
-    CourseService.saveCourse(courseRequestDTO)
-      .then(() => {
-        alert("Course saved successfully to database!");
-        
+ const isEdit = selectedCourseData?.courseId || selectedCourseData?.id;
+    const courseId = selectedCourseData?.courseId || selectedCourseData?.id;
+
+    const apiCall = isEdit
+      ? CourseService.updateCourse(courseId, courseRequestDTO)
+      : CourseService.saveCourse(courseRequestDTO);
+
+    apiCall
+      .then((response) => {
+        // 🌟 FIXED: Gracefully processes the raw text String responses sent by your CourseController
+        if (response.data && typeof response.data === "string") {
+          alert(response.data);
+        } else {
+          alert(isEdit ? "Course updated successfully!" : "Course saved successfully!");
+        }
+
         // Reset state variables cleanly
         setCourseName("");
         setCategory("Commerce");
@@ -152,6 +180,7 @@ function AddCourseModal({ show, onClose, onRefresh }) {
           <button
             type="button"
             className="btn btn-primary"
+            onClick={handleSave}
           >
             Save
           </button>

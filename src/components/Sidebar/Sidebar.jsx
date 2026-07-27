@@ -75,7 +75,7 @@ export default function Sidebar({
           {/* Dashboard */}
 
           <NavLink
-            to="/"
+            to="/dashboard"
             end
             className={menuClass}
             onClick={closeSidebar}

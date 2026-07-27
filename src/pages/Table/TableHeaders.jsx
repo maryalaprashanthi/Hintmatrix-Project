@@ -1,70 +1,95 @@
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import "./TableHeaders.css";
 import AddTableHeaderModal from "./AddTableHeaderModal";
 import TableHeaderService from "../../services/TableHeaderService";
 import DataGrid from "../../components/DataGrid";
 
 function TableHeaders() {
-
   const [showModal, setShowModal] = useState(false);
 
   const [tableHeaders, setTableHeaders] = useState([]);
   const [id, setId] = useState(null);
   const [name, setName] = useState("");
 
+  // Upload Handler
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    console.log("Selected File:", file);
+
+    // TODO: Call Upload API here
+
+    e.target.value = "";
+  };
+
   const handleSave = async (newTableHeader) => {
     try {
-          if(id==null)
-          {
-            const response = await TableHeaderService.create(newTableHeader);
-          }
-          else
-          {
-            const reposnse = await TableHeaderService.update(id, newTableHeader);
-            const data = await reposnse.data;
-          }
-          setId(null);
-          setName("");
-          setShowModal(false);
-          loadTableHeaders();
-        } catch (error) {
-          console.error("Error: ", error);
-        }
+      if (id == null) {
+        await TableHeaderService.create(newTableHeader);
+      } else {
+        await TableHeaderService.update(id, newTableHeader);
+      }
+
+      setId(null);
+      setName("");
+      setShowModal(false);
+      loadTableHeaders();
+    } catch (error) {
+      console.error("Error: ", error);
+    }
   };
 
   const handleDelete = async (id) => {
     try {
-      const reposnse = await TableHeaderService.delete(id);
-      const data = await reposnse.data;
+      await TableHeaderService.delete(id);
     } catch (error) {
       console.error("Error: ", error);
     }
+
     loadTableHeaders();
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     loadTableHeaders();
-  },[])
+  }, []);
 
   const loadTableHeaders = async () => {
     try {
       const result = await TableHeaderService.getAll();
       const data = await result.data;
-      const allTableNames = data.map((obj)=>({"name":obj.name,"id":obj.headerId}));
+
+      const allTableNames = data.map((obj) => ({
+        name: obj.name,
+        id: obj.headerId,
+      }));
+
       setTableHeaders(allTableNames);
     } catch (error) {
-      console.log("Error: ",error);
+      console.log("Error: ", error);
     }
-  }
+  };
 
   const columnDefs = [
-    { field: "id", headerName: "ID", width: 80, flex: 1 },
-    { field: "name", headerName: "Institute Name", flex: 1, minWidth: 160 },
+    {
+      field: "id",
+      headerName: "ID",
+      width: 80,
+      flex: 1,
+    },
+    {
+      field: "name",
+      headerName: "Institute Name",
+      flex: 1,
+      minWidth: 160,
+    },
     {
       headerName: "Action",
       flex: 1,
       cellRenderer: (params) => {
         if (!params.data) return null;
+
         return (
           <div
             style={{
@@ -75,12 +100,10 @@ function TableHeaders() {
             }}
           >
             <button
-              // onClick={() => handleEdit(params.data.id,params.data)}
               onClick={() => {
                 setId(params.data.id);
                 setName(params.data.name);
                 setShowModal(true);
-                
               }}
               style={{
                 background: "#2563eb",
@@ -99,6 +122,7 @@ function TableHeaders() {
             >
               Edit
             </button>
+
             <button
               onClick={() => handleDelete(params.data.id)}
               style={{
@@ -123,16 +147,12 @@ function TableHeaders() {
       },
     },
   ];
-
-  return (
-
+    return (
     <div className="container-fluid py-4">
-
 
       {/* Header */}
 
       <div className="d-flex justify-content-between align-items-center mb-4">
-
 
         <div>
 
@@ -140,53 +160,72 @@ function TableHeaders() {
             Table Header Management
           </h2>
 
-
           <p className="text-muted">
             Manage all table headers.
           </p>
 
+        </div>
+
+        {/* Hidden Upload Input */}
+
+        <input
+          type="file"
+          id="tableHeaderUpload"
+          accept=".csv,.xlsx,.xls"
+          style={{ display: "none" }}
+          onChange={handleFileUpload}
+        />
+
+        <div className="d-flex gap-2">
+
+          <button
+            className="btn btn-primary"
+            onClick={() =>
+              document
+                .getElementById("tableHeaderUpload")
+                .click()
+            }
+          >
+            ⬆ Upload
+          </button>
+
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setId(null);
+              setName("");
+              setShowModal(true);
+            }}
+          >
+            + Add Table Header
+          </button>
 
         </div>
 
-
-
-        <button
-          className="btn btn-primary"
-          onClick={() => setShowModal(true)}
-        >
-
-          + Add Table Header
-
-        </button>
-
-
       </div>
 
+      {/* Data Grid */}
 
-    <DataGrid rowData={tableHeaders} columnDefs={columnDefs} />
+      <DataGrid
+        rowData={tableHeaders}
+        columnDefs={columnDefs}
+      />
 
-
+      {/* Modal */}
 
       <AddTableHeaderModal
-
         show={showModal}
-
         onClose={() => {
           setShowModal(false);
           setId(null);
-          setName(null);
+          setName("");
         }}
         onSave={handleSave}
         Inputdata={name}
-
       />
 
-
     </div>
-
   );
-
 }
-
 
 export default TableHeaders;

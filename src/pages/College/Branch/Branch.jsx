@@ -59,26 +59,67 @@ function Branch() {
 
  
 
-  return (
+  
+    const handleFileUpload = (e) => {
+  const file = e.target.files[0];
+
+  if (!file) return;
+
+  console.log("Selected File:", file);
+
+  alert(`Selected File: ${file.name}`);
+
+  // TODO: Call backend upload API here
+
+  e.target.value = "";
+};
+return (
     <div className="container-fluid py-4">
 
+      
       {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2 className="fw-bold">Branch Management</h2>
-          <p className="text-muted">
-            Manage all college branches.
-          </p>
-        </div>
+<div className="d-flex justify-content-between align-items-center mb-4">
 
-        
-        <button
-          className="btn btn-primary px-4"
-          onClick={handleAddBranch}
-        >
-          + Add Branch
-        </button>
-      </div>
+  <div>
+    <h2 className="fw-bold">
+      Branch Management
+    </h2>
+
+    <p className="text-muted">
+      Manage all college branches.
+    </p>
+  </div>
+
+  {/* Hidden Upload Input */}
+  <input
+    type="file"
+    id="branchUpload"
+    accept=".csv,.xlsx,.xls"
+    style={{ display: "none" }}
+    onChange={handleFileUpload}
+  />
+
+  <div className="d-flex gap-2">
+
+    <button
+      className="btn btn-primary"
+      onClick={() =>
+        document.getElementById("branchUpload").click()
+      }
+    >
+      ⬆ Upload
+    </button>
+
+    <button
+      className="btn btn-primary"
+      onClick={handleAddBranch}
+    >
+      + Add Branch
+    </button>
+
+  </div>
+
+</div>
 
       {/* 🌟 FIXED: Replaced simple local table markup with high performance AG Grid container wrapper */}
       <div className="card shadow-sm border-0">
