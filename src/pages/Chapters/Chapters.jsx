@@ -2,14 +2,9 @@ import "./Chapters.css";
 import ChapterService from "../../services/ChapterService";
 import { useState, useEffect } from "react";
 import ChapterForm from "./ChapterForm";
-import {
-  useParams,
-  useNavigate,
-  useLocation,
-} from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 
 import {
-  FaArrowLeft,
   FaBookOpen,
   FaClock,
   FaCheckCircle,
@@ -22,8 +17,7 @@ function Chapters() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isQuestionsModule =
-    location.pathname.startsWith("/questions");
+  const isQuestionsModule = location.pathname.startsWith("/questions");
 
   const [showAddChapter, setShowAddChapter] = useState(false);
   const [chapters, setChapters] = useState([]);
@@ -86,41 +80,21 @@ function Chapters() {
 
   // Chapter -> Question Categories
   const openCategories = (chapterTitle) => {
-    const chapterSlug = chapterTitle
-      .toLowerCase()
-      .replaceAll(" ", "-");
+    const chapterSlug = chapterTitle.toLowerCase().replaceAll(" ", "-");
 
     if (isQuestionsModule) {
       navigate("/questions/question-categories");
     } else {
-      navigate(
-        `/question-categories/${courseId}/${chapterSlug}`
-      );
+      navigate(`/question-categories/${courseId}/${chapterSlug}`);
     }
   };
 
   return (
     <div className="chapters-page">
-      <button
-        className="back-btn"
-        onClick={() =>
-          navigate(
-            isQuestionsModule
-              ? "/questions"
-              : "/courses"
-          )
-        }
-      >
-        <FaArrowLeft />
-        Back
-      </button>
-
       <div className="chapter-header d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
           <h2>All Chapters</h2>
-          <p className="mb-0">
-            Select a chapter and start learning
-          </p>
+          <p className="mb-0">Select a chapter and start learning</p>
         </div>
 
         {/* Hidden Upload Input */}
@@ -135,9 +109,7 @@ function Chapters() {
         <div className="d-flex gap-2">
           <button
             className="btn btn-primary"
-            onClick={() =>
-              document.getElementById("chapterUpload").click()
-            }
+            onClick={() => document.getElementById("chapterUpload").click()}
           >
             ⬆ Upload
           </button>
@@ -155,10 +127,7 @@ function Chapters() {
         {console.log("Chapters State:", chapters)}
 
         {chapters.map((chapter, index) => (
-          <div
-            className="col-xl-4 col-lg-4 col-md-6"
-            key={index}
-          >
+          <div className="col-xl-4 col-lg-4 col-md-6" key={index}>
             <div className="chapter-card">
               <div className="chapter-icon">
                 <FaBookOpen />
@@ -189,9 +158,7 @@ function Chapters() {
 
               <button
                 className="start-btn"
-                onClick={() =>
-                  openCategories(chapter.name)
-                }
+                onClick={() => openCategories(chapter.name)}
               >
                 <FaPlayCircle />
                 Start Learning

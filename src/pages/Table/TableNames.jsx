@@ -5,7 +5,6 @@ import TableNameService from "../../services/TableNameService";
 import DataGrid from "../../components/DataGrid";
 
 function TableNames() {
-
   const [showModal, setShowModal] = useState(false);
   const [tableNames, setTableNames] = useState([]);
 
@@ -14,403 +13,219 @@ function TableNames() {
 
   const fileInputRef = useRef(null);
 
-
   // ================= SAVE =================
 
   const handleSave = async (newTableName) => {
-
     try {
-
       if (id == null) {
-
         await TableNameService.create(newTableName);
-
-      } 
-      else {
-
+      } else {
         await TableNameService.update(id, newTableName);
-
       }
-
 
       setId(null);
       setName("");
       setShowModal(false);
 
       loadTableNames();
-
-
     } catch (error) {
-
       console.error("Error:", error);
-
     }
-
   };
-
-
 
   // ================= DELETE =================
 
   const handleDelete = async (id) => {
-
     try {
-
       await TableNameService.delete(id);
-
-    } 
-    catch(error) {
-
+    } catch (error) {
       console.error("Error:", error);
-
     }
 
     loadTableNames();
-
   };
-
-
-
 
   // ================= GET ALL =================
 
   const loadTableNames = async () => {
-
     try {
-
       const result = await TableNameService.getAll();
 
       const data = result.data;
 
-
-      const allTableNames = data.map((obj)=>({
-
+      const allTableNames = data.map((obj) => ({
         name: obj.name,
-        id: obj.tableNameId
-
+        id: obj.tableNameId,
       }));
 
-
       setTableNames(allTableNames);
-
-
+    } catch (error) {
+      console.log("Error:", error);
     }
-    catch(error){
-
-      console.log("Error:",error);
-
-    }
-
   };
-
-
-
 
   // ================= FILE UPLOAD =================
 
   const handleFileUpload = (event) => {
-
     const file = event.target.files[0];
 
-
-    if(!file){
+    if (!file) {
       return;
     }
 
-
     console.log("Uploaded File:", file);
-
 
     // Later connect API here
     // Example:
     // TableNameService.upload(file)
 
-
     alert(`${file.name} uploaded successfully`);
-
   };
 
-
-
-
-  useEffect(()=>{
-
+  useEffect(() => {
     loadTableNames();
-
-  },[]);
-
-
-
-
+  }, []);
 
   const columnDefs = [
-
     {
-      field:"id",
-      headerName:"ID",
-      width:80,
-      flex:1
+      field: "id",
+      headerName: "ID",
+      width: 80,
+      flex: 1,
     },
 
-
     {
-      field:"name",
-      headerName:"Institute Name",
-      flex:1,
-      minWidth:160
+      field: "name",
+      headerName: "Institute Name",
+      flex: 1,
+      minWidth: 160,
     },
 
-
     {
+      headerName: "Action",
 
-      headerName:"Action",
+      flex: 1,
 
-      flex:1,
-
-
-      cellRenderer:(params)=>{
-
-
-        if(!params.data)
-          return null;
-
-
+      cellRenderer: (params) => {
+        if (!params.data) return null;
 
         return (
-
           <div
             style={{
-              display:"flex",
-              alignItems:"center",
-              height:"100%",
-              gap:"8px"
+              display: "flex",
+              alignItems: "center",
+              height: "100%",
+              gap: "8px",
             }}
           >
-
-
             <button
-
-              onClick={()=>{
-
+              onClick={() => {
                 setId(params.data.id);
                 setName(params.data.name);
                 setShowModal(true);
-
               }}
-
               style={{
-
-                background:"#2563eb",
-                color:"white",
-                border:"none",
-                padding:"2px 10px",
-                borderRadius:"4px",
-                cursor:"pointer",
-                fontWeight:"bold",
-                fontSize:"12px",
-                height:"26px"
-
+                background: "#2563eb",
+                color: "white",
+                border: "none",
+                padding: "2px 10px",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontWeight: "bold",
+                fontSize: "12px",
+                height: "26px",
               }}
-
             >
-
               Edit
-
             </button>
-
-
-
-
 
             <button
-
-              onClick={()=>handleDelete(params.data.id)}
-
+              onClick={() => handleDelete(params.data.id)}
               style={{
-
-                background:"#dc2626",
-                color:"white",
-                border:"none",
-                padding:"2px 10px",
-                borderRadius:"4px",
-                cursor:"pointer",
-                fontWeight:"bold",
-                fontSize:"12px",
-                height:"26px"
-
+                background: "#dc2626",
+                color: "white",
+                border: "none",
+                padding: "2px 10px",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontWeight: "bold",
+                fontSize: "12px",
+                height: "26px",
               }}
-
             >
-
               Delete
-
             </button>
-
-
-
           </div>
-
         );
-
-
-      }
-
-    }
-
+      },
+    },
   ];
-    return (
-
+  return (
     <div className="container-fluid py-4">
-
-
       {/* Header */}
 
       <div className="d-flex justify-content-between align-items-center mb-4">
-
-
         <div>
+          <h2 className="fw-bold">Table Name Management</h2>
 
-          <h2 className="fw-bold">
-            Table Name Management
-          </h2>
-
-
-          <p className="text-muted">
-            Manage all table names.
-          </p>
-
-
+          <p className="text-muted">Manage all table names.</p>
         </div>
 
-
-
-
-
         <div className="d-flex gap-2">
-
-
           {/* Hidden File Input */}
 
           <input
-
             type="file"
-
             ref={fileInputRef}
-
-            style={{display:"none"}}
-
+            style={{ display: "none" }}
             accept=".csv,.xlsx,.xls"
-
             onChange={handleFileUpload}
-
           />
-
-
-
-
 
           {/* Upload Button */}
 
           <button
-
-            className="btn btn-success"
-
-            onClick={()=>fileInputRef.current.click()}
-
+            className="btn btn-primary"
+            onClick={() => fileInputRef.current.click()}
           >
-
             ⬆ Upload
-
           </button>
-
-
-
-
 
           {/* Add Button */}
 
           <button
-
             className="btn btn-primary"
-
-            onClick={()=>{
-
+            onClick={() => {
               setId(null);
               setName("");
               setShowModal(true);
-
             }}
-
           >
-
             + Add Table Name
-
           </button>
-
-
-
         </div>
-
-
-
       </div>
-
-
-
-
 
       {/* Data Grid */}
 
-      <DataGrid
-
-        rowData={tableNames}
-
-        columnDefs={columnDefs}
-
-      />
-
-
-
-
-
-
+      <DataGrid rowData={tableNames} columnDefs={columnDefs} />
 
       {/* Add / Edit Modal */}
 
       <AddTableNameModal
-
-
         show={showModal}
-
-
-        onClose={()=>{
-
+        onClose={() => {
           setShowModal(false);
 
           setId(null);
 
           setName("");
-
         }}
-
-
         onSave={handleSave}
-
-
         Inputname={name}
-
-
       />
-
-
-
-
     </div>
-
   );
-
-
 }
-
 
 export default TableNames;
