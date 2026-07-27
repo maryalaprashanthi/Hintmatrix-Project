@@ -11,11 +11,10 @@ import {
 
 function SectionForm({ selectedSectionData, onUpdateComplete, onCancel }) {
   const emptySection = {
-  sectionId: "",
-  courseId: "",
-  sectionName: "",
-  description: "",
-};
+    sectionId: "",
+    courseId: "",
+    sectionName: "",
+  };
 
   const [section, setSection] = useState(emptySection);
   const [coursesList, setCoursesList] = useState([]);
@@ -42,11 +41,10 @@ function SectionForm({ selectedSectionData, onUpdateComplete, onCancel }) {
   useEffect(() => {
     if (selectedSectionData) {
       setSection({
-  sectionId: selectedSectionData.sectionId || "",
-  courseId: selectedSectionData.courseId || "",
-  sectionName: selectedSectionData.sectionName || "",
-  description: selectedSectionData.description || "",
-});
+        sectionId: selectedSectionData.sectionId || "",
+        courseId: selectedSectionData.courseId || "",
+        sectionName: selectedSectionData.sectionName || "",
+      });
     } else {
       setSection(emptySection);
     }
@@ -87,10 +85,9 @@ function SectionForm({ selectedSectionData, onUpdateComplete, onCancel }) {
     }
 
     const requestDTO = {
-  courseId: section.courseId,
-  sectionName: section.sectionName,
-  description: section.description,
-};
+      courseId: section.courseId,
+      sectionName: section.sectionName,
+    };
 
     if (section.sectionId) {
       SectionService.updateSection(section.sectionId, requestDTO)
@@ -168,27 +165,6 @@ function SectionForm({ selectedSectionData, onUpdateComplete, onCancel }) {
               />
             </div>
           </div>
-
-          {/* Description */}
-
-<div className="form-group description-group">
-    <label>
-        Description <span>*</span>
-    </label>
-
-    <div className="textarea-box">
-        <FaAlignLeft className="input-icon" />
-
-        <textarea
-            name="description"
-            placeholder="Enter Description"
-            value={section.description}
-            onChange={handleChange}
-            rows={4}
-            required
-        />
-    </div>
-</div>
         </div>
       </div>
 
