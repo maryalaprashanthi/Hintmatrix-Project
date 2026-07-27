@@ -2,25 +2,18 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import SectionService from "../services/SectionService";
 
-
 import {
   FaCodeBranch,
   FaLayerGroup,
   FaAlignLeft,
-  FaSave
+  FaSave,
 } from "react-icons/fa";
 
-function SectionForm({
-  selectedSectionData,
-  onUpdateComplete,
-  onCancel
-}) {
-
+function SectionForm({ selectedSectionData, onUpdateComplete, onCancel }) {
   const emptySection = {
     sectionId: "",
     courseId: "",
     sectionName: "",
-    description: ""
   };
 
   const [section, setSection] = useState(emptySection);
@@ -51,7 +44,6 @@ function SectionForm({
         sectionId: selectedSectionData.sectionId || "",
         courseId: selectedSectionData.courseId || "",
         sectionName: selectedSectionData.sectionName || "",
-        description: selectedSectionData.description || ""
       });
     } else {
       setSection(emptySection);
@@ -62,10 +54,9 @@ function SectionForm({
     const { name, value } = e.target;
 
     if (name === "courseId") {
-
       setSection({
         ...section,
-        courseId: value === "" ? "" : Number(value)
+        courseId: value === "" ? "" : Number(value),
       });
 
       return;
@@ -73,9 +64,7 @@ function SectionForm({
 
     setSection({
       ...section,
-      [name]: name === "branchId"
-        ? (value === "" ? "" : Number(value))
-        : value
+      [name]: name === "branchId" ? (value === "" ? "" : Number(value)) : value,
     });
   };
 
@@ -96,17 +85,12 @@ function SectionForm({
     }
 
     const requestDTO = {
-
       courseId: section.courseId,
       sectionName: section.sectionName,
-      description: section.description
     };
 
     if (section.sectionId) {
-      SectionService.updateSection(
-        section.sectionId,
-        requestDTO
-      )
+      SectionService.updateSection(section.sectionId, requestDTO)
         .then(() => {
           alert("Section Updated Successfully");
           clearForm();
@@ -124,77 +108,52 @@ function SectionForm({
 
   return (
     <form onSubmit={saveSection}>
-
       <div className="form-card">
-
-        <h3 className="section-title">
-          Section Information
-        </h3>
+        <h3 className="section-title">Section Information</h3>
 
         <div className="form-grid">
-
-            {/* course*/}
+          {/* course*/}
 
           <div className="form-group">
-
-              <label className="form-label fw-semibold">
-
-                Course
-                <span className="text-danger">
-                  *
-                </span>
-
-              </label>
+            <label className="form-label fw-semibold">
+              CourseId
+              <span className="text-danger">*</span>
+            </label>
 
             <div className="input-box">
-
               <FaCodeBranch className="input-icon" />
 
-                <select
-                  className="form-select"
-                  name="courseId"
-                  value={section.courseId}
-                  onChange={handleChange}
-                  required
-                >
+              <select
+                className="form-select"
+                name="courseId"
+                value={section.courseId}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select Course</option>
 
-                  <option value="">
-
-                    Select Course
-
+                {coursesList.map((course) => (
+                  <option
+                    //  FIXED: Gracefully checks all common backend ID variants
+                    key={course.courseId || course.id}
+                    value={course.courseId || course.id}
+                  >
+                    {/* FIXED: Changed from course.courseName to course.name to match your Java DTO string model property fields */}
+                    {course.name || course.title || course.courseName}
                   </option>
-
-                  {coursesList.map((course) => (
-
-                     <option
-                      //  FIXED: Gracefully checks all common backend ID variants
-                      key={course.courseId || course.id}
-                      value={course.courseId || course.id}
-                    >
-
-                      {/* FIXED: Changed from course.courseName to course.name to match your Java DTO string model property fields */}
-                      {course.name || course.title || course.courseName}
-
-                    </option>
-
                 ))}
-
               </select>
-
             </div>
-
           </div>
 
           {/* Section Name */}
 
           <div className="form-group">
-
             <label>
               Section Name <span>*</span>
             </label>
 
             <div className="input-box">
-
               <FaLayerGroup className="input-icon" />
 
               <input
@@ -204,56 +163,21 @@ function SectionForm({
                 value={section.sectionName}
                 onChange={handleChange}
               />
-
             </div>
-
           </div>
-
         </div>
-
-      </div>
-
-      <div className="form-card">
-
-        <h3 className="section-title">
-          Description
-        </h3>
-
-        <div className="textarea-box">
-
-          <FaAlignLeft className="input-icon" />
-
-          <textarea
-            name="description"
-            placeholder="Enter Section Description"
-            value={section.description}
-            onChange={handleChange}
-          />
-
-        </div>
-
       </div>
 
       <div className="modal-footer">
-
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={onCancel}
-        >
+        <button type="button" className="btn btn-secondary" onClick={onCancel}>
           Cancel
         </button>
 
-        <button
-          type="submit"
-          className="btn btn-primary"
-        >
+        <button type="submit" className="btn btn-primary">
           <FaSave className="me-2" />
           Save
         </button>
-
       </div>
-
     </form>
   );
 }
