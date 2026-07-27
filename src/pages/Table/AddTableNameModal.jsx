@@ -9,39 +9,66 @@ import {
 
 import "./AddTableNameModal.css";
 
-function AddTableNameModal({ show, onClose, onSave,Inputname }) {
+
+function AddTableNameModal({ show, onClose, onSave, Inputname }) {
+
   const [name, setName] = useState("");
 
-  useEffect(()=>{
-    setName(Inputname||"");
-  },[Inputname]);
+
+  useEffect(() => {
+    setName(Inputname || "");
+  }, [Inputname]);
+
 
   if (!show) return null;
 
-  const handleSave = async () => {
+
+  const handleSave = () => {
+
     if (!name.trim()) {
+      alert("Please enter Table Name.");
       return;
     }
+
 
     const newTableName = {
       name,
     };
 
-    await onSave(newTableName);
+
+    onSave(newTableName);
+
   };
 
+
   return createPortal(
+
     <div className="modal-overlay">
+
 
       <div className="table-name-modal">
 
+
         {/* Header */}
+
         <div className="modal-header">
 
+
           <div>
-            <h2>{Inputname==""?"Add Table name":"Update table name"}</h2>
-            <p>{Inputname==""?"Create a new table name.":"Update existing table"}</p>
+
+            <h2>
+              {Inputname === "" ? "Add Table Name" : "Update Table Name"}
+            </h2>
+
+
+            <p>
+              {Inputname === ""
+                ? "Create a new table name."
+                : "Update an existing table"}
+            </p>
+
           </div>
+
 
           <button
             className="close-btn"
@@ -50,48 +77,79 @@ function AddTableNameModal({ show, onClose, onSave,Inputname }) {
             <FaTimes />
           </button>
 
+
         </div>
 
+
+
+
         {/* Body */}
+
         <div className="modal-body">
 
+
           <div className="form-card">
+
 
             <h3 className="section-title">
               Table Name Information
             </h3>
 
+
+
             <div className="form-grid">
 
+
+
               <div className="form-group">
+
 
                 <label>
                   Table Name <span>*</span>
                 </label>
 
+
+
                 <div className="input-box">
 
+
                   <FaTable className="input-icon" />
+
+
 
                   <input
                     type="text"
                     placeholder="Enter Table Name"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) =>
+                      setName(e.target.value)
+                    }
                   />
+
 
                 </div>
 
+
               </div>
+
+
 
             </div>
 
+
           </div>
+
 
         </div>
 
+
+
+
+
         {/* Footer */}
+
         <div className="modal-footer">
+
 
           <button
             type="button"
@@ -101,22 +159,38 @@ function AddTableNameModal({ show, onClose, onSave,Inputname }) {
             Cancel
           </button>
 
+
+
+
           <button
             type="button"
             className="btn btn-primary"
             onClick={handleSave}
           >
+
             <FaSave className="me-2" />
-            {Inputname==""?"Save":"Update"}
+
+            {Inputname === "" ? "Save" : "Update"}
+
           </button>
+
+
 
         </div>
 
+
+
       </div>
 
+
     </div>,
+
+
     document.body
+
   );
+
 }
+
 
 export default AddTableNameModal;
