@@ -133,11 +133,10 @@ function AddCourseModal({ show, onClose, onRefresh, selectedCourseData }) {
                 <div className="input-box">
                   <FaBook className="input-icon" />
                   <input
-  type="text"
-  placeholder="Enter Course Name"
-  value={courseName}
-  onChange={(e) => setCourseName(e.target.value)}
-/>
+                    type="text"
+                    placeholder="Enter Course Name"
+                    value={courseName}
+                  />
                 </div>
               </div>
 
