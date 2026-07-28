@@ -159,12 +159,12 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
               </NavLink>
 
               <NavLink
-                to="/admin/student-user"
+                to="/admin/student"
                 className={subMenuClass}
                 onClick={closeSidebar}
               >
                 <MdSchool />
-                <span>Student User</span>
+                <span>Student </span>
               </NavLink>
             </div>
           )}
