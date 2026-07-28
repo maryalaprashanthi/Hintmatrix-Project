@@ -119,8 +119,6 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
     };
 
     onSave(branchAdminData);
-
-    onClose();
   };
 
   return createPortal(
@@ -130,9 +128,17 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
 
         <div className="modal-header">
           <div>
-            <h2>Add Branch Admin</h2>
+            <h2>
+              {selectedBranchAdminData
+                ? "Edit Branch Admin"
+                : "Add Branch Admin"}
+            </h2>
 
-            <p>Create a new Branch Administrator.</p>
+            <p>
+              {selectedBranchAdminData
+                ? "Update Branch Administrator details."
+                : "Create a new Branch Administrator."}
+            </p>
           </div>
 
           <button className="close-btn" onClick={onClose}>
@@ -277,7 +283,8 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
                   <FaPhone className="input-icon" />
 
                   <input
-                    type="tel"
+                    type="text"
+                    maxLength={10}
                     placeholder="9876543210"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}

@@ -53,9 +53,10 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
       !designation.trim() ||
       !email.trim() ||
       !phoneNumber.trim() ||
-      !password.trim()
+      !password.trim() ||
+      !address.trim()
     ) {
-      alert("Please fill all the required fields.");
+      alert("Please fill all the fields.");
       return;
     }
 
@@ -74,20 +75,23 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
     };
 
     onSave(superAdminData);
-
-    onClose();
   };
 
   return createPortal(
     <div className="modal-overlay">
       <div className="superadmin-modal">
         {/* Header */}
-
         <div className="modal-header">
           <div>
-            <h2>Add Super Admin</h2>
+            <h2>
+              {selectedSuperAdminData ? "Edit Super Admin" : "Add Super Admin"}
+            </h2>
 
-            <p>Create a new Super Administrator.</p>
+            <p>
+              {selectedSuperAdminData
+                ? "Update Super Administrator details."
+                : "Create a new Super Administrator."}
+            </p>
           </div>
 
           <button className="close-btn" onClick={onClose}>
@@ -96,7 +100,6 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
         </div>
 
         {/* Body */}
-
         <div className="modal-body">
           <div className="form-card">
             <h3 className="section-title">Super Admin Information</h3>
@@ -159,7 +162,7 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
               {/* Email */}
               <div className="form-group">
                 <label>
-                  Email Address <span>*</span>
+                  Email <span>*</span>
                 </label>
 
                 <div className="input-box">
@@ -167,7 +170,7 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
 
                   <input
                     type="email"
-                    placeholder="Enter Email Address"
+                    placeholder="Enter Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -213,7 +216,6 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
           </div>
 
           {/* Address */}
-
           <div className="form-card">
             <h3 className="section-title">Address</h3>
 
@@ -230,7 +232,6 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
         </div>
 
         {/* Footer */}
-
         <div className="modal-footer">
           <button type="button" className="btn btn-secondary" onClick={onClose}>
             Cancel

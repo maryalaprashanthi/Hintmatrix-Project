@@ -11,9 +11,9 @@ import {
   FaSave,
 } from "react-icons/fa";
 
-import "./StudentUserForm.css";
+import "./StudentForm.css";
 
-function StudentUserForm({ show, onClose, onSave, selectedStudentUserData }) {
+function StudentForm({ show, onClose, onSave, selectedStudentData }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -21,12 +21,12 @@ function StudentUserForm({ show, onClose, onSave, selectedStudentUserData }) {
   const [address, setAddress] = useState("");
 
   useEffect(() => {
-    if (selectedStudentUserData) {
-      setName(selectedStudentUserData.name || "");
-      setEmail(selectedStudentUserData.email || "");
-      setPhoneNumber(selectedStudentUserData.phoneNumber || "");
-      setPassword(selectedStudentUserData.password || "");
-      setAddress(selectedStudentUserData.address || "");
+    if (selectedStudentData) {
+      setName(selectedStudentData.name || "");
+      setEmail(selectedStudentData.email || "");
+      setPhoneNumber(selectedStudentData.phoneNumber || "");
+      setPassword(selectedStudentData.password || "");
+      setAddress(selectedStudentData.address || "");
     } else {
       setName("");
       setEmail("");
@@ -34,7 +34,7 @@ function StudentUserForm({ show, onClose, onSave, selectedStudentUserData }) {
       setPassword("");
       setAddress("");
     }
-  }, [selectedStudentUserData, show]);
+  }, [selectedStudentData, show]);
 
   if (!show) return null;
 
@@ -43,15 +43,16 @@ function StudentUserForm({ show, onClose, onSave, selectedStudentUserData }) {
       !name.trim() ||
       !email.trim() ||
       !phoneNumber.trim() ||
-      !password.trim()
+      !password.trim() ||
+      !address.trim()
     ) {
-      alert("Please fill all the required fields.");
+      alert("Please fill all the fields.");
       return;
     }
 
-    const studentUserData = {
-      ...(selectedStudentUserData && {
-        studentUserId: selectedStudentUserData.studentUserId,
+    const studentData = {
+      ...(selectedStudentData && {
+        studentId: selectedStudentData.studentId,
       }),
 
       name,
@@ -61,19 +62,22 @@ function StudentUserForm({ show, onClose, onSave, selectedStudentUserData }) {
       address,
     };
 
-    onSave(studentUserData);
-    onClose();
+    onSave(studentData);
   };
 
   return createPortal(
     <div className="modal-overlay">
       <div className="branch-modal">
         {/* Header */}
-
         <div className="modal-header">
           <div>
-            <h2>Add Student User</h2>
-            <p>Create a new Student User.</p>
+            <h2>{selectedStudentData ? "Edit Student" : "Add Student"}</h2>
+
+            <p>
+              {selectedStudentData
+                ? "Update Student details."
+                : "Create a new Student."}
+            </p>
           </div>
 
           <button className="close-btn" onClick={onClose}>
@@ -82,14 +86,12 @@ function StudentUserForm({ show, onClose, onSave, selectedStudentUserData }) {
         </div>
 
         {/* Body */}
-
         <div className="modal-body">
           <div className="form-card">
-            <h3 className="section-title">Student User Information</h3>
+            <h3 className="section-title">Student Information</h3>
 
             <div className="form-grid">
               {/* Name */}
-
               <div className="form-group">
                 <label>
                   Name <span>*</span>
@@ -108,10 +110,9 @@ function StudentUserForm({ show, onClose, onSave, selectedStudentUserData }) {
               </div>
 
               {/* Email */}
-
               <div className="form-group">
                 <label>
-                  Email Address <span>*</span>
+                  Email <span>*</span>
                 </label>
 
                 <div className="input-box">
@@ -119,7 +120,7 @@ function StudentUserForm({ show, onClose, onSave, selectedStudentUserData }) {
 
                   <input
                     type="email"
-                    placeholder="Enter Email Address"
+                    placeholder="Enter Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -127,7 +128,6 @@ function StudentUserForm({ show, onClose, onSave, selectedStudentUserData }) {
               </div>
 
               {/* Phone Number */}
-
               <div className="form-group">
                 <label>
                   Phone Number <span>*</span>
@@ -146,7 +146,6 @@ function StudentUserForm({ show, onClose, onSave, selectedStudentUserData }) {
               </div>
 
               {/* Password */}
-
               <div className="form-group">
                 <label>
                   Password <span>*</span>
@@ -167,7 +166,6 @@ function StudentUserForm({ show, onClose, onSave, selectedStudentUserData }) {
           </div>
 
           {/* Address */}
-
           <div className="form-card">
             <h3 className="section-title">Address</h3>
 
@@ -184,7 +182,6 @@ function StudentUserForm({ show, onClose, onSave, selectedStudentUserData }) {
         </div>
 
         {/* Footer */}
-
         <div className="modal-footer">
           <button type="button" className="btn btn-secondary" onClick={onClose}>
             Cancel
@@ -205,4 +202,4 @@ function StudentUserForm({ show, onClose, onSave, selectedStudentUserData }) {
   );
 }
 
-export default StudentUserForm;
+export default StudentForm;
