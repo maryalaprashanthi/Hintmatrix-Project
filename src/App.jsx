@@ -13,6 +13,9 @@ import CourseForm from "./pages/College/Courses/CourseForm";
 import Courses from "./pages/College/Courses/Courses";
 
 import Branch from "./pages/College/Branch/Branch";
+import BranchAdmin from "./pages/Admin/BranchAdmin";
+import SuperAdmin from "./pages/Admin/SuperAdmin";
+import StudentUser from "./pages/Admin/StudentUser";
 
 import Chapters from "./pages/Chapters/Chapters";
 
@@ -141,6 +144,16 @@ function App() {
         <Route path="/branch" element={<Branch />} />
         <Route path="/section" element={<Section />} />
 
+        {/* Branch Admin */}
+        <Route path="/branch-admin" element={<BranchAdmin />} />
+        <Route path="/admin/branch-admin" element={<BranchAdmin />} />
+
+        {/* Super Admin */}
+        <Route path="/admin/super-admin" element={<SuperAdmin />} />
+
+        {/* Student */}
+        <Route path="/admin/student-user" element={<StudentUser />} />
+
         {/* Courses */}
         <Route
           path="/courses"
@@ -189,7 +202,6 @@ function App() {
         <Route path="/certificates" element={<Certificates />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
-      <Route path="/question" element={<QuestionPage />} />
     </Routes>
   );
 }

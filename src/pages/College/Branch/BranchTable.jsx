@@ -73,7 +73,7 @@ function BranchTable({ onEdit, refresh }) {
 
   // Mapped definitions exactly to match properties from your BranchRequestDTO fields
   const columnDefs = [
-    { field: "branchId", headerName: "ID", width: 90 },
+    { field: "branchId", headerName: "Branch ID", width: 105 },
     { field: "collegeId", headerName: "College ID", width: 120 },
     { field: "branchName", headerName: "Branch Name", flex: 1, minWidth: 180 },
     { field: "address", headerName: "Address", flex: 1, minWidth: 180 },

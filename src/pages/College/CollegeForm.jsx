@@ -12,12 +12,7 @@ import {
 
 import "./CollegeForm.css";
 
-function CollegeForm({
-  show,
-  onClose,
-  onSave,
-  selectedCollegeData,
-}) {
+function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
   const [college, setCollege] = useState({
     instituteName: "",
     address: "",
@@ -88,80 +83,56 @@ function CollegeForm({
 
   return createPortal(
     <div className="modal-overlay">
-
       <div className="branch-modal">
-
         {/* Header */}
 
         <div className="modal-header">
-
           <div>
+            <h2>{selectedCollegeData ? "Update College" : "Add College"}</h2>
 
-            <h2>
-              {selectedCollegeData ? "Update College" : "Add College"}
-            </h2>
-
-            <p>
-              Register a new college.
-            </p>
-
+            <p>Register a new college.</p>
           </div>
 
-          <button
-            className="close-btn"
-            onClick={onClose}
-          >
+          <button className="close-btn" onClick={onClose}>
             <FaTimes />
           </button>
-
         </div>
 
         {/* Body */}
 
         <div className="modal-body">
-
           <div className="form-card">
-
-            <h3 className="section-title">
-              College Information
-            </h3>
+            <h3 className="section-title">College Information</h3>
 
             <div className="form-grid">
-
               {/* College Name */}
 
               <div className="form-group">
-
                 <label>
-                  College Name <span>*</span>
+                  Institute Name <span>*</span>
                 </label>
 
                 <div className="input-box">
-
                   <FaUniversity className="input-icon" />
 
                   <input
                     type="text"
                     name="instituteName"
-                    placeholder="Enter College Name"
+                    placeholder="Enter Institute Name"
                     value={college.instituteName}
                     onChange={handleChange}
                   />
-
                 </div>
-
               </div>
 
               {/* Phone */}
 
               <div className="form-group">
-
                 <label>
                   Phone Number <span>*</span>
                 </label>
 
                 <div className="input-box">
-
                   <FaPhone className="input-icon" />
 
                   <input
@@ -171,73 +142,53 @@ function CollegeForm({
                     value={college.phoneNumber}
                     onChange={handleChange}
                   />
-
                 </div>
-
               </div>
 
               {/* Email */}
 
               <div className="form-group">
-
                 <label>
                   Email <span>*</span>
                 </label>
 
                 <div className="input-box">
-
                   <FaEnvelope className="input-icon" />
 
                   <input
                     type="email"
                     name="email"
-                    placeholder="college@gmail.com"
+                    placeholder="Institute@gmail.com"
                     value={college.email}
                     onChange={handleChange}
                   />
-
                 </div>
-
               </div>
-
             </div>
-
           </div>
 
           {/* Address */}
 
           <div className="form-card">
-
-            <h3 className="section-title">
-              Address
-            </h3>
+            <h3 className="section-title">Address</h3>
 
             <div className="textarea-box">
-
               <FaMapMarkerAlt className="input-icon" />
 
               <textarea
                 name="address"
-                placeholder="Enter College Address"
+                placeholder="Enter Institute Address"
                 value={college.address}
                 onChange={handleChange}
               />
-
             </div>
-
           </div>
-
         </div>
 
         {/* Footer */}
 
         <div className="modal-footer">
-
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={onClose}
-          >
+          <button type="button" className="btn btn-secondary" onClick={onClose}>
             Cancel
           </button>
 
@@ -249,13 +200,10 @@ function CollegeForm({
             <FaSave className="me-2" />
             {selectedCollegeData ? "Update College" : "Save"}
           </button>
-
         </div>
-
       </div>
-
     </div>,
-    document.body
+    document.body,
   );
 }
 

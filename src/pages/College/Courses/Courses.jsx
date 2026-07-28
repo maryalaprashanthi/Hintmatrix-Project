@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react"; // 🌟 FIXED: Added useEffect for data loading hooks
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CourseService from "../../../services/CourseService";
+
 import {
   FaBookOpen,
   FaPlayCircle,
@@ -29,19 +30,16 @@ function Courses() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [showModal, setShowModal] = useState(false);
-
-  // 🌟 FIXED: Changed static array to an active state array variable to read from your service endpoints
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
 
-  // 🌟 FIXED: Added fetch loop pipeline orchestration to extract active data from the server
   const loadCourses = () => {
     CourseService.getAllCourses()
       .then((response) => {
         setCourses(response.data || []);
       })
       .catch((error) => {
-        console.error("Failed to load backend courses database array:", error);
+        console.error("Failed to load backend courses:", error);
       });
   };
 
@@ -50,66 +48,123 @@ function Courses() {
   }, []);
 
   const handleEdit = (courseData) => {
-    setSelectedCourse(courseData); // Track target element fields
-    setShowModal(true); // Fire up modal box template rows toggle
+    setSelectedCourse(courseData);
+    setShowModal(true);
   };
 
   const handleDelete = (id) => {
     if (!id) return;
+
     const confirmDelete = window.confirm(
-      "Are you sure you want to permanently delete this course?",
+      "Are you sure you want to permanently delete this course?"
     );
+
     if (confirmDelete) {
       CourseService.deleteCourse(id)
         .then(() => {
           alert("Course deleted successfully!");
-          loadCourses(); // Refresh list live
+          loadCourses();
         })
         .catch((error) => {
-          console.error("Failed to execute deletion tracking pipeline:", error);
+          console.error("Delete Error:", error);
         });
     }
   };
 
+  // Upload Button
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    console.log("Selected File:", file);
+
+    alert(`Selected File: ${file.name}`);
+
+    // Backend upload API later
+
+    e.target.value = "";
+  };
+
   const filteredCourses = courses.filter((course) => {
-    // 🌟 FIXED: Safely reads your backend 'name' variable or defaults to fallback structures
     const courseTitle = course.name || course.title || "";
+
     const searchMatch = courseTitle
       .toLowerCase()
       .includes(search.toLowerCase());
 
     const courseCategory = course.category || "Commerce";
-    const categoryMatch = category === "All" || courseCategory === category;
+
+    const categoryMatch =
+      category === "All" ||
+      courseCategory === category;
 
     return searchMatch && categoryMatch;
   });
 
   return (
     <div className="container-fluid courses-page">
+
       {/* ================= HEADER ================= */}
 
       <div className="courses-header">
+
         <div className="courses-title">
+
           <div className="courses-icon">
             <FaBookOpen />
           </div>
 
           <div>
+
             <h2>Courses Management</h2>
 
-            <p>Create, organize and manage all your learning programs.</p>
+            <p>
+              Create, organize and manage all your learning programs.
+            </p>
+
           </div>
+
         </div>
 
-        <button className="add-course-btn" onClick={() => setShowModal(true)}>
-          <FaPlus />
-          <span>Add Course</span>
-        </button>
-      </div>
+        {/* Hidden Upload Input */}
 
-      {/* ================= STATISTICS ================= */}
+        <input
+          type="file"
+          id="courseUpload"
+          accept=".csv,.xlsx,.xls"
+          style={{ display: "none" }}
+          onChange={handleFileUpload}
+        />
+
+        <div className="d-flex gap-2">
+
+          <button
+            className="btn btn-primary"
+            onClick={() =>
+              document.getElementById("courseUpload").click()
+            }
+          >
+            ⬆ Upload
+          </button>
+
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setSelectedCourse(null);
+              setShowModal(true);
+            }}
+          >
+            + Add Course
+          </button>
+
+        </div>
+
+      </div>
+            {/* ================= STATISTICS ================= */}
 
       <div className="row g-4 stats-row">
+
         <div className="col-xl-3 col-lg-6 col-md-6">
           <div className="modern-stat-card">
             <div className="stat-icon blue">
@@ -165,12 +220,15 @@ function Courses() {
             </div>
           </div>
         </div>
+
       </div>
 
       {/* ================= SEARCH ================= */}
 
       <div className="course-toolbar">
+
         <div className="search-box">
+
           <FaSearch />
 
           <input
@@ -179,6 +237,7 @@ function Courses() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+
         </div>
 
         <select
@@ -192,30 +251,41 @@ function Courses() {
           <option value="School">School</option>
           <option value="Combo Course">Combo Course</option>
         </select>
+
       </div>
 
-      {/* ================= COURSES GRID ================= */}
+      {/* ================= COURSE GRID ================= */}
+
       <div className="row">
+
         {filteredCourses.map((course) => (
+
           <div
             className="col-12 col-md-6 col-lg-4 mb-4"
             key={course.courseId || course.id}
           >
+
             <div className="course-card h-100">
-              {/* ================= IMAGE ================= */}
+
               <div className="course-banner">
+
                 <img
                   src={course.image || bcom}
                   alt={course.name || course.title}
                 />
+
               </div>
 
-              {/* ================= CONTENT ================= */}
               <div className="course-content">
+
                 <h4>{course.name || course.title}</h4>
-                <p className="course-level">{course.level || "Beginner"}</p>
+
+                <p className="course-level">
+                  {course.level || "Beginner"}
+                </p>
 
                 <div className="course-details">
+
                   <div>
                     <FaUsers />
                     <span>{course.students} Students</span>
@@ -230,6 +300,7 @@ function Courses() {
                     <FaClock />
                     <span>{course.duration}</span>
                   </div>
+
                 </div>
 
                 <button
@@ -240,11 +311,10 @@ function Courses() {
                   <span>View Chapters</span>
                 </button>
 
-                {/* ===== Edit / Delete ===== */}
+                <div className="d-flex gap-2 mt-3">
 
-                <div className="d-flex justify-content-start gap-2 mt-3">
                   <button
-                    className="btn btn-sm btn-outline-primary"
+                    className="btn btn-outline-primary btn-sm"
                     onClick={() => handleEdit(course)}
                   >
                     <FaEdit className="me-1" />
@@ -252,27 +322,41 @@ function Courses() {
                   </button>
 
                   <button
-                    className="btn btn-sm btn-outline-danger"
-                    onClick={() => handleDelete(course.courseId || course.id)}
+                    className="btn btn-outline-danger btn-sm"
+                    onClick={() =>
+                      handleDelete(course.courseId || course.id)
+                    }
                   >
                     <FaTrash className="me-1" />
                     Delete
                   </button>
+
                 </div>
+
               </div>
+
             </div>
+
           </div>
+
         ))}
+
       </div>
 
-      {/* ================= EMPTY STATE ================= */}
+      {/* ================= EMPTY ================= */}
 
       {filteredCourses.length === 0 && (
+
         <div className="empty-state">
+
           <h4>No Courses Found</h4>
 
-          <p>Try another search keyword or select a different category.</p>
+          <p>
+            Try another search keyword or select another category.
+          </p>
+
         </div>
+
       )}
 
       <AddCourseModal
@@ -284,6 +368,7 @@ function Courses() {
         onRefresh={loadCourses}
         selectedCourseData={selectedCourse}
       />
+
     </div>
   );
 }

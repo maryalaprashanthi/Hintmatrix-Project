@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "./TableNames.css";
 import AddTableNameModal from "./AddTableNameModal";
 import TableNameService from "../../services/TableNameService";
@@ -7,52 +7,79 @@ import DataGrid from "../../components/DataGrid";
 function TableNames() {
   const [showModal, setShowModal] = useState(false);
   const [tableNames, setTableNames] = useState([]);
+
   const [id, setId] = useState(null);
   const [name, setName] = useState("");
+
+  const fileInputRef = useRef(null);
+
+  // ================= SAVE =================
+
   const handleSave = async (newTableName) => {
     try {
-      if(id==null)
-      {
-        console.log("I got here");
-        
-        const response = await TableNameService.create(newTableName);
+      if (id == null) {
+        await TableNameService.create(newTableName);
+      } else {
+        await TableNameService.update(id, newTableName);
       }
-      else
-      {
-        const reposnse = await TableNameService.update(id, newTableName);
-        const data = await reposnse.data;
-      }
+
       setId(null);
       setName("");
       setShowModal(false);
+
       loadTableNames();
     } catch (error) {
-      console.error("Error: ", error);
+      console.error("Error:", error);
     }
   };
 
+  // ================= DELETE =================
+
   const handleDelete = async (id) => {
     try {
-      const reposnse = await TableNameService.delete(id);
-      const data = await reposnse.data;
+      await TableNameService.delete(id);
     } catch (error) {
-      console.error("Error: ", error);
+      console.error("Error:", error);
     }
+
     loadTableNames();
   };
+
+  // ================= GET ALL =================
 
   const loadTableNames = async () => {
     try {
       const result = await TableNameService.getAll();
-      const data = await result.data;
+
+      const data = result.data;
+
       const allTableNames = data.map((obj) => ({
         name: obj.name,
         id: obj.tableNameId,
       }));
+
       setTableNames(allTableNames);
     } catch (error) {
-      console.log("Error: ", error);
+      console.log("Error:", error);
     }
+  };
+
+  // ================= FILE UPLOAD =================
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+
+    if (!file) {
+      return;
+    }
+
+    console.log("Uploaded File:", file);
+
+    // Later connect API here
+    // Example:
+    // TableNameService.upload(file)
+
+    alert(`${file.name} uploaded successfully`);
   };
 
   useEffect(() => {
@@ -60,13 +87,28 @@ function TableNames() {
   }, []);
 
   const columnDefs = [
-    { field: "id", headerName: "ID", width: 80, flex: 1 },
-    { field: "name", headerName: "Institute Name", flex: 1, minWidth: 160 },
+    {
+      field: "id",
+      headerName: "ID",
+      width: 80,
+      flex: 1,
+    },
+
+    {
+      field: "name",
+      headerName: "Institute Name",
+      flex: 1,
+      minWidth: 160,
+    },
+
     {
       headerName: "Action",
+
       flex: 1,
+
       cellRenderer: (params) => {
         if (!params.data) return null;
+
         return (
           <div
             style={{
@@ -77,12 +119,10 @@ function TableNames() {
             }}
           >
             <button
-              // onClick={() => handleEdit(params.data.id,params.data)}
               onClick={() => {
                 setId(params.data.id);
                 setName(params.data.name);
                 setShowModal(true);
-                
               }}
               style={{
                 background: "#2563eb",
@@ -94,13 +134,11 @@ function TableNames() {
                 fontWeight: "bold",
                 fontSize: "12px",
                 height: "26px",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
               }}
             >
               Edit
             </button>
+
             <button
               onClick={() => handleDelete(params.data.id)}
               style={{
@@ -113,9 +151,6 @@ function TableNames() {
                 fontWeight: "bold",
                 fontSize: "12px",
                 height: "26px",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
               }}
             >
               Delete
@@ -125,35 +160,65 @@ function TableNames() {
       },
     },
   ];
-
   return (
     <div className="container-fluid py-4">
       {/* Header */}
+
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h2 className="fw-bold">Table Name Management</h2>
+
           <p className="text-muted">Manage all table names.</p>
         </div>
 
-        <button
-          className="btn btn-primary"
-          onClick={() => {
-            setId(null);
-            setName("");
-            setShowModal(true);
-          }}
-        >
-          + Add Table Name
-        </button>
+        <div className="d-flex gap-2">
+          {/* Hidden File Input */}
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: "none" }}
+            accept=".csv,.xlsx,.xls"
+            onChange={handleFileUpload}
+          />
+
+          {/* Upload Button */}
+
+          <button
+            className="btn btn-primary"
+            onClick={() => fileInputRef.current.click()}
+          >
+            ⬆ Upload
+          </button>
+
+          {/* Add Button */}
+
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setId(null);
+              setName("");
+              setShowModal(true);
+            }}
+          >
+            + Add Table Name
+          </button>
+        </div>
       </div>
 
+      {/* Data Grid */}
+
       <DataGrid rowData={tableNames} columnDefs={columnDefs} />
+
+      {/* Add / Edit Modal */}
 
       <AddTableNameModal
         show={showModal}
         onClose={() => {
           setShowModal(false);
+
           setId(null);
+
           setName("");
         }}
         onSave={handleSave}

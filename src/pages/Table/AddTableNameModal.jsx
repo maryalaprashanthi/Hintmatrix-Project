@@ -14,10 +14,14 @@ function AddTableNameModal({ show, onClose, onSave, Inputname }) {
 
   if (!show) return null;
 
-  const handleSave = async () => {
+
+  const handleSave = () => {
+
     if (!name.trim()) {
+      alert("Please enter Table Name.");
       return;
     }
+
 
     const newTableName = {
       name,
@@ -32,10 +36,13 @@ function AddTableNameModal({ show, onClose, onSave, Inputname }) {
     onClose();
   };
 
+
   return createPortal(
+
     <div className="modal-overlay">
       <div className="table-name-modal">
         {/* Header */}
+
         <div className="modal-header">
           <div>
             <h2>{Inputname == "" ? "Add Table name" : "Update table name"}</h2>
@@ -51,7 +58,11 @@ function AddTableNameModal({ show, onClose, onSave, Inputname }) {
           </button>
         </div>
 
+
+
+
         {/* Body */}
+
         <div className="modal-body">
           <div className="form-card">
             <h3 className="section-title">Table Name Information</h3>
@@ -62,14 +73,20 @@ function AddTableNameModal({ show, onClose, onSave, Inputname }) {
                   Table Name <span>*</span>
                 </label>
 
+
+
                 <div className="input-box">
                   <FaTable className="input-icon" />
+
+
 
                   <input
                     type="text"
                     placeholder="Enter Table Name"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) =>
+                      setName(e.target.value)
+                    }
                   />
                 </div>
               </div>
@@ -77,7 +94,12 @@ function AddTableNameModal({ show, onClose, onSave, Inputname }) {
           </div>
         </div>
 
+
+
+
+
         {/* Footer */}
+
         <div className="modal-footer">
           <button
             type="button"
@@ -87,11 +109,15 @@ function AddTableNameModal({ show, onClose, onSave, Inputname }) {
             Cancel
           </button>
 
+
+
+
           <button
             type="button"
             className="btn btn-primary"
             onClick={handleSave}
           >
+
             <FaSave className="me-2" />
             {Inputname == "" ? "Save" : "Update"}
           </button>
@@ -100,6 +126,8 @@ function AddTableNameModal({ show, onClose, onSave, Inputname }) {
     </div>,
     document.body,
   );
+
 }
+
 
 export default AddTableNameModal;
