@@ -6,7 +6,7 @@ import { FaTimes, FaBook, FaGraduationCap, FaSave } from "react-icons/fa";
 import "./ChapterForm.css";
 import CourseService from "../../services/CourseService";
 
-function ChapterForm({ show, onClose, onSave }) {
+function EditChapterForm({ show, chapter, onClose, onUpdate }) {
   const [courseId, setCourseId] = useState("");
   const [chapterName, setChapterName] = useState("");
   const [courses, setCourses] = useState([]);
@@ -17,47 +17,42 @@ function ChapterForm({ show, onClose, onSave }) {
     }
   }, [show]);
 
+  useEffect(() => {
+    if (chapter) {
+      setCourseId(chapter.courseId);
+      setChapterName(chapter.name);
+    }
+  }, [chapter]);
+
   const loadCourses = async () => {
     try {
-      console.log("Loading courses...");
-
       const response = await CourseService.getAllCourses();
-
-      console.log("Courses:", response.data);
 
       setCourses(response.data);
     } catch (error) {
-      console.error("Error retrieving courses:", error);
+      console.error("Error loading courses:", error);
     }
   };
 
   if (!show) return null;
 
-  const handleSave = () => {
+  const handleUpdate = () => {
     if (!courseId || !chapterName.trim()) {
       alert("Please fill all the fields.");
-
       return;
     }
 
-    const newChapter = {
+    const updatedChapter = {
       courseId: Number(courseId),
 
       name: chapterName.trim(),
     };
 
-    console.log("Chapter Payload:", newChapter);
-
-    onSave(newChapter);
-
-    setCourseId("");
-
-    setChapterName("");
+    onUpdate(chapter.chapterId, updatedChapter);
   };
 
   const handleClose = () => {
     setCourseId("");
-
     setChapterName("");
 
     onClose();
@@ -70,9 +65,9 @@ function ChapterForm({ show, onClose, onSave }) {
 
         <div className="modal-header">
           <div>
-            <h2>Add Chapter</h2>
+            <h2>Edit Chapter</h2>
 
-            <p>Create a new chapter.</p>
+            <p>Update chapter information.</p>
           </div>
 
           <button className="close-btn" onClick={handleClose}>
@@ -87,7 +82,7 @@ function ChapterForm({ show, onClose, onSave }) {
             <h3 className="section-title">Chapter Information</h3>
 
             <div className="form-grid">
-              {/* Course Dropdown */}
+              {/* Course */}
 
               <div className="form-group">
                 <label>
@@ -124,8 +119,8 @@ function ChapterForm({ show, onClose, onSave }) {
 
                   <input
                     type="text"
-                    placeholder="Enter Chapter Name"
                     value={chapterName}
+                    placeholder="Enter Chapter Name"
                     onChange={(e) => setChapterName(e.target.value)}
                   />
                 </div>
@@ -137,21 +132,13 @@ function ChapterForm({ show, onClose, onSave }) {
         {/* Footer */}
 
         <div className="modal-footer">
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={handleClose}
-          >
+          <button className="btn btn-secondary" onClick={handleClose}>
             Cancel
           </button>
 
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={handleSave}
-          >
+          <button className="btn btn-primary" onClick={handleUpdate}>
             <FaSave className="me-2" />
-            Save
+            Update
           </button>
         </div>
       </div>
@@ -161,4 +148,4 @@ function ChapterForm({ show, onClose, onSave }) {
   );
 }
 
-export default ChapterForm;
+export default EditChapterForm;

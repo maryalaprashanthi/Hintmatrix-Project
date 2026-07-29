@@ -1,7 +1,6 @@
 import "./Chapters.css";
-import ChapterService from "../../services/ChapterService";
+
 import { useState, useEffect } from "react";
-import ChapterForm from "./ChapterForm";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 
 import {
@@ -9,25 +8,38 @@ import {
   FaClock,
   FaCheckCircle,
   FaPlayCircle,
+  FaEdit,
+  FaTrash,
 } from "react-icons/fa";
+
+import ChapterService from "../../services/ChapterService";
+import ChapterForm from "./ChapterForm";
+import EditChapterForm from "./EditChapterForm";
 
 function Chapters() {
   const { courseId } = useParams();
 
   const navigate = useNavigate();
+
   const location = useLocation();
 
   const isQuestionsModule = location.pathname.startsWith("/questions");
 
-  const [showAddChapter, setShowAddChapter] = useState(false);
   const [chapters, setChapters] = useState([]);
+
+  const [showAddChapter, setShowAddChapter] = useState(false);
+
+  const [showEditChapter, setShowEditChapter] = useState(false);
+
+  const [selectedChapter, setSelectedChapter] = useState(null);
+
+  // LOAD CHAPTERS
 
   const loadChapters = async () => {
     try {
       const response = await ChapterService.getAll();
 
-      console.log("Status:", response.status);
-      console.log("Data:", response.data);
+      console.log("Chapter Data:", response.data);
 
       setChapters(response.data);
     } catch (error) {
@@ -39,46 +51,92 @@ function Chapters() {
     loadChapters();
   }, []);
 
+  // CREATE CHAPTER
+
   const handleSaveChapter = async (newChapter) => {
     try {
-      console.log("Sending:", newChapter);
+      console.log("Create Payload:", newChapter);
 
-      console.log("Before API Call");
-      const response = await ChapterService.create(newChapter);
-
-      loadChapters();
-
-      console.log("After API Call");
-      console.log("HTTP Status:", response.status);
-      console.log("Success:", response.data);
+      await ChapterService.create(newChapter);
 
       alert("Chapter created successfully");
 
       setShowAddChapter(false);
+
+      loadChapters();
     } catch (error) {
-      console.error("Full Error:", error);
-      console.log("Error Response:", error.response);
-      console.log("Error Data:", error.response?.data);
-      console.log("Error Status:", error.response?.status);
+      console.error("Create Error:", error.response?.data || error);
 
       alert("Failed to create chapter");
     }
   };
 
-  // Upload (Frontend Only)
+  // OPEN EDIT MODAL
+
+  const handleEdit = (chapter) => {
+    setSelectedChapter(chapter);
+
+    setShowEditChapter(true);
+  };
+
+  // UPDATE CHAPTER
+
+  const handleUpdateChapter = async (id, updatedChapter) => {
+    try {
+      console.log("Update Payload:", updatedChapter);
+
+      await ChapterService.update(id, updatedChapter);
+
+      alert("Chapter updated successfully");
+
+      setShowEditChapter(false);
+
+      setSelectedChapter(null);
+
+      loadChapters();
+    } catch (error) {
+      console.error("Update Error:", error.response?.data || error);
+
+      alert("Failed to update chapter");
+    }
+  };
+
+  // DELETE CHAPTER
+
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this chapter?",
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await ChapterService.delete(id);
+
+      alert("Chapter deleted successfully");
+
+      loadChapters();
+    } catch (error) {
+      console.error("Delete Error:", error.response?.data || error);
+
+      alert("Failed to delete chapter");
+    }
+  };
+
+  // FILE UPLOAD
+
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
 
     if (!file) return;
 
-    console.log("Selected File:", file);
     alert(`Selected file: ${file.name}`);
 
-    // Clear input so same file can be selected again
     event.target.value = "";
   };
 
-  // Chapter -> Question Categories
+  // NAVIGATION
+
   const openCategories = (chapterTitle) => {
     const chapterSlug = chapterTitle.toLowerCase().replaceAll(" ", "-");
 
@@ -94,15 +152,17 @@ function Chapters() {
       <div className="chapter-header d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
           <h2>All Chapters</h2>
+
           <p className="mb-0">Select a chapter and start learning</p>
         </div>
 
-        {/* Hidden Upload Input */}
         <input
           type="file"
           id="chapterUpload"
           accept=".csv,.xlsx,.xls"
-          style={{ display: "none" }}
+          style={{
+            display: "none",
+          }}
           onChange={handleFileUpload}
         />
 
@@ -124,10 +184,8 @@ function Chapters() {
       </div>
 
       <div className="row g-4">
-        {console.log("Chapters State:", chapters)}
-
-        {chapters.map((chapter, index) => (
-          <div className="col-xl-4 col-lg-4 col-md-6" key={index}>
+        {chapters.map((chapter) => (
+          <div className="col-xl-4 col-lg-4 col-md-6" key={chapter.chapterId}>
             <div className="chapter-card">
               <div className="chapter-icon">
                 <FaBookOpen />
@@ -138,22 +196,31 @@ function Chapters() {
               <div className="chapter-info">
                 <span>
                   <FaClock />
-                  {chapter.lessons} Lessons
+                  Lessons
                 </span>
 
                 <span>
                   <FaCheckCircle />
-                  {chapter.progress}
+                  Active
                 </span>
               </div>
 
-              <div className="progress">
-                <div
-                  className="progress-bar"
-                  style={{
-                    width: chapter.progress,
-                  }}
-                ></div>
+              <div className="chapter-actions">
+                <button
+                  className="btn btn-warning me-2"
+                  onClick={() => handleEdit(chapter)}
+                >
+                  <FaEdit />
+                  Edit
+                </button>
+
+                <button
+                  className="btn btn-danger"
+                  onClick={() => handleDelete(chapter.chapterId)}
+                >
+                  <FaTrash />
+                  Delete
+                </button>
               </div>
 
               <button
@@ -173,6 +240,15 @@ function Chapters() {
         onClose={() => setShowAddChapter(false)}
         onSave={handleSaveChapter}
       />
+
+      {selectedChapter && (
+        <EditChapterForm
+          show={showEditChapter}
+          chapter={selectedChapter}
+          onClose={() => setShowEditChapter(false)}
+          onUpdate={handleUpdateChapter}
+        />
+      )}
     </div>
   );
 }
