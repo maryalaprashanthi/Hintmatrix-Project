@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import CollegeService from "../../services/CollegeService";
+import BranchService from "../../services/BranchService";
 
 import {
   FaTimes,
@@ -27,38 +29,31 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [address, setAddress] = useState("");
+  const [collegesList, setCollegesList] = useState([]);
+  const [branchesList, setBranchesList] = useState([]);
 
-  /* Dummy College Data */
-  const collegesList = [
-    {
-      collegeId: 1,
-      instituteName: "ABC College",
-    },
-    {
-      collegeId: 2,
-      instituteName: "XYZ College",
-    },
-    {
-      collegeId: 3,
-      instituteName: "PQR College",
-    },
-  ];
+  const fetchColleges = async () => {
+    try {
+      const response = await CollegeService.getAllColleges();
+      setCollegesList(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-  /* Dummy Branch Data */
-  const branchesList = [
-    {
-      branchId: 1,
-      branchName: "Computer Science",
-    },
-    {
-      branchId: 2,
-      branchName: "Electronics",
-    },
-    {
-      branchId: 3,
-      branchName: "Mechanical",
-    },
-  ];
+  const fetchBranches = async () => {
+    try {
+      const response = await BranchService.getAllBranches();
+      setBranchesList(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  // useEffect here
+  useEffect(() => {
+    fetchColleges();
+    fetchBranches();
+  }, []);
 
   useEffect(() => {
     if (selectedBranchAdminData) {
