@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { AgGridReact } from "ag-grid-react";
 import {
   AllCommunityModule,
@@ -7,17 +7,13 @@ import {
   themeQuartz,
 } from "ag-grid-community";
 
+import BranchAdminService from "../../services/UserService";
+
 import "ag-grid-community/styles/ag-grid.css";
 
 ModuleRegistry.registerModules([AllCommunityModule, ValidationModule]);
 
-function BranchAdminTable({ data, onEdit }) {
-  const [branchAdmins, setBranchAdmins] = useState(data || []);
-
-  useEffect(() => {
-    setBranchAdmins(data || []);
-  }, [data]);
-
+function BranchAdminTable({ data, onEdit, refreshData }) {
   const defaultColDef = {
     sortable: true,
     filter: true,
@@ -25,11 +21,17 @@ function BranchAdminTable({ data, onEdit }) {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm("Delete this Branch Admin?")) {
-      setBranchAdmins((prev) =>
-        prev.filter((item) => item.branchAdminId !== id),
-      );
-    }
+    if (!window.confirm("Delete this Branch Admin?")) return;
+
+    BranchAdminService.deleteBranchAdmin(id)
+      .then(() => {
+        alert("Branch Admin deleted successfully!");
+        refreshData();
+      })
+      .catch((error) => {
+        console.error("Delete Error:", error);
+        alert("Failed to delete Branch Admin.");
+      });
   };
 
   const columnDefs = [
@@ -91,33 +93,15 @@ function BranchAdminTable({ data, onEdit }) {
           }}
         >
           <button
+            className="btn btn-primary btn-sm"
             onClick={() => onEdit(params.data)}
-            style={{
-              background: "#2563eb",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              padding: "4px 14px",
-              cursor: "pointer",
-              fontSize: "12px",
-              fontWeight: "600",
-            }}
           >
             Edit
           </button>
 
           <button
+            className="btn btn-danger btn-sm"
             onClick={() => handleDelete(params.data.branchAdminId)}
-            style={{
-              background: "#dc2626",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              padding: "4px 14px",
-              cursor: "pointer",
-              fontSize: "12px",
-              fontWeight: "600",
-            }}
           >
             Delete
           </button>
@@ -131,15 +115,21 @@ function BranchAdminTable({ data, onEdit }) {
       <style
         dangerouslySetInnerHTML={{
           __html: `
-          .ag-popup { min-width: 280px !important; }
-          .ag-filter-wrapper { min-width: 260px !important; padding:16px !important; }
-        `,
+            .ag-popup {
+              min-width: 280px !important;
+            }
+
+            .ag-filter-wrapper {
+              min-width: 260px !important;
+              padding: 16px !important;
+            }
+          `,
         }}
       />
 
       <div style={{ height: "500px", width: "100%" }}>
         <AgGridReact
-          rowData={branchAdmins}
+          rowData={data}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           theme={themeQuartz}

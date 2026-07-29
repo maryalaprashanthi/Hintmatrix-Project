@@ -15,35 +15,50 @@ function TableNames() {
 
   // ================= SAVE =================
 
-  const handleSave = async (newTableName) => {
-    try {
-      if (id == null) {
-        await TableNameService.create(newTableName);
-      } else {
-        await TableNameService.update(id, newTableName);
-      }
-
-      setId(null);
-      setName("");
-      setShowModal(false);
-
-      loadTableNames();
-    } catch (error) {
-      console.error("Error:", error);
+ const handleSave = async (newTableName) => {
+  try {
+    if (id == null) {
+      await TableNameService.create(newTableName);
+      alert("Table Name added successfully.");
+    } else {
+      await TableNameService.update(id, newTableName);
+      alert("Table Name updated successfully.");
     }
-  };
 
+    setId(null);
+    setName("");
+    setShowModal(false);
+
+    loadTableNames();
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Operation failed.");
+  }
+};
   // ================= DELETE =================
 
   const handleDelete = async (id) => {
-    try {
-      await TableNameService.delete(id);
-    } catch (error) {
-      console.error("Error:", error);
-    }
+
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this table name?"
+  );
+
+  if (!confirmDelete) {
+    return;
+  }
+
+  try {
+    await TableNameService.delete(id);
+
+    alert("Table Name deleted successfully.");
 
     loadTableNames();
-  };
+
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Failed to delete Table Name.");
+  }
+};
 
   // ================= GET ALL =================
 

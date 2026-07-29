@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { AgGridReact } from "ag-grid-react";
 import {
   AllCommunityModule,
@@ -7,17 +7,13 @@ import {
   themeQuartz,
 } from "ag-grid-community";
 
+import SuperAdminService from "../../services/UserService";
+
 import "ag-grid-community/styles/ag-grid.css";
 
 ModuleRegistry.registerModules([AllCommunityModule, ValidationModule]);
 
-function SuperAdminTable({ data, onEdit }) {
-  const [superAdmins, setSuperAdmins] = useState(data || []);
-
-  useEffect(() => {
-    setSuperAdmins(data || []);
-  }, [data]);
-
+function SuperAdminTable({ data, onEdit, refreshData }) {
   const defaultColDef = {
     sortable: true,
     filter: true,
@@ -25,9 +21,17 @@ function SuperAdminTable({ data, onEdit }) {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm("Delete this Super Admin?")) {
-      setSuperAdmins((prev) => prev.filter((item) => item.superAdminId !== id));
-    }
+    if (!window.confirm("Delete this Super Admin?")) return;
+
+    SuperAdminService.deleteSuperAdmin(id)
+      .then(() => {
+        alert("Super Admin deleted successfully!");
+        refreshData();
+      })
+      .catch((error) => {
+        console.error("Delete Error:", error);
+        alert("Failed to delete Super Admin.");
+      });
   };
 
   const columnDefs = [
@@ -133,7 +137,7 @@ function SuperAdminTable({ data, onEdit }) {
 
       <div style={{ height: "500px", width: "100%" }}>
         <AgGridReact
-          rowData={superAdmins}
+          rowData={data}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           theme={themeQuartz}

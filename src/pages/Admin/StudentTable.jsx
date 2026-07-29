@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { AgGridReact } from "ag-grid-react";
 import {
   AllCommunityModule,
@@ -7,17 +7,13 @@ import {
   themeQuartz,
 } from "ag-grid-community";
 
+import StudentService from "../../services/UserService";
+
 import "ag-grid-community/styles/ag-grid.css";
 
 ModuleRegistry.registerModules([AllCommunityModule, ValidationModule]);
 
-function StudentUserTable({ data, onEdit }) {
-  const [studentUsers, setStudentUsers] = useState(data || []);
-
-  useEffect(() => {
-    setStudentUsers(data || []);
-  }, [data]);
-
+function StudentTable({ data, onEdit, refreshData }) {
   const defaultColDef = {
     sortable: true,
     filter: true,
@@ -25,11 +21,17 @@ function StudentUserTable({ data, onEdit }) {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm("Delete this Student User?")) {
-      setStudentUsers((prev) =>
-        prev.filter((item) => item.studentUserId !== id),
-      );
-    }
+    if (!window.confirm("Delete this Student?")) return;
+
+    StudentService.deleteStudent(id)
+      .then(() => {
+        alert("Student deleted successfully!");
+        refreshData();
+      })
+      .catch((error) => {
+        console.error("Delete Error:", error);
+        alert("Failed to delete Student.");
+      });
   };
 
   const columnDefs = [
@@ -87,7 +89,7 @@ function StudentUserTable({ data, onEdit }) {
           </button>
 
           <button
-            onClick={() => handleDelete(params.data.studentUserId)}
+            onClick={() => handleDelete(params.data.studentId)}
             style={{
               background: "#dc2626",
               color: "#fff",
@@ -125,7 +127,7 @@ function StudentUserTable({ data, onEdit }) {
 
       <div style={{ height: "500px", width: "100%" }}>
         <AgGridReact
-          rowData={studentUsers}
+          rowData={data}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           theme={themeQuartz}
@@ -139,4 +141,4 @@ function StudentUserTable({ data, onEdit }) {
   );
 }
 
-export default StudentUserTable;
+export default StudentTable;

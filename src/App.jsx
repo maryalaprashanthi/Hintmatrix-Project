@@ -14,7 +14,7 @@ import Courses from "./pages/College/Courses/Courses";
 import Branch from "./pages/College/Branch/Branch";
 import BranchAdmin from "./pages/Admin/BranchAdmin";
 import SuperAdmin from "./pages/Admin/SuperAdmin";
-import StudentUser from "./pages/Admin/StudentUser";
+import Student from "./pages/Admin/Student";
 
 import Chapters from "./pages/Chapters/Chapters";
 
@@ -151,7 +151,7 @@ function App() {
         <Route path="/admin/super-admin" element={<SuperAdmin />} />
 
         {/* Student */}
-        <Route path="/admin/student-user" element={<StudentUser />} />
+        <Route path="/admin/student" element={<Student />} />
 
         {/* Courses */}
         <Route
