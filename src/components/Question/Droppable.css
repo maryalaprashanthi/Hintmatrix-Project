@@ -1,0 +1,91 @@
+.droppable-group {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  min-height: 160px;
+}
+
+.dropzone {
+  background-color: #ffffff;
+  padding: 0;
+  transition: background-color 0.2s ease;
+}
+
+.dropzone-table {
+  font-size: 0.85rem;
+  margin-bottom: 0;
+}
+
+.dropzone-table thead th {
+  font-weight: 600;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.dropzone-table tbody td {
+  padding: 8px 12px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.dropzone-table tfoot td {
+  padding: 10px 12px;
+}
+
+/* Debit / left side theme (blue-purple), matches Dr. columns in screenshot */
+.theme-debit .add-zone thead th {
+  background-color: #eef2ff;
+  color: #4338ca;
+}
+.theme-debit .sub-zone thead th {
+  background-color: #eef2ff;
+  color: #4338ca;
+}
+.theme-debit .total-row td {
+  background-color: #eef2ff;
+  color: #4338ca;
+}
+
+/* Credit / right side theme (green), matches Cr. columns in screenshot */
+.theme-credit .add-zone thead th {
+  background-color: #ecfdf5;
+  color: #047857;
+}
+.theme-credit .sub-zone thead th {
+  background-color: #ecfdf5;
+  color: #047857;
+}
+.theme-credit .total-row td {
+  background-color: #ecfdf5;
+  color: #047857;
+}
+
+/* Active drag-over states (kept strong so they visibly override the theme) */
+.active-dropzone-add,
+.active-dropzone-add table,
+.active-dropzone-add th,
+.active-dropzone-add td,
+.active-dropzone-add tr {
+  background-color: #10b981 !important;
+  color: #ffffff !important;
+}
+
+.active-dropzone-sub,
+.active-dropzone-sub table,
+.active-dropzone-sub th,
+.active-dropzone-sub td,
+.active-dropzone-sub tr {
+  background-color: #f87171 !important;
+  color: #ffffff !important;
+}
+
+/* Responsive: stack add/sub zones full-width on very small screens */
+@media (max-width: 575.98px) {
+  .droppable-group .row {
+    flex-direction: column;
+  }
+  .add-zone,
+  .sub-zone {
+    width: 100%;
+  }
+}

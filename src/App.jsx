@@ -8,7 +8,6 @@ import Dashboard from "./pages/Dashboard";
 // --- UPDATED EXPORT IMPORTS TO MATCH COMMON NESTED FOLDER ARCHITECTURES ---
 import College from "./pages/College/College";
 import Section from "./components/Section";
-import Course from "./components/course"; // Added singular admin Course management page
 import CourseForm from "./pages/College/Courses/CourseForm";
 import Courses from "./pages/College/Courses/Courses";
 
@@ -202,6 +201,7 @@ function App() {
         <Route path="/certificates" element={<Certificates />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
+      <Route path="/question" element={<QuestionPage />} />
     </Routes>
   );
 }
