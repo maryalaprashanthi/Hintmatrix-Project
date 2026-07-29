@@ -20,6 +20,8 @@ import Chapters from "./pages/Chapters/Chapters";
 
 import QuestionCategories from "./pages/QuestionCategories/QuestionCategories";
 
+import RuleEngine from "./pages/RuleEngine/RuleEngine";
+
 import Login from "./pages/Auth/Login";
 // Other Pages
 import Practice from "./pages/Practice";
@@ -192,6 +194,9 @@ function App() {
         <Route path="/table-names" element={<TableNames />} />
         <Route path="/table-headers" element={<TableHeaders />} />
         <Route path="/table-attributes" element={<TableAttributes />} />
+
+        {/* RuleEngine */}
+        <Route path="/ruleengine" element={<RuleEngine />} />
 
         {/* Learning */}
         <Route path="/practice" element={<Practice />} />
