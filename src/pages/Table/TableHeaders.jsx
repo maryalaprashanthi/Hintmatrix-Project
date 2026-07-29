@@ -25,31 +25,46 @@ function TableHeaders() {
   };
 
   const handleSave = async (newTableHeader) => {
-    try {
-      if (id == null) {
-        await TableHeaderService.create(newTableHeader);
-      } else {
-        await TableHeaderService.update(id, newTableHeader);
-      }
-
-      setId(null);
-      setName("");
-      setShowModal(false);
-      loadTableHeaders();
-    } catch (error) {
-      console.error("Error: ", error);
+  try {
+    if (id == null) {
+      await TableHeaderService.create(newTableHeader);
+      alert("Table Header added successfully.");
+    } else {
+      await TableHeaderService.update(id, newTableHeader);
+      alert("Table Header updated successfully.");
     }
-  };
+
+    setId(null);
+    setName("");
+    setShowModal(false);
+    loadTableHeaders();
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Operation failed.");
+  }
+};
 
   const handleDelete = async (id) => {
-    try {
-      await TableHeaderService.delete(id);
-    } catch (error) {
-      console.error("Error: ", error);
-    }
+
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this table header?"
+  );
+
+  if (!confirmDelete) {
+    return;
+  }
+
+  try {
+    await TableHeaderService.delete(id);
+
+    alert("Table Header deleted successfully.");
 
     loadTableHeaders();
-  };
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Failed to delete Table Header.");
+  }
+};
 
   useEffect(() => {
     loadTableHeaders();

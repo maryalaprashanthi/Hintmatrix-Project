@@ -22,23 +22,24 @@ function AddTableHeaderModal({ show, onClose, onSave,Inputdata }) {
   if (!show) return null;
 
 
-  const handleSave = () => {
-
+  const handleSave = async () => {
     if (!name.trim()) {
       alert("Please enter Table Header Name.");
       return;
     }
 
-
     const newTableHeader = {
       name,
     };
 
-
-    onSave(newTableHeader);
-
+    await onSave(newTableHeader);
+    setName("");
   };
 
+  const handleClose = () => {
+    setName("");
+    onClose();
+  };
 
 
   return createPortal(

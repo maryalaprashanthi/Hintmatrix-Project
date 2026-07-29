@@ -23,21 +23,23 @@ function AddTableNameModal({ show, onClose, onSave, Inputname }) {
   if (!show) return null;
 
 
-  const handleSave = () => {
-
+  const handleSave = async () => {
     if (!name.trim()) {
       alert("Please enter Table Name.");
       return;
     }
 
-
     const newTableName = {
       name,
     };
 
+    await onSave(newTableName);
+    setName("");
+  };
 
-    onSave(newTableName);
-
+  const handleClose = () => {
+    setName("");
+    onClose();
   };
 
 
