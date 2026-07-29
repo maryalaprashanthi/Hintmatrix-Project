@@ -33,9 +33,9 @@ import {
 } from "react-icons/md";
 
 export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
-  const [collegeOpen, setCollegeOpen] = useState(true);
+  const [collegeOpen, setCollegeOpen] = useState(false);
   const [tableOpen, setTableOpen] = useState(false);
-  const [questionOpen, setQuestionOpen] = useState(true);
+  const [questionOpen, setQuestionOpen] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
 
   const closeSidebar = () => {
