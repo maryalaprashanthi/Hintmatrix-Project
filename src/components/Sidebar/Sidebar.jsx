@@ -124,8 +124,6 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
 
           {/* Admin */}
 
-          {/* Admin */}
-
           <div
             className={`menu-item ${adminOpen ? "active" : ""}`}
             onClick={() => setAdminOpen(!adminOpen)}
@@ -249,6 +247,18 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
               </NavLink>
             </div>
           )}
+
+          {/* Rule Engine */}
+          <NavLink
+            to="/ruleengine"
+            className={menuClass}
+            onClick={closeSidebar}
+          >
+            <div className="menu-left">
+              <MdSettings />
+              <span>Rule Engine</span>
+            </div>
+          </NavLink>
 
           <NavLink to="/practice" className={menuClass} onClick={closeSidebar}>
             <div className="menu-left">
