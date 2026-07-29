@@ -33,14 +33,26 @@ function TableAttributes() {
   }, []);
 
   const handleDelete = async (id) => {
-    try {
-      await TableAttributeService.delete(id);
-    } catch (error) {
-      console.error("Error: ", error);
-    }
+
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this table attribute?"
+  );
+
+  if (!confirmDelete) {
+    return;
+  }
+
+  try {
+    await TableAttributeService.delete(id);
+
+    alert("Table Attribute deleted successfully.");
 
     loadTableAttributes();
-  };
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Failed to delete Table Attribute.");
+  }
+};
 
   // Upload Button
   const handleFileUpload = (e) => {
@@ -134,21 +146,25 @@ function TableAttributes() {
     },
   ];
     const handleSave = async (newAttribute) => {
-    try {
-      if (id != null) {
-        await TableAttributeService.update(id, newAttribute);
-      } else {
-        await TableAttributeService.create(newAttribute);
-      }
-
-      setEditingAttribute(null);
-      setId(null);
-      setShowModal(false);
-      loadTableAttributes();
-    } catch (error) {
-      console.error("Error: ", error);
+  try {
+    if (id != null) {
+      await TableAttributeService.update(id, newAttribute);
+      alert("Table Attribute updated successfully.");
+    } else {
+      await TableAttributeService.create(newAttribute);
+      alert("Table Attribute added successfully.");
     }
-  };
+
+    setEditingAttribute(null);
+    setId(null);
+    setShowModal(false);
+
+    loadTableAttributes();
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Operation failed.");
+  }
+};
 
   return (
     <div className="container-fluid py-4">
