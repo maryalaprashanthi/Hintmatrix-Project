@@ -2,6 +2,7 @@ import { useState } from "react";
 import CollegeForm from "./CollegeForm";
 import CollegeTable from "./CollegeTable";
 import Alert from "react-bootstrap/Alert";
+import CollegeService from "../../services/CollegeService";
 
 function College() {
   const [showModal, setShowModal] = useState(false);
@@ -22,8 +23,21 @@ function College() {
   };
 
   // Save / Update College
-  const handleSave = (collegeData) => {
-    console.log("College Saved:", collegeData);
+  const handleSave = async (collegeData) => {
+  try {
+
+    if (selectedCollege) {
+
+      await CollegeService.updateCollege(
+        selectedCollege.collegeId,
+        collegeData
+      );
+
+    } else {
+
+      await CollegeService.saveCollege(collegeData);
+
+    }
 
     setRefreshTrigger((prev) => !prev);
 
@@ -35,7 +49,15 @@ function College() {
     setTimeout(() => {
       setShowAlert(false);
     }, 4000);
-  };
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert("Failed to save college.");
+
+  }
+};
 
   // Upload (Frontend Only)
   const handleFileUpload = (e) => {
