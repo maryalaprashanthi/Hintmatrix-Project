@@ -10,11 +10,12 @@ import {
 } from "react-icons/fa";
 
 function SectionForm({ selectedSectionData, onUpdateComplete, onCancel }) {
-  const emptySection = {
-    sectionId: "",
-    courseId: "",
-    sectionName: "",
-  };
+ const emptySection = {
+  sectionId: "",
+  courseId: "",
+  sectionName: "",
+  description: "",
+};
 
   const [section, setSection] = useState(emptySection);
   const [coursesList, setCoursesList] = useState([]);
@@ -41,10 +42,11 @@ function SectionForm({ selectedSectionData, onUpdateComplete, onCancel }) {
   useEffect(() => {
     if (selectedSectionData) {
       setSection({
-        sectionId: selectedSectionData.sectionId || "",
-        courseId: selectedSectionData.courseId || "",
-        sectionName: selectedSectionData.sectionName || "",
-      });
+  sectionId: selectedSectionData.sectionId || "",
+  courseId: selectedSectionData.courseId || "",
+  sectionName: selectedSectionData.sectionName || "",
+  description: selectedSectionData.description || "",
+});
     } else {
       setSection(emptySection);
     }
@@ -85,9 +87,10 @@ function SectionForm({ selectedSectionData, onUpdateComplete, onCancel }) {
     }
 
     const requestDTO = {
-      courseId: section.courseId,
-      sectionName: section.sectionName,
-    };
+  courseId: section.courseId,
+  sectionName: section.sectionName,
+  description: section.description,
+};
 
     if (section.sectionId) {
       SectionService.updateSection(section.sectionId, requestDTO)
@@ -165,6 +168,25 @@ function SectionForm({ selectedSectionData, onUpdateComplete, onCancel }) {
               />
             </div>
           </div>
+
+          <div className="form-group description-group">
+    <label>
+        Description <span>*</span>
+    </label>
+
+    <div className="textarea-box">
+        <FaAlignLeft className="input-icon" />
+
+        <textarea
+            name="description"
+            placeholder="Enter Description"
+            value={section.description}
+            onChange={handleChange}
+            rows={4}
+            required
+        />
+    </div>
+</div>
         </div>
       </div>
 

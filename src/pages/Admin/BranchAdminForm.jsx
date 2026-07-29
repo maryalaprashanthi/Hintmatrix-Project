@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import CollegeService from "../../services/CollegeService";
+import BranchService from "../../services/BranchService";
 
 import {
   FaTimes,
@@ -27,38 +29,31 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [address, setAddress] = useState("");
+  const [collegesList, setCollegesList] = useState([]);
+  const [branchesList, setBranchesList] = useState([]);
 
-  /* Dummy College Data */
-  const collegesList = [
-    {
-      collegeId: 1,
-      instituteName: "ABC College",
-    },
-    {
-      collegeId: 2,
-      instituteName: "XYZ College",
-    },
-    {
-      collegeId: 3,
-      instituteName: "PQR College",
-    },
-  ];
+  const fetchColleges = async () => {
+    try {
+      const response = await CollegeService.getAllColleges();
+      setCollegesList(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-  /* Dummy Branch Data */
-  const branchesList = [
-    {
-      branchId: 1,
-      branchName: "Computer Science",
-    },
-    {
-      branchId: 2,
-      branchName: "Electronics",
-    },
-    {
-      branchId: 3,
-      branchName: "Mechanical",
-    },
-  ];
+  const fetchBranches = async () => {
+    try {
+      const response = await BranchService.getAllBranches();
+      setBranchesList(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  // useEffect here
+  useEffect(() => {
+    fetchColleges();
+    fetchBranches();
+  }, []);
 
   useEffect(() => {
     if (selectedBranchAdminData) {
@@ -119,8 +114,6 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
     };
 
     onSave(branchAdminData);
-
-    onClose();
   };
 
   return createPortal(
@@ -130,9 +123,17 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
 
         <div className="modal-header">
           <div>
-            <h2>Add Branch Admin</h2>
+            <h2>
+              {selectedBranchAdminData
+                ? "Edit Branch Admin"
+                : "Add Branch Admin"}
+            </h2>
 
-            <p>Create a new Branch Administrator.</p>
+            <p>
+              {selectedBranchAdminData
+                ? "Update Branch Administrator details."
+                : "Create a new Branch Administrator."}
+            </p>
           </div>
 
           <button className="close-btn" onClick={onClose}>
@@ -277,7 +278,8 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
                   <FaPhone className="input-icon" />
 
                   <input
-                    type="tel"
+                    type="text"
+                    maxLength={10}
                     placeholder="9876543210"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}

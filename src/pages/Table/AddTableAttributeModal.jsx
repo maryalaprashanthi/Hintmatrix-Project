@@ -45,22 +45,26 @@ function AddTableAttributeModal({ show, onClose, onSave,initialData }) {
 
 
   const handleSave = async () => {
-
-    if (!formData.name.trim()) {
-      alert("Please enter Attribute Name.");
+    if (!formData.name.trim() || !formData.tableHeaderName.trim()) {
       return;
     }
-
-
-    if (!formData.tableHeaderName.trim()) {
-      alert("Please select Table Header Name.");
-      return;
-    }
-
 
     await onSave(formData);
+    setFormData({
+      name: "",
+      shortName: "",
+      tableHeaderName: "",
+    });
+  };
 
-};
+  const handleClose = () => {
+    setFormData({
+      name: "",
+      shortName: "",
+      tableHeaderName: "",
+    });
+    onClose();
+  };
 
   return createPortal(
 
