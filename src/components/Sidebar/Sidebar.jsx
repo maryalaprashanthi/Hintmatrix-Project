@@ -33,9 +33,9 @@ import {
 } from "react-icons/md";
 
 export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
-  const [collegeOpen, setCollegeOpen] = useState(true);
+  const [collegeOpen, setCollegeOpen] = useState(false);
   const [tableOpen, setTableOpen] = useState(false);
-  const [questionOpen, setQuestionOpen] = useState(true);
+  const [questionOpen, setQuestionOpen] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
 
   const closeSidebar = () => {
@@ -121,8 +121,6 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
               </NavLink>
             </div>
           )}
-
-          {/* Admin */}
 
           {/* Admin */}
 
@@ -249,6 +247,18 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
               </NavLink>
             </div>
           )}
+
+          {/* Rule Engine */}
+          <NavLink
+            to="/ruleengine"
+            className={menuClass}
+            onClick={closeSidebar}
+          >
+            <div className="menu-left">
+              <MdSettings />
+              <span>Rule Engine</span>
+            </div>
+          </NavLink>
 
           <NavLink to="/practice" className={menuClass} onClick={closeSidebar}>
             <div className="menu-left">
