@@ -72,19 +72,36 @@ function Courses() {
   };
 
   // Upload Button
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
+const handleFileUpload = async (e) => {
+  const file = e.target.files[0];
 
-    if (!file) return;
+  if (!file) return;
 
-    console.log("Selected File:", file);
+  try {
+    const response = await CourseService.uploadExcel(file);
 
-    alert(`Selected File: ${file.name}`);
+    alert(
+      typeof response.data === "string"
+        ? response.data
+        : "Course Excel uploaded successfully!"
+    );
 
-    // Backend upload API later
+    loadCourses(); // Refresh course list
 
-    e.target.value = "";
-  };
+  } catch (error) {
+    console.error("Upload Error:", error);
+
+    if (error.response) {
+      alert(error.response.data);
+    } else {
+      alert("File upload failed.");
+    }
+  }
+
+  // Backend upload API later
+
+  e.target.value = "";
+};
 
   const filteredCourses = courses.filter((course) => {
     const courseTitle = course.name || course.title || "";

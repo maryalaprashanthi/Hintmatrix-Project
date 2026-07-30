@@ -65,19 +65,35 @@ function Chapters() {
     }
   };
 
-  // Upload (Frontend Only)
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
+  // Upload Excel
+const handleFileUpload = async (event) => {
+  const file = event.target.files[0];
 
-    if (!file) return;
+  if (!file) return;
 
-    console.log("Selected File:", file);
-    alert(`Selected file: ${file.name}`);
+  try {
+    const response = await ChapterService.uploadExcel(file);
 
-    // Clear input so same file can be selected again
-    event.target.value = "";
-  };
+    alert(
+      typeof response.data === "string"
+        ? response.data
+        : "Chapter Excel uploaded successfully!"
+    );
 
+    loadChapters();
+
+  } catch (error) {
+    console.error("Upload Error:", error);
+
+    if (error.response) {
+      alert(error.response.data);
+    } else {
+      alert("File upload failed.");
+    }
+  }
+
+  event.target.value = "";
+};
   // Chapter -> Question Categories
   const openCategories = (chapterTitle) => {
     const chapterSlug = chapterTitle.toLowerCase().replaceAll(" ", "-");

@@ -20,6 +20,8 @@ import "./QuestionCategories.css";
 import "./AddQuestionCategoryModal.css";
 
 import AddQuestionCategoryModal from "./AddQuestionCategoryModal";
+import QuestionCategoryService from "../../services/QuestionCategoryService";
+
 
 export default function QuestionCategories() {
 
@@ -30,18 +32,42 @@ export default function QuestionCategories() {
     const [statusFilter, setStatusFilter] = useState("All");
 
     // Upload (Frontend Only)
-    const handleFileUpload = (event) => {
-        const file = event.target.files[0];
+   const handleFileUpload = async(event)=>{
 
-        if (!file) return;
+ const file = event.target.files[0];
 
-        console.log("Selected File:", file);
 
-        alert(`Selected file: ${file.name}`);
+ if(!file) return;
 
-        // Reset input
-        event.target.value = "";
-    };
+
+ try{
+
+    const response =
+      await QuestionCategoryService.uploadExcel(file);
+
+
+    alert(
+      typeof response.data==="string"
+      ? response.data
+      : "Question Category Excel uploaded successfully!"
+    );
+
+
+ }catch(error){
+
+    console.error(error);
+
+    alert(
+      error.response?.data ||
+      "Question Category upload failed"
+    );
+
+ }
+
+
+ event.target.value="";
+
+};
 
     const categories = [
 

@@ -47,6 +47,23 @@ class CourseService {
             { withCredentials: true }
         );
     }
+
+    // Upload Excel (.xls, .xlsx, .xlsm)
+uploadExcel(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return axios.post(
+        `${API_URL}/upload`,
+        formData,
+        {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+            withCredentials: true,
+        }
+    );
+}
 }
 
 export default new CourseService();
