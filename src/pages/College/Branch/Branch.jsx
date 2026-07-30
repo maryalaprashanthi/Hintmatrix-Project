@@ -58,18 +58,31 @@ function Branch() {
   };
 
  
-
-  
-    const handleFileUpload = (e) => {
+    const handleFileUpload = async (e) => {
   const file = e.target.files[0];
 
   if (!file) return;
 
-  console.log("Selected File:", file);
+  try {
+    const response = await BranchService.uploadExcel(file);
 
-  alert(`Selected File: ${file.name}`);
+    alert(
+      typeof response.data === "string"
+        ? response.data
+        : "Branch Excel uploaded successfully!"
+    );
 
-  // TODO: Call backend upload API here
+    setRefreshTrigger((prev) => !prev);
+
+  } catch (error) {
+    console.error("Upload Error:", error);
+
+    if (error.response) {
+      alert(error.response.data);
+    } else {
+      alert("File upload failed.");
+    }
+  }
 
   e.target.value = "";
 };
