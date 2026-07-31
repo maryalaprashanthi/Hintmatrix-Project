@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import StudentForm from "./StudentForm";
 import "./Student.css";
 import StudentTable from "./StudentTable";
@@ -8,6 +8,8 @@ function Student() {
   const [showModal, setShowModal] = useState(false);
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
+
+  const fileInputRef = useRef(null);
 
   // Fetch all Students
   const fetchStudents = () => {
@@ -20,10 +22,31 @@ function Student() {
       });
   };
 
-  // Load data on page load
   useEffect(() => {
     fetchStudents();
   }, []);
+
+  // Upload
+  const handleUploadClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    console.log("Selected File:", file);
+
+    // StudentService.uploadStudents(file)
+    //   .then(() => {
+    //     alert("Students uploaded successfully!");
+    //     fetchStudents();
+    //   })
+    //   .catch((error) => {
+    //     console.error(error);
+    //   });
+  };
 
   // Open Add Form
   const handleAddStudent = () => {
@@ -74,10 +97,25 @@ function Student() {
           <p className="text-muted">Manage all Students.</p>
         </div>
 
-        <button className="btn btn-primary" onClick={handleAddStudent}>
-          + Add Student
-        </button>
+        <div className="d-flex gap-2">
+          <button className="btn btn-primary" onClick={handleUploadClick}>
+            ⬆ Upload
+          </button>
+
+          <button className="btn btn-primary" onClick={handleAddStudent}>
+            + Add Student
+          </button>
+        </div>
       </div>
+
+      {/* Hidden File Input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        accept=".xlsx,.xls,.csv"
+        onChange={handleFileChange}
+      />
 
       {/* Table */}
       <div className="card shadow-sm border-0">

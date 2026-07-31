@@ -106,13 +106,17 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.chapterName || !formData.fieldName || !formData.fieldType) {
       alert("Please fill the mandatory fields.");
       return;
     }
 
-    onSave(formData);
+    try {
+      await onSave(formData);
+    } catch (error) {
+      console.error("Error saving rule:", error);
+    }
   };
 
   if (!show) return null;
@@ -151,11 +155,19 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
 
                   <input
                     type="text"
+                    list="chapterList"
                     name="chapterName"
-                    placeholder="Enter Chapter Name"
+                    placeholder="Select Chapter"
                     value={formData.chapterName}
                     onChange={handleChange}
                   />
+
+                  <datalist id="chapterList">
+                    <option value="Chapter 1" />
+                    <option value="Chapter 2" />
+                    <option value="Chapter 3" />
+                    <option value="Chapter 4" />
+                  </datalist>
                 </div>
               </div>
 
@@ -167,11 +179,19 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
 
                   <input
                     type="text"
+                    list="pairAttributeList"
                     name="pairAttributeName"
-                    placeholder="Enter Pair Attribute Name"
+                    placeholder="Select Pair Attribute"
                     value={formData.pairAttributeName}
                     onChange={handleChange}
                   />
+
+                  <datalist id="pairAttributeList">
+                    <option value="Invoice Number" />
+                    <option value="Student ID" />
+                    <option value="Amount" />
+                    <option value="Course" />
+                  </datalist>
                 </div>
               </div>
 
@@ -183,11 +203,20 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
 
                   <input
                     type="text"
+                    list="fieldList"
                     name="fieldName"
-                    placeholder="Enter Field Name"
+                    placeholder="Select Field"
                     value={formData.fieldName}
                     onChange={handleChange}
                   />
+
+                  <datalist id="fieldList">
+                    <option value="Student Name" />
+                    <option value="Roll Number" />
+                    <option value="Branch" />
+                    <option value="College" />
+                    <option value="Course" />
+                  </datalist>
                 </div>
               </div>
 
@@ -199,11 +228,20 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
 
                   <input
                     type="text"
+                    list="fieldTypeList"
                     name="fieldType"
-                    placeholder="Enter Field Type"
+                    placeholder="Select Field Type"
                     value={formData.fieldType}
                     onChange={handleChange}
                   />
+
+                  <datalist id="fieldTypeList">
+                    <option value="String" />
+                    <option value="Integer" />
+                    <option value="Decimal" />
+                    <option value="Boolean" />
+                    <option value="Date" />
+                  </datalist>
                 </div>
               </div>
 
@@ -215,11 +253,20 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
 
                   <input
                     type="text"
+                    list="relationshipList"
                     name="relationshipName"
-                    placeholder="Enter Relationship Name"
+                    placeholder="Select Relationship"
                     value={formData.relationshipName}
                     onChange={handleChange}
                   />
+
+                  <datalist id="relationshipList">
+                    <option value="Equals" />
+                    <option value="Not Equals" />
+                    <option value="Greater Than" />
+                    <option value="Less Than" />
+                    <option value="Contains" />
+                  </datalist>
                 </div>
               </div>
 
@@ -271,11 +318,19 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
 
                   <input
                     type="text"
+                    list="tableList"
                     name="table1Name"
-                    placeholder="Enter tableName1 "
+                    placeholder="Select Table"
                     value={formData.table1Name}
                     onChange={handleChange}
                   />
+
+                  <datalist id="tableList">
+                    <option value="Student" />
+                    <option value="Branch" />
+                    <option value="College" />
+                    <option value="Course" />
+                  </datalist>
                 </div>
               </div>
 
@@ -287,11 +342,19 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
 
                   <input
                     type="text"
+                    list="headerList"
                     name="header1Name"
-                    placeholder="Enter header1Name "
+                    placeholder="Select Header"
                     value={formData.header1Name}
                     onChange={handleChange}
                   />
+
+                  <datalist id="headerList">
+                    <option value="Name" />
+                    <option value="Amount" />
+                    <option value="Date" />
+                    <option value="Status" />
+                  </datalist>
                 </div>
               </div>
 
