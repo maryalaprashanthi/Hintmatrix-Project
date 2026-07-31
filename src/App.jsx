@@ -19,6 +19,7 @@ import Student from "./pages/Admin/Student";
 import Chapters from "./pages/Chapters/Chapters";
 
 import QuestionCategories from "./pages/QuestionCategories/QuestionCategories";
+import QuestionList from "./pages/Questions/QuestionList";
 
 import RuleEngine from "./pages/RuleEngine/RuleEngine";
 
@@ -183,6 +184,8 @@ function App() {
           path="/questions/question-categories"
           element={<QuestionCategories />}
         />
+        {/* Questions -> Question List */}
+        <Route path="/questions/question-list" element={<QuestionList />} />
         <Route
           path="/questions/question-categories/:chapterId/:chapterName"
           element={<QuestionCategories />}
