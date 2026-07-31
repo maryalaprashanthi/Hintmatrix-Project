@@ -60,18 +60,32 @@ function College() {
 };
 
   // Upload (Frontend Only)
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
+  const handleFileUpload = async (e) => {
+  const file = e.target.files[0];
 
-    if (!file) return;
+  if (!file) return;
 
-    console.log("Selected File:", file);
+  try {
+    const response = await CollegeService.uploadExcel(file);
 
-    alert(`Selected file: ${file.name}`);
+    alert(response.data);
 
-    // Reset input
-    e.target.value = "";
-  };
+    // Refresh the table after successful upload
+    setRefreshTrigger((prev) => !prev);
+
+  } catch (error) {
+    console.error("Upload Error:", error);
+
+    if (error.response) {
+      alert(error.response.data);
+    } else {
+      alert("File upload failed.");
+    }
+  }
+
+  // Reset input
+  e.target.value = "";
+};
 
   return (
     <div className="container-fluid py-4">

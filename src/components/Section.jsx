@@ -4,6 +4,7 @@ import "./Section.css";
 
 import SectionForm from "./SectionForm";
 import SectionTable from "./SectionTable";
+import SectionService from "../services/SectionService";
 
 function Section() {
   const [showModal, setShowModal] = useState(false);
@@ -11,15 +12,32 @@ function Section() {
   const [refreshTrigger, setRefreshTrigger] = useState(false);
 
   // Upload (Frontend Only)
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
+  // Upload Excel
+const handleFileUpload = async (event) => {
+  const file = event.target.files[0];
 
-    if (!file) return;
+  if (!file) return;
 
-    console.log("Selected File:", file);
+  try {
+    const response = await SectionService.uploadExcel(file);
 
-    alert(`Selected file: ${file.name}`);
+    alert(
+      typeof response.data === "string"
+        ? response.data
+        : "Section Excel uploaded successfully!"
+    );
 
+    setRefreshTrigger((prev) => !prev);
+
+  } catch (error) {
+    console.error("Upload Error:", error);
+
+    if (error.response) {
+      alert(error.response.data);
+    } else {
+      alert("File upload failed.");
+    }
+  }
     // Reset input
     event.target.value = "";
   };

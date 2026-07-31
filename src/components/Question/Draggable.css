@@ -1,0 +1,48 @@
+/* .drag {
+  width: 200px;
+  border: 3px solid black;
+  background-color: aquamarine;
+} */
+
+.drag-item {
+  margin-bottom: 8px;
+}
+
+.drag-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  color: #1f2937;
+  cursor: grab;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.drag-btn:hover {
+  border-color: #c7d2fe;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.12);
+  transform: translateY(-1px);
+}
+
+.drag-btn:active,
+.is-dragging .drag-btn {
+  cursor: grabbing;
+  opacity: 0.6;
+}
+
+@media (max-width: 575.98px) {
+  .drag-btn {
+    font-size: 0.85rem;
+    padding: 8px 10px;
+  }
+}

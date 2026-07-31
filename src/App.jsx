@@ -8,7 +8,6 @@ import Dashboard from "./pages/Dashboard";
 // --- UPDATED EXPORT IMPORTS TO MATCH COMMON NESTED FOLDER ARCHITECTURES ---
 import College from "./pages/College/College";
 import Section from "./components/Section";
-import Course from "./components/course"; // Added singular admin Course management page
 import CourseForm from "./pages/College/Courses/CourseForm";
 import Courses from "./pages/College/Courses/Courses";
 
@@ -20,6 +19,8 @@ import Student from "./pages/Admin/Student";
 import Chapters from "./pages/Chapters/Chapters";
 
 import QuestionCategories from "./pages/QuestionCategories/QuestionCategories";
+
+import RuleEngine from "./pages/RuleEngine/RuleEngine";
 
 import Login from "./pages/Auth/Login";
 // Other Pages
@@ -43,6 +44,7 @@ import accountancy from "./assets/courses/jr-accountancy.png.jpeg";
 import combo from "./assets/courses/combo.png.jpeg";
 import inter from "./assets/courses/inter.png.jpeg";
 import Landing from "./pages/Landing/Landing";
+import QuestionPage from "./components/Question/QuestionPage";
 
 function App() {
   const navigate = useNavigate();
@@ -193,6 +195,9 @@ function App() {
         <Route path="/table-headers" element={<TableHeaders />} />
         <Route path="/table-attributes" element={<TableAttributes />} />
 
+        {/* RuleEngine */}
+        <Route path="/ruleengine" element={<RuleEngine />} />
+
         {/* Learning */}
         <Route path="/practice" element={<Practice />} />
         <Route path="/tests" element={<Tests />} />
@@ -201,6 +206,7 @@ function App() {
         <Route path="/certificates" element={<Certificates />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
+      <Route path="/question" element={<QuestionPage />} />
     </Routes>
   );
 }
