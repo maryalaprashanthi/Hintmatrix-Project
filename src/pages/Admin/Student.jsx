@@ -32,21 +32,36 @@ function Student() {
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
+  const file = e.target.files[0];
 
-    if (!file) return;
+  if (!file) return;
 
-    console.log("Selected File:", file);
+  console.log("Selected File:", file);
 
-    // StudentService.uploadStudents(file)
-    //   .then(() => {
-    //     alert("Students uploaded successfully!");
-    //     fetchStudents();
-    //   })
-    //   .catch((error) => {
-    //     console.error(error);
-    //   });
-  };
+
+  StudentService.uploadUsersExcel(file)
+    .then((response) => {
+
+      alert(
+        response.data.message || "Students uploaded successfully!"
+      );
+
+      // Refresh table after upload
+      fetchStudents();
+
+    })
+    .catch((error) => {
+
+      console.error("Upload Error:", error);
+
+      alert("Failed to upload students.");
+
+    });
+
+
+  // reset input so same file can be selected again
+  e.target.value = "";
+};
 
   // Open Add Form
   const handleAddStudent = () => {
