@@ -107,24 +107,12 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
       phoneNumber: "",
       email: "",
     });
-
-
-    // Close college modal
-    onClose();
-
   };
-
-
-
   return createPortal(
-
-    <>
-
-      {show && (
-
-        <div className="modal-overlay">
-
-          <div className="branch-modal">
+  <>
+  {show && (
+    <div className="modal-overlay">
+      <div className="branch-modal">
 
 
             <div className="modal-header">
