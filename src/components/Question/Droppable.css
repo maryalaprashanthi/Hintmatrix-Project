@@ -1,6 +1,6 @@
 .droppable-group {
   border-radius: 10px;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid #e5e7eb;
   min-height: 160px;
 }
@@ -88,4 +88,43 @@
   .sub-zone {
     width: 100%;
   }
+}
+
+/* ---------- Tooltip styling ---------- */
+
+/* Add-zone tooltip: green, matches the "Add" action */
+.tooltip.add-tooltip .tooltip-inner {
+  background-color: #10b981;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+}
+
+.tooltip.add-tooltip .tooltip-arrow::before {
+  border-top-color: #10b981 !important;
+  border-bottom-color: #10b981 !important;
+}
+
+/* Sub-zone tooltip: red, matches the "Less" action */
+.tooltip.sub-tooltip .tooltip-inner {
+  background-color: #f87171;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(248, 113, 113, 0.25);
+}
+
+.tooltip.sub-tooltip .tooltip-arrow::before {
+  border-top-color: #f87171 !important;
+  border-bottom-color: #f87171 !important;
+}
+
+/* Optional: smoother fade since dnd-kit toggles isDropTarget rapidly during drag */
+.tooltip {
+  transition: opacity 0.1s ease;
 }

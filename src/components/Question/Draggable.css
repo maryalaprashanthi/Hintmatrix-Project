@@ -1,9 +1,3 @@
-/* .drag {
-  width: 200px;
-  border: 3px solid black;
-  background-color: aquamarine;
-} */
-
 .drag-item {
   margin-bottom: 8px;
 }
@@ -13,18 +7,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
   background-color: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
-  padding: 10px 14px;
+  padding: 10px 12px;
   font-size: 0.9rem;
   color: #1f2937;
   cursor: grab;
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease,
-    transform 0.15s ease;
+    transform 0.15s ease,
+    background-color 0.15s ease;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
@@ -34,10 +29,39 @@
   transform: translateY(-1px);
 }
 
-.drag-btn:active,
-.is-dragging .drag-btn {
+.drag-btn:active {
   cursor: grabbing;
-  opacity: 0.6;
+}
+
+.drag-btn-content {
+  display: flex;
+  justify-content: space-between;
+  flex: 1;
+}
+
+.drag-status-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Solved state: locked, non-interactive, but fully visible */
+.drag-item-solved .drag-btn {
+  cursor: not-allowed;
+  background-color: #f0fdf4;
+  border-color: #bbf7d0;
+  opacity: 1;
+}
+
+.drag-item-solved .drag-btn:hover {
+  transform: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+/* Native disabled buttons already block pointer events in most browsers,
+   this just makes sure no browser shows a "not-allowed" flicker on drag start */
+.drag-item-solved .drag-btn[disabled] {
+  pointer-events: auto;
 }
 
 @media (max-width: 575.98px) {
