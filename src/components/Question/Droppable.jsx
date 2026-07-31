@@ -1,5 +1,16 @@
+import { useRef } from "react";
 import { useDroppable } from "@dnd-kit/react";
+import { Overlay, Tooltip } from "react-bootstrap";
 import "./Droppable.css";
+
+const mergeRefs =
+  (...refs) =>
+  (node) => {
+    refs.forEach((r) => {
+      if (typeof r === "function") r(node);
+      else if (r && typeof r === "object") r.current = node;
+    });
+  };
 
 const Droppable = ({
   id,
@@ -7,11 +18,11 @@ const Droppable = ({
   addLabel = "Particulars",
   amtLabel = "Amt (₹)",
 }) => {
-  // Theme: anything with "cr", "credit", or "assets" in the id gets the green theme,
-  // everything else (dr, debit, liabilities) gets the blue/purple theme —
-  // matching the Dr./Cr. color coding in the screenshot.
   const isCreditSide = /cr|credit|assets/i.test(id || "");
   const theme = isCreditSide ? "theme-credit" : "theme-debit";
+
+  const addZoneRef = useRef(null);
+  const subZoneRef = useRef(null);
 
   const { ref: addRef, isDropTarget: isAddOver } = useDroppable({
     id: `${id}-add`,
@@ -32,7 +43,7 @@ const Droppable = ({
     <div className={`droppable-group ${theme}`}>
       <div className="row g-0">
         <div
-          ref={addRef}
+          ref={mergeRefs(addRef, addZoneRef)}
           className={`dropzone add-zone col-12 col-sm-8 ${isAddOver ? "active-dropzone-add" : ""}`}
         >
           <table className="table table-sm mb-0 dropzone-table">
@@ -70,8 +81,20 @@ const Droppable = ({
           </table>
         </div>
 
+        <Overlay target={addZoneRef.current} show={isAddOver} placement="top">
+          {(overlayProps) => (
+            <Tooltip
+              id={`${id}-add-tooltip`}
+              className="add-tooltip"
+              {...overlayProps}
+            >
+              Add
+            </Tooltip>
+          )}
+        </Overlay>
+
         <div
-          ref={subRef}
+          ref={mergeRefs(subRef, subZoneRef)}
           className={`dropzone sub-zone col-12 col-sm-4 ${isSubOver ? "active-dropzone-sub" : ""}`}
         >
           <table className="table table-sm mb-0 dropzone-table">
@@ -103,6 +126,18 @@ const Droppable = ({
             </tfoot>
           </table>
         </div>
+
+        <Overlay target={subZoneRef.current} show={isSubOver} placement="top">
+          {(overlayProps) => (
+            <Tooltip
+              id={`${id}-sub-tooltip`}
+              className="add-tooltip"
+              {...overlayProps}
+            >
+              Less
+            </Tooltip>
+          )}
+        </Overlay>
       </div>
     </div>
   );

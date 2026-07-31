@@ -4,7 +4,7 @@ import useQuestionStore from "./questionStore";
 
 const QuestionPage = () => {
   const { moveQuestion } = useQuestionStore();
-
+  // return <ProgressCard solvedCount={10} />;
   return (
     <DragDropProvider
       onDragEnd={(Event) => {

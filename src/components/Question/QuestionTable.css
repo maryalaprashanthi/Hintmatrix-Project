@@ -1,0 +1,118 @@
+/* ---------- Trial Balance accordion (left sidebar) ---------- */
+.tb-accordion-item {
+  border: none;
+  background: transparent;
+}
+
+.tb-accordion-item .accordion-button {
+  background: transparent;
+  box-shadow: none;
+  padding: 8px 4px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.tb-accordion-item .accordion-button::after {
+  margin-left: 8px;
+}
+
+.tb-accordion-item .accordion-body {
+  padding: 4px 2px 12px;
+}
+
+.tb-accordion-title {
+  font-weight: 600;
+  flex: 1;
+}
+
+.tb-accordion-amount {
+  font-weight: 700;
+  margin-right: 8px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.theme-debit .accordion-button,
+.theme-debit .accordion-button:not(.collapsed) {
+  color: #4338ca;
+}
+
+.theme-credit .accordion-button,
+.theme-credit .accordion-button:not(.collapsed) {
+  color: #047857;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: transparent;
+}
+
+.accordion-button:focus {
+  box-shadow: none;
+}
+
+/* ---------- Account sections (right side) ---------- */
+.acc-item {
+  border: none;
+  border-radius: 16px !important;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.acc-item .accordion-button {
+  background-color: #ffffff;
+  padding: 16px 18px;
+  font-size: 1rem;
+  box-shadow: none;
+}
+
+.acc-item .accordion-button:not(.collapsed) {
+  background-color: #ffffff;
+  box-shadow: none;
+}
+
+.acc-item .accordion-button:focus {
+  box-shadow: none;
+}
+
+.acc-item .accordion-body {
+  padding: 0 18px 18px;
+}
+
+.acc-title {
+  font-weight: 700;
+  color: #111827;
+}
+
+.acc-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  margin-right: 10px;
+  font-size: 0.9rem;
+}
+
+.icon-badge-purple {
+  background-color: #ede9fe;
+}
+
+.icon-badge-pink {
+  background-color: #fce7f3;
+}
+
+.icon-badge-indigo {
+  background-color: #e0e7ff;
+}
+
+@media (max-width: 575.98px) {
+  .acc-item .accordion-button {
+    padding: 12px 14px;
+    font-size: 0.9rem;
+  }
+  .acc-item .accordion-body {
+    padding: 0 14px 14px;
+  }
+}
