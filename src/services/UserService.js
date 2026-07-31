@@ -79,6 +79,26 @@ class UserService {
   deleteStudent(id) {
     return axios.delete(`${BASE_URL}/student/${id}`, { withCredentials: true });
   }
+
+  uploadUsersExcel(file) {
+
+  const formData = new FormData();
+
+  formData.append("file", file);
+
+
+  return axios.post(
+    `${BASE_URL}/excel/upload`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      withCredentials: true,
+    }
+  );
+}
+
 }
 
 // Export an instantiated instance of the service
