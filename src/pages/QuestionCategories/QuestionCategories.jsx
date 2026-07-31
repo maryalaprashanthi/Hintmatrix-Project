@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 
 import {
   FaBookOpen,
@@ -26,6 +26,7 @@ export default function QuestionCategories() {
   const { chapterId, chapterName } = useParams();
 
   const location = useLocation();
+  const navigate = useNavigate();
 
   const selectedChapter = location.state?.chapter;
 
@@ -218,11 +219,13 @@ export default function QuestionCategories() {
 
                 <div className="updated-date">{category.updated}</div>
 
-                <button className="btn btn-primary view-btn">
+                <button
+                  className="btn btn-primary view-btn"
+                  onClick={() => navigate("/questions/question-list")}
+                >
                   View Questions
                   <FaArrowRight className="ms-2" />
                 </button>
-
                 <div className="d-flex gap-2 mt-2">
                   <button
                     className="btn btn-outline-primary btn-sm action-btn"
