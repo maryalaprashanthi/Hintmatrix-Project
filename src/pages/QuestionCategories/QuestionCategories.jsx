@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useLocation } from "react-router-dom";
 
 import {
   FaBookOpen,
@@ -22,479 +22,97 @@ import "./AddQuestionCategoryModal.css";
 import AddQuestionCategoryModal from "./AddQuestionCategoryModal";
 import QuestionCategoryService from "../../services/QuestionCategoryService";
 
-
 export default function QuestionCategories() {
-<<<<<<< Updated upstream
+  const { chapterId, chapterName } = useParams();
 
-    const { chapterName } = useParams();
+  const location = useLocation();
 
-    const [showModal, setShowModal] = useState(false);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [statusFilter, setStatusFilter] = useState("All");
+  const selectedChapter = location.state?.chapter;
 
-    // Upload (Frontend Only)
-   const handleFileUpload = async(event)=>{
-
- const file = event.target.files[0];
-
-
- if(!file) return;
-
-
- try{
-
-    const response =
-      await QuestionCategoryService.uploadExcel(file);
-
-
-    alert(
-      typeof response.data==="string"
-      ? response.data
-      : "Question Category Excel uploaded successfully!"
-    );
-
-
- }catch(error){
-
-    console.error(error);
-
-    alert(
-      error.response?.data ||
-      "Question Category upload failed"
-    );
-
- }
-
-
- event.target.value="";
-
-};
-
-    const categories = [
-
-        {
-            id:1,
-            name:"B.Com Model Questions",
-            questions:235,
-            updated:"2 days ago",
-            status:"Active",
-            icon:<FaBookOpen />,
-            iconBg:"#EAF2FF",
-            iconColor:"#2563EB"
-        },
-
-        {
-            id:2,
-            name:"CA Foundation - Journal Entries",
-            questions:180,
-            updated:"3 days ago",
-            status:"Active",
-            icon:<FaFileAlt />,
-            iconBg:"#E8FFF5",
-            iconColor:"#10B981"
-        },
-
-        {
-            id:3,
-            name:"Easy Model Questions",
-            questions:120,
-            updated:"5 days ago",
-            status:"Active",
-            icon:<FaClipboardCheck />,
-            iconBg:"#FFF6E8",
-            iconColor:"#F59E0B"
-        },
-
-        {
-            id:4,
-            name:"State Board Model Questions",
-            questions:210,
-            updated:"1 week ago",
-            status:"Active",
-            icon:<FaUniversity />,
-            iconBg:"#F4EEFF",
-            iconColor:"#8B5CF6"
-        },
-
-        {
-            id:5,
-            name:"CBSE Model Questions",
-            questions:195,
-            updated:"1 week ago",
-            status:"Active",
-            icon:<FaGraduationCap />,
-            iconBg:"#E9FBFF",
-            iconColor:"#06B6D4"
-        },
-
-        {
-            id:6,
-            name:"Company A/c's",
-            questions:160,
-            updated:"2 weeks ago",
-            status:"Active",
-            icon:<FaBuilding />,
-            iconBg:"#FFF8EA",
-            iconColor:"#F97316"
-        },
-
-        {
-            id:7,
-            name:"Bills of Exchange",
-            questions:150,
-            updated:"2 weeks ago",
-            status:"Active",
-            icon:<FaExchangeAlt />,
-            iconBg:"#EEF5FF",
-            iconColor:"#3B82F6"
-        },
-
-        {
-            id:8,
-            name:"Consignment",
-            questions:110,
-            updated:"3 weeks ago",
-            status:"Active",
-            icon:<FaBoxOpen />,
-            iconBg:"#FFF2F4",
-            iconColor:"#EC4899"
-        }
-
-    ];
-
-    const filteredCategories = categories.filter((category)=>{
-
-        const searchMatch =
-            category.name
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase());
-
-        const statusMatch =
-            statusFilter==="All"
-            ||
-            category.status===statusFilter;
-
-        return searchMatch && statusMatch;
-
-    });
-
-    return (
-
-        <div className="question-category-page">
-
-            <div className="page-header">
-
-                <div>
-
-                    <h1>Question Categories</h1>
-
-                    <p>{chapterName} Question Categories</p>
-
-                </div>
-
-                {/* Hidden Upload Input */}
-                <input
-                    type="file"
-                    id="questionCategoryUpload"
-                    accept=".csv,.xlsx,.xls"
-                    style={{ display: "none" }}
-                    onChange={handleFileUpload}
-                />
-
-                <div className="d-flex gap-2">
-
-                    <button
-                        className="btn btn-primary"
-                        onClick={() =>
-                            document.getElementById("questionCategoryUpload").click()
-                        }
-                    >
-                        ⬆ Upload
-                    </button>
-
-                    <button
-                        className="btn btn-primary"
-                        onClick={() => setShowModal(true)}
-                    >
-                        + Add Category
-                    </button>
-
-                </div>
-
-            </div>
-
-            <div className="row align-items-center mb-3">
-
-                <div className="col-lg-8 col-md-7 mb-3 mb-md-0">
-
-                    <div className="input-group shadow-sm rounded-3 overflow-hidden">
-
-                        <span className="input-group-text bg-white border-0">
-                            <FaSearch />
-                        </span>
-
-                        <input
-                            type="text"
-                            className="form-control border-0"
-                            placeholder="Search Categories..."
-                            value={searchTerm}
-                            onChange={(e)=>setSearchTerm(e.target.value)}
-                        />
-
-                    </div>
-
-                </div>
-
-                <div className="col-lg-4 col-md-5">
-
-                    <select
-                        className="form-select shadow-sm"
-                        value={statusFilter}
-                        onChange={(e)=>setStatusFilter(e.target.value)}
-                    >
-
-                        <option value="All">
-                            All Status
-                        </option>
-
-                        <option value="Active">
-                            Active
-                        </option>
-
-                        <option value="Inactive">
-                            Inactive
-                        </option>
-
-                    </select>
-
-                </div>
-
-            </div>
-
-            <div className="row g-3">
-
-                {filteredCategories.map((category)=>(
-
-                    <div
-                        className="col-xl-4 col-lg-6 col-md-6"
-                        key={category.id}
-                    >
-
-                        <div className="category-card h-100">
-
-                            <div className="card-body">
-
-                                <div
-                                    className="icon-circle"
-                                    style={{
-                                        background:category.iconBg,
-                                        color:category.iconColor
-                                    }}
-                                >
-
-                                    {category.icon}
-
-                                </div>
-
-                                <h5 className="category-title">
-                                    {category.name}
-                                </h5>
-
-                                <div className="question-count">
-                                    {category.questions} Questions
-                                </div>
-
-                                <span className="badge bg-success-subtle text-success">
-                                    {category.status}
-                                </span>
-
-                                <div className="updated-text">
-                                    Last Updated
-                                </div>
-
-                                <div className="updated-date">
-                                    {category.updated}
-                                </div>
-
-                                <button
-                                    className="btn btn-primary view-btn"
-                                >
-
-                                    View Questions
-
-                                    <FaArrowRight className="ms-2"/>
-
-                                </button>
-
-                                <div className="d-flex gap-2 mt-2">
-
-                                    <button className="btn btn-outline-primary btn-sm action-btn">
-
-                                        <FaPen className="me-1"/>
-
-                                        Edit
-
-                                    </button>
-
-                                    <button className="btn btn-outline-danger btn-sm action-btn">
-
-                                        <FaTrash className="me-1"/>
-
-                                        Delete
-
-                                    </button>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                ))}
-
-                {filteredCategories.length === 0 && (
-
-                    <div className="col-12">
-
-                        <div className="text-center bg-white rounded-4 p-5 shadow-sm">
-
-                            <FaSearch
-                                size={40}
-                                className="text-secondary mb-3"
-                            />
-
-                            <h5>
-                                No Categories Found
-                            </h5>
-
-                            <p className="text-muted">
-                                Try changing your search keyword.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                )}
-
-            </div>
-
-            <AddQuestionCategoryModal
-                show={showModal}
-                closeModal={()=>setShowModal(false)}
-                chapterName={chapterName}
-            />
-
-=======
-  const { chapterName } = useParams();
-  const navigate = useNavigate();
+  console.log("Selected Chapter:", selectedChapter);
 
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [categories, setCategories] = useState([]);
 
-  const handleFileUpload = (event) => {
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  // GET ALL CATEGORIES
+  const fetchCategories = async () => {
+    try {
+      const response = await QuestionCategoryService.getAll();
+
+      setCategories(response.data);
+    } catch (error) {
+      console.error(error);
+
+      alert("Failed to load Question Categories");
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  // Upload (Frontend Only)
+  const handleFileUpload = async (event) => {
     const file = event.target.files[0];
 
     if (!file) return;
 
-    alert(`Selected file: ${file.name}`);
+    try {
+      const response = await QuestionCategoryService.uploadExcel(file);
+
+      alert(
+        typeof response.data === "string"
+          ? response.data
+          : "Question Category Excel uploaded successfully!",
+      );
+    } catch (error) {
+      console.error(error);
+
+      alert(error.response?.data || "Question Category upload failed");
+    }
 
     event.target.value = "";
   };
+  // DELETE CATEGORY
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this category?",
+    );
 
-  const categories = [
-    {
-      id: 1,
-      name: "B.Com Model Questions",
-      questions: 235,
-      updated: "2 days ago",
-      status: "Active",
-      icon: <FaBookOpen />,
-      iconBg: "#EAF2FF",
-      iconColor: "#2563EB",
-    },
-    {
-      id: 2,
-      name: "CA Foundation - Journal Entries",
-      questions: 180,
-      updated: "3 days ago",
-      status: "Active",
-      icon: <FaFileAlt />,
-      iconBg: "#E8FFF5",
-      iconColor: "#10B981",
-    },
-    {
-      id: 3,
-      name: "Easy Model Questions",
-      questions: 120,
-      updated: "5 days ago",
-      status: "Active",
-      icon: <FaClipboardCheck />,
-      iconBg: "#FFF6E8",
-      iconColor: "#F59E0B",
-    },
-    {
-      id: 4,
-      name: "State Board Model Questions",
-      questions: 210,
-      updated: "1 week ago",
-      status: "Active",
-      icon: <FaUniversity />,
-      iconBg: "#F4EEFF",
-      iconColor: "#8B5CF6",
-    },
-    {
-      id: 5,
-      name: "CBSE Model Questions",
-      questions: 195,
-      updated: "1 week ago",
-      status: "Active",
-      icon: <FaGraduationCap />,
-      iconBg: "#E9FBFF",
-      iconColor: "#06B6D4",
-    },
-    {
-      id: 6,
-      name: "Company A/c's",
-      questions: 160,
-      updated: "2 weeks ago",
-      status: "Active",
-      icon: <FaBuilding />,
-      iconBg: "#FFF8EA",
-      iconColor: "#F97316",
-    },
-    {
-      id: 7,
-      name: "Bills of Exchange",
-      questions: 150,
-      updated: "2 weeks ago",
-      status: "Active",
-      icon: <FaExchangeAlt />,
-      iconBg: "#EEF5FF",
-      iconColor: "#3B82F6",
-    },
-    {
-      id: 8,
-      name: "Consignment",
-      questions: 110,
-      updated: "3 weeks ago",
-      status: "Active",
-      icon: <FaBoxOpen />,
-      iconBg: "#FFF2F4",
-      iconColor: "#EC4899",
-    },
-  ];
+    if (!confirmDelete) return;
+
+    try {
+      const response = await QuestionCategoryService.deleteSection(id);
+
+      alert(response.data);
+
+      fetchCategories();
+    } catch (error) {
+      console.error(error);
+
+      alert(error.response?.data || "Delete failed");
+    }
+  };
+
+  // EDIT CATEGORY
+
+  const handleEdit = (category) => {
+    setSelectedCategory(category);
+
+    setShowModal(true);
+  };
 
   const filteredCategories = categories.filter((category) => {
     const searchMatch = category.name
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
 
-    const statusMatch =
-      statusFilter === "All" || category.status === statusFilter;
+    const status = category.activeRow ? "Active" : "Inactive";
+
+    const statusMatch = statusFilter === "All" || status === statusFilter;
 
     return searchMatch && statusMatch;
   });
@@ -504,10 +122,11 @@ export default function QuestionCategories() {
       <div className="page-header">
         <div>
           <h1>Question Categories</h1>
-          <p>{chapterName || "Question"} Categories</p>
->>>>>>> Stashed changes
+
+          <p>{chapterName} Question Categories</p>
         </div>
 
+        {/* Hidden Upload Input */}
         <input
           type="file"
           id="questionCategoryUpload"
@@ -528,7 +147,10 @@ export default function QuestionCategories() {
 
           <button
             className="btn btn-primary"
-            onClick={() => setShowModal(true)}
+            onClick={() => {
+              setShowModal(true);
+              setSelectedCategory(null);
+            }}
           >
             + Add Category
           </button>
@@ -536,13 +158,14 @@ export default function QuestionCategories() {
       </div>
 
       <div className="row align-items-center mb-3">
-        <div className="col-lg-8">
-          <div className="input-group shadow-sm">
+        <div className="col-lg-8 col-md-7 mb-3 mb-md-0">
+          <div className="input-group shadow-sm rounded-3 overflow-hidden">
             <span className="input-group-text bg-white border-0">
               <FaSearch />
             </span>
 
             <input
+              type="text"
               className="form-control border-0"
               placeholder="Search Categories..."
               value={searchTerm}
@@ -551,22 +174,24 @@ export default function QuestionCategories() {
           </div>
         </div>
 
-        <div className="col-lg-4">
+        <div className="col-lg-4 col-md-5">
           <select
             className="form-select shadow-sm"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
-            <option>All</option>
-            <option>Active</option>
-            <option>Inactive</option>
+            <option value="All">All Status</option>
+
+            <option value="Active">Active</option>
+
+            <option value="Inactive">Inactive</option>
           </select>
         </div>
       </div>
 
       <div className="row g-3">
         {filteredCategories.map((category) => (
-          <div className="col-xl-4 col-md-6" key={category.id}>
+          <div className="col-xl-4 col-lg-6 col-md-6" key={category.id}>
             <div className="category-card h-100">
               <div className="card-body">
                 <div
@@ -579,35 +204,38 @@ export default function QuestionCategories() {
                   {category.icon}
                 </div>
 
-                <h5>{category.name}</h5>
+                <h5 className="category-title">{category.name}</h5>
 
-                <div>{category.questions} Questions</div>
-
-                <span className="badge bg-success">
-                  {category.status}
-                </span>
-
-                <div className="mt-2 text-muted">
-                  Last Updated
+                <div className="question-count">
+                  {category.questions} Questions
                 </div>
 
-                <div>{category.updated}</div>
+                <span className="badge bg-success-subtle text-success">
+                  {category.activeRow ? "Active" : "Inactive"}
+                </span>
 
-                <button
-                  className="btn btn-primary view-btn w-100 mt-3"
-                  onClick={() => navigate("/questions/question-list")}
-                >
+                <div className="updated-text">Last Updated</div>
+
+                <div className="updated-date">{category.updated}</div>
+
+                <button className="btn btn-primary view-btn">
                   View Questions
                   <FaArrowRight className="ms-2" />
                 </button>
 
                 <div className="d-flex gap-2 mt-2">
-                  <button className="btn btn-outline-primary btn-sm flex-fill">
+                  <button
+                    className="btn btn-outline-primary btn-sm action-btn"
+                    onClick={() => handleEdit(category)}
+                  >
                     <FaPen className="me-1" />
                     Edit
                   </button>
 
-                  <button className="btn btn-outline-danger btn-sm flex-fill">
+                  <button
+                    className="btn btn-outline-danger btn-sm action-btn"
+                    onClick={() => handleDelete(category.categoryId)}
+                  >
                     <FaTrash className="me-1" />
                     Delete
                   </button>
@@ -619,12 +247,12 @@ export default function QuestionCategories() {
 
         {filteredCategories.length === 0 && (
           <div className="col-12">
-            <div className="text-center bg-white p-5 rounded shadow-sm">
-              <FaSearch size={40} className="mb-3 text-secondary" />
+            <div className="text-center bg-white rounded-4 p-5 shadow-sm">
+              <FaSearch size={40} className="text-secondary mb-3" />
+
               <h5>No Categories Found</h5>
-              <p className="text-muted">
-                Try another search keyword.
-              </p>
+
+              <p className="text-muted">Try changing your search keyword.</p>
             </div>
           </div>
         )}
@@ -632,8 +260,15 @@ export default function QuestionCategories() {
 
       <AddQuestionCategoryModal
         show={showModal}
-        closeModal={() => setShowModal(false)}
+        closeModal={() => {
+          setShowModal(false);
+          setSelectedCategory(null);
+        }}
         chapterName={chapterName}
+        chapterId={chapterId}
+        selectedChapter={selectedChapter}
+        initialData={selectedCategory}
+        refreshCategories={fetchCategories}
       />
     </div>
   );
