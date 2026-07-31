@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+
 import {
   FaBook,
   FaLayerGroup,
@@ -12,6 +13,8 @@ import {
 } from "react-icons/fa";
 
 import "./AddCourseModal.css";
+
+import BranchService from "../../../services/BranchService";
 import CourseService from "../../../services/CourseService";
 
 function AddCourseModal({ show, onClose, onRefresh, selectedCourseData }) {
@@ -21,6 +24,20 @@ function AddCourseModal({ show, onClose, onRefresh, selectedCourseData }) {
   const [duration, setDuration] = useState("3 Months");
   const [description, setDescription] = useState("");
   const [thumbnail, setThumbnail] = useState(null);
+
+  const [branches, setBranches] = useState([]);
+  const [branchId, setBranchId] = useState("");
+
+  // Load branches
+  useEffect(() => {
+    BranchService.getAllBranches()
+      .then((response) => {
+        setBranches(response.data || []);
+      })
+      .catch((error) => {
+        console.error("Failed to load branches:", error);
+      });
+  }, []);
 
   useEffect(() => {
     if (selectedCourseData) {
@@ -33,6 +50,14 @@ function AddCourseModal({ show, onClose, onRefresh, selectedCourseData }) {
       setDuration(selectedCourseData.duration || "3 Months");
 
       setDescription(selectedCourseData.description || "");
+
+      // Existing branch mapping
+
+      if (selectedCourseData.branchId) {
+        setBranchId(selectedCourseData.branchId);
+      } else if (selectedCourseData.branch?.branchId) {
+        setBranchId(selectedCourseData.branch.branchId);
+      }
     } else {
       setCourseName("");
       setCategory("Commerce");
@@ -40,6 +65,7 @@ function AddCourseModal({ show, onClose, onRefresh, selectedCourseData }) {
       setDuration("3 Months");
       setDescription("");
       setThumbnail(null);
+      setBranchId("");
     }
   }, [selectedCourseData, show]);
 
@@ -53,8 +79,13 @@ function AddCourseModal({ show, onClose, onRefresh, selectedCourseData }) {
       return;
     }
 
+    if (!branchId) {
+      alert("Please select branch.");
+      return;
+    }
+
     const courseRequestDTO = {
-      branchId: 1,
+      branchId: Number(branchId),
       name: courseName.trim(),
     };
 
@@ -84,6 +115,7 @@ function AddCourseModal({ show, onClose, onRefresh, selectedCourseData }) {
         setDuration("3 Months");
         setDescription("");
         setThumbnail(null);
+        setBranchId("");
 
         if (onRefresh) {
           onRefresh();
@@ -136,7 +168,35 @@ function AddCourseModal({ show, onClose, onRefresh, selectedCourseData }) {
                     type="text"
                     placeholder="Enter Course Name"
                     value={courseName}
+                    onChange={(e) => setCourseName(e.target.value)}
                   />
+                </div>
+              </div>
+
+              {/* Branch */}
+
+              <div className="form-group">
+                <label>Branch Name</label>
+
+                <div className="input-box">
+                  <FaLayerGroup className="input-icon" />
+
+                  <select
+                    className="form-select"
+                    value={branchId}
+                    onChange={(e) => setBranchId(e.target.value)}
+                  >
+                    <option value="">Select Branch</option>
+
+                    {branches.map((branch) => (
+                      <option
+                        key={branch.branchId || branch.id}
+                        value={branch.branchId || branch.id}
+                      >
+                        {branch.branchName || branch.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
