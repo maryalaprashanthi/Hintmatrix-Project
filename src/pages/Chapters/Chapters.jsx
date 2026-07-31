@@ -243,21 +243,19 @@ function Chapters() {
                 </span>
               </div>
 
-              <div className="chapter-actions">
+              {/*  MATCHED LAYOUT: Outlined buttons with icons */}
+              <div className="chapter-actions-row">
                 <button
-                  className="btn btn-warning me-2"
+                  className="chapter-action-btn outline-blue"
                   onClick={() => handleEdit(chapter)}
                 >
-                  <FaEdit />
-                  Edit
+                  <FaEdit /> Edit
                 </button>
-
                 <button
-                  className="btn btn-danger"
+                  className="chapter-action-btn outline-red"
                   onClick={() => handleDelete(chapter.chapterId)}
                 >
-                  <FaTrash />
-                  Delete
+                  <FaTrash /> Delete
                 </button>
               </div>
 

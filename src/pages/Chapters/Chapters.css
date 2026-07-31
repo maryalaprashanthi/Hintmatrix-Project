@@ -1,256 +1,234 @@
 .chapters-page {
-
-    padding:30px;
-
+  padding: 30px;
 }
-
 
 /* Back Button */
 
 .back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 
-    display:flex;
-    align-items:center;
-    gap:8px;
+  background: white;
 
-    background:white;
+  border: none;
 
-    border:none;
+  color: #2563eb;
 
-    color:#2563eb;
+  font-weight: 600;
 
-    font-weight:600;
+  font-size: 15px;
 
-    font-size:15px;
+  margin-bottom: 25px;
 
-    margin-bottom:25px;
-
-    cursor:pointer;
-
+  cursor: pointer;
 }
-
-
 
 .back-btn:hover {
-
-    color:#1d4ed8;
-
+  color: #1d4ed8;
 }
-
-
 
 /* Header */
 
 .chapter-header {
-
-    margin-bottom:30px;
-
+  margin-bottom: 30px;
 }
-
-
 
 .chapter-header h2 {
+  font-size: 32px;
 
-    font-size:32px;
+  font-weight: 700;
 
-    font-weight:700;
+  color: #111827;
 
-    color:#111827;
-
-    margin-bottom:8px;
-
+  margin-bottom: 8px;
 }
-
-
 
 .chapter-header p {
+  color: #6b7280;
 
-    color:#6b7280;
-
-    font-size:16px;
-
+  font-size: 16px;
 }
-
-
-
-
 
 /* Chapter Card */
 
 .chapter-card {
+  background: white;
 
-    background:white;
+  border-radius: 18px;
 
-    border-radius:18px;
+  padding: 25px;
 
-    padding:25px;
+  height: 100%;
 
-    height:100%;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
 
-    box-shadow:0 8px 25px rgba(0,0,0,0.08);
-
-    transition:0.3s ease;
-
+  transition: 0.3s ease;
 }
-
-
 
 .chapter-card:hover {
-
-    transform:translateY(-6px);
-
+  transform: translateY(-6px);
 }
-
-
-
-
 
 /* Icon */
 
 .chapter-icon {
+  width: 55px;
 
-    width:55px;
+  height: 55px;
 
-    height:55px;
+  display: flex;
 
-    display:flex;
+  align-items: center;
 
-    align-items:center;
+  justify-content: center;
 
-    justify-content:center;
+  border-radius: 15px;
 
-    border-radius:15px;
+  background: #eef2ff;
 
-    background:#eef2ff;
+  color: #4f46e5;
 
-    color:#4f46e5;
+  font-size: 25px;
 
-    font-size:25px;
-
-    margin-bottom:18px;
-
+  margin-bottom: 18px;
 }
-
-
-
-
 
 .chapter-card h4 {
+  font-size: 21px;
 
-    font-size:21px;
+  font-weight: 700;
 
-    font-weight:700;
+  color: #111827;
 
-    color:#111827;
-
-    margin-bottom:18px;
-
+  margin-bottom: 18px;
 }
-
-
-
-
 
 /* Info */
 
 .chapter-info {
+  display: flex;
 
-    display:flex;
+  justify-content: space-between;
 
-    justify-content:space-between;
+  align-items: center;
 
-    align-items:center;
+  margin-bottom: 15px;
 
-    margin-bottom:15px;
+  color: #6b7280;
 
-    color:#6b7280;
-
-    font-size:14px;
-
+  font-size: 14px;
 }
-
-
 
 .chapter-info span {
+  display: flex;
 
-    display:flex;
+  align-items: center;
 
-    align-items:center;
-
-    gap:6px;
-
+  gap: 6px;
 }
-
-
-
-
 
 /* Progress */
 
 .progress {
+  height: 9px;
 
-    height:9px;
+  background: #e5e7eb;
 
-    background:#e5e7eb;
+  border-radius: 10px;
 
-    border-radius:10px;
-
-    overflow:hidden;
-
+  overflow: hidden;
 }
-
-
 
 .progress-bar {
+  background: #2563eb;
 
-    background:#2563eb;
+  height: 100%;
 
-    height:100%;
-
-    border-radius:10px;
-
+  border-radius: 10px;
 }
-
-
-
-
 
 /* Button */
 
 .start-btn {
+  margin-top: 20px;
 
-    margin-top:20px;
+  width: 100%;
 
-    width:100%;
+  border: none;
 
-    border:none;
+  border-radius: 12px;
 
-    border-radius:12px;
+  padding: 12px;
 
-    padding:12px;
+  background: #2563eb;
 
-    background:#2563eb;
+  color: white;
 
-    color:white;
+  font-weight: 600;
 
-    font-weight:600;
+  display: flex;
 
-    display:flex;
+  justify-content: center;
 
-    justify-content:center;
+  align-items: center;
 
-    align-items:center;
+  gap: 8px;
 
-    gap:8px;
-
-    cursor:pointer;
-
+  cursor: pointer;
 }
 
-
-
 .start-btn:hover {
+  background: #1d4ed8;
+}
 
-    background:#1d4ed8;
+.chapter-actions-row {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 12px !important;
+  margin-top: 15px !important;
+  margin-bottom: 5px !important;
+  width: 100% !important;
+}
 
+.chapter-action-btn {
+  flex: 1 !important;
+  height: 32px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  background-color: white !important;
+
+  /* Alignment rules for icon + text */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+
+  padding: 0 !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Blue Outline Edit Style */
+.outline-blue {
+  border: 1px solid #2563eb !important;
+  color: #2563eb !important;
+}
+
+.outline-blue:hover {
+  background-color: #2563eb !important;
+  color: white !important;
+}
+
+/* Red Outline Delete Style */
+.outline-red {
+  border: 1px solid #dc2626 !important;
+  color: #dc2626 !important;
+}
+
+.outline-red:hover {
+  background-color: #dc2626 !important;
+  color: white !important;
 }
