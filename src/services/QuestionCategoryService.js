@@ -44,10 +44,30 @@ class QuestionCategoryService {
     }
 
     // Matches @DeleteMapping("/{id}")
-    delete(id) {
+        deleteSection(id) {
         return axios.delete(
             `${BASE_URL}/${id}`,
             { withCredentials: true }
+        );
+    }
+
+
+    // Upload Excel
+    uploadExcel(file) {
+
+        const formData = new FormData();
+
+        formData.append("file", file);
+
+        return axios.post(
+            `${BASE_URL}/upload`,
+            formData,
+            {
+                headers:{
+                    "Content-Type":"multipart/form-data"
+                },
+                withCredentials:true
+            }
         );
     }
 }

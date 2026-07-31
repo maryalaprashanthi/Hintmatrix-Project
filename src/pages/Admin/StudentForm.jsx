@@ -52,7 +52,7 @@ function StudentForm({ show, onClose, onSave, selectedStudentData }) {
 
     const studentData = {
       ...(selectedStudentData && {
-        studentId: selectedStudentData.studentId,
+        userId: selectedStudentData.userId,
       }),
 
       name,

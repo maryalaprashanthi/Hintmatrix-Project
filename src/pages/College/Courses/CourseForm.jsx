@@ -1,8 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./CourseForm.css";
+
 import CourseService from "../../../services/CourseService"; // 🌟 Connected service layer
+import BranchService from "../../../services/BranchService";
 
 function CourseForm({ onSaveCourse }) {
+  const [branches, setBranches] = useState([]);
+
+  const [branchId, setBranchId] = useState("");
   const [formData, setFormData] = useState({
     title: "",
     category: "Commerce",
@@ -11,14 +16,28 @@ function CourseForm({ onSaveCourse }) {
     instructor: "",
     price: "",
     description: "",
-    progress: "0%"
+    progress: "0%",
   });
+
+  // Load branches
+
+  useEffect(() => {
+    BranchService.getAllBranches()
+
+      .then((response) => {
+        setBranches(response.data || []);
+      })
+
+      .catch((error) => {
+        console.error("Failed to load branches", error);
+      });
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -29,11 +48,16 @@ function CourseForm({ onSaveCourse }) {
       alert("Please enter a course name.");
       return;
     }
+    if (!branchId) {
+      alert("Please select branch");
 
-    // 🌟 FIXED: Structured payload to match the exact keys expected by CourseRequestDTO
+      return;
+    }
+
     const courseRequestDTO = {
-      branchId: 1, // Satisfies backend @NotNull validation constraint
-      name: formData.title.trim() // Satisfies backend @NotBlank validation constraint
+      branchId: Number(branchId),
+
+      name: formData.title.trim(),
     };
 
     // 🌟 FIXED: Dispatches the transaction payload data directly to your Spring Boot database engine
@@ -45,7 +69,7 @@ function CourseForm({ onSaveCourse }) {
         if (typeof onSaveCourse === "function") {
           onSaveCourse({
             ...formData,
-            id: response.data?.id || Date.now()
+            id: response.data?.id || Date.now(),
           });
         }
 
@@ -58,12 +82,16 @@ function CourseForm({ onSaveCourse }) {
           instructor: "",
           price: "",
           description: "",
-          progress: "0%"
+          progress: "0%",
         });
+        setBranchId("");
       })
       .catch((error) => {
         console.error("Database transaction failed:", error);
-        alert(error.response?.data?.message || "Validation failed: Make sure your server models match.");
+        alert(
+          error.response?.data?.message ||
+            "Validation failed: Make sure your server models match.",
+        );
       });
   };
 
@@ -72,7 +100,10 @@ function CourseForm({ onSaveCourse }) {
       <div className="container-fluid">
         <div className="row justify-content-center">
           <div className="col-lg-10">
-            <form onSubmit={handleSubmit} className="card course-card shadow-sm">
+            <form
+              onSubmit={handleSubmit}
+              className="card course-card shadow-sm"
+            >
               <div className="card-header bg-white border-0 pt-4 pb-3">
                 <h2 className="fw-bold mb-1">Create New Course</h2>
                 <p className="text-muted mb-0">
@@ -103,9 +134,15 @@ function CourseForm({ onSaveCourse }) {
                       className="form-select"
                     >
                       <option value="Commerce">Commerce</option>
-                      <option value="School Curriculum">School Curriculum</option>
-                      <option value="Chartered Accountancy">Chartered Accountancy</option>
-                      <option value="Integrated Program">Integrated Program</option>
+                      <option value="School Curriculum">
+                        School Curriculum
+                      </option>
+                      <option value="Chartered Accountancy">
+                        Chartered Accountancy
+                      </option>
+                      <option value="Integrated Program">
+                        Integrated Program
+                      </option>
                     </select>
                   </div>
 
@@ -182,17 +219,11 @@ function CourseForm({ onSaveCourse }) {
                   </div>
 
                   <div className="d-flex justify-content-end gap-3 mt-4">
-                    <button
-                      type="button"
-                      className="btn btn-secondary px-4"
-                    >
+                    <button type="button" className="btn btn-secondary px-4">
                       Cancel
                     </button>
 
-                    <button
-                      type="submit"
-                      className="btn btn-primary px-4"
-                    >
+                    <button type="submit" className="btn btn-primary px-4">
                       Save
                     </button>
                   </div>

@@ -1,20 +1,20 @@
 import { useState } from "react";
 import CollegeForm from "./CollegeForm";
 import CollegeTable from "./CollegeTable";
-import Alert from "react-bootstrap/Alert";
 import CollegeService from "../../services/CollegeService";
 
 function College() {
   const [showModal, setShowModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [selectedCollege, setSelectedCollege] = useState(null);
-  const [showAlert, setShowAlert] = useState(false);
+  
 
   // Open Add College
   const handleAddCollege = () => {
     setSelectedCollege(null);
     setShowModal(true);
   };
+
 
   // Open Edit College
   const handleEditCollege = (collegeData) => {
@@ -44,12 +44,6 @@ function College() {
     setSelectedCollege(null);
     setShowModal(false);
 
-    setShowAlert(true);
-
-    setTimeout(() => {
-      setShowAlert(false);
-    }, 4000);
-
   } catch (error) {
 
     console.error(error);
@@ -60,40 +54,35 @@ function College() {
 };
 
   // Upload (Frontend Only)
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
+  const handleFileUpload = async (e) => {
+  const file = e.target.files[0];
 
-    if (!file) return;
+  if (!file) return;
 
-    console.log("Selected File:", file);
+  try {
+    const response = await CollegeService.uploadExcel(file);
 
-    alert(`Selected file: ${file.name}`);
+    alert(response.data);
 
-    // Reset input
-    e.target.value = "";
-  };
+    // Refresh the table after successful upload
+    setRefreshTrigger((prev) => !prev);
+
+  } catch (error) {
+    console.error("Upload Error:", error);
+
+    if (error.response) {
+      alert(error.response.data);
+    } else {
+      alert("File upload failed.");
+    }
+  }
+
+  // Reset input
+  e.target.value = "";
+};
 
   return (
     <div className="container-fluid py-4">
-
-      {showAlert && (
-        <Alert
-          variant="success"
-          className="position-fixed start-50 translate-middle-x shadow"
-          style={{
-            top: "90px",
-            width: "300px",
-            zIndex: 9999,
-            padding: "10px 15px",
-            fontSize: "15px",
-            textAlign: "center",
-            borderRadius: "8px",
-          }}
-        >
-          College saved successfully!
-        </Alert>
-      )}
-
       {/* Header */}
 
       <div className="d-flex justify-content-between align-items-center mb-4">
