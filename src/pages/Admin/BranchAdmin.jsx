@@ -41,7 +41,7 @@ function BranchAdmin() {
   const handleSave = (branchAdminData) => {
     if (selectedBranchAdmin) {
       BranchAdminService.updateBranchAdmin(
-        selectedBranchAdmin.branchAdminId,
+        selectedBranchAdmin.userId,
         branchAdminData,
       )
         .then(() => {

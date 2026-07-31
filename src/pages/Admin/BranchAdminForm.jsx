@@ -99,7 +99,7 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
 
     const branchAdminData = {
       ...(selectedBranchAdminData && {
-        branchAdminId: selectedBranchAdminData.branchAdminId,
+        userId: selectedBranchAdminData.userId,
       }),
 
       name,
