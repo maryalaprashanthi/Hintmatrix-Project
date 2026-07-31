@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import CollegeService from "../../../services/CollegeService"; 
+import SuccessModal from "../../../components/Common/SuccessModal";
 
 import {
   FaTimes,
@@ -21,6 +21,7 @@ function AddBranchModal({ show, onClose, onSave,selectedBranchData }) {
   const [address, setAddress] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const [collegesList, setCollegesList] = useState([]); // 🌟 ADDED: State store for backend colleges lookup
   // 🌟 ADDED: Fetch available colleges whenever modal opens up
@@ -96,7 +97,8 @@ function AddBranchModal({ show, onClose, onSave,selectedBranchData }) {
     setPhoneNumber("");
     setEmail("");
 
-    onClose();
+    setShowSuccess(true);
+    
   };
 
   return createPortal(
@@ -286,6 +288,15 @@ function AddBranchModal({ show, onClose, onSave,selectedBranchData }) {
         </div>
 
       </div>
+       
+       <SuccessModal
+        show={showSuccess}
+        message="Branch saved successfully!"
+        onClose={() => {
+          setShowSuccess(false);
+          onClose();
+        }}
+      />
 
     </div>,
     document.body

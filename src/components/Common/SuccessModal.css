@@ -1,0 +1,140 @@
+.success-overlay {
+
+    position: fixed;
+
+    top:0;
+    left:0;
+
+    width:100%;
+    height:100%;
+
+    background:rgba(0,0,0,0.45);
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:99999;
+}
+
+
+
+.success-card {
+
+    width:380px;
+
+    background:white;
+
+    border-radius:18px;
+
+    padding:35px;
+
+    text-align:center;
+
+    position:relative;
+
+    box-shadow:0 8px 25px rgba(0,0,0,0.2);
+
+}
+
+
+
+/* Close icon top right */
+
+.success-close {
+
+    position:absolute;
+
+    top:15px;
+
+    right:15px;
+
+    border:none;
+
+    background:none;
+
+    font-size:22px;
+
+    cursor:pointer;
+
+    color:#555;
+
+}
+
+
+.success-close:hover {
+
+    color:red;
+
+}
+
+
+
+/* Green check icon */
+
+.success-icon {
+
+    font-size:60px;
+
+    color:#238a3b;
+
+    margin-top:10px;
+
+}
+
+
+
+.success-card h2 {
+
+    margin-top:15px;
+
+    color:#333;
+
+}
+
+
+
+.success-card p {
+
+    margin-top:10px;
+
+    color:#666;
+
+    font-size:16px;
+
+}
+
+
+
+/* Bottom button */
+
+.continue-btn {
+
+    
+    width:35%;
+
+    padding:5px;
+
+    border:none;
+
+    border-radius:8px;
+
+    background:#238a3b;
+
+    color:rgb(0, 0, 0);
+
+    font-size:16px;
+
+    cursor:pointer;
+
+}
+
+
+
+.continue-btn:hover {
+
+    background:#4aaa89;
+
+}
