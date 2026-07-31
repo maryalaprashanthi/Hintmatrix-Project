@@ -1,19 +1,19 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import {
-    FaBookOpen,
-    FaFileAlt,
-    FaUniversity,
-    FaGraduationCap,
-    FaBuilding,
-    FaExchangeAlt,
-    FaBoxOpen,
-    FaClipboardCheck,
-    FaSearch,
-    FaPen,
-    FaTrash,
-    FaArrowRight
+  FaBookOpen,
+  FaFileAlt,
+  FaUniversity,
+  FaGraduationCap,
+  FaBuilding,
+  FaExchangeAlt,
+  FaBoxOpen,
+  FaClipboardCheck,
+  FaSearch,
+  FaPen,
+  FaTrash,
+  FaArrowRight,
 } from "react-icons/fa";
 
 import "./QuestionCategories.css";
@@ -24,6 +24,7 @@ import QuestionCategoryService from "../../services/QuestionCategoryService";
 
 
 export default function QuestionCategories() {
+<<<<<<< Updated upstream
 
     const { chapterName } = useParams();
 
@@ -386,8 +387,254 @@ export default function QuestionCategories() {
                 chapterName={chapterName}
             />
 
+=======
+  const { chapterName } = useParams();
+  const navigate = useNavigate();
+
+  const [showModal, setShowModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+
+    if (!file) return;
+
+    alert(`Selected file: ${file.name}`);
+
+    event.target.value = "";
+  };
+
+  const categories = [
+    {
+      id: 1,
+      name: "B.Com Model Questions",
+      questions: 235,
+      updated: "2 days ago",
+      status: "Active",
+      icon: <FaBookOpen />,
+      iconBg: "#EAF2FF",
+      iconColor: "#2563EB",
+    },
+    {
+      id: 2,
+      name: "CA Foundation - Journal Entries",
+      questions: 180,
+      updated: "3 days ago",
+      status: "Active",
+      icon: <FaFileAlt />,
+      iconBg: "#E8FFF5",
+      iconColor: "#10B981",
+    },
+    {
+      id: 3,
+      name: "Easy Model Questions",
+      questions: 120,
+      updated: "5 days ago",
+      status: "Active",
+      icon: <FaClipboardCheck />,
+      iconBg: "#FFF6E8",
+      iconColor: "#F59E0B",
+    },
+    {
+      id: 4,
+      name: "State Board Model Questions",
+      questions: 210,
+      updated: "1 week ago",
+      status: "Active",
+      icon: <FaUniversity />,
+      iconBg: "#F4EEFF",
+      iconColor: "#8B5CF6",
+    },
+    {
+      id: 5,
+      name: "CBSE Model Questions",
+      questions: 195,
+      updated: "1 week ago",
+      status: "Active",
+      icon: <FaGraduationCap />,
+      iconBg: "#E9FBFF",
+      iconColor: "#06B6D4",
+    },
+    {
+      id: 6,
+      name: "Company A/c's",
+      questions: 160,
+      updated: "2 weeks ago",
+      status: "Active",
+      icon: <FaBuilding />,
+      iconBg: "#FFF8EA",
+      iconColor: "#F97316",
+    },
+    {
+      id: 7,
+      name: "Bills of Exchange",
+      questions: 150,
+      updated: "2 weeks ago",
+      status: "Active",
+      icon: <FaExchangeAlt />,
+      iconBg: "#EEF5FF",
+      iconColor: "#3B82F6",
+    },
+    {
+      id: 8,
+      name: "Consignment",
+      questions: 110,
+      updated: "3 weeks ago",
+      status: "Active",
+      icon: <FaBoxOpen />,
+      iconBg: "#FFF2F4",
+      iconColor: "#EC4899",
+    },
+  ];
+
+  const filteredCategories = categories.filter((category) => {
+    const searchMatch = category.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    const statusMatch =
+      statusFilter === "All" || category.status === statusFilter;
+
+    return searchMatch && statusMatch;
+  });
+
+  return (
+    <div className="question-category-page">
+      <div className="page-header">
+        <div>
+          <h1>Question Categories</h1>
+          <p>{chapterName || "Question"} Categories</p>
+>>>>>>> Stashed changes
         </div>
 
-    );
+        <input
+          type="file"
+          id="questionCategoryUpload"
+          accept=".csv,.xlsx,.xls"
+          style={{ display: "none" }}
+          onChange={handleFileUpload}
+        />
 
+        <div className="d-flex gap-2">
+          <button
+            className="btn btn-primary"
+            onClick={() =>
+              document.getElementById("questionCategoryUpload").click()
+            }
+          >
+            ⬆ Upload
+          </button>
+
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowModal(true)}
+          >
+            + Add Category
+          </button>
+        </div>
+      </div>
+
+      <div className="row align-items-center mb-3">
+        <div className="col-lg-8">
+          <div className="input-group shadow-sm">
+            <span className="input-group-text bg-white border-0">
+              <FaSearch />
+            </span>
+
+            <input
+              className="form-control border-0"
+              placeholder="Search Categories..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="col-lg-4">
+          <select
+            className="form-select shadow-sm"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option>All</option>
+            <option>Active</option>
+            <option>Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="row g-3">
+        {filteredCategories.map((category) => (
+          <div className="col-xl-4 col-md-6" key={category.id}>
+            <div className="category-card h-100">
+              <div className="card-body">
+                <div
+                  className="icon-circle"
+                  style={{
+                    background: category.iconBg,
+                    color: category.iconColor,
+                  }}
+                >
+                  {category.icon}
+                </div>
+
+                <h5>{category.name}</h5>
+
+                <div>{category.questions} Questions</div>
+
+                <span className="badge bg-success">
+                  {category.status}
+                </span>
+
+                <div className="mt-2 text-muted">
+                  Last Updated
+                </div>
+
+                <div>{category.updated}</div>
+
+                <button
+                  className="btn btn-primary view-btn w-100 mt-3"
+                  onClick={() => navigate("/questions/question-list")}
+                >
+                  View Questions
+                  <FaArrowRight className="ms-2" />
+                </button>
+
+                <div className="d-flex gap-2 mt-2">
+                  <button className="btn btn-outline-primary btn-sm flex-fill">
+                    <FaPen className="me-1" />
+                    Edit
+                  </button>
+
+                  <button className="btn btn-outline-danger btn-sm flex-fill">
+                    <FaTrash className="me-1" />
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {filteredCategories.length === 0 && (
+          <div className="col-12">
+            <div className="text-center bg-white p-5 rounded shadow-sm">
+              <FaSearch size={40} className="mb-3 text-secondary" />
+              <h5>No Categories Found</h5>
+              <p className="text-muted">
+                Try another search keyword.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <AddQuestionCategoryModal
+        show={showModal}
+        closeModal={() => setShowModal(false)}
+        chapterName={chapterName}
+      />
+    </div>
+  );
 }

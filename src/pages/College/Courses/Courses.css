@@ -40,9 +40,10 @@
 
 .courses-header h2{
     margin:0;
-    font-size:34px;
-    font-weight:800;
-    color:#111827;
+    font-size:3rem;      /* or 48px if you prefer */
+    font-weight:700;
+    color:#212529;
+    line-height:1.2;
 }
 
 .courses-header p{
