@@ -110,13 +110,15 @@ function SectionTable({ refresh, onEdit }) {
     },
     {
       headerName: "Actions",
-      width: 170,
+      width: 200,
       sortable: false,
       filter: false,
       cellRenderer: (params) => (
         <div
           style={{
             display: "flex",
+            flexDirection: "row",
+            flexWrap: "nowrap", // Prevents vertical button stacking
             gap: "8px",
             alignItems: "center",
             height: "100%",
@@ -125,6 +127,17 @@ function SectionTable({ refresh, onEdit }) {
           <button
             className="btn btn-primary btn-sm"
             onClick={() => onEdit(params.data)}
+            style={{
+              padding: "2px 14px", // Overrides global large padding
+              fontSize: "12px",
+              fontWeight: "bold",
+              height: "26px", // Forces consistent layout height
+              borderRadius: "4px",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "none",
+            }}
           >
             Edit
           </button>
@@ -132,6 +145,17 @@ function SectionTable({ refresh, onEdit }) {
           <button
             className="btn btn-danger btn-sm"
             onClick={() => deleteSection(params.data.sectionId)}
+            style={{
+              padding: "2px 14px", // Overrides global large padding
+              fontSize: "12px",
+              fontWeight: "bold",
+              height: "26px", // Forces consistent layout height
+              borderRadius: "4px",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "none",
+            }}
           >
             Delete
           </button>
