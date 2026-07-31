@@ -125,42 +125,63 @@ function Chapters() {
 
   // FILE UPLOAD
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = async (event) => {
     const file = event.target.files[0];
 
-  if (!file) return;
+    if (!file) return;
 
-  try {
-    const response = await ChapterService.uploadExcel(file);
+    try {
+      const response = await ChapterService.uploadExcel(file);
 
-    alert(
-      typeof response.data === "string"
-        ? response.data
-        : "Chapter Excel uploaded successfully!"
-    );
+      alert(
+        typeof response.data === "string"
+          ? response.data
+          : "Chapter Excel uploaded successfully!",
+      );
 
-    loadChapters();
+      loadChapters();
+    } catch (error) {
+      console.error("Upload Error:", error);
 
-  } catch (error) {
-    console.error("Upload Error:", error);
-
-    if (error.response) {
-      alert(error.response.data);
-    } else {
-      alert("File upload failed.");
+      if (error.response) {
+        alert(error.response.data);
+      } else {
+        alert("File upload failed.");
+      }
     }
-  }
 
-  event.target.value = "";
-};
-  // Chapter -> Question Categories
-  const openCategories = (chapterTitle) => {
-    const chapterSlug = chapterTitle.toLowerCase().replaceAll(" ", "-");
+    event.target.value = "";
+  };
+  // // Chapter -> Question Categories
+  // const openCategories = (chapterTitle) => {
+  //   const chapterSlug = chapterTitle.toLowerCase().replaceAll(" ", "-");
+
+  //   if (isQuestionsModule) {
+  //     navigate("/questions/question-categories");
+  //   } else {
+  //     navigate(`/question-categories/${courseId}/${chapterSlug}`);
+  //   }
+  // };
+
+  const openCategories = (chapter) => {
+    console.log("Navigating to:", chapter);
+    const chapterSlug = chapter.name.toLowerCase().replaceAll(" ", "-");
 
     if (isQuestionsModule) {
-      navigate("/questions/question-categories");
+      navigate(
+        `/questions/question-categories/${chapter.chapterId}/${chapterSlug}`,
+        {
+          state: {
+            chapter,
+          },
+        },
+      );
     } else {
-      navigate(`/question-categories/${courseId}/${chapterSlug}`);
+      navigate(`/question-categories/${courseId}/${chapterSlug}`, {
+        state: {
+          chapter,
+        },
+      });
     }
   };
 
@@ -242,7 +263,7 @@ function Chapters() {
 
               <button
                 className="start-btn"
-                onClick={() => openCategories(chapter.name)}
+                onClick={() => openCategories(chapter)}
               >
                 <FaPlayCircle />
                 Start Learning

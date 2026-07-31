@@ -3,51 +3,118 @@ import { createPortal } from "react-dom";
 import { FaTimes, FaSave, FaBook, FaListAlt, FaTag } from "react-icons/fa";
 
 import "./QuestionCategories.css";
+import QuestionCategoryService from "../../services/QuestionCategoryService";
+import CourseService from "../../services/CourseService";
 
 function AddQuestionCategoryModal({
   show,
   closeModal,
   chapterName,
   initialData,
+  chapterId,
+  selectedChapter,
+  refreshCategories,
 }) {
   const [categoryName, setCategoryName] = useState("");
   const [shortName, setShortName] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [courseId, setCourseId] = useState("");
 
+  const [courses, setCourses] = useState([]);
+
+  // Load courses
+  useEffect(() => {
+    CourseService.getAllCourses()
+      .then((response) => {
+        setCourses(response.data);
+        // Automatically select the course when coming from Chapters
+        if (!initialData && selectedChapter?.courseId) {
+          setCourseId(String(selectedChapter.courseId));
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to load courses", error);
+      });
+  }, [selectedChapter, initialData]);
+
+  // Load edit data
   useEffect(() => {
     if (initialData) {
       setCategoryName(initialData.name || "");
+
       setShortName(initialData.shortName || "");
+
       setIsActive(
         initialData.isActive !== undefined ? initialData.isActive : true,
       );
+
+      setCourseId(initialData.courseId ? String(initialData.courseId) : "");
     } else {
       setCategoryName("");
+
       setShortName("");
+
+      setCourseId(
+        selectedChapter?.courseId ? String(selectedChapter.courseId) : "",
+      );
+
       setIsActive(true);
     }
   }, [initialData, show]);
 
   if (!show) return null;
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
 
     if (!categoryName.trim()) {
-      alert("Please enter Category Name.");
+      alert("Please enter Category Name");
+
       return;
     }
 
-    const categoryData = {
-      categoryName: categoryName.trim(),
+    if (!courseId) {
+      alert("Please select Course");
+
+      return;
+    }
+
+    const requestDTO = {
+      courseId: Number(courseId),
+
+      chapterId: Number(chapterId),
+
+      name: categoryName.trim(),
+
       shortName: shortName.trim(),
-      chapterName,
-      isActive,
+
+      isActive: isActive,
     };
 
-    console.log(categoryData);
+    try {
+      let response;
 
-    closeModal();
+      if (initialData) {
+        response = await QuestionCategoryService.update(
+          initialData.categoryId,
+          requestDTO,
+        );
+      } else {
+        response = await QuestionCategoryService.create(requestDTO);
+      }
+
+      alert(response.data);
+
+      if (refreshCategories) {
+        refreshCategories();
+      }
+
+      closeModal();
+    } catch (error) {
+      console.error(error);
+
+      alert(error.response?.data || "Something went wrong");
+    }
   };
 
   return createPortal(
@@ -75,8 +142,8 @@ function AddQuestionCategoryModal({
 
         {/* Body */}
 
-        <div className="modal-body">
-          <form onSubmit={handleSave}>
+        <form onSubmit={handleSave}>
+          <div className="modal-body">
             <div className="form-card">
               <h3 className="section-title">Question Category Information</h3>
 
@@ -91,14 +158,17 @@ function AddQuestionCategoryModal({
                   <div className="input-box">
                     <FaBook className="input-icon" />
 
-                    <select>
-                      <option>Select Course</option>
-                      <option>B.Com - 1st Year</option>
-                      <option>CA Foundation</option>
-                      <option>CBSE Class-11</option>
-                      <option>Jr. Accountancy</option>
-                      <option>Combo Pack</option>
-                      <option>Inter CBSE CAF B.Com</option>
+                    <select
+                      value={courseId}
+                      onChange={(e) => setCourseId(e.target.value)}
+                    >
+                      <option value="">Select Course</option>
+
+                      {courses.map((course) => (
+                        <option key={course.courseId} value={course.courseId}>
+                          {course.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -113,14 +183,10 @@ function AddQuestionCategoryModal({
                   <div className="input-box">
                     <FaListAlt className="input-icon" />
 
-                    <input
-                      type="text"
-                      placeholder="Enter Chapter Name"
-                      value={chapterName}
-                      onChange={(e) => setChapter(e.target.value)}
-                    />
+                    <input type="text" value={chapterName} readOnly />
                   </div>
                 </div>
+
                 {/* Category Name */}
 
                 <div className="form-group">
@@ -168,42 +234,36 @@ function AddQuestionCategoryModal({
                 <input
                   className="form-check-input"
                   type="checkbox"
-                  id="activeStatus"
                   checked={isActive}
                   onChange={(e) => setIsActive(e.target.checked)}
                 />
 
-                <label className="form-check-label" htmlFor="activeStatus">
-                  Active
-                </label>
+                <label className="form-check-label">Active</label>
               </div>
             </div>
-          </form>
-        </div>
+          </div>
 
-        {/* Footer */}
+          {/* Footer */}
 
-        <div className="modal-footer d-flex justify-content-end gap-2">
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={closeModal}
-          >
-            Cancel
-          </button>
+          <div className="modal-footer">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={closeModal}
+            >
+              Cancel
+            </button>
 
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={handleSave}
-          >
-            <FaSave className="me-2" />
+            <button type="submit" className="btn btn-primary">
+              <FaSave className="me-2" />
 
-            {initialData ? "Update" : "Save"}
-          </button>
-        </div>
+              {initialData ? "Update" : "Save"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>,
+
     document.body,
   );
 }
