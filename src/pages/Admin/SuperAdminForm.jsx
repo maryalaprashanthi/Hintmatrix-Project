@@ -62,7 +62,7 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
 
     const superAdminData = {
       ...(selectedSuperAdminData && {
-        userId: selectedSuperAdminData.userAdminId,
+        userId: selectedSuperAdminData.userId,
       }),
 
       name,
