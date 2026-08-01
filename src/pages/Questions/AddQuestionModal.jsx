@@ -1,323 +1,395 @@
-import { useState } from "react";
-import { Modal, Button, Form, Table } from "react-bootstrap";
-import "./AddQuestionModal.css";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+
 import {
-  FaPlus,
-  FaTrash,
+  FaTimes,
   FaBook,
   FaLayerGroup,
   FaList,
+  FaFileAlt,
+  FaSave,
+  FaPlus,
+  FaTrash,
 } from "react-icons/fa";
 
-export default function AddQuestionModal({
-  show,
-  handleClose,
-}) {
+import "./AddQuestionModal.css";
 
+function AddQuestionModal({
+  show,
+  onClose,
+  onSave,
+  questionData,
+}) {
   const [course, setCourse] = useState("");
   const [chapter, setChapter] = useState("");
   const [category, setCategory] = useState("");
+  const [questionText, setQuestionText] = useState("");
 
-  const [rows, setRows] = useState([
+  const [attributes, setAttributes] = useState([
     {
-      debit: "",
+      debitBalance: "",
       debitAmount: "",
-      credit: "",
+      creditBalance: "",
       creditAmount: "",
     },
   ]);
 
+  useEffect(() => {
+    if (questionData) {
+      setCourse(questionData.course || "");
+      setChapter(questionData.chapter || "");
+      setCategory(questionData.category || "");
+      setQuestionText(questionData.questionText || "");
+      setAttributes(
+        questionData.attributes || [
+          {
+            debitBalance: "",
+            debitAmount: "",
+            creditBalance: "",
+            creditAmount: "",
+          },
+        ]
+      );
+    } else {
+      setCourse("");
+      setChapter("");
+      setCategory("");
+      setQuestionText("");
+      setAttributes([
+        {
+          debitBalance: "",
+          debitAmount: "",
+          creditBalance: "",
+          creditAmount: "",
+        },
+      ]);
+    }
+  }, [questionData]);
+
+  if (!show) return null;
+
+  const handleAttributeChange = (index, field, value) => {
+    const updated = [...attributes];
+    updated[index][field] = value;
+    setAttributes(updated);
+  };
+
   const handleAddRow = () => {
-    setRows([
-      ...rows,
+    setAttributes([
+      ...attributes,
       {
-        debit: "",
+        debitBalance: "",
         debitAmount: "",
-        credit: "",
+        creditBalance: "",
         creditAmount: "",
       },
     ]);
   };
+  const handleDeleteRow = (index) => {
+    if (attributes.length === 1) return;
 
-  const handleRemoveRow = (index) => {
-    if (rows.length === 1) return;
-
-    const updated = [...rows];
-    updated.splice(index, 1);
-    setRows(updated);
+    const updatedRows = attributes.filter((_, i) => i !== index);
+    setAttributes(updatedRows);
   };
+  const handleSave = async () => {
+    if (
+      !course.trim() ||
+      !chapter.trim() ||
+      !category.trim() ||
+      !questionText.trim()
+    ) {
+      alert("Please fill all required fields.");
+      return;
+    }
 
-  const handleSave = () => {
-
-    alert("Question Saved Successfully");
-
-    console.log({
+    const newQuestion = {
       course,
       chapter,
       category,
-      rows,
-    });
+      questionText,
+      attributes,
+    };
+
+    await onSave(newQuestion);
 
     handleClose();
   };
 
-  return (
+  const handleClose = () => {
+    setCourse("");
+    setChapter("");
+    setCategory("");
+    setQuestionText("");
 
-    <Modal
-      show={show}
-      onHide={handleClose}
-      centered
-      size="xl"
-      backdrop="static"
-      keyboard={false}
-    >
+    setAttributes([
+      {
+        debitBalance: "",
+        debitAmount: "",
+        creditBalance: "",
+        creditAmount: "",
+      },
+    ]);
 
-      <Modal.Header closeButton>
+    onClose();
+  };
 
-        <Modal.Title className="fw-bold">
+  return createPortal(
+    <div className="modal-overlay">
+      <div className="table-name-modal">
 
-          Add New Question
+        {/* Header */}
 
-        </Modal.Title>
+        <div className="modal-header">
+          <div>
+            <h2>
+              {questionData ? "Update Question" : "Add New Question"}
+            </h2>
 
-      </Modal.Header>
+            <p>
+              {questionData
+                ? "Update existing question."
+                : "Fill in the details below to create a new question."}
+            </p>
+          </div>
 
-      <Modal.Body>
+          <button className="close-btn" onClick={handleClose}>
+            <FaTimes />
+          </button>
+        </div>
 
-        <div className="container-fluid">
+        {/* Body */}
 
-          <div className="row g-4">
+        <div className="modal-body">
 
-            <div className="col-md-4">
+          <div className="form-card">
 
-              <Form.Label className="fw-semibold">
+            <h3 className="section-title">
+              Question Details
+            </h3>
 
-                <FaBook className="me-2 text-primary" />
+            <div className="form-grid">
 
-                Course
+              {/* Course */}
 
-              </Form.Label>
+              <div className="form-group">
+                <label>
+                  Course <span>*</span>
+                </label>
 
-              <Form.Select
-                value={course}
-                onChange={(e) => setCourse(e.target.value)}
-              >
+                <div className="input-box">
+                  <FaBook className="input-icon" />
 
-                <option value="">Select Course</option>
+                  <input
+                    type="text"
+                    placeholder="Select Course"
+                    value={course}
+                    onChange={(e) => setCourse(e.target.value)}
+                  />
+                </div>
+              </div>
 
-                <option>B.Com</option>
+              {/* Chapter */}
 
-                <option>CA Foundation</option>
+              <div className="form-group">
+                <label>
+                  Chapter <span>*</span>
+                </label>
 
-                <option>CBSE</option>
+                <div className="input-box">
+                  <FaLayerGroup className="input-icon" />
 
-              </Form.Select>
+                  <input
+                    type="text"
+                    placeholder="Select Chapter"
+                    value={chapter}
+                    onChange={(e) => setChapter(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Category */}
+
+              <div className="form-group">
+                <label>
+                  Category <span>*</span>
+                </label>
+
+                <div className="input-box">
+                  <FaList className="input-icon" />
+
+                  <input
+                    type="text"
+                    placeholder="Select Category"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                  />
+                </div>
+              </div>
 
             </div>
 
-            <div className="col-md-4">
+            <div className="form-group mt-4">
+              <label>
+                Question Text <span>*</span>
+              </label>
 
-              <Form.Label className="fw-semibold">
+              <div className="textarea-box">
+                <FaFileAlt className="input-icon" />
 
-                <FaLayerGroup className="me-2 text-success" />
-
-                Chapter
-
-              </Form.Label>
-
-              <Form.Select
-                value={chapter}
-                onChange={(e) => setChapter(e.target.value)}
-              >
-
-                <option value="">Select Chapter</option>
-
-                <option>Chapter 1</option>
-
-                <option>Chapter 2</option>
-
-                <option>Chapter 3</option>
-
-              </Form.Select>
-
-            </div>
-
-            <div className="col-md-4">
-
-              <Form.Label className="fw-semibold">
-
-                <FaList className="me-2 text-warning" />
-
-                Category
-
-              </Form.Label>
-
-              <Form.Select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              >
-
-                <option value="">Select Category</option>
-
-                <option>Easy Model Questions</option>
-
-                <option>CBSE Model Questions</option>
-
-                <option>State Board Questions</option>
-
-              </Form.Select>
-
+                <textarea
+                  placeholder="Enter question text..."
+                  value={questionText}
+                  onChange={(e) =>
+                    setQuestionText(e.target.value)
+                  }
+                />
+              </div>
             </div>
 
           </div>
 
-          <hr className="my-4"/>
+          {/* Question Attributes */}
 
-          <h5 className="fw-bold mb-3">
+          <div className="form-card">
 
-            Question Attributes
+            <h3 className="section-title">
+              Question Attributes
+            </h3>
 
-          </h5>
-
-          <Table bordered hover responsive>
-
-            <thead className="table-primary">
-
-              <tr>
-
-                <th>Debit Balance</th>
-
-                <th>Amount</th>
-
-                <th>Credit Balance</th>
-
-                <th>Amount</th>
-
-                <th width="80">
-                  Action
-                </th>
-
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              {rows.map((row, index) => (
-                <tr key={index}>
-                                     <td>
-                    <Form.Select
-                      value={row.debit}
-                      onChange={(e) => {
-                        const updated = [...rows];
-                        updated[index].debit = e.target.value;
-                        setRows(updated);
-                      }}
-                    >
-                      <option value="">Select Debit</option>
-                      <option>Cash</option>
-                      <option>Bank</option>
-                      <option>Purchases</option>
-                      <option>Furniture</option>
-                    </Form.Select>
-                  </td>
-
-                  <td>
-                    <Form.Control
-                      type="number"
-                      placeholder="Amount"
-                      value={row.debitAmount}
-                      onChange={(e) => {
-                        const updated = [...rows];
-                        updated[index].debitAmount = e.target.value;
-                        setRows(updated);
-                      }}
-                    />
-                  </td>
-
-                  <td>
-                    <Form.Select
-                      value={row.credit}
-                      onChange={(e) => {
-                        const updated = [...rows];
-                        updated[index].credit = e.target.value;
-                        setRows(updated);
-                      }}
-                    >
-                      <option value="">Select Credit</option>
-                      <option>Sales</option>
-                      <option>Capital</option>
-                      <option>Bank</option>
-                      <option>Creditors</option>
-                    </Form.Select>
-                  </td>
-
-                  <td>
-                    <Form.Control
-                      type="number"
-                      placeholder="Amount"
-                      value={row.creditAmount}
-                      onChange={(e) => {
-                        const updated = [...rows];
-                        updated[index].creditAmount = e.target.value;
-                        setRows(updated);
-                      }}
-                    />
-                  </td>
-
-                  <td className="text-center">
-                    <Button
-                      variant="outline-danger"
-                      size="sm"
-                      onClick={() => handleRemoveRow(index)}
-                    >
-                      <FaTrash />
-                    </Button>
-                  </td>
-
+            <p>Add debit and credit balances for this question.</p>
+            <div className="question-table">
+            <table className="table table-bordered mt-3">
+              <thead>
+                <tr>
+                  <th>Debit Balance</th>
+                  <th>Amount</th>
+                  <th>Credit Balance</th>
+                  <th>Amount</th>
+                  <th>Action</th>
                 </tr>
-              ))}
+              </thead>
+              <tbody>
+                {attributes.map((row, index) => (
+                  <tr key={index}>
+                    <td>
+                      <input
+                        type="text"
+                        placeholder="Debit Balance"
+                        value={row.debitBalance}
+                        onChange={(e) =>
+                          handleAttributeChange(
+                            index,
+                            "debitBalance",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </td>
 
-            </tbody>
+                    <td>
+                      <input
+                        type="text"
+                        placeholder="Amount"
+                        value={row.debitAmount}
+                        onChange={(e) =>
+                          handleAttributeChange(
+                            index,
+                            "debitAmount",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </td>
 
-          </Table>
+                    <td>
+                      <input
+                        type="text"
+                        placeholder="Credit Balance"
+                        value={row.creditBalance}
+                        onChange={(e) =>
+                          handleAttributeChange(
+                            index,
+                            "creditBalance",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </td>
 
-          <div className="d-flex justify-content-start mt-3">
+                    <td>
+                      <input
+                        type="text"
+                        placeholder="Amount"
+                        value={row.creditAmount}
+                        onChange={(e) =>
+                          handleAttributeChange(
+                            index,
+                            "creditAmount",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </td>
 
-            <Button
-              variant="outline-primary"
+                    <td className="text-center">
+                      <button
+                        type="button"
+                        className="btn btn-outline-danger"
+                        onClick={() => handleDeleteRow(index)}
+                        disabled={attributes.length === 1}
+                      >
+                        <FaTrash />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+
+
+            </table>
+            </div>
+
+            <button
+              type="button"
+              className="btn btn-outline-primary mt-3"
               onClick={handleAddRow}
             >
               <FaPlus className="me-2" />
               Add Row
-            </Button>
+            </button>
+
 
           </div>
 
         </div>
 
-      </Modal.Body>
+        {/* Footer */}
 
-      <Modal.Footer>
+        <div className="modal-footer">
 
-        <Button
-          variant="secondary"
-          onClick={handleClose}
-        >
-          Cancel
-        </Button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={handleClose}
+          >
+            Cancel
+          </button>
 
-        <Button
-          variant="primary"
-          onClick={handleSave}
-        >
-          Save Question
-        </Button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleSave}
+          >
+            <FaSave className="me-2" />
+            {questionData ? "Update Question" : "Save"}
+          </button>
 
-      </Modal.Footer>
+        </div>
 
-    </Modal>
-
+      </div>
+    </div>,
+    document.body
   );
+}
 
-} 
+export default AddQuestionModal;
