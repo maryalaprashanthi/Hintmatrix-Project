@@ -1,3 +1,5 @@
+import "./ProgressCircle.css";
+
 const ProgressCircle = ({ solvedCount, totalCount = 20 }) => {
   // Calculate percentage
   const percentage = Math.round((solvedCount / totalCount) * 100);

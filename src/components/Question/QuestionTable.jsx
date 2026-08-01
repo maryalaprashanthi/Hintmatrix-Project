@@ -36,7 +36,7 @@ const QuestionTable = () => {
   let solvedQ = pendingQ.length;
 
   return (
-    <div className="row g-4 align-items-start px-3 px-lg-4 py-4">
+    <div className="row g-4 align-items-start">
       <div>
         <Header />
         <SummaryCards

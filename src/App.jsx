@@ -185,8 +185,7 @@ function App() {
           element={<QuestionCategories />}
         />
         {/* Questions -> Question List */}
-        <Route path="/questions/question-list" 
-         element={<QuestionList />} />
+        <Route path="/questions/question-list" element={<QuestionList />} />
         <Route
           path="/questions/question-categories/:chapterId/:chapterName"
           element={<QuestionCategories />}
@@ -213,8 +212,11 @@ function App() {
         <Route path="/results" element={<Results />} />
         <Route path="/certificates" element={<Certificates />} />
         <Route path="/settings" element={<Settings />} />
+        <Route
+          path="/questions/question-list/:id/"
+          element={<QuestionPage />}
+        />
       </Route>
-      <Route path="/question" element={<QuestionPage />} />
     </Routes>
   );
 }
