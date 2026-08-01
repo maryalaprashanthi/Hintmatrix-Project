@@ -9,12 +9,30 @@ import {
   FaLock,
   FaMapMarkerAlt,
   FaSave,
+  FaIdCard,
+  FaUniversity,
+  FaCodeBranch,
+  FaUsers,
 } from "react-icons/fa";
 
 import "./StudentForm.css";
 
-function StudentForm({ show, onClose, onSave, selectedStudentData }) {
+function StudentForm({
+  show,
+  onClose,
+  onSave,
+  selectedStudentData,
+  colleges = [],
+  branches = [],
+  sections = [],
+}) {
   const [name, setName] = useState("");
+  const [studentCode, setStudentCode] = useState("");
+  const [collegeId, setCollegeId] = useState("");
+  const [branchId, setBranchId] = useState("");
+  const [sectionId, setSectionId] = useState("");
+  const [guardianName, setGuardianName] = useState("");
+  const [guardianPhoneNumber, setGuardianPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
@@ -23,12 +41,24 @@ function StudentForm({ show, onClose, onSave, selectedStudentData }) {
   useEffect(() => {
     if (selectedStudentData) {
       setName(selectedStudentData.name || "");
+      setStudentCode(selectedStudentData.studentCode || "");
+      setCollegeId(selectedStudentData.collegeId || "");
+      setBranchId(selectedStudentData.branchId || "");
+      setSectionId(selectedStudentData.sectionId || "");
+      setGuardianName(selectedStudentData.guardianName || "");
+      setGuardianPhoneNumber(selectedStudentData.guardianPhoneNumber || "");
       setEmail(selectedStudentData.email || "");
       setPhoneNumber(selectedStudentData.phoneNumber || "");
       setPassword(selectedStudentData.password || "");
       setAddress(selectedStudentData.address || "");
     } else {
       setName("");
+      setStudentCode("");
+      setCollegeId("");
+      setBranchId("");
+      setSectionId("");
+      setGuardianName("");
+      setGuardianPhoneNumber("");
       setEmail("");
       setPhoneNumber("");
       setPassword("");
@@ -41,6 +71,12 @@ function StudentForm({ show, onClose, onSave, selectedStudentData }) {
   const handleSave = () => {
     if (
       !name.trim() ||
+      !studentCode ||
+      !collegeId ||
+      !branchId ||
+      !sectionId ||
+      !guardianName.trim() ||
+      !guardianPhoneNumber.trim() ||
       !email.trim() ||
       !phoneNumber.trim() ||
       !password.trim() ||
@@ -56,6 +92,12 @@ function StudentForm({ show, onClose, onSave, selectedStudentData }) {
       }),
 
       name,
+      studentCode,
+      collegeId,
+      branchId,
+      sectionId,
+      guardianName,
+      guardianPhoneNumber,
       email,
       phoneNumber,
       password,
@@ -109,6 +151,131 @@ function StudentForm({ show, onClose, onSave, selectedStudentData }) {
                 </div>
               </div>
 
+              {/* Student Code */}
+              <div className="form-group">
+                <label>
+                  Student Code <span>*</span>
+                </label>
+
+                <div className="input-box">
+                  <FaIdCard className="input-icon" />
+
+                  <input
+                    type="number"
+                    placeholder="Enter Student Code"
+                    value={studentCode}
+                    onChange={(e) => setStudentCode(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* College */}
+              <div className="form-group">
+                <label>
+                  College <span>*</span>
+                </label>
+
+                <div className="input-box">
+                  <FaUniversity className="input-icon" />
+
+                  <select
+                    value={collegeId}
+                    onChange={(e) => setCollegeId(e.target.value)}
+                  >
+                    <option value="">Select College</option>
+
+                    {colleges.map((college) => (
+                      <option key={college.collegeId} value={college.collegeId}>
+                        {college.collegeName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Branch */}
+              <div className="form-group">
+                <label>
+                  Branch <span>*</span>
+                </label>
+
+                <div className="input-box">
+                  <FaCodeBranch className="input-icon" />
+
+                  <select
+                    value={branchId}
+                    onChange={(e) => setBranchId(e.target.value)}
+                  >
+                    <option value="">Select Branch</option>
+
+                    {branches.map((branch) => (
+                      <option key={branch.branchId} value={branch.branchId}>
+                        {branch.branchName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              {/* Section */}
+              <div className="form-group">
+                <label>
+                  Section <span>*</span>
+                </label>
+
+                <div className="input-box">
+                  <FaUsers className="input-icon" />
+
+                  <select
+                    value={sectionId}
+                    onChange={(e) => setSectionId(e.target.value)}
+                  >
+                    <option value="">Select Section</option>
+
+                    {sections.map((section) => (
+                      <option key={section.sectionId} value={section.sectionId}>
+                        {section.sectionName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Guardian Name */}
+              <div className="form-group">
+                <label>
+                  Guardian Name <span>*</span>
+                </label>
+
+                <div className="input-box">
+                  <FaUser className="input-icon" />
+
+                  <input
+                    type="text"
+                    placeholder="Enter Guardian Name"
+                    value={guardianName}
+                    onChange={(e) => setGuardianName(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Guardian Phone Number */}
+              <div className="form-group">
+                <label>
+                  Guardian Phone Number <span>*</span>
+                </label>
+
+                <div className="input-box">
+                  <FaPhone className="input-icon" />
+
+                  <input
+                    type="tel"
+                    placeholder="Enter Guardian Phone Number"
+                    value={guardianPhoneNumber}
+                    onChange={(e) => setGuardianPhoneNumber(e.target.value)}
+                  />
+                </div>
+              </div>
+
               {/* Email */}
               <div className="form-group">
                 <label>
@@ -138,7 +305,7 @@ function StudentForm({ show, onClose, onSave, selectedStudentData }) {
 
                   <input
                     type="tel"
-                    placeholder="9876543210"
+                    placeholder="Enter Phone Number"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                   />

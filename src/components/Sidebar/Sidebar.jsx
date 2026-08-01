@@ -139,21 +139,21 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
           {adminOpen && (
             <div className="submenu">
               <NavLink
-                to="/admin/branch-admin"
-                className={subMenuClass}
-                onClick={closeSidebar}
-              >
-                <MdAccountTree />
-                <span>Branch Admin</span>
-              </NavLink>
-
-              <NavLink
                 to="/admin/super-admin"
                 className={subMenuClass}
                 onClick={closeSidebar}
               >
                 <MdSecurity />
                 <span>Super Admin</span>
+              </NavLink>
+
+              <NavLink
+                to="/admin/branch-admin"
+                className={subMenuClass}
+                onClick={closeSidebar}
+              >
+                <MdAccountTree />
+                <span>Branch Admin</span>
               </NavLink>
 
               <NavLink
