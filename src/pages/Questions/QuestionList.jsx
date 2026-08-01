@@ -10,16 +10,11 @@ import {
   Badge,
 } from "react-bootstrap";
 
-import {
-  FaSearch,
-  FaPlus,
-  FaEye,
-  FaEdit,
-  FaTrash,
-} from "react-icons/fa";
-
+import { FaSearch, FaPlus, FaEye, FaEdit, FaTrash } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import "./QuestionList.css";
 import AddQuestionModal from "./AddQuestionModal";
+import { NavLink } from "react-router-dom";
 
 const QuestionList = () => {
   const [search, setSearch] = useState("");
@@ -67,9 +62,11 @@ const QuestionList = () => {
     },
   ]);
 
+  const navigate = useNavigate();
+
   // Search
   const filteredQuestions = questions.filter((question) =>
-    question.title.toLowerCase().includes(search.toLowerCase())
+    question.title.toLowerCase().includes(search.toLowerCase()),
   );
 
   // Upload
@@ -89,7 +86,7 @@ const QuestionList = () => {
 
   // View
   const handleView = (question) => {
-    alert(`Viewing: ${question.title}`);
+    navigate(`/questions/question-list/${question.id}`);
   };
 
   // Edit
@@ -106,46 +103,39 @@ const QuestionList = () => {
               ...question,
               enabled: !question.enabled,
             }
-          : question
-      )
+          : question,
+      ),
     );
   };
 
   // Delete
   const handleDeleteClick = (id) => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this question?"
+      "Are you sure you want to delete this question?",
     );
 
     if (confirmDelete) {
       setQuestions((prevQuestions) =>
-        prevQuestions.filter((question) => question.id !== id)
+        prevQuestions.filter((question) => question.id !== id),
       );
     }
   };
 
   return (
     <Container fluid className="question-page">
-
       {/* Header */}
 
       <Row className="align-items-center mb-4">
-
         <Col lg={6}>
-          <h2 className="page-title">
-            Easy Model Questions
-          </h2>
+          <h2 className="page-title">Easy Model Questions</h2>
 
-          <p className="question-count">
-            {filteredQuestions.length} Questions
-          </p>
+          <p className="question-count">{filteredQuestions.length} Questions</p>
         </Col>
 
         <Col
           lg={6}
           className="d-flex justify-content-lg-end gap-2 mt-3 mt-lg-0"
         >
-
           {/* Hidden Upload Input */}
 
           <input
@@ -167,26 +157,18 @@ const QuestionList = () => {
 
           {/* Add Question */}
 
-          <Button
-            variant="primary"
-            onClick={() => setShowModal(true)}
-          >
+          <Button variant="primary" onClick={() => setShowModal(true)}>
             <FaPlus className="me-2" />
             Add Question
           </Button>
-
         </Col>
-
       </Row>
 
       {/* Search */}
 
       <Row className="mb-4">
-
         <Col lg={6}>
-
           <InputGroup>
-
             <InputGroup.Text>
               <FaSearch />
             </InputGroup.Text>
@@ -196,77 +178,56 @@ const QuestionList = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-
           </InputGroup>
-
         </Col>
-
       </Row>
 
       {/* Question List */}
 
       <ListGroup className="question-list">
-
         {filteredQuestions.length > 0 ? (
-
           filteredQuestions.map((question, index) => (
-
             <ListGroup.Item
               key={question.id}
               className={`question-item ${
                 !question.enabled ? "disabled-question" : ""
               }`}
             >
-
               <Row className="align-items-center">
-
                 <Col lg={8}>
-
                   <h5 className="question-title">
                     {index + 1}. {question.title}
                   </h5>
 
                   <div className="question-meta">
+                    <Badge bg="primary">{question.code}</Badge>
 
-                    <Badge bg="primary">
-                      {question.code}
-                    </Badge>
-
-                    <Badge bg="secondary">
-                      {question.type}
-                    </Badge>
+                    <Badge bg="secondary">{question.type}</Badge>
 
                     <Badge
                       bg={
                         question.difficulty === "Easy"
                           ? "success"
                           : question.difficulty === "Medium"
-                          ? "warning"
-                          : "danger"
+                            ? "warning"
+                            : "danger"
                       }
                     >
                       {question.difficulty}
                     </Badge>
 
-                    <Badge bg="info">
-                      {question.marks} Marks
-                    </Badge>
+                    <Badge bg="info">{question.marks} Marks</Badge>
 
-                    <Badge
-                      bg={question.enabled ? "success" : "secondary"}
-                    >
+                    <Badge bg={question.enabled ? "success" : "secondary"}>
                       {question.enabled ? "Enabled" : "Disabled"}
                     </Badge>
-
                   </div>
-
                 </Col>
 
                 <Col
                   lg={4}
                   className="d-flex justify-content-lg-end align-items-center flex-wrap gap-2 mt-3 mt-lg-0"
                 >
-
                   <Button
                     variant="outline-primary"
                     size="sm"
@@ -301,36 +262,25 @@ const QuestionList = () => {
                     <FaTrash className="me-1" />
                     Delete
                   </Button>
-
                 </Col>
-
               </Row>
-
             </ListGroup.Item>
-
           ))
-
         ) : (
-
           <ListGroup.Item className="text-center py-5">
-
             <h5>No Questions Found</h5>
 
             <p className="text-muted mb-0">
               Try searching with a different keyword.
             </p>
-
           </ListGroup.Item>
-
         )}
-
       </ListGroup>
 
       <AddQuestionModal
         show={showModal}
         handleClose={() => setShowModal(false)}
       />
-
     </Container>
   );
 };

@@ -2,9 +2,9 @@
   display: flex;
   align-items: center;
   padding: 18px 20px;
-  border: 1px solid #fef3c7; /* Soft yellow/amber border */
+  border: 0.5px solid #c5c6d0;
+  background-color: white; /* Soft yellow/amber border */
   border-radius: 16px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
 }
 
 .stat-icon-wrapper {

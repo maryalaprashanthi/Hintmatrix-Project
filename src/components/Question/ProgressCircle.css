@@ -1,0 +1,25 @@
+.progress-chart-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 70px;
+  height: 70px;
+  flex-shrink: 0;
+}
+
+.progress-ring {
+  transform: rotate(-90deg); /* Starts the progress at 12 o'clock */
+}
+
+.progress-ring-circle {
+  transition: stroke-dashoffset 0.5s ease-in-out;
+  stroke-linecap: round;
+}
+
+.progress-percentage {
+  position: absolute;
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+}

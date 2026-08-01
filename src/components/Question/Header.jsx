@@ -10,7 +10,7 @@ import {
 function Header() {
   return (
     <>
-      <Navbar bg="white" className="shadow-sm border-bottom py-3 my-4">
+      <Navbar bg="white" className="shadow-sm border-bottom">
         <Container fluid>
           {/* Left Side */}
           <div className="d-flex align-items-center">
