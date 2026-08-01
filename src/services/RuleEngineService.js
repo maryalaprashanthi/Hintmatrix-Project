@@ -32,6 +32,28 @@ const RuleEngineService = {
     const response = await axios.delete(`${BASE_URL}/${id}`);
     return response.data;
   },
+
+  // Upload Rules Excel
+uploadRulesExcel: async (file) => {
+
+  const formData = new FormData();
+
+  formData.append("file", file);
+
+
+  const response = await axios.post(
+    "http://localhost:8080/api/rule-engines/excel/upload",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+
+
+  return response.data;
+},
 };
 
 export default RuleEngineService;

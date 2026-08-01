@@ -35,17 +35,43 @@ function RuleEngine() {
   };
 
   const handleFileChange = async (e) => {
-    const file = e.target.files[0];
 
-    if (!file) return;
+  const file = e.target.files[0];
 
-    console.log("Selected File:", file);
+  if (!file) return;
 
-    // TODO:
-    // await RuleEngineService.uploadRules(file);
 
+  console.log("Selected File:", file);
+
+
+  try {
+
+    const response = await RuleEngineService.uploadRulesExcel(file);
+
+
+    alert(
+      response.message || 
+      "Rules uploaded successfully!"
+    );
+
+
+    // Refresh table after upload
     fetchRules();
-  };
+
+
+  } catch (error) {
+
+    console.error("Upload Error:", error);
+
+    alert("Rule upload failed");
+
+  }
+
+
+  // Allow selecting the same file again
+  e.target.value = "";
+
+};
 
   // ===========================
   // Add Rule
