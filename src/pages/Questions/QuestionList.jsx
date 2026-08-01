@@ -328,7 +328,14 @@ const QuestionList = () => {
 
       <AddQuestionModal
         show={showModal}
-        handleClose={() => setShowModal(false)}
+          onClose={() => setShowModal(false)}
+  onSave={(newQuestion) => {
+    console.log(newQuestion);
+
+    setShowModal(false);
+  }}
+  questionData={null}
+
       />
 
     </Container>
