@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import CollegeService from "../../../services/CollegeService"; 
-import SuccessModal from "../../../components/Common/SuccessModal";
 
 import {
   FaTimes,
@@ -21,7 +20,7 @@ function AddBranchModal({ show, onClose, onSave,selectedBranchData }) {
   const [address, setAddress] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
+ 
 
   const [collegesList, setCollegesList] = useState([]); // 🌟 ADDED: State store for backend colleges lookup
   // 🌟 ADDED: Fetch available colleges whenever modal opens up
@@ -56,7 +55,7 @@ function AddBranchModal({ show, onClose, onSave,selectedBranchData }) {
 
   if (!show) return null;
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (
       !String(collegeId).trim() ||
       !branchName.trim() ||
@@ -88,20 +87,16 @@ function AddBranchModal({ show, onClose, onSave,selectedBranchData }) {
       phoneNumber: phoneNumber.trim(), // 🌟 FIXED: Changed 'phone' to 'phoneNumber' to match backend DTO field name exactly
       email: email.trim(),
     };
-
-    onSave(branchData);
+    await onSave(branchData);
 
     setCollegeId("");
     setBranchName("");
     setAddress("");
     setPhoneNumber("");
-    setEmail("");
-
-    setShowSuccess(true);
-    
+    setEmail(""); 
   };
 
-  return createPortal(
+ return createPortal(
     <div className="modal-overlay">
 
       <div className="branch-modal">
@@ -286,18 +281,7 @@ function AddBranchModal({ show, onClose, onSave,selectedBranchData }) {
           </button>
 
         </div>
-
       </div>
-       
-       <SuccessModal
-        show={showSuccess}
-        message="Branch saved successfully!"
-        onClose={() => {
-          setShowSuccess(false);
-          onClose();
-        }}
-      />
-
     </div>,
     document.body
   );

@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import SuccessModal from "../../../components/Common/SuccessModal";
 
 import {
   FaBook,
   FaLayerGroup,
   FaSignal,
   FaClock,
-  FaFileAlt,
   FaImage,
   FaSave,
   FaTimes,
@@ -16,9 +14,8 @@ import {
 import "./AddCourseModal.css";
 
 import BranchService from "../../../services/BranchService";
-import CourseService from "../../../services/CourseService";
 
-function AddCourseModal({ show, onClose, onRefresh, selectedCourseData }) {
+function AddCourseModal({ show, onClose, onSave, selectedCourseData }) {
   const [courseName, setCourseName] = useState("");
   const [category, setCategory] = useState("Commerce");
   const [level, setLevel] = useState("Beginner");
@@ -28,7 +25,7 @@ function AddCourseModal({ show, onClose, onRefresh, selectedCourseData }) {
 
   const [branches, setBranches] = useState([]);
   const [branchId, setBranchId] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
+  
   
   // Load branches
   useEffect(() => {
@@ -72,57 +69,41 @@ function AddCourseModal({ show, onClose, onRefresh, selectedCourseData }) {
   }, [selectedCourseData, show]);
 
   if (!show) return null;
+  const handleSave = async (e) => {
+  e.preventDefault();
 
-  const handleSave = (e) => {
-    e.preventDefault();
+  if (!courseName.trim()) {
+    alert("Please enter Course Name.");
+    return;
+  }
 
-    if (!courseName.trim()) {
-      alert("Please enter Course Name.");
-      return;
-    }
+  if (!branchId) {
+    alert("Please select branch.");
+    return;
+  }
 
-    if (!branchId) {
-      alert("Please select branch.");
-      return;
-    }
+  const courseRequestDTO = {
+    branchId: Number(branchId),
+    name: courseName.trim(),
+  };
 
-    const courseRequestDTO = {
-      branchId: Number(branchId),
-      name: courseName.trim(),
-    };
+  const isEdit = selectedCourseData?.courseId || selectedCourseData?.id;
+  const courseId = selectedCourseData?.courseId || selectedCourseData?.id;
+try{
+  await onSave(courseRequestDTO, isEdit, courseId);
 
-    const isEdit = selectedCourseData?.courseId || selectedCourseData?.id;
-
-    const courseId = selectedCourseData?.courseId || selectedCourseData?.id;
-
-    const apiCall = isEdit
-      ? CourseService.updateCourse(courseId, courseRequestDTO)
-      : CourseService.saveCourse(courseRequestDTO);
-
-    apiCall
-  .then((response) => {
-
-    setShowSuccess(true);
-
-    setCourseName("");
-    setCategory("Commerce");
-    setLevel("Beginner");
-    setDuration("3 Months");
-    setDescription("");
-    setThumbnail(null);
-    setBranchId("");
-
-    if (onRefresh) {
-      onRefresh();
-    }
-
-  })
-  .catch((error) => {
-    console.error(error);
-
-    alert(error.response?.data?.message || "Failed to save course.");
-  });
-};
+  setCourseName("");
+  setCategory("Commerce");
+  setLevel("Beginner");
+  setDuration("3 Months");
+  setDescription("");
+  setThumbnail(null);
+  setBranchId("");
+} catch(error){
+  console.error(error);
+}
+  };
+  
   return createPortal(
     <div className="modal-overlay">
       <div className="course-modal">
@@ -291,18 +272,6 @@ function AddCourseModal({ show, onClose, onRefresh, selectedCourseData }) {
           </button>
         </div>
       </div>
-       <SuccessModal
-        show={showSuccess}
-        message={
-          selectedCourseData
-            ? "Course updated successfully!"
-            : "Course saved successfully!"
-        }
-        onClose={() => {
-          setShowSuccess(false);
-          onClose();
-        }}
-      />
     </div>,
 
     document.body,

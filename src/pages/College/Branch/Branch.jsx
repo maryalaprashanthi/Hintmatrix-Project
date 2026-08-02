@@ -3,13 +3,15 @@ import AddBranchModal from "./AddBranchmodal";
 import "./Branch.css";
 import BranchService from "../../../services/BranchService";
 import BranchTable from "./BranchTable";
+import SuccessModal from "../../../components/Common/SuccessModal";
 
 function Branch() {
   const [showModal, setShowModal] = useState(false);
   const [branches, setBranches] = useState([]);
   const [selectedBranch, setSelectedBranch] = useState(null); // 🌟 ADDED: State tracking for editing items
   const [refreshTrigger, setRefreshTrigger] = useState(false); 
-  
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   // Open Add Branch Form Context Block
   const handleAddBranch = () => {
     setSelectedBranch(null);
@@ -23,33 +25,29 @@ function Branch() {
   };
 
   // Save / Update Branch Orchestration Pipeline
-  const handleSave = (branchData) => {
-    console.log("Submitting Branch payload:", branchData);
-   
-     // Update the local branches list array state
-    setBranches((prevBranches) => [...prevBranches, branchData]);
+  const handleSave = async (branchData) => {
+  console.log("Submitting Branch payload:", branchData);
 
-    // Checks for a branchId to toggle between PUT (update) and POST (save) requests
+  try {
     if (branchData.branchId) {
-      BranchService.updateBranch(branchData.branchId, branchData)
-     .then(() => {
-      setRefreshTrigger((prev) => !prev);
-      })
-      .catch((error) => {
-      console.error("Error updating branch record:", error);
-      alert(error.response?.data || "Failed to update branch.");
-      });
+      await BranchService.updateBranch(branchData.branchId, branchData);
+      setSuccessMessage("Branch updated successfully!");
     } else {
-     BranchService.saveBranch(branchData)
-     .then(() => {
-     setRefreshTrigger((prev) => !prev);
-     })
-    .catch((error) => {
-    console.error("Error creating branch record:", error);
-    alert(error.response?.data || "Failed to register new branch.");
-    });
+      await BranchService.saveBranch(branchData);
+      setSuccessMessage("Branch saved successfully!");
     }
-    };
+
+    setShowModal(false);
+    setSelectedBranch(null);
+    setRefreshTrigger((prev) => !prev);
+    setShowSuccess(true);
+
+  } catch (error) {
+    console.error(error);
+    alert(error.response?.data || "Operation failed.");
+  }
+};
+    
   const handleFileUpload = async (e) => {
   const file = e.target.files[0];
 
@@ -147,6 +145,11 @@ return (
         }}
         onSave={handleSave}
         selectedBranchData={selectedBranch} // 🌟 Passes row tracking state downstream to inputs
+      />
+      <SuccessModal
+      show={showSuccess}
+      message={successMessage}
+      onClose={() => setShowSuccess(false)}
       />
 
     </div>

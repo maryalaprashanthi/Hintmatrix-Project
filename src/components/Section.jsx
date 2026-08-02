@@ -5,72 +5,121 @@ import "./Section.css";
 import SectionForm from "./SectionForm";
 import SectionTable from "./SectionTable";
 import SectionService from "../services/SectionService";
+import SuccessModal from "../components/Common/SuccessModal";
 
 function Section() {
+
   const [showModal, setShowModal] = useState(false);
   const [selectedSection, setSelectedSection] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
-  // Upload (Frontend Only)
-  // Upload Excel
-const handleFileUpload = async (event) => {
-  const file = event.target.files[0];
+  const handleFileUpload = async (event) => {
 
-  if (!file) return;
+    const file = event.target.files[0];
 
-  try {
-    const response = await SectionService.uploadExcel(file);
+    if (!file) return;
 
-    alert(
-      typeof response.data === "string"
-        ? response.data
-        : "Section Excel uploaded successfully!"
-    );
+    try {
 
-    setRefreshTrigger((prev) => !prev);
+      const response = await SectionService.uploadExcel(file);
 
-  } catch (error) {
-    console.error("Upload Error:", error);
+      alert(
+        typeof response.data === "string"
+          ? response.data
+          : "Section Excel uploaded successfully!"
+      );
 
-    if (error.response) {
-      alert(error.response.data);
-    } else {
+      setRefreshTrigger((prev) => !prev);
+
+    } catch (error) {
+
+      console.error("Upload Error:", error);
+
       alert("File upload failed.");
+
     }
-  }
-    // Reset input
+
     event.target.value = "";
+
   };
+
 
   const handleAddSection = () => {
+
     setSelectedSection(null);
     setShowModal(true);
+
   };
+
 
   const handleEditSection = (sectionData) => {
+
     setSelectedSection(sectionData);
     setShowModal(true);
+
   };
 
-  const handleUpdateComplete = () => {
-    setSelectedSection(null);
-    setShowModal(false);
-    setRefreshTrigger((prev) => !prev);
-  };
 
   const handleClose = () => {
+
     setSelectedSection(null);
     setShowModal(false);
+
   };
 
-  return (
-    <div className="container-fluid py-4 px-4 bg-light min-vh-100">
 
-      {/* Header */}
+  const handleSaveSection = async (requestDTO, sectionId) => {
+
+    try {
+
+      if (sectionId) {
+
+        await SectionService.updateSection(
+          sectionId,
+          requestDTO
+        );
+
+        setSuccessMessage("Section updated successfully!");
+
+      } else {
+
+        await SectionService.saveSection(
+          requestDTO
+        );
+
+        setSuccessMessage("Section saved successfully!");
+
+      }
+
+      setShowSuccess(true);
+      setSelectedSection(null);
+      setShowModal(false);
+      setRefreshTrigger((prev) => !prev);
+
+    } catch (error) {
+
+      console.error("Section Save Error:", error);
+
+      alert(
+        error.response?.data?.message ||
+        "Failed to save section"
+      );
+
+    }
+
+  };
+
+
+  return (
+
+    <div className="container-fluid py-4 px-4 bg-light min-vh-100">
 
       <div className="d-flex justify-content-between align-items-center mb-4">
 
         <div>
+
           <h2 className="fw-bold mb-1">
             Section Management
           </h2>
@@ -78,16 +127,18 @@ const handleFileUpload = async (event) => {
           <p className="text-muted mb-0">
             Manage all sections from one place.
           </p>
+
         </div>
 
-        {/* Hidden Upload Input */}
+
         <input
           type="file"
           id="sectionUpload"
           accept=".csv,.xlsx,.xls"
-          style={{ display: "none" }}
+          style={{display:"none"}}
           onChange={handleFileUpload}
         />
+
 
         <div className="d-flex gap-2">
 
@@ -100,6 +151,7 @@ const handleFileUpload = async (event) => {
             ⬆ Upload
           </button>
 
+
           <button
             className="btn btn-primary"
             onClick={handleAddSection}
@@ -111,7 +163,6 @@ const handleFileUpload = async (event) => {
 
       </div>
 
-      {/* Table */}
 
       <div className="card shadow-sm border-0">
 
@@ -126,15 +177,13 @@ const handleFileUpload = async (event) => {
 
       </div>
 
-      {/* Modal */}
 
       {showModal &&
         createPortal(
+
           <div className="modal-overlay">
 
             <div className="section-modal">
-
-              {/* Header */}
 
               <div className="modal-header">
 
@@ -152,6 +201,7 @@ const handleFileUpload = async (event) => {
 
                 </div>
 
+
                 <button
                   type="button"
                   className="close-btn"
@@ -162,13 +212,12 @@ const handleFileUpload = async (event) => {
 
               </div>
 
-              {/* Body */}
 
               <div className="modal-body">
 
                 <SectionForm
                   selectedSectionData={selectedSection}
-                  onUpdateComplete={handleUpdateComplete}
+                  onSave={handleSaveSection}
                   onCancel={handleClose}
                 />
 
@@ -177,11 +226,23 @@ const handleFileUpload = async (event) => {
             </div>
 
           </div>,
+
           document.body
+
         )}
 
+
+      <SuccessModal
+        show={showSuccess}
+        message={successMessage}
+        onClose={() => setShowSuccess(false)}
+      />
+
+
     </div>
+
   );
+
 }
 
 export default Section;
