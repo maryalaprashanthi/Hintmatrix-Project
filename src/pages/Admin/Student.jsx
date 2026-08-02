@@ -77,29 +77,26 @@ function Student() {
 
   // Save / Update Student
   const handleSave = (studentData) => {
-    if (selectedStudent) {
-      StudentService.updateStudent(selectedStudent.studentId, studentData)
-        .then(() => {
-          alert("Student updated successfully!");
-          fetchStudents();
-          setShowModal(false);
-          setSelectedStudent(null);
-        })
-        .catch((error) => {
-          console.error("Update Error:", error);
-          alert("Failed to update Student.");
-        });
-    } else {
-      StudentService.createStudent(studentData)
-        .then(() => {
-          alert("Student added successfully!");
-          fetchStudents();
-          setShowModal(false);
-        })
-        .catch((error) => {
-          console.error("Save Error:", error);
-          alert("Failed to add Student.");
-        });
+  if (selectedStudent) {
+    StudentService.updateStudent(selectedStudent.studentId, studentData)
+      .then(() => {
+        fetchStudents();
+        setSelectedStudent(null);
+      })
+      .catch((error) => {
+        console.error("Update Error:", error);
+        alert("Failed to update Student.");
+      });
+
+  } else {
+    StudentService.createStudent(studentData)
+      .then(() => {
+        fetchStudents();
+      })
+      .catch((error) => {
+        console.error("Save Error:", error);
+        alert("Failed to add Student.");
+      });
     }
   };
 

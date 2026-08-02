@@ -39,34 +39,31 @@ function SuperAdmin() {
 
   // Save / Update Super Admin
   const handleSave = (superAdminData) => {
-    if (selectedSuperAdmin) {
-      SuperAdminService.updateSuperAdmin(
-        selectedSuperAdmin.superAdminId,
-        superAdminData,
-      )
-        .then(() => {
-          alert("Super Admin updated successfully!");
-          fetchSuperAdmins();
-          setShowModal(false);
-          setSelectedSuperAdmin(null);
-        })
-        .catch((error) => {
-          console.error("Update Error:", error);
-          alert("Failed to update Super Admin.");
-        });
-    } else {
-      SuperAdminService.createSuperAdmin(superAdminData)
-        .then(() => {
-          alert("Super Admin added successfully!");
-          fetchSuperAdmins();
-          setShowModal(false);
-        })
-        .catch((error) => {
-          console.error("Save Error:", error);
-          alert("Failed to add Super Admin.");
-        });
-    }
-  };
+  if (selectedSuperAdmin) {
+    SuperAdminService.updateSuperAdmin(
+      selectedSuperAdmin.superAdminId,
+      superAdminData,
+    )
+      .then(() => {
+        fetchSuperAdmins();
+        setSelectedSuperAdmin(null);
+      })
+      .catch((error) => {
+        console.error("Update Error:", error);
+        alert("Failed to update Super Admin.");
+      });
+
+  } else {
+    SuperAdminService.createSuperAdmin(superAdminData)
+      .then(() => {
+        fetchSuperAdmins();
+      })
+      .catch((error) => {
+        console.error("Save Error:", error);
+        alert("Failed to add Super Admin.");
+      });
+  }
+};
 
   return (
     <div className="container-fluid py-4">

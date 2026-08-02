@@ -3,12 +3,15 @@ import AddTableAttributeModal from "./AddTableAttributeModal";
 import "./TableAttributes.css";
 import TableAttributeService from "../../services/TableAttributeService";
 import DataGrid from "../../components/DataGrid";
+import SuccessModal from "../../components/Common/SuccessModal";
 
 function TableAttributes() {
   const [showModal, setShowModal] = useState(false);
   const [editingAttribute, setEditingAttribute] = useState(null);
   const [tableAttributes, setTableAttributes] = useState([]);
   const [id, setId] = useState(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const loadTableAttributes = async () => {
     try {
@@ -18,8 +21,10 @@ function TableAttributes() {
       const allTableAttributes = data.map((obj) => ({
         name: obj.name,
         id: obj.attributeId,
+        amount1: obj.amount1,
+        amount2: obj.amount2,
         tableHeaderName: obj.tableHeaderName,
-        shortName: obj.shortName,
+        
       }));
 
       setTableAttributes(allTableAttributes);
@@ -75,7 +80,14 @@ function TableAttributes() {
       headerName: "Table Header Name",
       flex: 1,
     },
-    { field: "shortName", headerName: "Short Name", flex: 1 },
+    { field: "amount1",
+      headerName: "Amount 1",
+      flex: 1,
+    },
+    { field: "amount2",
+      headerName: "Amount 2",
+      flex: 1,
+    },
     {
       headerName: "Action",
       flex: 1,
@@ -95,7 +107,8 @@ function TableAttributes() {
               onClick={() => {
                 let editedData = {
                   name: params.data.name,
-                  shortName: params.data.shortName,
+                  amount1: params.data.amount1,
+                  amount2: params.data.amount2,
                   tableHeaderName: params.data.tableHeaderName,
                 };
 
@@ -146,23 +159,23 @@ function TableAttributes() {
     },
   ];
     const handleSave = async (newAttribute) => {
-  try {
-    if (id != null) {
+      try {
+      if (id != null) {
       await TableAttributeService.update(id, newAttribute);
-      alert("Table Attribute updated successfully.");
+      setSuccessMessage("Table Attribute updated successfully!");
     } else {
       await TableAttributeService.create(newAttribute);
-      alert("Table Attribute added successfully.");
+      setSuccessMessage("Table Attribute added successfully!");
     }
-
-    setEditingAttribute(null);
-    setId(null);
-    setShowModal(false);
-
-    loadTableAttributes();
-  } catch (error) {
-    console.error("Error:", error);
-    alert("Operation failed.");
+      setShowSuccess(true);
+      setEditingAttribute(null);
+      setId(null);
+      setShowModal(false);
+      loadTableAttributes();
+    } 
+     catch (error) {
+     console.error("Error:", error);
+     alert("Operation failed.");
   }
 };
 
@@ -240,6 +253,13 @@ function TableAttributes() {
         onSave={handleSave}
         initialData={editingAttribute}
       />
+        <SuccessModal
+        show={showSuccess}
+        message={successMessage}
+        onClose={() => {
+        setShowSuccess(false);
+       }}
+    />
 
     </div>
   );

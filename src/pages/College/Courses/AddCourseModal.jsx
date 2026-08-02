@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import SuccessModal from "../../../components/Common/SuccessModal";
 
 import {
   FaBook,
@@ -27,7 +28,8 @@ function AddCourseModal({ show, onClose, onRefresh, selectedCourseData }) {
 
   const [branches, setBranches] = useState([]);
   const [branchId, setBranchId] = useState("");
-
+  const [showSuccess, setShowSuccess] = useState(false);
+  
   // Load branches
   useEffect(() => {
     BranchService.getAllBranches()
@@ -98,37 +100,29 @@ function AddCourseModal({ show, onClose, onRefresh, selectedCourseData }) {
       : CourseService.saveCourse(courseRequestDTO);
 
     apiCall
-      .then((response) => {
-        if (response.data && typeof response.data === "string") {
-          alert(response.data);
-        } else {
-          alert(
-            isEdit
-              ? "Course updated successfully!"
-              : "Course saved successfully!",
-          );
-        }
+  .then((response) => {
 
-        setCourseName("");
-        setCategory("Commerce");
-        setLevel("Beginner");
-        setDuration("3 Months");
-        setDescription("");
-        setThumbnail(null);
-        setBranchId("");
+    setShowSuccess(true);
 
-        if (onRefresh) {
-          onRefresh();
-        }
+    setCourseName("");
+    setCategory("Commerce");
+    setLevel("Beginner");
+    setDuration("3 Months");
+    setDescription("");
+    setThumbnail(null);
+    setBranchId("");
 
-        onClose();
-      })
-      .catch((error) => {
-        console.error(error);
+    if (onRefresh) {
+      onRefresh();
+    }
 
-        alert(error.response?.data?.message || "Failed to save course.");
-      });
-  };
+  })
+  .catch((error) => {
+    console.error(error);
+
+    alert(error.response?.data?.message || "Failed to save course.");
+  });
+};
   return createPortal(
     <div className="modal-overlay">
       <div className="course-modal">
@@ -297,6 +291,18 @@ function AddCourseModal({ show, onClose, onRefresh, selectedCourseData }) {
           </button>
         </div>
       </div>
+       <SuccessModal
+        show={showSuccess}
+        message={
+          selectedCourseData
+            ? "Course updated successfully!"
+            : "Course saved successfully!"
+        }
+        onClose={() => {
+          setShowSuccess(false);
+          onClose();
+        }}
+      />
     </div>,
 
     document.body,

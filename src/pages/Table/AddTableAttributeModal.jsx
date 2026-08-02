@@ -8,7 +8,8 @@ import TableHeaderService from "../../services/TableHeaderService";
 function AddTableAttributeModal({ show, onClose, onSave, initialData }) {
   const [formData, setFormData] = useState({
     name: "",
-    shortName: "",
+    amount1: "",
+    amount2: "",
     tableHeaderName: "",
   });
   const [tableHeaders, setTableHeaders] = useState([]);
@@ -29,7 +30,8 @@ function AddTableAttributeModal({ show, onClose, onSave, initialData }) {
     setFormData(
       initialData || {
         name: "",
-        shortName: "",
+        Amount1: "",
+        Amount2: "",
         tableHeaderName: "",
       },
     );
@@ -45,7 +47,8 @@ function AddTableAttributeModal({ show, onClose, onSave, initialData }) {
     await onSave(formData);
     setFormData({
       name: "",
-      shortName: "",
+      amount1: "",
+      amount2: "",
       tableHeaderName: "",
     });
   };
@@ -53,7 +56,8 @@ function AddTableAttributeModal({ show, onClose, onSave, initialData }) {
   const handleClose = () => {
     setFormData({
       name: "",
-      shortName: "",
+      amount1: "",
+      amount2: "",
       tableHeaderName: "",
     });
     onClose();
@@ -112,24 +116,40 @@ function AddTableAttributeModal({ show, onClose, onSave, initialData }) {
                 </div>
               </div>
 
-              {/* Short Name */}
+             {/* Amount 1 */}
 
-              <div className="form-group">
-                <label>Short Name</label>
+             <div className="form-group">
+             <label>Amount 1</label>
+             <div className="input-box">
+             <FaTag className="input-icon" />
 
-                <div className="input-box">
-                  <FaTag className="input-icon" />
+              <input
+               type="number"
+               placeholder="Enter Amount 1"
+               value={formData.amount1}
+               onChange={(e) =>
+               setFormData({ ...formData, amount1: e.target.value })
+               }
+              />
+           </div>
+        </div>
+           {/* Amount 2 */}
 
-                  <input
-                    type="text"
-                    placeholder="Enter Short Name"
-                    value={formData.shortName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, shortName: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
+           <div className="form-group">
+           <label>Amount 2</label>
+           <div className="input-box">
+           <FaTag className="input-icon" />
+
+            <input
+             type="number"
+             placeholder="Enter Amount 2"
+             value={formData.amount2}
+             onChange={(e) =>
+             setFormData({ ...formData, amount2: e.target.value })
+            }
+            />
+          </div>
+         </div>
 
               {/* Table Header Name */}
 

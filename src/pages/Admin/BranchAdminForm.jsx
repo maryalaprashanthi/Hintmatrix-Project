@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import CollegeService from "../../services/CollegeService";
 import BranchService from "../../services/BranchService";
+import SuccessModal from "../../components/Common/SuccessModal";
 
 import {
   FaTimes,
@@ -31,6 +32,7 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
   const [address, setAddress] = useState("");
   const [collegesList, setCollegesList] = useState([]);
   const [branchesList, setBranchesList] = useState([]);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const fetchColleges = async () => {
     try {
@@ -114,6 +116,7 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
     };
 
     onSave(branchAdminData);
+    setShowSuccess(true);
   };
 
   return createPortal(
@@ -340,6 +343,18 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
           </button>
         </div>
       </div>
+      <SuccessModal
+        show={showSuccess}
+        message={
+          selectedBranchAdminData
+            ? "Branch Admin updated successfully!"
+            : "Branch Admin saved successfully!"
+        }
+        onClose={() => {
+          setShowSuccess(false);
+          onClose();
+        }}
+      />
     </div>,
     document.body,
   );

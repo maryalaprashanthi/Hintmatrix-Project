@@ -47,9 +47,6 @@ function College() {
   } catch (error) {
 
     console.error(error);
-
-    alert("Failed to save college.");
-
   }
 };
 
