@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CourseService from "../../../services/CourseService";
+import SuccessModal from "../../../components/Common/SuccessModal";
 
 import {
   FaBookOpen,
@@ -32,6 +33,8 @@ function Courses() {
   const [showModal, setShowModal] = useState(false);
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const loadCourses = () => {
     CourseService.getAllCourses()
@@ -68,6 +71,26 @@ function Courses() {
         .catch((error) => {
           console.error("Delete Error:", error);
         });
+    }
+  };
+  const handleSave = async (courseRequestDTO, isEdit, courseId) => {
+    try {
+      if (isEdit) {
+        await CourseService.updateCourse(courseId, courseRequestDTO);
+        setSuccessMessage("Course updated successfully!");
+      } else {
+        await CourseService.saveCourse(courseRequestDTO);
+        setSuccessMessage("Course saved successfully!");
+      }
+
+      setShowModal(false);
+      setSelectedCourse(null);
+      loadCourses();
+      setShowSuccess(true);
+
+    } catch (error) {
+      console.error(error);
+      alert(error.response?.data?.message || "Failed to save course.");
     }
   };
 
@@ -382,9 +405,14 @@ const handleFileUpload = async (e) => {
           setShowModal(false);
           setSelectedCourse(null);
         }}
-        onRefresh={loadCourses}
+        onSave={handleSave}
         selectedCourseData={selectedCourse}
       />
+      <SuccessModal
+  show={showSuccess}
+  message={successMessage}
+  onClose={() => setShowSuccess(false)}
+  />
 
     </div>
   );

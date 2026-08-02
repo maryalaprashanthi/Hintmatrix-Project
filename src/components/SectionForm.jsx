@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import SectionService from "../services/SectionService";
-import SuccessModal from "../components/Common/SuccessModal";
 
 import {
   FaCodeBranch,
@@ -10,21 +8,17 @@ import {
   FaSave,
 } from "react-icons/fa";
 
-function SectionForm({ selectedSectionData, onUpdateComplete, onCancel }) {
- const emptySection = {
-  sectionId: "",
-  courseId: "",
-  sectionName: "",
-  description: "",
-};
+function SectionForm({ selectedSectionData, onSave, onCancel }) {
+
+  const emptySection = {
+    sectionId: "",
+    courseId: "",
+    sectionName: "",
+    description: "",
+  };
 
   const [section, setSection] = useState(emptySection);
   const [coursesList, setCoursesList] = useState([]);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  /* ===============================
-      LOAD BRANCHES
-  =============================== */
 
   useEffect(() => {
     loadCourses();
@@ -44,11 +38,11 @@ function SectionForm({ selectedSectionData, onUpdateComplete, onCancel }) {
   useEffect(() => {
     if (selectedSectionData) {
       setSection({
-  sectionId: selectedSectionData.sectionId || "",
-  courseId: selectedSectionData.courseId || "",
-  sectionName: selectedSectionData.sectionName || "",
-  description: selectedSectionData.description || "",
-});
+        sectionId: selectedSectionData.sectionId || "",
+        courseId: selectedSectionData.courseId || "",
+        sectionName: selectedSectionData.sectionName || "",
+        description: selectedSectionData.description || "",
+      });
     } else {
       setSection(emptySection);
     }
@@ -62,69 +56,44 @@ function SectionForm({ selectedSectionData, onUpdateComplete, onCancel }) {
         ...section,
         courseId: value === "" ? "" : Number(value),
       });
-
       return;
     }
 
     setSection({
       ...section,
-      [name]: name === "branchId" ? (value === "" ? "" : Number(value)) : value,
+      [name]: value,
     });
   };
 
-  const clearForm = () => {
-    setSection(emptySection);
-
-    if (onUpdateComplete) {
-      onUpdateComplete();
-    }
-  };
-
   const saveSection = (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!section.courseId) {
-    alert("Please select an associate course.");
-    return;
-  }
+    if (!section.courseId) {
+      alert("Please select an associate course.");
+      return;
+    }
 
-  const requestDTO = {
-    courseId: section.courseId,
-    sectionName: section.sectionName,
-    description: section.description,
+    const requestDTO = {
+      courseId: section.courseId,
+      sectionName: section.sectionName,
+      description: section.description,
+    };
+
+    onSave(requestDTO, section.sectionId);
+
+    setSection(emptySection);
   };
-
-  if (section.sectionId) {
-    SectionService.updateSection(section.sectionId, requestDTO)
-      .then(() => {
-        setSuccessMessage("Section Updated Successfully!");
-        setShowSuccess(true);
-        setTimeout(() =>{
-          clearForm();
-        },1000);
-      })
-      .catch(console.error);
-  } else {
-    SectionService.saveSection(requestDTO)
-      .then(() => {
-        setSuccessMessage("Section Saved Successfully!");
-        setShowSuccess(true);
-        setTimeout(() =>{
-        clearForm();
-        },1000);
-      })
-      .catch(console.error);
-  }
-};
 
   return (
-    <>
     <form onSubmit={saveSection}>
+
       <div className="form-card">
-        <h3 className="section-title">Section Information</h3>
+
+        <h3 className="section-title">
+          Section Information
+        </h3>
 
         <div className="form-grid">
-          {/* course*/}
 
           <div className="form-group">
             <label className="form-label fw-semibold">
@@ -142,23 +111,22 @@ function SectionForm({ selectedSectionData, onUpdateComplete, onCancel }) {
                 onChange={handleChange}
                 required
               >
-                <option value="">Select Course</option>
+                <option value="">
+                  Select Course
+                </option>
 
                 {coursesList.map((course) => (
                   <option
-                    //  FIXED: Gracefully checks all common backend ID variants
                     key={course.courseId || course.id}
                     value={course.courseId || course.id}
                   >
-                    {/* FIXED: Changed from course.courseName to course.name to match your Java DTO string model property fields */}
                     {course.name || course.title || course.courseName}
                   </option>
                 ))}
+
               </select>
             </div>
           </div>
-
-          {/* Section Name */}
 
           <div className="form-group">
             <label>
@@ -174,49 +142,55 @@ function SectionForm({ selectedSectionData, onUpdateComplete, onCancel }) {
                 placeholder="Enter Section Name"
                 value={section.sectionName}
                 onChange={handleChange}
+                required
               />
             </div>
           </div>
 
           <div className="form-group description-group">
-    <label>
-        Description <span>*</span>
-    </label>
+            <label>
+              Description <span>*</span>
+            </label>
 
-    <div className="textarea-box">
-        <FaAlignLeft className="input-icon" />
+            <div className="textarea-box">
+              <FaAlignLeft className="input-icon" />
 
-        <textarea
-            name="description"
-            placeholder="Enter Description"
-            value={section.description}
-            onChange={handleChange}
-            rows={4}
-            required
-        />
-    </div>
-</div>
+              <textarea
+                name="description"
+                placeholder="Enter Description"
+                value={section.description}
+                onChange={handleChange}
+                rows={4}
+                required
+              />
+            </div>
+          </div>
+
         </div>
+
       </div>
 
       <div className="modal-footer">
-        <button type="button" className="btn btn-secondary" onClick={onCancel}>
+
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={onCancel}
+        >
           Cancel
         </button>
 
-        <button type="submit" className="btn btn-primary">
+        <button
+          type="submit"
+          className="btn btn-primary"
+        >
           <FaSave className="me-2" />
           Save
         </button>
-      </div>
-    </form>
-    <SuccessModal
-  show={showSuccess}
-  message={successMessage}
-  onClose={() => setShowSuccess(false)}
-/>
 
-</>
+      </div>
+
+    </form>
   );
 }
 
