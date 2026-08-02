@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import SectionService from "../services/SectionService";
+import SuccessModal from "../components/Common/SuccessModal";
 
 import {
   FaCodeBranch,
@@ -19,7 +20,8 @@ function SectionForm({ selectedSectionData, onUpdateComplete, onCancel }) {
 
   const [section, setSection] = useState(emptySection);
   const [coursesList, setCoursesList] = useState([]);
-
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   /* ===============================
       LOAD BRANCHES
   =============================== */
@@ -79,37 +81,44 @@ function SectionForm({ selectedSectionData, onUpdateComplete, onCancel }) {
   };
 
   const saveSection = (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!section.courseId) {
-      alert("Please select an associate course.");
-      return;
-    }
+  if (!section.courseId) {
+    alert("Please select an associate course.");
+    return;
+  }
 
-    const requestDTO = {
-  courseId: section.courseId,
-  sectionName: section.sectionName,
-  description: section.description,
-};
-
-    if (section.sectionId) {
-      SectionService.updateSection(section.sectionId, requestDTO)
-        .then(() => {
-          alert("Section Updated Successfully");
-          clearForm();
-        })
-        .catch(console.error);
-    } else {
-      SectionService.saveSection(requestDTO)
-        .then(() => {
-          alert("Section Saved Successfully");
-          clearForm();
-        })
-        .catch(console.error);
-    }
+  const requestDTO = {
+    courseId: section.courseId,
+    sectionName: section.sectionName,
+    description: section.description,
   };
 
+  if (section.sectionId) {
+    SectionService.updateSection(section.sectionId, requestDTO)
+      .then(() => {
+        setSuccessMessage("Section Updated Successfully!");
+        setShowSuccess(true);
+        setTimeout(() =>{
+          clearForm();
+        },1000);
+      })
+      .catch(console.error);
+  } else {
+    SectionService.saveSection(requestDTO)
+      .then(() => {
+        setSuccessMessage("Section Saved Successfully!");
+        setShowSuccess(true);
+        setTimeout(() =>{
+        clearForm();
+        },1000);
+      })
+      .catch(console.error);
+  }
+};
+
   return (
+    <>
     <form onSubmit={saveSection}>
       <div className="form-card">
         <h3 className="section-title">Section Information</h3>
@@ -201,6 +210,13 @@ function SectionForm({ selectedSectionData, onUpdateComplete, onCancel }) {
         </button>
       </div>
     </form>
+    <SuccessModal
+  show={showSuccess}
+  message={successMessage}
+  onClose={() => setShowSuccess(false)}
+/>
+
+</>
   );
 }
 

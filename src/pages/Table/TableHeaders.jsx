@@ -3,6 +3,7 @@ import "./TableHeaders.css";
 import AddTableHeaderModal from "./AddTableHeaderModal";
 import TableHeaderService from "../../services/TableHeaderService";
 import DataGrid from "../../components/DataGrid";
+import SuccessModal from "../../components/Common/SuccessModal";
 
 function TableHeaders() {
   const [showModal, setShowModal] = useState(false);
@@ -10,6 +11,8 @@ function TableHeaders() {
   const [tableHeaders, setTableHeaders] = useState([]);
   const [id, setId] = useState(null);
   const [name, setName] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Upload Handler
   const handleFileUpload = (e) => {
@@ -28,12 +31,12 @@ function TableHeaders() {
   try {
     if (id == null) {
       await TableHeaderService.create(newTableHeader);
-      alert("Table Header added successfully.");
+      setSuccessMessage("Table Header added successfully.");
     } else {
       await TableHeaderService.update(id, newTableHeader);
-      alert("Table Header updated successfully.");
+      setSuccessMessage("Table Header updated successfully.");
     }
-
+    setShowSuccess(true);
     setId(null);
     setName("");
     setShowModal(false);
@@ -238,9 +241,15 @@ function TableHeaders() {
         onSave={handleSave}
         Inputdata={name}
       />
-
-    </div>
-  );
+      <SuccessModal
+      show={showSuccess}
+      message={successMessage}
+      onClose={() => {
+      setShowSuccess(false);
+    }}
+   />
+  </div>
+ );
 }
 
 export default TableHeaders;

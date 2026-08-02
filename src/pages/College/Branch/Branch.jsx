@@ -32,33 +32,25 @@ function Branch() {
     // Checks for a branchId to toggle between PUT (update) and POST (save) requests
     if (branchData.branchId) {
       BranchService.updateBranch(branchData.branchId, branchData)
-        .then((response) => {
-          alert(typeof response.data === "string" ? response.data : "Branch updated successfully!");
-          setRefreshTrigger((prev) => !prev); // Refreshes AG Grid live data records
-          setShowModal(false);
-          setSelectedBranch(null);
-        })
-        .catch((error) => {
-          console.error("Error updating branch record:", error);
-          alert(error.response?.data || "Failed to update branch layout.");
-        });
+     .then(() => {
+      setRefreshTrigger((prev) => !prev);
+      })
+      .catch((error) => {
+      console.error("Error updating branch record:", error);
+      alert(error.response?.data || "Failed to update branch.");
+      });
     } else {
-      BranchService.saveBranch(branchData)
-        .then((response) => {
-          alert(typeof response.data === "string" ? response.data : "Branch registered successfully!");
-          setRefreshTrigger((prev) => !prev); // Refreshes AG Grid live data records
-          setShowModal(false);
-          setSelectedBranch(null);
-        })
-        .catch((error) => {
-          console.error("Error creating branch record:", error);
-          alert(error.response?.data || "Failed to register new branch.");
-        });
+     BranchService.saveBranch(branchData)
+     .then(() => {
+     setRefreshTrigger((prev) => !prev);
+     })
+    .catch((error) => {
+    console.error("Error creating branch record:", error);
+    alert(error.response?.data || "Failed to register new branch.");
+    });
     }
-  };
-
- 
-    const handleFileUpload = async (e) => {
+    };
+  const handleFileUpload = async (e) => {
   const file = e.target.files[0];
 
   if (!file) return;

@@ -3,6 +3,7 @@ import "./TableNames.css";
 import AddTableNameModal from "./AddTableNameModal";
 import TableNameService from "../../services/TableNameService";
 import DataGrid from "../../components/DataGrid";
+import SuccessModal from "../../components/Common/SuccessModal";
 
 function TableNames() {
   const [showModal, setShowModal] = useState(false);
@@ -10,31 +11,36 @@ function TableNames() {
 
   const [id, setId] = useState(null);
   const [name, setName] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const fileInputRef = useRef(null);
 
   // ================= SAVE =================
-
- const handleSave = async (newTableName) => {
+  const handleSave = async (newTableName) => {
   try {
     if (id == null) {
       await TableNameService.create(newTableName);
-      alert("Table Name added successfully.");
+      setSuccessMessage("Table Name added successfully!");
     } else {
       await TableNameService.update(id, newTableName);
-      alert("Table Name updated successfully.");
+      setSuccessMessage("Table Name updated successfully!");
     }
+
+    setShowSuccess(true);
 
     setId(null);
     setName("");
     setShowModal(false);
 
     loadTableNames();
+
   } catch (error) {
     console.error("Error:", error);
     alert("Operation failed.");
   }
-};
+  };
+ 
   // ================= DELETE =================
 
   const handleDelete = async (id) => {
@@ -239,6 +245,13 @@ function TableNames() {
         onSave={handleSave}
         Inputname={name}
       />
+         <SuccessModal
+         show={showSuccess}
+         message={successMessage}
+         onClose={() => {
+         setShowSuccess(false);
+         }}
+        />
     </div>
   );
 }

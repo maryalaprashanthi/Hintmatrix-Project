@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
 import "./SuccessModal.css";
 import { FaCheckCircle, FaTimes } from "react-icons/fa";
 
@@ -18,7 +19,7 @@ function SuccessModal({ show, message, onClose }) {
     return null;
   }
 
-  return (
+  return createPortal(
     <div className="success-overlay">
 
       <div className="success-card">
@@ -48,7 +49,9 @@ function SuccessModal({ show, message, onClose }) {
 
       </div>
 
-    </div>
+    </div>,
+
+    document.body
   );
 }
 

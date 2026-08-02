@@ -45,9 +45,7 @@ function BranchAdmin() {
         branchAdminData,
       )
         .then(() => {
-          alert("Branch Admin updated successfully!");
           fetchBranchAdmins();
-          setShowModal(false);
           setSelectedBranchAdmin(null);
         })
         .catch((error) => {
@@ -57,9 +55,7 @@ function BranchAdmin() {
     } else {
       BranchAdminService.createBranchAdmin(branchAdminData)
         .then(() => {
-          alert("Branch Admin added successfully!");
           fetchBranchAdmins();
-          setShowModal(false);
         })
         .catch((error) => {
           console.error("Save Error:", error);
