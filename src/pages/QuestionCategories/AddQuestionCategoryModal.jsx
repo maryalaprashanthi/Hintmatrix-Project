@@ -5,6 +5,7 @@ import { FaTimes, FaSave, FaBook, FaListAlt, FaTag } from "react-icons/fa";
 import "./QuestionCategories.css";
 import QuestionCategoryService from "../../services/QuestionCategoryService";
 import CourseService from "../../services/CourseService";
+import ChapterService from "../../services/ChapterService";
 
 function AddQuestionCategoryModal({
   show,
@@ -15,7 +16,8 @@ function AddQuestionCategoryModal({
   selectedChapter,
   refreshCategories,
 }) {
-  const [chapter, setChapter] = useState("");
+  const [chapterIdState, setChapterIdState] = useState("");
+  const [chapters, setChapters] = useState([]);
   const [categoryName, setCategoryName] = useState("");
   const [shortName, setShortName] = useState("");
   const [isActive, setIsActive] = useState(true);
@@ -23,6 +25,15 @@ function AddQuestionCategoryModal({
 
   const [courses, setCourses] = useState([]);
 
+  useEffect(() => {
+    ChapterService.getAll()
+      .then((response) => {
+        setChapters(response.data || []);
+      })
+      .catch((error) => {
+        console.error("Failed to load chapters", error);
+      });
+  }, []);
   // Load courses
   useEffect(() => {
     CourseService.getAllCourses()
@@ -46,10 +57,8 @@ function AddQuestionCategoryModal({
       setShortName(initialData.shortName || "");
 
       setIsActive(
-        initialData.isActive !== undefined ? initialData.isActive : true,
+        initialData.activeRow !== undefined ? initialData.activeRow : true,
       );
-
-      setCourseId(initialData.courseId ? String(initialData.courseId) : "");
     } else {
       setCategoryName("");
 
@@ -58,7 +67,13 @@ function AddQuestionCategoryModal({
       setCourseId(
         selectedChapter?.courseId ? String(selectedChapter.courseId) : "",
       );
-      setChapter(chapterName || "");
+      setChapterIdState(
+        initialData?.chapterId
+          ? String(initialData.chapterId)
+          : chapterId
+            ? String(chapterId)
+            : "",
+      );
 
       setIsActive(true);
     }
@@ -81,16 +96,21 @@ function AddQuestionCategoryModal({
       return;
     }
 
+    if (!chapterIdState) {
+      alert("Please select Chapter");
+      return;
+    }
+
     const requestDTO = {
       courseId: Number(courseId),
 
-      chapterId: Number(chapterId),
+      chapterId: Number(chapterIdState),
 
       name: categoryName.trim(),
 
       shortName: shortName.trim(),
 
-      isActive: isActive,
+      activeRow: isActive,
     };
 
     try {
@@ -185,12 +205,21 @@ function AddQuestionCategoryModal({
                   <div className="input-box">
                     <FaListAlt className="input-icon" />
 
-                    <input
-                      type="text"
-                      placeholder="Enter Chapter"
-                      value={chapter}
-                      onChange={(e) => setChapter(e.target.value)}
-                    />
+                    <select
+                      value={chapterIdState}
+                      onChange={(e) => setChapterIdState(e.target.value)}
+                    >
+                      <option value="">Select Chapter</option>
+
+                      {chapters.map((chapter) => (
+                        <option
+                          key={chapter.chapterId}
+                          value={chapter.chapterId}
+                        >
+                          {chapter.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
