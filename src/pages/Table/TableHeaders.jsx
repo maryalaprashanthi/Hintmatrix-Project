@@ -15,17 +15,33 @@ function TableHeaders() {
   const [successMessage, setSuccessMessage] = useState("");
 
   // Upload Handler
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
+
     const file = e.target.files[0];
 
-    if (!file) return;
+    if (!file) {
+        return;
+    }
 
-    console.log("Selected File:", file);
+    try {
 
-    // TODO: Call Upload API here
+        const response = await TableHeaderService.uploadExcel(file);
+
+        setSuccessMessage(response.data);
+        setShowSuccess(true);
+
+        loadTableHeaders();
+
+    } catch (error) {
+
+        console.error("Upload Error:", error);
+
+        alert(error.response?.data || "Excel upload failed.");
+
+    }
 
     e.target.value = "";
-  };
+};
 
   const handleSave = async (newTableHeader) => {
   try {
