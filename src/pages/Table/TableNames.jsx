@@ -87,21 +87,36 @@ function TableNames() {
 
   // ================= FILE UPLOAD =================
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = async (event) => {
+
     const file = event.target.files[0];
 
     if (!file) {
-      return;
+        return;
     }
 
-    console.log("Uploaded File:", file);
+    try {
 
-    // Later connect API here
-    // Example:
-    // TableNameService.upload(file)
+        const response = await TableNameService.uploadExcel(file);
 
-    alert(`${file.name} uploaded successfully`);
-  };
+        setSuccessMessage(response.data);
+        setShowSuccess(true);
+
+        loadTableNames();
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            error.response?.data || "Excel upload failed."
+        );
+    }
+
+    // Reset input so the same file can be selected again
+    event.target.value = "";
+
+};
 
   useEffect(() => {
     loadTableNames();

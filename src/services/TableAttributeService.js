@@ -50,6 +50,22 @@ class TableAttributeService {
             { withCredentials: true }
         );
     }
+
+    uploadExcel(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return axios.post(
+        "http://localhost:8080/api/table-attributes/upload",
+        formData,
+        {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+            withCredentials: true,
+        }
+    );
+}
 }
 
 // Export an instantiated instance of the service architecture directly
