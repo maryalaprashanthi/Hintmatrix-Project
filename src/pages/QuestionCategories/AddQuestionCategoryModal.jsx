@@ -15,6 +15,7 @@ function AddQuestionCategoryModal({
   selectedChapter,
   refreshCategories,
 }) {
+  const [chapter, setChapter] = useState("");
   const [categoryName, setCategoryName] = useState("");
   const [shortName, setShortName] = useState("");
   const [isActive, setIsActive] = useState(true);
@@ -57,6 +58,7 @@ function AddQuestionCategoryModal({
       setCourseId(
         selectedChapter?.courseId ? String(selectedChapter.courseId) : "",
       );
+      setChapter(chapterName || "");
 
       setIsActive(true);
     }
@@ -183,7 +185,12 @@ function AddQuestionCategoryModal({
                   <div className="input-box">
                     <FaListAlt className="input-icon" />
 
-                    <input type="text" value={chapterName} readOnly />
+                    <input
+                      type="text"
+                      placeholder="Enter Chapter"
+                      value={chapter}
+                      onChange={(e) => setChapter(e.target.value)}
+                    />
                   </div>
                 </div>
 
@@ -202,23 +209,6 @@ function AddQuestionCategoryModal({
                       placeholder="Enter Category Name"
                       value={categoryName}
                       onChange={(e) => setCategoryName(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                {/* Short Name */}
-
-                <div className="form-group">
-                  <label>Short Name</label>
-
-                  <div className="input-box">
-                    <FaTag className="input-icon" />
-
-                    <input
-                      type="text"
-                      placeholder="Enter Short Name"
-                      value={shortName}
-                      onChange={(e) => setShortName(e.target.value)}
                     />
                   </div>
                 </div>

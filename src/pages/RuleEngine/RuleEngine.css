@@ -26,7 +26,7 @@
 }
 
 /* ==========================================
-   Add Button
+   Buttons
 ========================================== */
 
 .page-header .btn-primary {
@@ -46,94 +46,93 @@
 }
 
 /* ==========================================
-   Table Container
+   AG Grid Container
 ========================================== */
 
 .table-container {
   background: #ffffff;
-  border-radius: 12px;
-  padding: 20px;
-  overflow-x: auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* ==========================================
-   Table
-========================================== */
-
-.rule-table {
+.ag-theme-quartz {
   width: 100%;
-  border-collapse: collapse;
+  height: 450px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-.rule-table th {
+/* Header */
+
+.ag-theme-quartz .ag-header {
   background: #f8fafc;
-  color: #334155;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.ag-theme-quartz .ag-header-cell {
+  font-size: 15px;
   font-weight: 600;
-  padding: 14px;
-  text-align: left;
-  border-bottom: 1px solid #e2e8f0;
+  color: #1e293b;
 }
 
-.rule-table td {
-  padding: 14px;
-  border-bottom: 1px solid #e2e8f0;
-  color: #475569;
+/* Rows */
+
+.ag-theme-quartz .ag-row {
+  border-bottom: 1px solid #f1f5f9;
 }
 
-.rule-table tbody tr:hover {
+.ag-theme-quartz .ag-row:hover {
   background: #f8fafc;
 }
 
-/* ==========================================
-   Action Buttons
-========================================== */
-
-.action-buttons {
+.ag-theme-quartz .ag-cell {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  color: #334155;
+  font-size: 14px;
 }
+
+/* Pagination */
+
+.ag-theme-quartz .ag-paging-panel {
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Action Buttons */
 
 .edit-btn {
-  background: #22c55e;
+  background: #2563eb;
   color: white;
   border: none;
-  padding: 7px 12px;
-  border-radius: 6px;
+  border-radius: 4px;
+  padding: 4px 14px;
   cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .edit-btn:hover {
-  background: #16a34a;
+  background: #1d4ed8;
 }
 
 .delete-btn {
-  background: #ef4444;
+  background: #dc2626;
   color: white;
   border: none;
-  padding: 7px 12px;
-  border-radius: 6px;
+  border-radius: 4px;
+  padding: 4px 14px;
   cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .delete-btn:hover {
-  background: #dc2626;
+  background: #b91c1c;
 }
 
-/* ==========================================
-   Empty State
-========================================== */
-
-.no-data {
-  text-align: center;
-  padding: 40px;
-  color: #64748b;
-  font-size: 16px;
-}
-
-/* ==========================================
-   Responsive
-========================================== */
+/* Responsive */
 
 @media (max-width: 768px) {
   .page-header {
@@ -142,7 +141,7 @@
     gap: 15px;
   }
 
-  .rule-table {
-    min-width: 900px;
+  .table-container {
+    overflow-x: auto;
   }
 }

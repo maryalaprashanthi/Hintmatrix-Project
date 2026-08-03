@@ -35,43 +35,23 @@ function RuleEngine() {
   };
 
   const handleFileChange = async (e) => {
+    const file = e.target.files[0];
 
-  const file = e.target.files[0];
+    if (!file) return;
 
-  if (!file) return;
+    try {
+      const response = await RuleEngineService.uploadRulesExcel(file);
 
+      alert(response.message || "Rules uploaded successfully!");
 
-  console.log("Selected File:", file);
+      fetchRules();
+    } catch (error) {
+      console.error("Upload Error:", error);
+      alert("Rule upload failed");
+    }
 
-
-  try {
-
-    const response = await RuleEngineService.uploadRulesExcel(file);
-
-
-    alert(
-      response.message || 
-      "Rules uploaded successfully!"
-    );
-
-
-    // Refresh table after upload
-    fetchRules();
-
-
-  } catch (error) {
-
-    console.error("Upload Error:", error);
-
-    alert("Rule upload failed");
-
-  }
-
-
-  // Allow selecting the same file again
-  e.target.value = "";
-
-};
+    e.target.value = "";
+  };
 
   // ===========================
   // Add Rule
@@ -104,7 +84,7 @@ function RuleEngine() {
   };
 
   // ===========================
-  // Save / Update Rule
+  // Save Rule
   // ===========================
   const handleSave = async (ruleData) => {
     try {
@@ -131,9 +111,23 @@ function RuleEngine() {
   };
 
   return (
-    <div className="rule-engine-container">
-      <div className="page-header">
-        <h2>Rule Engine</h2>
+    <div className="container-fluid py-4">
+      {/* Header */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 className="fw-bold">Rule Engine</h2>
+
+          <p className="text-muted">Manage all Rule Engine records.</p>
+        </div>
+
+        {/* Hidden File Input */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          accept=".xlsx,.xls,.csv"
+          style={{ display: "none" }}
+          onChange={handleFileChange}
+        />
 
         <div className="d-flex gap-2">
           <button className="btn btn-primary" onClick={handleUploadClick}>
@@ -146,21 +140,18 @@ function RuleEngine() {
         </div>
       </div>
 
-      {/* Hidden File Input */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        style={{ display: "none" }}
-        accept=".xlsx,.xls,.csv"
-        onChange={handleFileChange}
-      />
+      {/* AG Grid Card */}
+      <div className="card shadow-sm border-0">
+        <div className="card-body">
+          <RuleEngineTable
+            ruleEngineList={ruleEngineList}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        </div>
+      </div>
 
-      <RuleEngineTable
-        ruleEngineList={ruleEngineList}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
-
+      {/* Modal */}
       <RuleEngineForm
         show={showModal}
         onClose={handleClose}
