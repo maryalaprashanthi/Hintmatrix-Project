@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { Typeahead } from "react-bootstrap-typeahead";
 import "react-bootstrap-typeahead/css/Typeahead.css";
 
-import mockData from "../../mock/ruleEngineMockData.json";
+import mockData from "../../mock/ruleEngineData.json";
 
 import {
   FaTimes,
