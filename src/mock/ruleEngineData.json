@@ -1,0 +1,158 @@
+{
+  "chapters": [
+    {
+      "id": 1,
+      "name": "Accounting"
+    },
+    {
+      "id": 2,
+      "name": "Finance"
+    },
+    {
+      "id": 3,
+      "name": "Inventory"
+    },
+    {
+      "id": 4,
+      "name": "Management"
+    }
+  ],
+
+  "tableAttributes": [
+    {
+      "id": 1,
+      "name": "Student"
+    },
+    {
+      "id": 2,
+      "name": "Course"
+    },
+    {
+      "id": 3,
+      "name": "Branch"
+    },
+    {
+      "id": 4,
+      "name": "College"
+    }
+  ],
+
+  "tableHeaders": [
+    {
+      "id": 1,
+      "name": "Student Name",
+      "attributeId": 1
+    },
+    {
+      "id": 2,
+      "name": "Student Code",
+      "attributeId": 1
+    },
+    {
+      "id": 3,
+      "name": "Student Email",
+      "attributeId": 1
+    },
+    {
+      "id": 4,
+      "name": "Student Phone Number",
+      "attributeId": 1
+    },
+    {
+      "id": 5,
+      "name": "Course Name",
+      "attributeId": 2
+    },
+    {
+      "id": 6,
+      "name": "Course Duration",
+      "attributeId": 2
+    },
+    {
+      "id": 7,
+      "name": "Branch Name",
+      "attributeId": 3
+    },
+    {
+      "id": 8,
+      "name": "College Name",
+      "attributeId": 4
+    }
+  ],
+
+  "fieldTypes": [
+    {
+      "id": 1,
+      "name": "String"
+    },
+    {
+      "id": 2,
+      "name": "Integer"
+    },
+    {
+      "id": 3,
+      "name": "Decimal"
+    },
+    {
+      "id": 4,
+      "name": "Date"
+    },
+    {
+      "id": 5,
+      "name": "Boolean"
+    },
+    {
+      "id": 6,
+      "name": "Dropdown"
+    }
+  ],
+
+  "relationships": [
+    {
+      "id": 1,
+      "name": "1 to 1"
+    },
+    {
+      "id": 2,
+      "name": "1 to 2"
+    },
+    {
+      "id": 3,
+      "name": "1 to 3"
+    },
+    {
+      "id": 4,
+      "name": "1 to 4"
+    }
+  ],
+
+  "rules": [
+    {
+      "id": 1,
+      "ruleNumber": "Rule 1",
+      "chapter": "Accounting",
+      "pairAttributeName": "Student",
+      "fieldName": "Student Name",
+      "fieldType": "String",
+      "relationship": "1 to 1"
+    },
+    {
+      "id": 2,
+      "ruleNumber": "Rule 2",
+      "chapter": "Finance",
+      "pairAttributeName": "Course",
+      "fieldName": "Course Name",
+      "fieldType": "Dropdown",
+      "relationship": "1 to 2"
+    },
+    {
+      "id": 3,
+      "ruleNumber": "Rule 3",
+      "chapter": "Inventory",
+      "pairAttributeName": "Branch",
+      "fieldName": "Branch Name",
+      "fieldType": "String",
+      "relationship": "1 to 3"
+    }
+  ]
+}
