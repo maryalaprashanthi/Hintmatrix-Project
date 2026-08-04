@@ -20,6 +20,8 @@ import { NavLink } from "react-router-dom";
 const QuestionList = () => {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Upload File Reference
   const fileInputRef = useRef(null);

@@ -360,3 +360,61 @@
     height: 40px;
     box-sizing: border-box;
 }
+/* ===========================
+   React Select - Branch Style
+=========================== */
+
+.react-select__control {
+    min-height: 50px !important;
+    height: 50px !important;
+    border: 1px solid #dbe4f0 !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+    background: #fff !important;
+    padding-left: 34px;
+}
+
+.react-select__control:hover {
+    border-color: #dbe4f0 !important;
+}
+
+.react-select__control--is-focused {
+    border-color: #356bdf !important;
+    box-shadow: 0 0 0 0.15rem rgba(53,107,223,.15) !important;
+}
+
+.react-select__value-container {
+    padding: 0 10px !important;
+}
+
+.react-select__placeholder {
+    color: #9ca3af !important;
+}
+
+.react-select__indicator-separator {
+    display: none;
+}
+
+.react-select__dropdown-indicator {
+    color: #94a3b8 !important;
+    padding-right: 12px;
+}
+
+.react-select__menu {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.input-box {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    z-index: 5;
+    pointer-events: none;
+}
