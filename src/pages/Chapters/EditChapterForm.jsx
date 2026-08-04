@@ -10,6 +10,7 @@ function EditChapterForm({ show, chapter, onClose, onUpdate }) {
   const [courseId, setCourseId] = useState("");
   const [chapterName, setChapterName] = useState("");
   const [courses, setCourses] = useState([]);
+  const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
     if (show) {
@@ -19,8 +20,9 @@ function EditChapterForm({ show, chapter, onClose, onUpdate }) {
 
   useEffect(() => {
     if (chapter) {
-      setCourseId(chapter.courseId);
-      setChapterName(chapter.name);
+      setCourseId(chapter.courseId || "");
+      setChapterName(chapter.name || "");
+      setIsActive(chapter.activeRow !== undefined ? chapter.activeRow : true);
     }
   }, [chapter]);
 
@@ -46,6 +48,7 @@ function EditChapterForm({ show, chapter, onClose, onUpdate }) {
       courseId: Number(courseId),
 
       name: chapterName.trim(),
+      activeRow: isActive,
     };
 
     onUpdate(chapter.chapterId, updatedChapter);
@@ -54,6 +57,7 @@ function EditChapterForm({ show, chapter, onClose, onUpdate }) {
   const handleClose = () => {
     setCourseId("");
     setChapterName("");
+    setIsActive(true);
 
     onClose();
   };
@@ -123,6 +127,21 @@ function EditChapterForm({ show, chapter, onClose, onUpdate }) {
                     placeholder="Enter Chapter Name"
                     onChange={(e) => setChapterName(e.target.value)}
                   />
+                </div>
+              </div>
+
+              <div className="form-card">
+                <h3 className="section-title">Status</h3>
+
+                <div className="form-check form-switch">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={isActive}
+                    onChange={(e) => setIsActive(e.target.checked)}
+                  />
+
+                  <label className="form-check-label">Active</label>
                 </div>
               </div>
             </div>

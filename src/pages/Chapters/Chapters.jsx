@@ -5,11 +5,10 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 
 import {
   FaBookOpen,
-  FaClock,
-  FaCheckCircle,
-  FaPlayCircle,
   FaEdit,
   FaTrash,
+  FaSearch,
+  FaArrowRight,
 } from "react-icons/fa";
 
 import ChapterService from "../../services/ChapterService";
@@ -32,6 +31,20 @@ function Chapters() {
   const [showEditChapter, setShowEditChapter] = useState(false);
 
   const [selectedChapter, setSelectedChapter] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+
+  const filteredChapters = chapters.filter((chapter) => {
+    const searchMatch = chapter.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    const status = chapter.activeRow ? "Active" : "Inactive";
+
+    const statusMatch = statusFilter === "All" || status === statusFilter;
+
+    return searchMatch && statusMatch;
+  });
 
   // LOAD CHAPTERS
 
@@ -74,8 +87,9 @@ function Chapters() {
   // OPEN EDIT MODAL
 
   const handleEdit = (chapter) => {
-    setSelectedChapter(chapter);
+    console.log("Selected Chapter:", chapter);
 
+    setSelectedChapter(chapter);
     setShowEditChapter(true);
   };
 
@@ -221,8 +235,38 @@ function Chapters() {
         </div>
       </div>
 
+      <div className="row align-items-center mb-3">
+        <div className="col-lg-8 col-md-7 mb-3 mb-md-0">
+          <div className="input-group shadow-sm rounded-3 overflow-hidden">
+            <span className="input-group-text bg-white border-0">
+              <FaSearch />
+            </span>
+
+            <input
+              type="text"
+              className="form-control border-0"
+              placeholder="Search Chapters..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="col-lg-4 col-md-5">
+          <select
+            className="form-select shadow-sm"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="All">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+
       <div className="row g-4">
-        {chapters.map((chapter) => (
+        {filteredChapters.map((chapter) => (
           <div className="col-xl-4 col-lg-4 col-md-6" key={chapter.chapterId}>
             <div className="chapter-card">
               <div className="chapter-icon">
@@ -232,40 +276,44 @@ function Chapters() {
               <h4>{chapter.name}</h4>
 
               <div className="chapter-info">
-                <span>
-                  <FaClock />
-                  Lessons
-                </span>
-
-                <span>
-                  <FaCheckCircle />
-                  Active
+                <span
+                  className={`badge ${
+                    chapter.activeRow
+                      ? "bg-success-subtle text-success"
+                      : "bg-danger-subtle text-danger"
+                  }`}
+                >
+                  {chapter.activeRow ? "Active" : "Inactive"}
                 </span>
               </div>
 
               {/*  MATCHED LAYOUT: Outlined buttons with icons */}
-              <div className="chapter-actions-row">
+              <button
+                className="btn btn-primary view-btn"
+                disabled={!chapter.activeRow}
+                onClick={() => openCategories(chapter)}
+              >
+                Start Learning
+                <FaArrowRight className="ms-2" />
+              </button>
+
+              <div className="chapter-actions-row mt-3">
                 <button
                   className="chapter-action-btn outline-blue"
                   onClick={() => handleEdit(chapter)}
                 >
-                  <FaEdit /> Edit
+                  <FaEdit className="me-1" />
+                  Edit
                 </button>
+
                 <button
                   className="chapter-action-btn outline-red"
                   onClick={() => handleDelete(chapter.chapterId)}
                 >
-                  <FaTrash /> Delete
+                  <FaTrash className="me-1" />
+                  Delete
                 </button>
               </div>
-
-              <button
-                className="start-btn"
-                onClick={() => openCategories(chapter)}
-              >
-                <FaPlayCircle />
-                Start Learning
-              </button>
             </div>
           </div>
         ))}

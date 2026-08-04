@@ -6,10 +6,11 @@ import { FaTimes, FaBook, FaGraduationCap, FaSave } from "react-icons/fa";
 import "./ChapterForm.css";
 import CourseService from "../../services/CourseService";
 
-function ChapterForm({ show, onClose, onSave }) {
+function ChapterForm({ show, onClose, onSave, selectedChapterData }) {
   const [courseId, setCourseId] = useState("");
   const [chapterName, setChapterName] = useState("");
   const [courses, setCourses] = useState([]);
+  const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
     if (show) {
@@ -31,6 +32,24 @@ function ChapterForm({ show, onClose, onSave }) {
     }
   };
 
+  useEffect(() => {
+    if (show) {
+      if (selectedChapterData) {
+        setCourseId(selectedChapterData.courseId || "");
+        setChapterName(selectedChapterData.name || "");
+        setIsActive(
+          selectedChapterData.activeRow !== undefined
+            ? selectedChapterData.activeRow
+            : true,
+        );
+      } else {
+        setCourseId("");
+        setChapterName("");
+        setIsActive(true);
+      }
+    }
+  }, [show, selectedChapterData]);
+
   if (!show) return null;
 
   const handleSave = () => {
@@ -41,9 +60,12 @@ function ChapterForm({ show, onClose, onSave }) {
     }
 
     const newChapter = {
+      ...(selectedChapterData && {
+        chapterId: selectedChapterData.chapterId,
+      }),
       courseId: Number(courseId),
-
       name: chapterName.trim(),
+      activeRow: isActive,
     };
 
     console.log("Chapter Payload:", newChapter);
@@ -53,12 +75,13 @@ function ChapterForm({ show, onClose, onSave }) {
     setCourseId("");
 
     setChapterName("");
+    setIsActive(true);
   };
 
   const handleClose = () => {
     setCourseId("");
-
     setChapterName("");
+    setIsActive(true);
 
     onClose();
   };
@@ -70,9 +93,13 @@ function ChapterForm({ show, onClose, onSave }) {
 
         <div className="modal-header">
           <div>
-            <h2>Add Chapter</h2>
+            <h2>{selectedChapterData ? "Edit Chapter" : "Add Chapter"}</h2>
 
-            <p>Create a new chapter.</p>
+            <p>
+              {selectedChapterData
+                ? "Update the chapter."
+                : "Create a new chapter."}
+            </p>
           </div>
 
           <button className="close-btn" onClick={handleClose}>
@@ -128,6 +155,20 @@ function ChapterForm({ show, onClose, onSave }) {
                     value={chapterName}
                     onChange={(e) => setChapterName(e.target.value)}
                   />
+                </div>
+              </div>
+              <div className="form-card">
+                <h3 className="section-title">Status</h3>
+
+                <div className="form-check form-switch">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={isActive}
+                    onChange={(e) => setIsActive(e.target.checked)}
+                  />
+
+                  <label className="form-check-label">Active</label>
                 </div>
               </div>
             </div>
