@@ -168,7 +168,11 @@ function BranchForm({ selectedBranchData, onUpdateComplete }) {
   };
 
   return (
-    <div id="branchModal" className="container-fluid" style={{ maxWidth: "900px", margin: "auto" }}>
+    <div
+      id="branchModal"
+      className="container-fluid"
+      style={{ maxWidth: "900px", margin: "auto" }}
+    >
       <style>{`
         #branchModal { color:#212529; }
         #branchModal .form-control, #branchModal .form-select { height:52px; font-size:16px; padding:12px 15px; border-radius:8px; border:1px solid #ced4da; }
@@ -186,9 +190,17 @@ function BranchForm({ selectedBranchData, onUpdateComplete }) {
         <form onSubmit={saveBranch}>
           {/* ================= Parent College ================= */}
           <div className="row mb-4 align-items-center">
-            <label className="col-lg-3 col-md-4 fw-semibold">Parent College</label>
+            <label className="col-lg-3 col-md-4 fw-semibold">
+              Parent College
+            </label>
             <div className="col-lg-9 col-md-8">
-              <select name="collegeId" value={branch.collegeId} onChange={handleChange} className="form-select" required>
+              <select
+                name="collegeId"
+                value={branch.collegeId}
+                onChange={handleChange}
+                className="form-select"
+                required
+              >
                 <option value="">---- Select College ----</option>
                 {collegesList.map((college) => (
                   <option key={college.collegeId} value={college.collegeId}>
@@ -198,10 +210,18 @@ function BranchForm({ selectedBranchData, onUpdateComplete }) {
               </select>
 
               <div className="d-flex gap-2 mt-3">
-                <button type="button" className="btn btn-outline-primary btn-inline" onClick={handleInlineCollegeEdit}>
+                <button
+                  type="button"
+                  className="btn btn-outline-primary btn-inline"
+                  onClick={handleInlineCollegeEdit}
+                >
                   Edit
                 </button>
-                <button type="button" className="btn btn-outline-danger btn-inline" onClick={handleInlineCollegeDelete}>
+                <button
+                  type="button"
+                  className="btn btn-outline-danger btn-inline"
+                  onClick={handleInlineCollegeDelete}
+                >
                   Delete
                 </button>
               </div>
@@ -212,7 +232,15 @@ function BranchForm({ selectedBranchData, onUpdateComplete }) {
           <div className="row mb-4 align-items-center">
             <label className="col-lg-3 col-md-4 fw-semibold">Branch Name</label>
             <div className="col-lg-9 col-md-8">
-              <input type="text" name="branchName" className="form-control" placeholder="Enter Branch Name" value={branch.branchName} onChange={handleChange} required />
+              <input
+                type="text"
+                name="branchName"
+                className="form-control"
+                placeholder="Enter Branch Name"
+                value={branch.branchName}
+                onChange={handleChange}
+                required
+              />
             </div>
           </div>
 
@@ -220,29 +248,63 @@ function BranchForm({ selectedBranchData, onUpdateComplete }) {
           <div className="row mb-4 align-items-center">
             <label className="col-lg-3 col-md-4 fw-semibold">Address</label>
             <div className="col-lg-9 col-md-8">
-              <input type="text" name="address" className="form-control" placeholder="Enter Branch Address" value={branch.address} onChange={handleChange} required />
+              <input
+                type="text"
+                name="address"
+                className="form-control"
+                placeholder="Enter Branch Address"
+                value={branch.address}
+                onChange={handleChange}
+                required
+              />
             </div>
           </div>
 
           {/* ================= Phone Number ================= */}
           <div className="row mb-4 align-items-center">
-            <label className="col-lg-3 col-md-4 fw-semibold">Phone Number</label>
+            <label className="col-lg-3 col-md-4 fw-semibold">
+              Phone Number
+            </label>
             <div className="col-lg-9 col-md-8">
-              <input type="tel" name="phoneNumber" className="form-control" placeholder="Enter 10 Digit Phone Number" value={branch.phoneNumber} onChange={handleChange} maxLength="10" pattern="[0-9]{10}" required />
+              <input
+                type="tel"
+                name="phoneNumber"
+                className="form-control"
+                placeholder="Enter 10 Digit Phone Number"
+                value={branch.phoneNumber}
+                onChange={handleChange}
+                maxLength="10"
+                pattern="[0-9]{10}"
+                required
+              />
             </div>
           </div>
 
           {/* ================= Email ================= */}
           <div className="row mb-4 align-items-center">
-            <label className="col-lg-3 col-md-4 fw-semibold">Email Address</label>
+            <label className="col-lg-3 col-md-4 fw-semibold">
+              Email Address
+            </label>
             <div className="col-lg-9 col-md-8">
-              <input type="email" name="email" className="form-control" placeholder="Enter Email Address" value={branch.email} onChange={handleChange} required />
+              <input
+                type="email"
+                name="email"
+                className="form-control"
+                placeholder="Enter Email Address"
+                value={branch.email}
+                onChange={handleChange}
+                required
+              />
             </div>
           </div>
 
           {/* ================= Form Submission Action Buttons ================= */}
           <div className="d-flex justify-content-end gap-3 mt-4">
-            <button type="button" className="btn btn-secondary px-4 py-2" onClick={clearForm}>
+            <button
+              type="button"
+              className="btn btn-secondary px-4 py-2"
+              onClick={clearForm}
+            >
               Clear
             </button>
             <button type="submit" className="btn btn-success px-4 py-2">

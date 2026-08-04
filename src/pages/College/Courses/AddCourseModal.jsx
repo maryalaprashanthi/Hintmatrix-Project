@@ -14,6 +14,7 @@ import {
 import "./AddCourseModal.css";
 
 import BranchService from "../../../services/BranchService";
+import CollegeService from "../../../services/CollegeService";
 
 function AddCourseModal({ show, onClose, onSave, selectedCourseData }) {
   const [courseName, setCourseName] = useState("");
@@ -25,6 +26,18 @@ function AddCourseModal({ show, onClose, onSave, selectedCourseData }) {
 
   const [branches, setBranches] = useState([]);
   const [branchId, setBranchId] = useState("");
+  const [colleges, setColleges] = useState([]);
+  const [collegeId, setCollegeId] = useState("");
+
+  useEffect(() => {
+  CollegeService.getAllColleges()
+    .then((response) => {
+      setColleges(response.data || []);
+    })
+    .catch((error) => {
+      console.error("Failed to load colleges:", error);
+    });
+}, []);
   
   
   // Load branches
@@ -50,6 +63,10 @@ function AddCourseModal({ show, onClose, onSave, selectedCourseData }) {
 
       setDescription(selectedCourseData.description || "");
 
+      if (selectedCourseData.collegeId) {
+  setCollegeId(selectedCourseData.collegeId);
+}
+
       // Existing branch mapping
 
       if (selectedCourseData.branchId) {
@@ -65,6 +82,7 @@ function AddCourseModal({ show, onClose, onSave, selectedCourseData }) {
       setDescription("");
       setThumbnail(null);
       setBranchId("");
+      setCollegeId("");
     }
   }, [selectedCourseData, show]);
 
@@ -77,15 +95,21 @@ function AddCourseModal({ show, onClose, onSave, selectedCourseData }) {
     return;
   }
 
+  if (!collegeId) {
+  alert("Please select college.");
+  return;
+}
+
   if (!branchId) {
     alert("Please select branch.");
     return;
   }
 
   const courseRequestDTO = {
-    branchId: Number(branchId),
-    name: courseName.trim(),
-  };
+  collegeId: Number(collegeId),
+  branchId: Number(branchId),
+  name: courseName.trim(),
+};
 
   const isEdit = selectedCourseData?.courseId || selectedCourseData?.id;
   const courseId = selectedCourseData?.courseId || selectedCourseData?.id;
@@ -99,6 +123,7 @@ try{
   setDescription("");
   setThumbnail(null);
   setBranchId("");
+  setCollegeId("");
 } catch(error){
   console.error(error);
 }
@@ -132,23 +157,35 @@ try{
             <h4>Course Information</h4>
 
             <div className="form-grid">
-              {/* Course Name */}
 
-              <div className="form-group">
-                <label>Course Name</label>
+              {/* College */}
 
-                <div className="input-box">
-                  <FaBook className="input-icon" />
-                  <input
-                    type="text"
-                    placeholder="Enter Course Name"
-                    value={courseName}
-                    onChange={(e) => setCourseName(e.target.value)}
-                  />
-                </div>
-              </div>
+<div className="form-group">
+  <label>College Name</label>
 
-              {/* Branch */}
+  <div className="input-box">
+    <FaLayerGroup className="input-icon" />
+
+    <select
+      className="form-select"
+      value={collegeId}
+      onChange={(e) => setCollegeId(e.target.value)}
+    >
+      <option value="">Select College</option>
+
+      {colleges.map((college) => (
+        <option
+          key={college.collegeId}
+          value={college.collegeId}
+        >
+          {college.instituteName}
+        </option>
+      ))}
+    </select>
+  </div>
+</div>
+
+{/* Branch */}
 
               <div className="form-group">
                 <label>Branch Name</label>
@@ -174,6 +211,26 @@ try{
                   </select>
                 </div>
               </div>
+              
+              {/* Course Name */}
+
+              <div className="form-group">
+                <label>Course Name</label>
+
+                <div className="input-box">
+                  <FaBook className="input-icon" />
+                  <input
+                    type="text"
+                    placeholder="Enter Course Name"
+                    value={courseName}
+                    onChange={(e) => setCourseName(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              
+
+              
 
               {/* Category */}
 

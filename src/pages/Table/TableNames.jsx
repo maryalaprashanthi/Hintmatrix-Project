@@ -18,53 +18,50 @@ function TableNames() {
 
   // ================= SAVE =================
   const handleSave = async (newTableName) => {
-  try {
-    if (id == null) {
-      await TableNameService.create(newTableName);
-      setSuccessMessage("Table Name added successfully!");
-    } else {
-      await TableNameService.update(id, newTableName);
-      setSuccessMessage("Table Name updated successfully!");
+    try {
+      if (id == null) {
+        await TableNameService.create(newTableName);
+        setSuccessMessage("Table Name added successfully!");
+      } else {
+        await TableNameService.update(id, newTableName);
+        setSuccessMessage("Table Name updated successfully!");
+      }
+
+      setShowSuccess(true);
+
+      setId(null);
+      setName("");
+      setShowModal(false);
+
+      loadTableNames();
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Operation failed.");
     }
-
-    setShowSuccess(true);
-
-    setId(null);
-    setName("");
-    setShowModal(false);
-
-    loadTableNames();
-
-  } catch (error) {
-    console.error("Error:", error);
-    alert("Operation failed.");
-  }
   };
- 
+
   // ================= DELETE =================
 
   const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this table name?",
+    );
 
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete this table name?"
-  );
+    if (!confirmDelete) {
+      return;
+    }
 
-  if (!confirmDelete) {
-    return;
-  }
+    try {
+      await TableNameService.delete(id);
 
-  try {
-    await TableNameService.delete(id);
+      alert("Table Name deleted successfully.");
 
-    alert("Table Name deleted successfully.");
-
-    loadTableNames();
-
-  } catch (error) {
-    console.error("Error:", error);
-    alert("Failed to delete Table Name.");
-  }
-};
+      loadTableNames();
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Failed to delete Table Name.");
+    }
+  };
 
   // ================= GET ALL =================
 
@@ -87,20 +84,28 @@ function TableNames() {
 
   // ================= FILE UPLOAD =================
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = async (event) => {
     const file = event.target.files[0];
 
     if (!file) {
       return;
     }
 
-    console.log("Uploaded File:", file);
+    try {
+      const response = await TableNameService.uploadExcel(file);
 
-    // Later connect API here
-    // Example:
-    // TableNameService.upload(file)
+      setSuccessMessage(response.data);
+      setShowSuccess(true);
 
-    alert(`${file.name} uploaded successfully`);
+      loadTableNames();
+    } catch (error) {
+      console.error(error);
+
+      alert(error.response?.data || "Excel upload failed.");
+    }
+
+    // Reset input so the same file can be selected again
+    event.target.value = "";
   };
 
   useEffect(() => {
@@ -110,14 +115,14 @@ function TableNames() {
   const columnDefs = [
     {
       field: "id",
-      headerName: "ID",
+      headerName: "Table Name ID",
       width: 80,
       flex: 1,
     },
 
     {
       field: "name",
-      headerName: "Institute Name",
+      headerName: "Table Name",
       flex: 1,
       minWidth: 160,
     },
@@ -228,8 +233,11 @@ function TableNames() {
       </div>
 
       {/* Data Grid */}
-
-      <DataGrid rowData={tableNames} columnDefs={columnDefs} />
+      <div className="card shadow-sm border-0">
+        <div className="card-body">
+          <DataGrid rowData={tableNames} columnDefs={columnDefs} />
+        </div>
+      </div>
 
       {/* Add / Edit Modal */}
 
@@ -245,13 +253,13 @@ function TableNames() {
         onSave={handleSave}
         Inputname={name}
       />
-         <SuccessModal
-         show={showSuccess}
-         message={successMessage}
-         onClose={() => {
-         setShowSuccess(false);
-         }}
-        />
+      <SuccessModal
+        show={showSuccess}
+        message={successMessage}
+        onClose={() => {
+          setShowSuccess(false);
+        }}
+      />
     </div>
   );
 }

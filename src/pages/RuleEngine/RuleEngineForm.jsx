@@ -14,6 +14,7 @@ import {
   FaMapMarkerAlt,
   FaInfoCircle,
   FaSave,
+  FaPlus,
 } from "react-icons/fa";
 
 import "./RuleEngineForm.css";
@@ -27,29 +28,15 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
     relationshipName: "",
     pairOrder: "",
 
-    arithmetic1: "",
-    table1Name: "",
-    header1Name: "",
-    amountPosition1: "",
-    information1: "",
-
-    arithmetic2: "",
-    table2Name: "",
-    header2Name: "",
-    amountPosition2: "",
-    information2: "",
-
-    arithmetic3: "",
-    table3Name: "",
-    header3Name: "",
-    amountPosition3: "",
-    information3: "",
-
-    arithmetic4: "",
-    table4Name: "",
-    header4Name: "",
-    amountPosition4: "",
-    information4: "",
+    rules: [
+      {
+        arithmetic: "",
+        tableName: "",
+        headerName: "",
+        amountPosition: "",
+        information: "",
+      },
+    ],
 
     activeRow: false,
     rowStatus: "",
@@ -57,7 +44,21 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
 
   useEffect(() => {
     if (selectedRuleData) {
-      setFormData(selectedRuleData);
+      setFormData({
+        ...selectedRuleData,
+        rules:
+          selectedRuleData.rules && selectedRuleData.rules.length > 0
+            ? selectedRuleData.rules
+            : [
+                {
+                  arithmetic: "",
+                  tableName: "",
+                  headerName: "",
+                  amountPosition: "",
+                  information: "",
+                },
+              ],
+      });
     } else {
       setFormData({
         chapterName: "",
@@ -67,35 +68,53 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
         relationshipName: "",
         pairOrder: "",
 
-        arithmetic1: "",
-        table1Name: "",
-        header1Name: "",
-        amountPosition1: "",
-        information1: "",
-
-        arithmetic2: "",
-        table2Name: "",
-        header2Name: "",
-        amountPosition2: "",
-        information2: "",
-
-        arithmetic3: "",
-        table3Name: "",
-        header3Name: "",
-        amountPosition3: "",
-        information3: "",
-
-        arithmetic4: "",
-        table4Name: "",
-        header4Name: "",
-        amountPosition4: "",
-        information4: "",
+        rules: [
+          {
+            arithmetic: "",
+            tableName: "",
+            headerName: "",
+            amountPosition: "",
+            information: "",
+          },
+        ],
 
         activeRow: false,
         rowStatus: "",
       });
     }
   }, [selectedRuleData, show]);
+
+  const addRule = () => {
+    setFormData((prev) => ({
+      ...prev,
+      rules: [
+        ...prev.rules,
+        {
+          arithmetic: "",
+          tableName: "",
+          headerName: "",
+          amountPosition: "",
+          information: "",
+        },
+      ],
+    }));
+  };
+  const deleteRule = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      rules: prev.rules.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleRuleChange = (index, field, value) => {
+    const updatedRules = [...formData.rules];
+    updatedRules[index][field] = value;
+
+    setFormData((prev) => ({
+      ...prev,
+      rules: updatedRules,
+    }));
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -147,6 +166,8 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
             <h3 className="section-title">Rule Engine Information</h3>
 
             <div className="form-grid">
+              {/* Chapter Name */}
+
               <div className="form-group">
                 <label>Chapter Name</label>
 
@@ -171,6 +192,8 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                 </div>
               </div>
 
+              {/* Pair Attribute */}
+
               <div className="form-group">
                 <label>Pair Attribute Name</label>
 
@@ -194,6 +217,8 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                   </datalist>
                 </div>
               </div>
+
+              {/* Field Name */}
 
               <div className="form-group">
                 <label>Field Name</label>
@@ -220,6 +245,8 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                 </div>
               </div>
 
+              {/* Field Type */}
+
               <div className="form-group">
                 <label>Field Type</label>
 
@@ -244,6 +271,8 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                   </datalist>
                 </div>
               </div>
+
+              {/* Relationship */}
 
               <div className="form-group">
                 <label>Relationship Name</label>
@@ -270,6 +299,8 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                 </div>
               </div>
 
+              {/* Pair Order */}
+
               <div className="form-group">
                 <label>Pair Order</label>
 
@@ -279,7 +310,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                   <input
                     type="number"
                     name="pairOrder"
-                    placeholder="Enter PairOrder Number"
+                    placeholder="Enter Pair Order"
                     value={formData.pairOrder}
                     onChange={handleChange}
                   />
@@ -287,372 +318,134 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
               </div>
             </div>
           </div>
+          {/* Rule Parameters */}
 
-          {/* Rule 1 */}
+          {formData.rules.map((rule, index) => (
+            <div className="form-card" key={index}>
+              <h3 className="section-title mb-3">Rule {index + 1}</h3>
+              <div className="form-grid">
+                {/* Arithmetic */}
 
-          <div className="form-card">
-            <h3 className="section-title">Rule 1</h3>
+                <div className="form-group">
+                  <label>Arithmetic</label>
 
-            <div className="form-grid">
-              <div className="form-group">
-                <label>Arithmetic 1</label>
+                  <div className="input-box">
+                    <FaCalculator className="input-icon" />
 
-                <div className="input-box">
-                  <FaCalculator className="input-icon" />
+                    <input
+                      type="text"
+                      placeholder="Enter Arithmetic"
+                      value={rule.arithmetic}
+                      onChange={(e) =>
+                        handleRuleChange(index, "arithmetic", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
 
-                  <input
-                    type="text"
-                    name="arithmetic1"
-                    placeholder="Enter arithmetic1"
-                    value={formData.arithmetic1}
-                    onChange={handleChange}
-                  />
+                {/* Table Name */}
+
+                <div className="form-group">
+                  <label>Table Name</label>
+
+                  <div className="input-box">
+                    <FaTable className="input-icon" />
+
+                    <input
+                      type="text"
+                      placeholder="Enter Table Name"
+                      value={rule.tableName}
+                      onChange={(e) =>
+                        handleRuleChange(index, "tableName", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* Header Name */}
+
+                <div className="form-group">
+                  <label>Header Name</label>
+
+                  <div className="input-box">
+                    <FaHeading className="input-icon" />
+
+                    <input
+                      type="text"
+                      placeholder="Enter Header Name"
+                      value={rule.headerName}
+                      onChange={(e) =>
+                        handleRuleChange(index, "headerName", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* Amount Position */}
+
+                <div className="form-group">
+                  <label>Amount Position</label>
+
+                  <div className="input-box">
+                    <FaMapMarkerAlt className="input-icon" />
+
+                    <input
+                      type="text"
+                      placeholder="Enter Amount Position"
+                      value={rule.amountPosition}
+                      onChange={(e) =>
+                        handleRuleChange(
+                          index,
+                          "amountPosition",
+                          e.target.value,
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* Information */}
+
+                <div className="form-group">
+                  <label>Information</label>
+
+                  <div className="input-box">
+                    <FaInfoCircle className="input-icon" />
+
+                    <input
+                      type="text"
+                      placeholder="Enter Information"
+                      value={rule.information}
+                      onChange={(e) =>
+                        handleRuleChange(index, "information", e.target.value)
+                      }
+                    />
+                  </div>
                 </div>
               </div>
+              <div className="mt-3 d-flex gap-2">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={addRule}
+                >
+                  <FaPlus className="me-1" />
+                  Add Rule
+                </button>
 
-              <div className="form-group">
-                <label>Table Name</label>
-
-                <div className="input-box">
-                  <FaTable className="input-icon" />
-
-                  <input
-                    type="text"
-                    list="tableList"
-                    name="table1Name"
-                    placeholder="Select Table"
-                    value={formData.table1Name}
-                    onChange={handleChange}
-                  />
-
-                  <datalist id="tableList">
-                    <option value="Student" />
-                    <option value="Branch" />
-                    <option value="College" />
-                    <option value="Course" />
-                  </datalist>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Header Name</label>
-
-                <div className="input-box">
-                  <FaHeading className="input-icon" />
-
-                  <input
-                    type="text"
-                    list="headerList"
-                    name="header1Name"
-                    placeholder="Select Header"
-                    value={formData.header1Name}
-                    onChange={handleChange}
-                  />
-
-                  <datalist id="headerList">
-                    <option value="Name" />
-                    <option value="Amount" />
-                    <option value="Date" />
-                    <option value="Status" />
-                  </datalist>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Amount Position</label>
-
-                <div className="input-box">
-                  <FaMapMarkerAlt className="input-icon" />
-
-                  <input
-                    type="text"
-                    name="amountPosition1"
-                    placeholder="Enter amountPostion1 "
-                    value={formData.amountPosition1}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Information</label>
-
-                <div className="input-box">
-                  <FaInfoCircle className="input-icon" />
-
-                  <input
-                    type="text"
-                    name="information1"
-                    placeholder="Enter information1 "
-                    value={formData.information1}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          {/* Rule 2 */}
-
-          <div className="form-card">
-            <h3 className="section-title">Rule 2</h3>
-
-            <div className="form-grid">
-              <div className="form-group">
-                <label>Arithmetic 2</label>
-
-                <div className="input-box">
-                  <FaCalculator className="input-icon" />
-
-                  <input
-                    type="text"
-                    name="arithmetic2"
-                    placeholder="Enter arithmetic2 "
-                    value={formData.arithmetic2}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Table Name</label>
-
-                <div className="input-box">
-                  <FaTable className="input-icon" />
-
-                  <input
-                    type="text"
-                    name="table2Name"
-                    placeholder="Enter table2Name "
-                    value={formData.table2Name}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Header Name</label>
-
-                <div className="input-box">
-                  <FaHeading className="input-icon" />
-
-                  <input
-                    type="text"
-                    name="header2Name"
-                    placeholder="Enter header2Name "
-                    value={formData.header2Name}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Amount Position</label>
-
-                <div className="input-box">
-                  <FaMapMarkerAlt className="input-icon" />
-
-                  <input
-                    type="text"
-                    name="amountPosition2"
-                    placeholder="Enter amountPosition2"
-                    value={formData.amountPosition2}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Information</label>
-
-                <div className="input-box">
-                  <FaInfoCircle className="input-icon" />
-
-                  <input
-                    type="text"
-                    name="information2"
-                    placeholder="Enter information2"
-                    value={formData.information2}
-                    onChange={handleChange}
-                  />
-                </div>
+                {formData.rules.length > 1 && (
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={() => deleteRule(formData.rules.length - 1)}
+                  >
+                    <FaTimes className="me-1" />
+                    Delete Rule
+                  </button>
+                )}
               </div>
             </div>
-          </div>
-
-          {/* Rule 3 */}
-
-          <div className="form-card">
-            <h3 className="section-title">Rule 3</h3>
-
-            <div className="form-grid">
-              <div className="form-group">
-                <label>Arithmetic 3</label>
-
-                <div className="input-box">
-                  <FaCalculator className="input-icon" />
-
-                  <input
-                    type="text"
-                    name="arithmetic3"
-                    placeholder="Enter arithmetic3 "
-                    value={formData.arithmetic3}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Table Name</label>
-
-                <div className="input-box">
-                  <FaTable className="input-icon" />
-
-                  <input
-                    type="text"
-                    name="table3Name"
-                    placeholder="Enter table3Name "
-                    value={formData.table3Name}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Header Name</label>
-
-                <div className="input-box">
-                  <FaHeading className="input-icon" />
-
-                  <input
-                    type="text"
-                    name="header3Name"
-                    placeholder="Enter header3Name "
-                    value={formData.header3Name}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Amount Position</label>
-
-                <div className="input-box">
-                  <FaMapMarkerAlt className="input-icon" />
-
-                  <input
-                    type="text"
-                    name="amountPosition3"
-                    placeholder="Enter amountPosition3 "
-                    value={formData.amountPosition3}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Information</label>
-
-                <div className="input-box">
-                  <FaInfoCircle className="input-icon" />
-
-                  <input
-                    type="text"
-                    name="information3"
-                    placeholder="Enter information3 "
-                    value={formData.information3}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          {/* Rule 4 */}
-
-          <div className="form-card">
-            <h3 className="section-title">Rule 4</h3>
-
-            <div className="form-grid">
-              <div className="form-group">
-                <label>Arithmetic 4</label>
-
-                <div className="input-box">
-                  <FaCalculator className="input-icon" />
-
-                  <input
-                    type="text"
-                    name="arithmetic4"
-                    placeholder="Enter arithmetic4 "
-                    value={formData.arithmetic4}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Table Name</label>
-
-                <div className="input-box">
-                  <FaTable className="input-icon" />
-
-                  <input
-                    type="text"
-                    name="table4Name"
-                    placeholder="Enter table4Name "
-                    value={formData.table4Name}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Header Name</label>
-
-                <div className="input-box">
-                  <FaHeading className="input-icon" />
-
-                  <input
-                    type="text"
-                    name="header4Name"
-                    placeholder="Enter header4Name "
-                    value={formData.header4Name}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Amount Position</label>
-
-                <div className="input-box">
-                  <FaMapMarkerAlt className="input-icon" />
-
-                  <input
-                    type="text"
-                    name="amountPosition4"
-                    placeholder="Enter amountPosition4"
-                    value={formData.amountPosition4}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Information</label>
-
-                <div className="input-box">
-                  <FaInfoCircle className="input-icon" />
-
-                  <input
-                    type="text"
-                    name="information4"
-                    placeholder="Enter information4"
-                    value={formData.information4}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+          ))}
 
           {/* Status */}
 
@@ -667,13 +460,11 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                   <input
                     type="checkbox"
                     name="activeRow"
-                    placeholder="Enter activeRow"
                     checked={formData.activeRow}
                     onChange={handleChange}
                   />
                 </div>
               </div>
-
               <div className="form-group">
                 <label>Row Status</label>
 
@@ -683,7 +474,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                   <input
                     type="number"
                     name="rowStatus"
-                    placeholder="Enter row status "
+                    placeholder="Enter Row Status"
                     value={formData.rowStatus}
                     onChange={handleChange}
                   />
@@ -711,7 +502,6 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
         </div>
       </div>
     </div>,
-
     document.body,
   );
 }

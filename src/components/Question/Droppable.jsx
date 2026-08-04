@@ -74,7 +74,7 @@ const Droppable = ({
               <tr className="total-row">
                 <td className="fw-bold">Total</td>
                 <td className="fw-bold text-end">
-                  {addTotal.toLocaleString("en-IN")}
+                  {/* {addTotal.toLocaleString("en-IN")} */}
                 </td>
               </tr>
             </tfoot>
@@ -120,7 +120,7 @@ const Droppable = ({
             <tfoot>
               <tr className="total-row">
                 <td className="fw-bold text-end">
-                  {subTotal ? `-${subTotal.toLocaleString("en-IN")}` : "\u00A0"}
+                  {(addTotal - subTotal).toLocaleString("en-IN")}
                 </td>
               </tr>
             </tfoot>

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+import CollegeService from "../services/CollegeService";
+import BranchService from "../services/BranchService";
+
 import {
   FaCodeBranch,
   FaLayerGroup,
@@ -11,18 +14,40 @@ import {
 function SectionForm({ selectedSectionData, onSave, onCancel }) {
 
   const emptySection = {
-    sectionId: "",
-    courseId: "",
-    sectionName: "",
-    description: "",
-  };
+  sectionId: "",
+  collegeId: "",
+  branchId: "",
+  courseId: "",
+  sectionName: "",
+  description: "",
+};
 
   const [section, setSection] = useState(emptySection);
   const [coursesList, setCoursesList] = useState([]);
+  const [collegesList, setCollegesList] = useState([]);
+const [branchesList, setBranchesList] = useState([]);
 
   useEffect(() => {
+    loadColleges();
+    loadBranches();
     loadCourses();
   }, []);
+
+  const loadColleges = () => {
+  CollegeService.getAllColleges()
+    .then((response) => {
+      setCollegesList(response.data || []);
+    })
+    .catch(console.error);
+};
+
+const loadBranches = () => {
+  BranchService.getAllBranches()
+    .then((response) => {
+      setBranchesList(response.data || []);
+    })
+    .catch(console.error);
+};
 
   const loadCourses = () => {
     axios
@@ -38,11 +63,13 @@ function SectionForm({ selectedSectionData, onSave, onCancel }) {
   useEffect(() => {
     if (selectedSectionData) {
       setSection({
-        sectionId: selectedSectionData.sectionId || "",
-        courseId: selectedSectionData.courseId || "",
-        sectionName: selectedSectionData.sectionName || "",
-        description: selectedSectionData.description || "",
-      });
+    sectionId: selectedSectionData.sectionId || "",
+    collegeId: Number(selectedSectionData.collegeId) || "",
+    branchId: Number(selectedSectionData.branchId) || "",
+    courseId: Number(selectedSectionData.courseId) || "",
+    sectionName: selectedSectionData.sectionName || "",
+    description: selectedSectionData.description || "",
+});
     } else {
       setSection(emptySection);
     }
@@ -51,13 +78,18 @@ function SectionForm({ selectedSectionData, onSave, onCancel }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "courseId") {
-      setSection({
+    if (
+    name === "collegeId" ||
+    name === "branchId" ||
+    name === "courseId"
+) {
+    setSection({
         ...section,
-        courseId: value === "" ? "" : Number(value),
-      });
-      return;
-    }
+        [name]: value === "" ? "" : Number(value),
+    });
+
+    return;
+}
 
     setSection({
       ...section,
@@ -68,16 +100,28 @@ function SectionForm({ selectedSectionData, onSave, onCancel }) {
   const saveSection = (e) => {
     e.preventDefault();
 
+    if (!section.collegeId) {
+    alert("Please select college.");
+    return;
+}
+
+if (!section.branchId) {
+    alert("Please select branch.");
+    return;
+}
+
     if (!section.courseId) {
       alert("Please select an associate course.");
       return;
     }
 
     const requestDTO = {
-      courseId: section.courseId,
-      sectionName: section.sectionName,
-      description: section.description,
-    };
+    collegeId: section.collegeId,
+    branchId: section.branchId,
+    courseId: section.courseId,
+    sectionName: section.sectionName,
+    description: section.description,
+};
 
     onSave(requestDTO, section.sectionId);
 
@@ -94,6 +138,66 @@ function SectionForm({ selectedSectionData, onSave, onCancel }) {
         </h3>
 
         <div className="form-grid">
+
+          <div className="form-group">
+    <label className="form-label fw-semibold">
+        College
+        <span className="text-danger">*</span>
+    </label>
+
+    <div className="input-box">
+        <FaCodeBranch className="input-icon" />
+
+        <select
+            className="form-select"
+            name="collegeId"
+            value={section.collegeId}
+            onChange={handleChange}
+            required
+        >
+            <option value="">Select College</option>
+
+            {collegesList.map((college) => (
+                <option
+                    key={college.collegeId}
+                    value={college.collegeId}
+                >
+                    {college.instituteName}
+                </option>
+            ))}
+        </select>
+    </div>
+</div>
+
+<div className="form-group">
+    <label className="form-label fw-semibold">
+        Branch
+        <span className="text-danger">*</span>
+    </label>
+
+    <div className="input-box">
+        <FaCodeBranch className="input-icon" />
+
+        <select
+            className="form-select"
+            name="branchId"
+            value={section.branchId}
+            onChange={handleChange}
+            required
+        >
+            <option value="">Select Branch</option>
+
+            {branchesList.map((branch) => (
+                <option
+                    key={branch.branchId}
+                    value={branch.branchId}
+                >
+                    {branch.branchName}
+                </option>
+            ))}
+        </select>
+    </div>
+</div>
 
           <div className="form-group">
             <label className="form-label fw-semibold">
@@ -148,9 +252,7 @@ function SectionForm({ selectedSectionData, onSave, onCancel }) {
           </div>
 
           <div className="form-group description-group">
-            <label>
-              Description <span>*</span>
-            </label>
+            <label>Description</label>
 
             <div className="textarea-box">
               <FaAlignLeft className="input-icon" />
@@ -161,7 +263,7 @@ function SectionForm({ selectedSectionData, onSave, onCancel }) {
                 value={section.description}
                 onChange={handleChange}
                 rows={4}
-                required
+                
               />
             </div>
           </div>

@@ -15,59 +15,69 @@ function TableHeaders() {
   const [successMessage, setSuccessMessage] = useState("");
 
   // Upload Handler
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const file = e.target.files[0];
 
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
-    console.log("Selected File:", file);
+    try {
+      const response = await TableHeaderService.uploadExcel(file);
 
-    // TODO: Call Upload API here
+      setSuccessMessage(response.data);
+      setShowSuccess(true);
+
+      loadTableHeaders();
+    } catch (error) {
+      console.error("Upload Error:", error);
+
+      alert(error.response?.data || "Excel upload failed.");
+    }
 
     e.target.value = "";
   };
 
   const handleSave = async (newTableHeader) => {
-  try {
-    if (id == null) {
-      await TableHeaderService.create(newTableHeader);
-      setSuccessMessage("Table Header added successfully.");
-    } else {
-      await TableHeaderService.update(id, newTableHeader);
-      setSuccessMessage("Table Header updated successfully.");
+    try {
+      if (id == null) {
+        await TableHeaderService.create(newTableHeader);
+        setSuccessMessage("Table Header added successfully.");
+      } else {
+        await TableHeaderService.update(id, newTableHeader);
+        setSuccessMessage("Table Header updated successfully.");
+      }
+      setShowSuccess(true);
+      setId(null);
+      setName("");
+      setShowModal(false);
+      loadTableHeaders();
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Operation failed.");
     }
-    setShowSuccess(true);
-    setId(null);
-    setName("");
-    setShowModal(false);
-    loadTableHeaders();
-  } catch (error) {
-    console.error("Error:", error);
-    alert("Operation failed.");
-  }
-};
+  };
 
   const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this table header?",
+    );
 
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete this table header?"
-  );
+    if (!confirmDelete) {
+      return;
+    }
 
-  if (!confirmDelete) {
-    return;
-  }
+    try {
+      await TableHeaderService.delete(id);
 
-  try {
-    await TableHeaderService.delete(id);
+      alert("Table Header deleted successfully.");
 
-    alert("Table Header deleted successfully.");
-
-    loadTableHeaders();
-  } catch (error) {
-    console.error("Error:", error);
-    alert("Failed to delete Table Header.");
-  }
-};
+      loadTableHeaders();
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Failed to delete Table Header.");
+    }
+  };
 
   useEffect(() => {
     loadTableHeaders();
@@ -92,13 +102,13 @@ function TableHeaders() {
   const columnDefs = [
     {
       field: "id",
-      headerName: "ID",
+      headerName: "Table Header ID",
       width: 80,
       flex: 1,
     },
     {
       field: "name",
-      headerName: "Institute Name",
+      headerName: "Table Header Name",
       flex: 1,
       minWidth: 160,
     },
@@ -165,23 +175,15 @@ function TableHeaders() {
       },
     },
   ];
-    return (
+  return (
     <div className="container-fluid py-4">
-
       {/* Header */}
 
       <div className="d-flex justify-content-between align-items-center mb-4">
-
         <div>
+          <h2 className="fw-bold">Table Header Management</h2>
 
-          <h2 className="fw-bold">
-            Table Header Management
-          </h2>
-
-          <p className="text-muted">
-            Manage all table headers.
-          </p>
-
+          <p className="text-muted">Manage all table headers.</p>
         </div>
 
         {/* Hidden Upload Input */}
@@ -195,14 +197,9 @@ function TableHeaders() {
         />
 
         <div className="d-flex gap-2">
-
           <button
             className="btn btn-primary"
-            onClick={() =>
-              document
-                .getElementById("tableHeaderUpload")
-                .click()
-            }
+            onClick={() => document.getElementById("tableHeaderUpload").click()}
           >
             ⬆ Upload
           </button>
@@ -217,17 +214,15 @@ function TableHeaders() {
           >
             + Add Table Header
           </button>
-
         </div>
-
       </div>
 
       {/* Data Grid */}
-
-      <DataGrid
-        rowData={tableHeaders}
-        columnDefs={columnDefs}
-      />
+      <div className="card shadow-sm border-0">
+        <div className="card-body">
+          <DataGrid rowData={tableHeaders} columnDefs={columnDefs} />
+        </div>
+      </div>
 
       {/* Modal */}
 
@@ -242,14 +237,14 @@ function TableHeaders() {
         Inputdata={name}
       />
       <SuccessModal
-      show={showSuccess}
-      message={successMessage}
-      onClose={() => {
-      setShowSuccess(false);
-    }}
-   />
-  </div>
- );
+        show={showSuccess}
+        message={successMessage}
+        onClose={() => {
+          setShowSuccess(false);
+        }}
+      />
+    </div>
+  );
 }
 
 export default TableHeaders;

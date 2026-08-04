@@ -24,7 +24,6 @@ function TableAttributes() {
         amount1: obj.amount1,
         amount2: obj.amount2,
         tableHeaderName: obj.tableHeaderName,
-        
       }));
 
       setTableAttributes(allTableAttributes);
@@ -38,56 +37,59 @@ function TableAttributes() {
   }, []);
 
   const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this table attribute?",
+    );
 
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete this table attribute?"
-  );
+    if (!confirmDelete) {
+      return;
+    }
 
-  if (!confirmDelete) {
-    return;
-  }
+    try {
+      await TableAttributeService.delete(id);
 
-  try {
-    await TableAttributeService.delete(id);
+      alert("Table Attribute deleted successfully.");
 
-    alert("Table Attribute deleted successfully.");
+      loadTableAttributes();
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Failed to delete Table Attribute.");
+    }
+  };
 
-    loadTableAttributes();
-  } catch (error) {
-    console.error("Error:", error);
-    alert("Failed to delete Table Attribute.");
-  }
-};
-
-  // Upload Button
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const file = e.target.files[0];
 
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
-    console.log("Selected File:", file);
+    try {
+      const response = await TableHeaderService.uploadExcel(file);
 
-    // TODO: Upload API
+      setSuccessMessage(response.data);
+      setShowSuccess(true);
+
+      loadTableHeaders();
+    } catch (error) {
+      console.error("Upload Error:", error);
+
+      alert(error.response?.data || "Excel upload failed.");
+    }
 
     e.target.value = "";
   };
 
   const columnDefs = [
-    { field: "id", headerName: "ID", width: 80, flex: 1 },
+    { field: "id", headerName: "Table Attribute ID", width: 80, flex: 1 },
     { field: "name", headerName: "Table Attribute Name", flex: 1 },
     {
       field: "tableHeaderName",
       headerName: "Table Header Name",
       flex: 1,
     },
-    { field: "amount1",
-      headerName: "Amount 1",
-      flex: 1,
-    },
-    { field: "amount2",
-      headerName: "Amount 2",
-      flex: 1,
-    },
+    { field: "amount1", headerName: "Amount 1", flex: 1 },
+    { field: "amount2", headerName: "Amount 2", flex: 1 },
     {
       headerName: "Action",
       flex: 1,
@@ -158,42 +160,35 @@ function TableAttributes() {
       },
     },
   ];
-    const handleSave = async (newAttribute) => {
-      try {
+  const handleSave = async (newAttribute) => {
+    try {
       if (id != null) {
-      await TableAttributeService.update(id, newAttribute);
-      setSuccessMessage("Table Attribute updated successfully!");
-    } else {
-      await TableAttributeService.create(newAttribute);
-      setSuccessMessage("Table Attribute added successfully!");
-    }
+        await TableAttributeService.update(id, newAttribute);
+        setSuccessMessage("Table Attribute updated successfully!");
+      } else {
+        await TableAttributeService.create(newAttribute);
+        setSuccessMessage("Table Attribute added successfully!");
+      }
       setShowSuccess(true);
       setEditingAttribute(null);
       setId(null);
       setShowModal(false);
       loadTableAttributes();
-    } 
-     catch (error) {
-     console.error("Error:", error);
-     alert("Operation failed.");
-  }
-};
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Operation failed.");
+    }
+  };
 
   return (
     <div className="container-fluid py-4">
-
       {/* Header */}
 
       <div className="d-flex justify-content-between align-items-center mb-4">
-
         <div>
-          <h2 className="fw-bold">
-            Table Attribute Management
-          </h2>
+          <h2 className="fw-bold">Table Attribute Management</h2>
 
-          <p className="text-muted">
-            Manage all table attributes.
-          </p>
+          <p className="text-muted">Manage all table attributes.</p>
         </div>
 
         {/* Hidden Upload Input */}
@@ -207,13 +202,10 @@ function TableAttributes() {
         />
 
         <div className="d-flex gap-2">
-
           <button
             className="btn btn-primary"
             onClick={() =>
-              document
-                .getElementById("tableAttributeUpload")
-                .click()
+              document.getElementById("tableAttributeUpload").click()
             }
           >
             ⬆ Upload
@@ -229,17 +221,15 @@ function TableAttributes() {
           >
             + Add Table Attribute
           </button>
-
         </div>
-
       </div>
 
       {/* Data Grid */}
-
-      <DataGrid
-        rowData={tableAttributes}
-        columnDefs={columnDefs}
-      />
+      <div className="card shadow-sm border-0">
+        <div className="card-body">
+          <DataGrid rowData={tableAttributes} columnDefs={columnDefs} />
+        </div>
+      </div>
 
       {/* Modal */}
 
@@ -253,14 +243,13 @@ function TableAttributes() {
         onSave={handleSave}
         initialData={editingAttribute}
       />
-        <SuccessModal
+      <SuccessModal
         show={showSuccess}
         message={successMessage}
         onClose={() => {
-        setShowSuccess(false);
-       }}
-    />
-
+          setShowSuccess(false);
+        }}
+      />
     </div>
   );
 }
