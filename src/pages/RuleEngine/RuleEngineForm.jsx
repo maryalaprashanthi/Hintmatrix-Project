@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { Typeahead } from "react-bootstrap-typeahead";
+import "react-bootstrap-typeahead/css/Typeahead.css";
+
+import mockData from "../../mock/ruleEngineMockData.json";
 
 import {
   FaTimes,
@@ -20,6 +24,30 @@ import {
 import "./RuleEngineForm.css";
 
 function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
+  // Mock Data States
+  const [tableAttributes, setTableAttributes] = useState([]);
+  const [tableHeaders, setTableHeaders] = useState([]);
+  const [relationships, setRelationships] = useState([]);
+  const [fieldTypes, setFieldTypes] = useState([]);
+  const [chapters, setChapters] = useState([]);
+
+  // Load JSON Data
+  useEffect(() => {
+    setTableAttributes(mockData.tableAttributes);
+    setTableHeaders(mockData.tableHeaders);
+    setRelationships(mockData.relationships);
+    setFieldTypes(mockData.fieldTypes);
+    setChapters(mockData.chapters);
+  }, []);
+
+  const emptyRule = () => ({
+    arithmetic: "",
+    tableName: "",
+    headerName: "",
+    amountPosition: "",
+    information: "",
+  });
+
   const [formData, setFormData] = useState({
     chapterName: "",
     pairAttributeName: "",
@@ -28,36 +56,57 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
     relationshipName: "",
     pairOrder: "",
 
-    rules: [
-      {
-        arithmetic: "",
-        tableName: "",
-        headerName: "",
-        amountPosition: "",
-        information: "",
-      },
-    ],
+    rules: [emptyRule()],
 
     activeRow: false,
     rowStatus: "",
   });
 
+  // Edit / Reset Form Data
   useEffect(() => {
     if (selectedRuleData) {
+      const rules = [];
+
+      for (let i = 1; i <= 4; i++) {
+        if (
+          selectedRuleData[`arithmetic${i}`] ||
+          selectedRuleData[`table${i}Name`] ||
+          selectedRuleData[`header${i}Name`] ||
+          selectedRuleData[`amountPosition${i}`] ||
+          selectedRuleData[`information${i}`]
+        ) {
+          rules.push({
+            arithmetic: selectedRuleData[`arithmetic${i}`] || "",
+
+            tableName: selectedRuleData[`table${i}Name`] || "",
+
+            headerName: selectedRuleData[`header${i}Name`] || "",
+
+            amountPosition: selectedRuleData[`amountPosition${i}`] || "",
+
+            information: selectedRuleData[`information${i}`] || "",
+          });
+        }
+      }
+
       setFormData({
-        ...selectedRuleData,
-        rules:
-          selectedRuleData.rules && selectedRuleData.rules.length > 0
-            ? selectedRuleData.rules
-            : [
-                {
-                  arithmetic: "",
-                  tableName: "",
-                  headerName: "",
-                  amountPosition: "",
-                  information: "",
-                },
-              ],
+        chapterName: selectedRuleData.chapterName || "",
+
+        pairAttributeName: selectedRuleData.pairAttributeName || "",
+
+        fieldName: selectedRuleData.fieldName || "",
+
+        fieldType: selectedRuleData.fieldType || "",
+
+        relationshipName: selectedRuleData.relationshipName || "",
+
+        pairOrder: selectedRuleData.pairOrder || "",
+
+        rules: rules.length > 0 ? rules : [emptyRule()],
+
+        activeRow: selectedRuleData.activeRow || false,
+
+        rowStatus: selectedRuleData.rowStatus || "",
       });
     } else {
       setFormData({
@@ -68,16 +117,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
         relationshipName: "",
         pairOrder: "",
 
-        rules: [
-          {
-            arithmetic: "",
-            tableName: "",
-            headerName: "",
-            amountPosition: "",
-            information: "",
-          },
-        ],
-
+        rules: [emptyRule()],
         activeRow: false,
         rowStatus: "",
       });
@@ -87,6 +127,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
   const addRule = () => {
     setFormData((prev) => ({
       ...prev,
+
       rules: [
         ...prev.rules,
         {
@@ -99,19 +140,23 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
       ],
     }));
   };
+
   const deleteRule = (index) => {
     setFormData((prev) => ({
       ...prev,
+
       rules: prev.rules.filter((_, i) => i !== index),
     }));
   };
 
   const handleRuleChange = (index, field, value) => {
     const updatedRules = [...formData.rules];
+
     updatedRules[index][field] = value;
 
     setFormData((prev) => ({
       ...prev,
+
       rules: updatedRules,
     }));
   };
@@ -121,6 +166,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
 
     setFormData((prev) => ({
       ...prev,
+
       [name]: type === "checkbox" ? checked : value,
     }));
   };
@@ -131,8 +177,34 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
       return;
     }
 
+    const payload = {
+      chapterName: formData.chapterName,
+      pairAttributeName: formData.pairAttributeName,
+      fieldName: formData.fieldName,
+      fieldType: formData.fieldType,
+      relationshipName: formData.relationshipName,
+      pairOrder: formData.pairOrder,
+
+      activeRow: formData.activeRow,
+      rowStatus: formData.rowStatus,
+    };
+
+    formData.rules.forEach((rule, index) => {
+      const i = index + 1;
+
+      payload[`arithmetic${i}`] = rule.arithmetic;
+
+      payload[`table${i}Name`] = rule.tableName;
+
+      payload[`header${i}Name`] = rule.headerName;
+
+      payload[`amountPosition${i}`] = rule.amountPosition;
+
+      payload[`information${i}`] = rule.information;
+    });
+
     try {
-      await onSave(formData);
+      await onSave(payload);
     } catch (error) {
       console.error("Error saving rule:", error);
     }
@@ -160,13 +232,11 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
         {/* Body */}
 
         <div className="modal-body">
-          {/* Rule Engine Information */}
-
           <div className="form-card">
             <h3 className="section-title">Rule Engine Information</h3>
 
             <div className="form-grid">
-              {/* Chapter Name */}
+              {/* Chapter */}
 
               <div className="form-group">
                 <label>Chapter Name</label>
@@ -174,21 +244,22 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                 <div className="input-box">
                   <FaBook className="input-icon" />
 
-                  <input
-                    type="text"
-                    list="chapterList"
-                    name="chapterName"
+                  <Typeahead
+                    id="chapterName"
+                    labelKey="name"
+                    options={chapters}
                     placeholder="Select Chapter"
-                    value={formData.chapterName}
-                    onChange={handleChange}
-                  />
+                    selected={chapters.filter(
+                      (item) => item.name === formData.chapterName,
+                    )}
+                    onChange={(selected) =>
+                      setFormData((prev) => ({
+                        ...prev,
 
-                  <datalist id="chapterList">
-                    <option value="Chapter 1" />
-                    <option value="Chapter 2" />
-                    <option value="Chapter 3" />
-                    <option value="Chapter 4" />
-                  </datalist>
+                        chapterName: selected.length ? selected[0].name : "",
+                      }))
+                    }
+                  />
                 </div>
               </div>
 
@@ -200,21 +271,24 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                 <div className="input-box">
                   <FaTag className="input-icon" />
 
-                  <input
-                    type="text"
-                    list="pairAttributeList"
-                    name="pairAttributeName"
+                  <Typeahead
+                    id="pairAttributeName"
+                    labelKey="name"
+                    options={tableAttributes}
                     placeholder="Select Pair Attribute"
-                    value={formData.pairAttributeName}
-                    onChange={handleChange}
-                  />
+                    selected={tableAttributes.filter(
+                      (item) => item.name === formData.pairAttributeName,
+                    )}
+                    onChange={(selected) =>
+                      setFormData((prev) => ({
+                        ...prev,
 
-                  <datalist id="pairAttributeList">
-                    <option value="Invoice Number" />
-                    <option value="Student ID" />
-                    <option value="Amount" />
-                    <option value="Course" />
-                  </datalist>
+                        pairAttributeName: selected.length
+                          ? selected[0].name
+                          : "",
+                      }))
+                    }
+                  />
                 </div>
               </div>
 
@@ -226,22 +300,22 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                 <div className="input-box">
                   <FaFont className="input-icon" />
 
-                  <input
-                    type="text"
-                    list="fieldList"
-                    name="fieldName"
+                  <Typeahead
+                    id="fieldName"
+                    labelKey="name"
+                    options={tableHeaders}
                     placeholder="Select Field"
-                    value={formData.fieldName}
-                    onChange={handleChange}
-                  />
+                    selected={tableHeaders.filter(
+                      (item) => item.name === formData.fieldName,
+                    )}
+                    onChange={(selected) =>
+                      setFormData((prev) => ({
+                        ...prev,
 
-                  <datalist id="fieldList">
-                    <option value="Student Name" />
-                    <option value="Roll Number" />
-                    <option value="Branch" />
-                    <option value="College" />
-                    <option value="Course" />
-                  </datalist>
+                        fieldName: selected.length ? selected[0].name : "",
+                      }))
+                    }
+                  />
                 </div>
               </div>
 
@@ -253,22 +327,22 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                 <div className="input-box">
                   <FaFont className="input-icon" />
 
-                  <input
-                    type="text"
-                    list="fieldTypeList"
-                    name="fieldType"
+                  <Typeahead
+                    id="fieldType"
+                    labelKey="name"
+                    options={fieldTypes}
                     placeholder="Select Field Type"
-                    value={formData.fieldType}
-                    onChange={handleChange}
-                  />
+                    selected={fieldTypes.filter(
+                      (item) => item.name === formData.fieldType,
+                    )}
+                    onChange={(selected) =>
+                      setFormData((prev) => ({
+                        ...prev,
 
-                  <datalist id="fieldTypeList">
-                    <option value="String" />
-                    <option value="Integer" />
-                    <option value="Decimal" />
-                    <option value="Boolean" />
-                    <option value="Date" />
-                  </datalist>
+                        fieldType: selected.length ? selected[0].name : "",
+                      }))
+                    }
+                  />
                 </div>
               </div>
 
@@ -280,22 +354,24 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                 <div className="input-box">
                   <FaProjectDiagram className="input-icon" />
 
-                  <input
-                    type="text"
-                    list="relationshipList"
-                    name="relationshipName"
+                  <Typeahead
+                    id="relationshipName"
+                    labelKey="name"
+                    options={relationships}
                     placeholder="Select Relationship"
-                    value={formData.relationshipName}
-                    onChange={handleChange}
-                  />
+                    selected={relationships.filter(
+                      (item) => item.name === formData.relationshipName,
+                    )}
+                    onChange={(selected) =>
+                      setFormData((prev) => ({
+                        ...prev,
 
-                  <datalist id="relationshipList">
-                    <option value="Equals" />
-                    <option value="Not Equals" />
-                    <option value="Greater Than" />
-                    <option value="Less Than" />
-                    <option value="Contains" />
-                  </datalist>
+                        relationshipName: selected.length
+                          ? selected[0].name
+                          : "",
+                      }))
+                    }
+                  />
                 </div>
               </div>
 
@@ -318,11 +394,13 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
               </div>
             </div>
           </div>
+
           {/* Rule Parameters */}
 
           {formData.rules.map((rule, index) => (
             <div className="form-card" key={index}>
               <h3 className="section-title mb-3">Rule {index + 1}</h3>
+
               <div className="form-grid">
                 {/* Arithmetic */}
 
@@ -423,6 +501,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                   </div>
                 </div>
               </div>
+
               <div className="mt-3 d-flex gap-2">
                 <button
                   type="button"
@@ -437,7 +516,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                   <button
                     type="button"
                     className="btn btn-danger"
-                    onClick={() => deleteRule(formData.rules.length - 1)}
+                    onClick={() => deleteRule(index)}
                   >
                     <FaTimes className="me-1" />
                     Delete Rule
@@ -465,6 +544,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                   />
                 </div>
               </div>
+
               <div className="form-group">
                 <label>Row Status</label>
 
@@ -502,6 +582,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
         </div>
       </div>
     </div>,
+
     document.body,
   );
 }

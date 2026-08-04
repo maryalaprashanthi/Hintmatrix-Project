@@ -17,6 +17,7 @@
     "bootstrap": "^5.3.8",
     "react": "^18.2.0",
     "react-bootstrap": "^2.10.10",
+    "react-bootstrap-typeahead": "^6.4.1",
     "react-dom": "^18.2.0",
     "react-icons": "^5.7.0",
     "react-router-dom": "^7.18.1",
