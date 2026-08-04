@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import SuccessModal from "../../components/Common/SuccessModal";
 import {
   Container,
   Row,
@@ -19,6 +20,8 @@ import { NavLink } from "react-router-dom";
 const QuestionList = () => {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Upload File Reference
   const fileInputRef = useRef(null);
@@ -278,16 +281,24 @@ const QuestionList = () => {
       </ListGroup>
 
       <AddQuestionModal
-        show={showModal}
+          show={showModal}
           onClose={() => setShowModal(false)}
-  onSave={(newQuestion) => {
-    console.log(newQuestion);
+          onSave={(newQuestion) => {
+            console.log(newQuestion);
+            setSuccessMessage("Question added successfully");
+            setShowSuccess(true);
 
     setShowModal(false);
   }}
   questionData={null}
-
-      />
+  />
+    <SuccessModal
+    show={showSuccess}
+    message={successMessage}
+    onClose={() => {
+    setShowSuccess(false);
+  }}
+/>
     </Container>
   );
 };

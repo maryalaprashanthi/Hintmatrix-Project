@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import Select from "react-select";
 
 import {
   FaTimes,
@@ -20,46 +21,54 @@ function AddQuestionModal({
   onSave,
   questionData,
 }) {
-  const [course, setCourse] = useState("");
-  const [chapter, setChapter] = useState("");
-  const [category, setCategory] = useState("");
+  const [courseId, setCourseId] = useState(null);
+  const [chapterId, setChapterId] = useState(null);
+  const [categoryId, setCategoryId] = useState(null);
   const [questionText, setQuestionText] = useState("");
+
+  // Empty options (Backend team will populate)
+  const courseOptions = [];
+  const chapterOptions = [];
+  const categoryOptions = [];
+  const balanceOptions = [];
 
   const [attributes, setAttributes] = useState([
     {
-      debitBalance: "",
+      debitBalance: null,
       debitAmount: "",
-      creditBalance: "",
+      creditBalance: null,
       creditAmount: "",
     },
   ]);
 
   useEffect(() => {
     if (questionData) {
-      setCourse(questionData.course || "");
-      setChapter(questionData.chapter || "");
-      setCategory(questionData.category || "");
+      setCourseId(questionData.courseId || null);
+      setChapterId(questionData.chapterId || null);
+      setCategoryId(questionData.categoryId || null);
       setQuestionText(questionData.questionText || "");
+
       setAttributes(
         questionData.attributes || [
           {
-            debitBalance: "",
+            debitBalance: null,
             debitAmount: "",
-            creditBalance: "",
+            creditBalance: null,
             creditAmount: "",
           },
         ]
       );
     } else {
-      setCourse("");
-      setChapter("");
-      setCategory("");
+      setCourseId(null);
+      setChapterId(null);
+      setCategoryId(null);
       setQuestionText("");
+
       setAttributes([
         {
-          debitBalance: "",
+          debitBalance: null,
           debitAmount: "",
-          creditBalance: "",
+          creditBalance: null,
           creditAmount: "",
         },
       ]);
@@ -78,24 +87,26 @@ function AddQuestionModal({
     setAttributes([
       ...attributes,
       {
-        debitBalance: "",
+        debitBalance: null,
         debitAmount: "",
-        creditBalance: "",
+        creditBalance: null,
         creditAmount: "",
       },
     ]);
   };
+
   const handleDeleteRow = (index) => {
     if (attributes.length === 1) return;
 
     const updatedRows = attributes.filter((_, i) => i !== index);
     setAttributes(updatedRows);
   };
+
   const handleSave = async () => {
     if (
-      !course.trim() ||
-      !chapter.trim() ||
-      !category.trim() ||
+      !courseId ||
+      !chapterId ||
+      !categoryId ||
       !questionText.trim()
     ) {
       alert("Please fill all required fields.");
@@ -103,9 +114,9 @@ function AddQuestionModal({
     }
 
     const newQuestion = {
-      course,
-      chapter,
-      category,
+      courseId,
+      chapterId,
+      categoryId,
       questionText,
       attributes,
     };
@@ -116,16 +127,16 @@ function AddQuestionModal({
   };
 
   const handleClose = () => {
-    setCourse("");
-    setChapter("");
-    setCategory("");
+    setCourseId(null);
+    setChapterId(null);
+    setCategoryId(null);
     setQuestionText("");
 
     setAttributes([
       {
-        debitBalance: "",
+        debitBalance: null,
         debitAmount: "",
-        creditBalance: "",
+        creditBalance: null,
         creditAmount: "",
       },
     ]);
@@ -135,235 +146,266 @@ function AddQuestionModal({
 
   return createPortal(
     <div className="modal-overlay">
-      <div className="table-name-modal">
+  <div className="table-name-modal">
 
-        {/* Header */}
+    {/* Header */}
 
-        <div className="modal-header">
-          <div>
-            <h2>
-              {questionData ? "Update Question" : "Add New Question"}
-            </h2>
+    <div className="modal-header">
+      <div>
+        <h2>
+          {questionData ? "Update Question" : "Add New Question"}
+        </h2>
 
-            <p>
-              {questionData
-                ? "Update existing question."
-                : "Fill in the details below to create a new question."}
-            </p>
+        <p>
+          {questionData
+            ? "Update existing question."
+            : "Fill in the details below to create a new question."}
+        </p>
+      </div>
+
+      <button className="close-btn" onClick={handleClose}>
+        <FaTimes />
+      </button>
+    </div>
+    {/* Body */}
+
+    <div className="modal-body">
+
+      <div className="form-card">
+
+        <h3 className="section-title">
+          Question Details
+        </h3>
+
+        <div className="form-grid">
+
+          {/* Course ID */}
+            <div className="form-group">
+
+  <label>
+    Course ID <span>*</span>
+  </label>
+
+  <div className="input-box ">
+
+    <FaBook className="input-icon" />
+          <datalist id="Course Id">
+            <option value=" 1" />
+            <option value=" 2" />
+            <option value=" 3" />
+            <option value=" 4" />
+          </datalist>
+
+
+    <div className="select-wrapper">
+      <Select
+    className="react-select-container"
+    classNamePrefix="react-select"
+    options={courseOptions}
+    value={courseId}
+    onChange={setCourseId}
+    placeholder="Select Course Id"
+    isSearchable={false}
+/>
+    </div>
+  </div>
+</div>
+         {/* Chapter ID */}
+
+          <div className="form-group">
+            <label>
+              Chapter ID <span>*</span>
+            </label>
+
+            <div className="input-box">
+              <FaLayerGroup className="input-icon" />
+
+              <Select
+                className="react-select-container"
+                classNamePrefix="react-select"
+                options={chapterOptions}
+                value={chapterId}
+                onChange={setChapterId}
+                placeholder="Select Chapter Id"
+                isSearchable={false}
+              />
+            </div>
           </div>
 
-          <button className="close-btn" onClick={handleClose}>
-            <FaTimes />
-          </button>
+          {/* Category ID */}
+
+          <div className="form-group">
+            <label>
+              Category ID <span>*</span>
+            </label>
+
+            <div className="input-box">
+              <FaList className="input-icon" />
+
+              <Select
+                className="react-select-container"
+                classNamePrefix="react-select"
+                options={categoryOptions}
+                value={categoryId}
+                onChange={setCategoryId}
+                placeholder="Select Category Id"
+                isSearchable={false}
+              />
+            </div>
+          </div>
+
         </div>
 
-        {/* Body */}
+        {/* Question Text */}
 
-        <div className="modal-body">
+        <div className="form-group mt-4">
+          <label>
+            Question Text <span>*</span>
+          </label>
 
-          <div className="form-card">
+          <div className="textarea-box">
+            <FaFileAlt className="input-icon" />
 
-            <h3 className="section-title">
-              Question Details
-            </h3>
-
-            <div className="form-grid">
-
-              {/* Course */}
-
-              <div className="form-group">
-                <label>
-                  Course <span>*</span>
-                </label>
-
-                <div className="input-box">
-                  <FaBook className="input-icon" />
-
-                  <input
-                    type="text"
-                    placeholder="Select Course"
-                    value={course}
-                    onChange={(e) => setCourse(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              {/* Chapter */}
-
-              <div className="form-group">
-                <label>
-                  Chapter <span>*</span>
-                </label>
-
-                <div className="input-box">
-                  <FaLayerGroup className="input-icon" />
-
-                  <input
-                    type="text"
-                    placeholder="Select Chapter"
-                    value={chapter}
-                    onChange={(e) => setChapter(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              {/* Category */}
-
-              <div className="form-group">
-                <label>
-                  Category <span>*</span>
-                </label>
-
-                <div className="input-box">
-                  <FaList className="input-icon" />
-
-                  <input
-                    type="text"
-                    placeholder="Select Category"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                  />
-                </div>
-              </div>
-
-            </div>
-
-            <div className="form-group mt-4">
-              <label>
-                Question Text <span>*</span>
-              </label>
-
-              <div className="textarea-box">
-                <FaFileAlt className="input-icon" />
-
-                <textarea
-                  placeholder="Enter question text..."
-                  value={questionText}
-                  onChange={(e) =>
-                    setQuestionText(e.target.value)
-                  }
-                />
-              </div>
-            </div>
-
+            <textarea
+              placeholder="Enter question text..."
+              value={questionText}
+              onChange={(e) => setQuestionText(e.target.value)}
+            />
           </div>
+        </div>
 
-          {/* Question Attributes */}
+      </div>
+            {/* Question Attributes */}
 
-          <div className="form-card">
+      <div className="form-card">
 
-            <h3 className="section-title">
-              Question Attributes
-            </h3>
+        <h3 className="section-title">
+          Question Attributes
+        </h3>
 
-            <p>Add debit and credit balances for this question.</p>
-            <div className="question-table">
-            <table className="table table-bordered mt-3">
-              <thead>
-                <tr>
-                  <th>Debit Balance</th>
-                  <th>Amount</th>
-                  <th>Credit Balance</th>
-                  <th>Amount</th>
-                  <th>Action</th>
+        <p>Add debit and credit balances for this question.</p>
+
+        <div className="question-table">
+          <table className="table table-bordered mt-3">
+            <thead>
+              <tr>
+                <th>Debit Balance</th>
+                <th>Amount</th>
+                <th>Credit Balance</th>
+                <th>Amount</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {attributes.map((row, index) => (
+                <tr key={index}>
+
+                  {/* Debit Balance */}
+
+                  <td>
+                    <Select
+                      classNamePrefix="react-select"
+                      options={balanceOptions}
+                      value={row.debitBalance}
+                      onChange={(selected) =>
+                        handleAttributeChange(
+                          index,
+                          "debitBalance",
+                          selected
+                        )
+                      }
+                      placeholder="-"
+                      isSearchable
+                    />
+                  </td>
+
+                  {/* Debit Amount */}
+
+                  <td>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      value={row.debitAmount}
+                      onChange={(e) =>
+
+                        handleAttributeChange(
+                          index,
+                          "debitAmount",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </td>
+
+                  {/* Credit Balance */}
+
+                  <td>
+                    <Select
+                      classNamePrefix="react-select"
+                      options={balanceOptions}
+                      value={row.creditBalance}
+                      onChange={(selected) =>
+                        handleAttributeChange(
+                          index,
+                          "creditBalance",
+                          selected
+                        )
+                      }
+                      placeholder="-"
+                      isSearchable
+                    />
+                  </td>
+
+                  {/* Credit Amount */}
+
+                  <td>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      value={row.creditAmount}
+                      onChange={(e) =>
+                        handleAttributeChange(
+                          index,
+                          "creditAmount",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </td>
+
+                  {/* Delete */}
+
+                  <td className="text-center">
+                    <button
+                      type="button"
+                      className="btn btn-outline-danger"
+                      onClick={() => handleDeleteRow(index)}
+                      disabled={attributes.length === 1}
+                    >
+                      <FaTrash />
+                    </button>
+                  </td>
+
                 </tr>
-              </thead>
-              <tbody>
-                {attributes.map((row, index) => (
-                  <tr key={index}>
-                    <td>
-                      <input
-                        type="text"
-                        placeholder="Debit Balance"
-                        value={row.debitBalance}
-                        onChange={(e) =>
-                          handleAttributeChange(
-                            index,
-                            "debitBalance",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </td>
-
-                    <td>
-                      <input
-                        type="text"
-                        placeholder="Amount"
-                        value={row.debitAmount}
-                        onChange={(e) =>
-                          handleAttributeChange(
-                            index,
-                            "debitAmount",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </td>
-
-                    <td>
-                      <input
-                        type="text"
-                        placeholder="Credit Balance"
-                        value={row.creditBalance}
-                        onChange={(e) =>
-                          handleAttributeChange(
-                            index,
-                            "creditBalance",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </td>
-
-                    <td>
-                      <input
-                        type="text"
-                        placeholder="Amount"
-                        value={row.creditAmount}
-                        onChange={(e) =>
-                          handleAttributeChange(
-                            index,
-                            "creditAmount",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </td>
-
-                    <td className="text-center">
-                      <button
-                        type="button"
-                        className="btn btn-outline-danger"
-                        onClick={() => handleDeleteRow(index)}
-                        disabled={attributes.length === 1}
-                      >
-                        <FaTrash />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-
-
-            </table>
-            </div>
-
-            <button
-              type="button"
-              className="btn btn-outline-primary mt-3"
-              onClick={handleAddRow}
-            >
-              <FaPlus className="me-2" />
-              Add Row
-            </button>
-
-
-          </div>
-
+              ))}
+            </tbody>
+          </table>
         </div>
 
-        {/* Footer */}
+        <button
+          type="button"
+          className="btn btn-outline-primary mt-3"
+          onClick={handleAddRow}
+        >
+          <FaPlus className="me-2" />
+          Add Row
+        </button>
+
+      </div>
+              {/* Footer */}
 
         <div className="modal-footer">
 
@@ -384,12 +426,11 @@ function AddQuestionModal({
             {questionData ? "Update Question" : "Save"}
           </button>
 
-        </div>
-
-      </div>
+            </div>
+          </div>
+       </div>
     </div>,
     document.body
   );
 }
-
 export default AddQuestionModal;
