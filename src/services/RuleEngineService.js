@@ -2,6 +2,7 @@ import axios from "axios";
 
 const BASE_URL = "http://localhost:8080/api/rule-engines";
 
+const API_URL = "http://localhost:8080/api";
 const RuleEngineService = {
   // Create Rule
   saveRule: async (ruleData) => {
@@ -32,28 +33,46 @@ const RuleEngineService = {
     const response = await axios.delete(`${BASE_URL}/${id}`);
     return response.data;
   },
+  // Dropdown APIs
+
+  getChapters: async () => {
+    const response = await axios.get(`${API_URL}/chapter`);
+    return response.data;
+  },
+
+  getTableNames: async () => {
+    const response = await axios.get(`${API_URL}/table-names`);
+    return response.data;
+  },
+
+  getTableHeaders: async () => {
+    const response = await axios.get(`${API_URL}/table-headers`);
+    return response.data;
+  },
+
+  getTableAttributes: async () => {
+    const response = await axios.get(`${API_URL}/table-attributes`);
+    return response.data;
+  },
 
   // Upload Rules Excel
-uploadRulesExcel: async (file) => {
+  uploadRulesExcel: async (file) => {
+    const formData = new FormData();
 
-  const formData = new FormData();
+    formData.append("file", file);
 
-  formData.append("file", file);
-
-
-  const response = await axios.post(
-    "http://localhost:8080/api/rule-engines/excel/upload",
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
+    const response = await axios.post(
+      "http://localhost:8080/api/rule-engines/excel/upload",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       },
-    }
-  );
+    );
 
-
-  return response.data;
-},
+    return response.data;
+  },
 };
 
 export default RuleEngineService;

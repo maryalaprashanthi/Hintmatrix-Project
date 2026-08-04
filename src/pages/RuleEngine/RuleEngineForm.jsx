@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Typeahead } from "react-bootstrap-typeahead";
 import "react-bootstrap-typeahead/css/Typeahead.css";
-
-import mockData from "../../mock/ruleEngineData.json";
+import RuleEngineService from "../../services/RuleEngineService";
 
 import {
   FaTimes,
@@ -24,21 +23,41 @@ import {
 import "./RuleEngineForm.css";
 
 function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
+  const relationships = [
+    { name: "1to1" },
+    { name: "1to2" },
+    { name: "1to3" },
+    { name: "1to4" },
+  ];
   // Mock Data States
+  const [chapters, setChapters] = useState([]);
+  const [tableNames, setTableNames] = useState([]);
   const [tableAttributes, setTableAttributes] = useState([]);
   const [tableHeaders, setTableHeaders] = useState([]);
-  const [relationships, setRelationships] = useState([]);
-  const [fieldTypes, setFieldTypes] = useState([]);
-  const [chapters, setChapters] = useState([]);
 
-  // Load JSON Data
   useEffect(() => {
-    setTableAttributes(mockData.tableAttributes);
-    setTableHeaders(mockData.tableHeaders);
-    setRelationships(mockData.relationships);
-    setFieldTypes(mockData.fieldTypes);
-    setChapters(mockData.chapters);
+    loadDropdowns();
   }, []);
+
+  const loadDropdowns = async () => {
+    try {
+      const [chapterRes, tableRes, attributeRes, headerRes] = await Promise.all(
+        [
+          RuleEngineService.getChapters(),
+          RuleEngineService.getTableNames(),
+          RuleEngineService.getTableAttributes(),
+          RuleEngineService.getTableHeaders(),
+        ],
+      );
+
+      setChapters(chapterRes);
+      setTableNames(tableRes);
+      setTableAttributes(attributeRes);
+      setTableHeaders(headerRes);
+    } catch (error) {
+      console.error("Error loading dropdowns", error);
+    }
+  };
 
   const emptyRule = () => ({
     arithmetic: "",
@@ -303,9 +322,9 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                   <Typeahead
                     id="fieldName"
                     labelKey="name"
-                    options={tableHeaders}
+                    options={tableAttributes}
                     placeholder="Select Field"
-                    selected={tableHeaders.filter(
+                    selected={tableAttributes.filter(
                       (item) => item.name === formData.fieldName,
                     )}
                     onChange={(selected) =>
@@ -330,9 +349,9 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                   <Typeahead
                     id="fieldType"
                     labelKey="name"
-                    options={fieldTypes}
+                    options={tableHeaders}
                     placeholder="Select Field Type"
-                    selected={fieldTypes.filter(
+                    selected={tableHeaders.filter(
                       (item) => item.name === formData.fieldType,
                     )}
                     onChange={(selected) =>
@@ -365,7 +384,6 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                     onChange={(selected) =>
                       setFormData((prev) => ({
                         ...prev,
-
                         relationshipName: selected.length
                           ? selected[0].name
                           : "",
@@ -429,12 +447,20 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                   <div className="input-box">
                     <FaTable className="input-icon" />
 
-                    <input
-                      type="text"
-                      placeholder="Enter Table Name"
-                      value={rule.tableName}
-                      onChange={(e) =>
-                        handleRuleChange(index, "tableName", e.target.value)
+                    <Typeahead
+                      id={`tableName-${index}`}
+                      labelKey="name"
+                      options={tableNames}
+                      placeholder="Select Table Name"
+                      selected={tableNames.filter(
+                        (item) => item.name === rule.tableName,
+                      )}
+                      onChange={(selected) =>
+                        handleRuleChange(
+                          index,
+                          "tableName",
+                          selected.length ? selected[0].name : "",
+                        )
                       }
                     />
                   </div>
@@ -448,12 +474,20 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                   <div className="input-box">
                     <FaHeading className="input-icon" />
 
-                    <input
-                      type="text"
-                      placeholder="Enter Header Name"
-                      value={rule.headerName}
-                      onChange={(e) =>
-                        handleRuleChange(index, "headerName", e.target.value)
+                    <Typeahead
+                      id={`headerName-${index}`}
+                      labelKey="name"
+                      options={tableHeaders}
+                      placeholder="Select Header Name"
+                      selected={tableHeaders.filter(
+                        (item) => item.name === rule.headerName,
+                      )}
+                      onChange={(selected) =>
+                        handleRuleChange(
+                          index,
+                          "headerName",
+                          selected.length ? selected[0].name : "",
+                        )
                       }
                     />
                   </div>
