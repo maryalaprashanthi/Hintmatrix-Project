@@ -59,7 +59,7 @@ function Courses() {
     if (!id) return;
 
     const confirmDelete = window.confirm(
-      "Are you sure you want to permanently delete this course?"
+      "Are you sure you want to permanently delete this course?",
     );
 
     if (confirmDelete) {
@@ -87,7 +87,6 @@ function Courses() {
       setSelectedCourse(null);
       loadCourses();
       setShowSuccess(true);
-
     } catch (error) {
       console.error(error);
       alert(error.response?.data?.message || "Failed to save course.");
@@ -95,36 +94,35 @@ function Courses() {
   };
 
   // Upload Button
-const handleFileUpload = async (e) => {
-  const file = e.target.files[0];
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
 
-  if (!file) return;
+    if (!file) return;
 
-  try {
-    const response = await CourseService.uploadExcel(file);
+    try {
+      const response = await CourseService.uploadExcel(file);
 
-    alert(
-      typeof response.data === "string"
-        ? response.data
-        : "Course Excel uploaded successfully!"
-    );
+      alert(
+        typeof response.data === "string"
+          ? response.data
+          : "Course Excel uploaded successfully!",
+      );
 
-    loadCourses(); // Refresh course list
+      loadCourses(); // Refresh course list
+    } catch (error) {
+      console.error("Upload Error:", error);
 
-  } catch (error) {
-    console.error("Upload Error:", error);
-
-    if (error.response) {
-      alert(error.response.data);
-    } else {
-      alert("File upload failed.");
+      if (error.response) {
+        alert(error.response.data);
+      } else {
+        alert("File upload failed.");
+      }
     }
-  }
 
-  // Backend upload API later
+    // Backend upload API later
 
-  e.target.value = "";
-};
+    e.target.value = "";
+  };
 
   const filteredCourses = courses.filter((course) => {
     const courseTitle = course.name || course.title || "";
@@ -135,36 +133,26 @@ const handleFileUpload = async (e) => {
 
     const courseCategory = course.category || "Commerce";
 
-    const categoryMatch =
-      category === "All" ||
-      courseCategory === category;
+    const categoryMatch = category === "All" || courseCategory === category;
 
     return searchMatch && categoryMatch;
   });
 
   return (
     <div className="container-fluid courses-page">
-
       {/* ================= HEADER ================= */}
 
       <div className="courses-header">
-
         <div className="courses-title">
-
           <div className="courses-icon">
             <FaBookOpen />
           </div>
 
           <div>
-
             <h2>Courses Management</h2>
 
-            <p>
-              Create, organize and manage all your learning programs.
-            </p>
-
+            <p>Create, organize and manage all your learning programs.</p>
           </div>
-
         </div>
 
         {/* Hidden Upload Input */}
@@ -178,12 +166,9 @@ const handleFileUpload = async (e) => {
         />
 
         <div className="d-flex gap-2">
-
           <button
             className="btn btn-primary"
-            onClick={() =>
-              document.getElementById("courseUpload").click()
-            }
+            onClick={() => document.getElementById("courseUpload").click()}
           >
             ⬆ Upload
           </button>
@@ -197,14 +182,11 @@ const handleFileUpload = async (e) => {
           >
             + Add Course
           </button>
-
         </div>
-
       </div>
-            {/* ================= STATISTICS ================= */}
+      {/* ================= STATISTICS ================= */}
 
       <div className="row g-4 stats-row">
-
         <div className="col-xl-3 col-lg-6 col-md-6">
           <div className="modern-stat-card">
             <div className="stat-icon blue">
@@ -227,7 +209,7 @@ const handleFileUpload = async (e) => {
 
             <div>
               <small>Active Courses</small>
-              <h3>5</h3>
+              <h3>{courses.filter((course) => course.activeRow).length}</h3>
               <span>Currently Running</span>
             </div>
           </div>
@@ -260,15 +242,12 @@ const handleFileUpload = async (e) => {
             </div>
           </div>
         </div>
-
       </div>
 
       {/* ================= SEARCH ================= */}
 
       <div className="course-toolbar">
-
         <div className="search-box">
-
           <FaSearch />
 
           <input
@@ -277,7 +256,6 @@ const handleFileUpload = async (e) => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-
         </div>
 
         <select
@@ -291,41 +269,41 @@ const handleFileUpload = async (e) => {
           <option value="School">School</option>
           <option value="Combo Course">Combo Course</option>
         </select>
-
       </div>
 
       {/* ================= COURSE GRID ================= */}
 
       <div className="row">
-
         {filteredCourses.map((course) => (
-
           <div
             className="col-12 col-md-6 col-lg-4 mb-4"
             key={course.courseId || course.id}
           >
-
             <div className="course-card h-100">
-
               <div className="course-banner">
-
                 <img
                   src={course.image || bcom}
                   alt={course.name || course.title}
                 />
-
               </div>
-
               <div className="course-content">
+                <div className="d-flex justify-content-between align-items-center">
+                  <h4>{course.name || course.title}</h4>
 
-                <h4>{course.name || course.title}</h4>
+                  <span
+                    className={
+                      course.activeRow
+                        ? "status-badge active"
+                        : "status-badge inactive"
+                    }
+                  >
+                    {course.activeRow ? "Active" : "Inactive"}
+                  </span>
+                </div>
 
-                <p className="course-level">
-                  {course.level || "Beginner"}
-                </p>
+                <p className="course-level">{course.level || "Beginner"}</p>
 
                 <div className="course-details">
-
                   <div>
                     <FaUsers />
                     <span>{course.students} Students</span>
@@ -340,19 +318,23 @@ const handleFileUpload = async (e) => {
                     <FaClock />
                     <span>{course.duration}</span>
                   </div>
-
                 </div>
 
                 <button
                   className="course-btn mt-auto"
-                  onClick={() => navigate(`/chapters/${course.id}`)}
+                  disabled={!course.activeRow}
+                  onClick={() => {
+                    if (course.activeRow) {
+                      navigate(`/chapters/${course.courseId}`);
+                    }
+                  }}
                 >
                   <FaBookOpen />
-                  <span>View Chapters</span>
+
+                  <span>{course.activeRow ? "View Chapters" : "Inactive"}</span>
                 </button>
 
                 <div className="d-flex gap-2 mt-3">
-
                   <button
                     className="btn btn-outline-primary btn-sm"
                     onClick={() => handleEdit(course)}
@@ -363,40 +345,26 @@ const handleFileUpload = async (e) => {
 
                   <button
                     className="btn btn-outline-danger btn-sm"
-                    onClick={() =>
-                      handleDelete(course.courseId || course.id)
-                    }
+                    onClick={() => handleDelete(course.courseId || course.id)}
                   >
                     <FaTrash className="me-1" />
                     Delete
                   </button>
-
                 </div>
-
               </div>
-
             </div>
-
           </div>
-
         ))}
-
       </div>
 
       {/* ================= EMPTY ================= */}
 
       {filteredCourses.length === 0 && (
-
         <div className="empty-state">
-
           <h4>No Courses Found</h4>
 
-          <p>
-            Try another search keyword or select another category.
-          </p>
-
+          <p>Try another search keyword or select another category.</p>
         </div>
-
       )}
 
       <AddCourseModal
@@ -409,11 +377,10 @@ const handleFileUpload = async (e) => {
         selectedCourseData={selectedCourse}
       />
       <SuccessModal
-  show={showSuccess}
-  message={successMessage}
-  onClose={() => setShowSuccess(false)}
-  />
-
+        show={showSuccess}
+        message={successMessage}
+        onClose={() => setShowSuccess(false)}
+      />
     </div>
   );
 }
