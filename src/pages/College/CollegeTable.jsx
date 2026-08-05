@@ -35,7 +35,7 @@ function CollegeTable({ onEdit, refresh }) {
         const sanitizedData = rawData.map((item) => ({
           ...item,
           // Checks for alternative naming formats commonly used in DTO files
-          collegeId: item.collegeId ?? item.id,
+         // collegeId: item.collegeId ?? item.id,
           instituteName: item.instituteName ?? item.name,
           address: item.address,
           phoneNumber: item.phoneNumber ?? item.phone,
@@ -77,7 +77,6 @@ function CollegeTable({ onEdit, refresh }) {
   };
 
   const columnDefs = [
-    { field: "collegeId", headerName: "ID", width: 90 },
     { field: "instituteName", headerName: "Name", flex: 1 },
     { field: "address", headerName: "Address", flex: 1 },
     { field: "phoneNumber", headerName: "Phone Number", width: 150 },

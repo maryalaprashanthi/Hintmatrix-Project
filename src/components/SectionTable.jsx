@@ -30,8 +30,6 @@ function SectionTable({ refresh, onEdit }) {
         const sanitizedData = rawData.map((item) => ({
           ...item,
 
-          sectionId: item.sectionId ?? item.id,
-
           sectionName: item.sectionName ?? item.name,
 
           courseName: item.courseName ?? item.course?.courseName ?? "",
@@ -64,13 +62,8 @@ function SectionTable({ refresh, onEdit }) {
 
   const columnDefs = [
     {
-      field: "sectionId",
-      headerName: "ID",
-      width: 90,
-    },
-    {
       field: "sectionName",
-      headerName: "Section Name",
+      headerName: "Name",
       flex: 1,
     },
     {
