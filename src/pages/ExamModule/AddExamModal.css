@@ -1,0 +1,210 @@
+/* ==========================================
+   Add Exam Modal
+========================================== */
+
+.modal-content {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+}
+
+/* ==========================================
+   Header
+========================================== */
+
+.modal-header {
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 24px 28px;
+    position: relative;
+}
+
+.modal-title {
+    width: 100%;
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    color: #0e1323;
+}
+
+.modal-header .btn-close {
+    position: absolute;
+    right: 20px;
+    top: 22px;
+}
+
+/* ==========================================
+   Body
+========================================== */
+
+.modal-body {
+    background: #f8fafc;
+    padding: 25px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* ==========================================
+   Form Cards
+========================================== */
+
+.form-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.05);
+}
+
+/* ==========================================
+   Section Title
+========================================== */
+
+.section-title {
+    margin-bottom: 22px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #0e1323;
+}
+
+/* ==========================================
+   Labels
+========================================== */
+
+.form-label {
+    font-weight: 600;
+    color: #0e1323;
+    margin-bottom: 8px;
+}
+
+.text-danger {
+    color: #ef4444 !important;
+}
+
+/* ==========================================
+   Bootstrap Inputs
+========================================== */
+
+.form-control,
+.form-select {
+    height: 50px;
+    border: 1px solid #dbe4f0;
+    border-radius: 12px;
+    font-size: 15px;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #356bdf;
+    box-shadow: 0 0 0 3px rgba(53,107,223,.12);
+}
+
+/* ==========================================
+   React Select
+========================================== */
+
+.css-b62m3t-container {
+    width: 100%;
+}
+
+.css-13cymwt-control,
+.css-t3ipsp-control {
+    min-height: 50px !important;
+    border: 1px solid #dbe4f0 !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+}
+
+.css-t3ipsp-control {
+    border-color: #356bdf !important;
+    box-shadow: 0 0 0 3px rgba(53,107,223,.12) !important;
+}
+
+.css-1jqq78o-placeholder {
+    color: #64748b;
+}
+
+.css-1dimb5e-singleValue {
+    color: #0e1323;
+}
+
+/* ==========================================
+   Selected Questions
+========================================== */
+
+.selected-questions {
+    margin-top: 15px;
+    background: #eef4ff;
+    border: 1px solid #c7d8ff;
+    color: #356bdf;
+    padding: 12px 15px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+/* ==========================================
+   Buttons
+========================================== */
+
+.btn-primary,
+.btn-success,
+.btn-secondary {
+    min-width: 120px;
+    height: 42px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+/* ==========================================
+   Footer
+========================================== */
+
+.modal-footer {
+    border-top: 1px solid #e5e7eb;
+    background: #fff;
+    padding: 18px 24px;
+}
+
+/* ==========================================
+   Scrollbar
+========================================== */
+
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+/* ==========================================
+   Responsive
+========================================== */
+
+@media (max-width:768px){
+
+.modal-dialog{
+    margin:15px;
+}
+
+.modal-title{
+    font-size:22px;
+}
+
+.modal-body{
+    padding:18px;
+}
+
+.modal-footer{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.modal-footer .btn{
+    width:100%;
+}
+
+}
