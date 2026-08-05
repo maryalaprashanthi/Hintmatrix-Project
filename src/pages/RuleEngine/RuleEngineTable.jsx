@@ -20,13 +20,6 @@ function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
 
   const columnDefs = [
     {
-      headerName: "S.No",
-      width: 90,
-      valueGetter: (params) => params.node.rowIndex + 1,
-      sortable: false,
-      filter: false,
-    },
-    {
       field: "chapterName",
       headerName: "Chapter Name",
       flex: 1,
