@@ -217,10 +217,7 @@ function App() {
         <Route path="/results" element={<Results />} />
         <Route path="/certificates" element={<Certificates />} />
         <Route path="/settings" element={<Settings />} />
-        <Route
-          path="/questions/question-list/:id/"
-          element={<QuestionPage />}
-        />
+
         <Route path="/journal" element={<JournalPage />}></Route>
       </Route>
     </Routes>

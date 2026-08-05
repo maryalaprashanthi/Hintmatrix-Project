@@ -4,26 +4,34 @@ const useQuestionStore = create((set) => ({
   questions: [],
   question: null,
   setQuestions: (apiQuestions) => {
-    console.log("Store received:", apiQuestions);
-
     const formattedQuestions = [];
 
     apiQuestions.forEach((question) => {
-      (question.questionAttributes || []).forEach((attribute) => {
-        formattedQuestions.push({
-          id: attribute.questionAttributeId,
-          name: attribute.attributeName,
-          amount: Number(attribute.amount),
-          type:
-            attribute.headerName === "Debit Particulars" ? "debit" : "credit",
-          status: "pending",
+      if (question.questionAttributes) {
+        question.questionAttributes.forEach((attribute) => {
+          formattedQuestions.push({
+            id: attribute.questionAttributeId,
+            name: attribute.attributeName,
+            amount: Number(attribute.amount),
+            type:
+              attribute.headerName === "Debit Particulars" ? "debit" : "credit",
+            status: "pending",
+          });
         });
-      });
+      }
     });
 
     set({
       questions: formattedQuestions,
       question: apiQuestions.length > 0 ? apiQuestions[0] : null,
+
+      // Reset all answer arrays when a new question is loaded
+      tradingDataDebit: [],
+      tradingDataCredit: [],
+      profitDataDebit: [],
+      profitDataCredit: [],
+      balanceDataLiabilities: [],
+      balanceDataAssets: [],
     });
   },
   tradingDataDebit: [],
