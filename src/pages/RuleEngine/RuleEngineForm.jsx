@@ -29,6 +29,10 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
     { name: "1to3" },
     { name: "1to4" },
   ];
+  const arithmeticOptions = [
+  { name: "Add" },
+  { name: "Subtract" },
+];
   // Mock Data States
   const [chapters, setChapters] = useState([]);
   const [tableNames, setTableNames] = useState([]);
@@ -428,14 +432,23 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                   <div className="input-box">
                     <FaCalculator className="input-icon" />
 
-                    <input
-                      type="text"
-                      placeholder="Enter Arithmetic"
-                      value={rule.arithmetic}
-                      onChange={(e) =>
-                        handleRuleChange(index, "arithmetic", e.target.value)
-                      }
-                    />
+                    
+                    <Typeahead
+                    id={`arithmetic-${index}`}
+                    labelKey="name"
+                    options={arithmeticOptions}
+                    placeholder="Select Arithmetic"
+                    selected={arithmeticOptions.filter(
+                    (item) => item.name === rule.arithmetic
+                    )}
+                    onChange={(selected) =>
+                    handleRuleChange(
+                    index,
+                   "arithmetic",
+                    selected.length ? selected[0].name : ""
+                  )
+               }
+            />
                   </div>
                 </div>
 

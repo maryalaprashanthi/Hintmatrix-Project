@@ -174,7 +174,7 @@
 }
 
 .form-group span {
-    color: red;
+    color: rgb(212, 53, 53);
 }
 
 /* ==========================================
@@ -210,12 +210,14 @@
     font-size: 15px;
 
     outline: none;
-
+    box-shadow: none !important;
+    
     transition: 0.3s;
+    caret-color: transparent;
 }
 
 .input-box input:focus {
-    border-color: #356bdf;
+    border-color: #d7dbe6;
 }
 
 /* ==========================================
@@ -249,14 +251,15 @@
     resize: vertical;
 
     outline: none;
-
+    box-shadow: none !important;
     font-size: 15px;
 
     transition: 0.3s;
+    caret-color: transparent;
 }
 
 .textarea-box textarea:focus {
-    border-color: #2563eb;
+    border-color: white;
 }
 
 /* ==========================================
@@ -360,6 +363,7 @@
     height: 40px;
     box-sizing: border-box;
 }
+
 /* ===========================
    React Select - Branch Style
 =========================== */
@@ -371,20 +375,20 @@
     border-radius: 12px !important;
     box-shadow: none !important;
     background: #fff !important;
-    padding-left: 34px;
 }
 
 .react-select__control:hover {
     border-color: #dbe4f0 !important;
 }
 
+/* FIX: Remove blue focus color/glow */
 .react-select__control--is-focused {
-    border-color: #356bdf !important;
-    box-shadow: 0 0 0 0.15rem rgba(53,107,223,.15) !important;
+    border-color: #4480cf !important;
+    box-shadow: none !important;
 }
 
 .react-select__value-container {
-    padding: 0 10px !important;
+    padding: 0 10px 0 42px !important;
 }
 
 .react-select__placeholder {
@@ -415,6 +419,31 @@
     top: 50%;
     transform: translateY(-50%);
     color: #64748b;
-    z-index: 5;
+    z-index: 2;
     pointer-events: none;
 }
+/* Make dropdown background white */
+.react-select__menu {
+    background: white !important;
+}
+
+
+/* Selected option */
+.react-select__option--is-selected {
+    background: white !important;
+    color: #000 !important;
+}
+/* Active (when clicking) */
+.react-select__option:active {
+    background: #4a88ca !important;
+}
+.react-select__option:hover {
+    background-color: rgb(66, 142, 228) !important;
+    color: white !important;
+}
+.react-select__option--is-focused {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+
