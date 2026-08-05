@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
 // 🌟 FIXED ERROR #239: Import ValidationModule alongside AllCommunityModule
-import { AllCommunityModule, ValidationModule, ModuleRegistry } from "ag-grid-community";
+import {
+  AllCommunityModule,
+  ValidationModule,
+  ModuleRegistry,
+} from "ag-grid-community";
 import CollegeService from "../../services/CollegeService";
 
 import "ag-grid-community/styles/ag-grid.css";
@@ -16,7 +20,7 @@ function CollegeTable({ onEdit, refresh }) {
   const defaultColDef = {
     sortable: true,
     filter: true,
-    resizable: true
+    resizable: true,
   };
 
   useEffect(() => {
@@ -26,16 +30,17 @@ function CollegeTable({ onEdit, refresh }) {
   const loadColleges = () => {
     CollegeService.getAllColleges()
       .then((response) => {
-         const rawData = response.data || [];
-        
+        const rawData = response.data || [];
+
         const sanitizedData = rawData.map((item) => ({
           ...item,
           // Checks for alternative naming formats commonly used in DTO files
-          collegeId: item.collegeId ?? item.id, 
+          collegeId: item.collegeId ?? item.id,
           instituteName: item.instituteName ?? item.name,
           address: item.address,
           phoneNumber: item.phoneNumber ?? item.phone,
-          email: item.email
+          email: item.email,
+          activeRow: item.activeRow ?? true,
         }));
 
         setColleges(sanitizedData);
@@ -52,11 +57,13 @@ function CollegeTable({ onEdit, refresh }) {
   };
 
   const handleDelete = (id) => {
-     if (!id) {
+    if (!id) {
       alert("Cannot delete: College ID is missing or undefined.");
       return;
     }
-    const confirmDelete = window.confirm("Are you sure you want to delete this college?");
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this college?",
+    );
     if (confirmDelete) {
       CollegeService.deleteCollege(id)
         .then(() => {
@@ -75,6 +82,33 @@ function CollegeTable({ onEdit, refresh }) {
     { field: "address", headerName: "Address", flex: 1 },
     { field: "phoneNumber", headerName: "Phone Number", width: 150 },
     { field: "email", headerName: "Email", flex: 1 },
+
+    // STATUS COLUMN
+    {
+      headerName: "Status",
+      field: "activeRow",
+      width: 120,
+
+      cellRenderer: (params) => {
+        return (
+          <span
+            style={{
+              padding: "5px 12px",
+              borderRadius: "15px",
+              fontSize: "12px",
+              fontWeight: "bold",
+
+              background: params.value ? "#dcfce7" : "#fee2e2",
+
+              color: params.value ? "#166534" : "#991b1b",
+            }}
+          >
+            {params.value ? "Active" : "Inactive"}
+          </span>
+        );
+      },
+    },
+
     {
       headerName: "Action",
       width: 180,
@@ -83,7 +117,14 @@ function CollegeTable({ onEdit, refresh }) {
       cellRenderer: (params) => {
         if (!params.data) return null;
         return (
-          <div style={{ display: "flex", alignItems: "center", height: "100%", gap: "8px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              height: "100%",
+              gap: "8px",
+            }}
+          >
             <button
               onClick={() => handleEdit(params.data)}
               style={{
@@ -98,7 +139,7 @@ function CollegeTable({ onEdit, refresh }) {
                 height: "26px",
                 display: "inline-flex",
                 alignItems: "center",
-                justifyContent: "center"
+                justifyContent: "center",
               }}
             >
               Edit
@@ -117,15 +158,15 @@ function CollegeTable({ onEdit, refresh }) {
                 height: "26px",
                 display: "inline-flex",
                 alignItems: "center",
-                justifyContent: "center"
+                justifyContent: "center",
               }}
             >
               Delete
             </button>
           </div>
         );
-      }
-    }
+      },
+    },
   ];
 
   return (
@@ -175,9 +216,12 @@ function CollegeTable({ onEdit, refresh }) {
         }
       `}</style>
 
-      <div className="ag-theme-quartz" style={{ height: "450px", width: "100%" }}>
-        <AgGridReact 
-          rowData={colleges} 
+      <div
+        className="ag-theme-quartz"
+        style={{ height: "450px", width: "100%" }}
+      >
+        <AgGridReact
+          rowData={colleges}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           pagination={true}

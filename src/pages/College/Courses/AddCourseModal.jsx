@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import Select from "react-select";
 
 import {
   FaBook,
@@ -29,17 +30,31 @@ function AddCourseModal({ show, onClose, onSave, selectedCourseData }) {
   const [colleges, setColleges] = useState([]);
   const [collegeId, setCollegeId] = useState("");
 
+  const [activeRow, setActiveRow] = useState(true);
+
   useEffect(() => {
-  CollegeService.getAllColleges()
-    .then((response) => {
-      setColleges(response.data || []);
-    })
-    .catch((error) => {
-      console.error("Failed to load colleges:", error);
-    });
-}, []);
-  
-  
+    CollegeService.getAllColleges()
+      .then((response) => {
+        console.log("College API Response:", response.data);
+
+        const activeColleges = (response.data || []).filter((college) => {
+          return (
+            college.activeRow === true ||
+            college.activeRow === 1 ||
+            college.active === true ||
+            college.status === 1
+          );
+        });
+
+        console.log("Active Colleges:", activeColleges);
+
+        setColleges(activeColleges);
+      })
+      .catch((error) => {
+        console.error("Failed to load colleges:", error);
+      });
+  }, []);
+
   // Load branches
   useEffect(() => {
     BranchService.getAllBranches()
@@ -50,6 +65,20 @@ function AddCourseModal({ show, onClose, onSave, selectedCourseData }) {
         console.error("Failed to load branches:", error);
       });
   }, []);
+
+  const resetForm = () => {
+    setCourseName("");
+    setCategory("Commerce");
+    setLevel("Beginner");
+    setDuration("3 Months");
+    setDescription("");
+    setThumbnail(null);
+
+    setCollegeId("");
+    setBranchId("");
+
+    setActiveRow(true);
+  };
 
   useEffect(() => {
     if (selectedCourseData) {
@@ -63,72 +92,83 @@ function AddCourseModal({ show, onClose, onSave, selectedCourseData }) {
 
       setDescription(selectedCourseData.description || "");
 
+      setActiveRow(selectedCourseData.activeRow ?? true);
+
       if (selectedCourseData.collegeId) {
-  setCollegeId(selectedCourseData.collegeId);
-}
+        setCollegeId(String(selectedCourseData.collegeId));
+      }
 
       // Existing branch mapping
 
       if (selectedCourseData.branchId) {
-        setBranchId(selectedCourseData.branchId);
+        setBranchId(String(selectedCourseData.branchId));
       } else if (selectedCourseData.branch?.branchId) {
-        setBranchId(selectedCourseData.branch.branchId);
+        setBranchId(String(selectedCourseData.branch.branchId));
       }
     } else {
-      setCourseName("");
-      setCategory("Commerce");
-      setLevel("Beginner");
-      setDuration("3 Months");
-      setDescription("");
-      setThumbnail(null);
-      setBranchId("");
-      setCollegeId("");
+      resetForm();
     }
   }, [selectedCourseData, show]);
 
-  if (!show) return null;
   const handleSave = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!courseName.trim()) {
-    alert("Please enter Course Name.");
-    return;
-  }
+    if (!courseName.trim()) {
+      alert("Please enter Course Name.");
+      return;
+    }
 
-  if (!collegeId) {
-  alert("Please select college.");
-  return;
-}
+    if (!collegeId) {
+      alert("Please select college.");
+      return;
+    }
 
-  if (!branchId) {
-    alert("Please select branch.");
-    return;
-  }
+    if (!branchId) {
+      alert("Please select branch.");
+      return;
+    }
 
-  const courseRequestDTO = {
-  collegeId: Number(collegeId),
-  branchId: Number(branchId),
-  name: courseName.trim(),
-};
+    const courseRequestDTO = {
+      collegeId: Number(collegeId),
+      branchId: Number(branchId),
+      name: courseName.trim(),
+      activeRow: activeRow,
+    };
 
-  const isEdit = selectedCourseData?.courseId || selectedCourseData?.id;
-  const courseId = selectedCourseData?.courseId || selectedCourseData?.id;
-try{
-  await onSave(courseRequestDTO, isEdit, courseId);
+    const isEdit = selectedCourseData?.courseId || selectedCourseData?.id;
+    const courseId = selectedCourseData?.courseId || selectedCourseData?.id;
+    try {
+      await onSave(courseRequestDTO, isEdit, courseId);
 
-  setCourseName("");
-  setCategory("Commerce");
-  setLevel("Beginner");
-  setDuration("3 Months");
-  setDescription("");
-  setThumbnail(null);
-  setBranchId("");
-  setCollegeId("");
-} catch(error){
-  console.error(error);
-}
+      resetForm();
+    } catch (error) {
+      console.error(error);
+    }
   };
-  
+
+  const collegeOptions = colleges.map((college) => ({
+    value: college.collegeId,
+
+    label: college.instituteName,
+  }));
+  // Filter branch based on college
+
+  const filteredBranches = branches.filter((branch) => {
+    if (!collegeId) return false;
+
+    return (
+      String(branch.collegeId) === String(collegeId) ||
+      String(branch.college?.collegeId) === String(collegeId)
+    );
+  });
+
+  const filteredBranchOptions = filteredBranches.map((branch) => ({
+    value: String(branch.branchId || branch.id),
+    label: branch.branchName || branch.name,
+  }));
+
+  if (!show) return null;
+
   return createPortal(
     <div className="modal-overlay">
       <div className="course-modal">
@@ -157,61 +197,55 @@ try{
             <h4>Course Information</h4>
 
             <div className="form-grid">
-
               {/* College */}
 
-<div className="form-group">
-  <label>College Name</label>
+              <div className="form-group">
+                <label>College Name</label>
 
-  <div className="input-box">
-    <FaLayerGroup className="input-icon" />
+                <div className="input-box">
+                  <FaLayerGroup className="input-icon" />
+                  <Select
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    options={collegeOptions}
+                    value={collegeOptions.find(
+                      (item) => String(item.value) === String(collegeId),
+                    )}
+                    onChange={(selected) => {
+                      setCollegeId(selected ? String(selected.value) : "");
+                      setBranchId("");
+                    }}
+                    placeholder="Search College..."
+                    isSearchable
+                    isClearable
+                  />
+                </div>
+              </div>
 
-    <select
-      className="form-select"
-      value={collegeId}
-      onChange={(e) => setCollegeId(e.target.value)}
-    >
-      <option value="">Select College</option>
-
-      {colleges.map((college) => (
-        <option
-          key={college.collegeId}
-          value={college.collegeId}
-        >
-          {college.instituteName}
-        </option>
-      ))}
-    </select>
-  </div>
-</div>
-
-{/* Branch */}
+              {/* Branch */}
 
               <div className="form-group">
                 <label>Branch Name</label>
 
                 <div className="input-box">
                   <FaLayerGroup className="input-icon" />
-
-                  <select
-                    className="form-select"
-                    value={branchId}
-                    onChange={(e) => setBranchId(e.target.value)}
-                  >
-                    <option value="">Select Branch</option>
-
-                    {branches.map((branch) => (
-                      <option
-                        key={branch.branchId || branch.id}
-                        value={branch.branchId || branch.id}
-                      >
-                        {branch.branchName || branch.name}
-                      </option>
-                    ))}
-                  </select>
+                  <Select
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    options={filteredBranchOptions}
+                    value={filteredBranchOptions.find(
+                      (item) => String(item.value) === String(branchId),
+                    )}
+                    onChange={(selected) => {
+                      setBranchId(selected ? String(selected.value) : "");
+                    }}
+                    placeholder="Search Branch..."
+                    isSearchable
+                    isClearable
+                  />
                 </div>
               </div>
-              
+
               {/* Course Name */}
 
               <div className="form-group">
@@ -227,10 +261,6 @@ try{
                   />
                 </div>
               </div>
-
-              
-
-              
 
               {/* Category */}
 
@@ -295,6 +325,18 @@ try{
             </div>
           </div>
 
+          <div className="card-box">
+            <h4>Status</h4>
+            <div className="form-check form-switch">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={activeRow}
+                onChange={(e) => setActiveRow(e.target.checked)}
+              />
+              <label className="form-check-label">Active</label>
+            </div>
+          </div>
           {/* Thumbnail */}
 
           <div className="card-box">
