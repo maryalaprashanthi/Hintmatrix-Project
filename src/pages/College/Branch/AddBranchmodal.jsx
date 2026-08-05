@@ -193,9 +193,14 @@ function AddBranchModal({ show, onClose, onSave, selectedBranchData }) {
 
                   <input
                     type="tel"
-                    placeholder="9876543210"
+                    inputmode="numeric"
+                    placeholder="Enter Phone Number"
                     value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, "");
+                    setPhoneNumber(value);
+                    }}
+                    maxLength={10}
                   />
                 </div>
               </div>

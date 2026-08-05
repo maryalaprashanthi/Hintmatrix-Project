@@ -1,0 +1,385 @@
+.exam-page {
+    padding: 25px;
+    background: #f8f9fc;
+    min-height: 100vh;
+}
+
+
+/* Header */
+
+.page-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    color: #1f2937;
+}
+
+
+.breadcrumb-text {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+
+
+/* Buttons */
+
+.add-btn {
+    background: #2563eb;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+
+.add-btn:hover {
+    background: #1d4ed8;
+}
+
+
+.upload-btn {
+    background: white;
+    color: #2563eb;
+    border: 1px solid #2563eb;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+
+.upload-btn:hover {
+    background: #2563eb;
+    color:white;
+}
+
+
+
+/* Stats Cards */
+
+.stats-card {
+    border:none;
+    border-radius:14px;
+    background:white;
+    box-shadow:0 4px 15px rgba(0,0,0,0.06);
+    transition:0.3s;
+}
+
+
+.stats-card:hover {
+    transform:translateY(-4px);
+}
+
+
+.stats-card .card-body {
+    padding:22px;
+}
+
+
+.stats-icon {
+    font-size:28px;
+    margin-bottom:12px;
+}
+
+
+/* Different Icon Colors */
+
+.total-icon {
+    color:#2563eb;
+}
+
+
+.upcoming-icon {
+    color:#f59e0b;
+}
+
+
+.completed-icon {
+    color:#16a34a;
+}
+
+
+.cancelled-icon {
+    color:#dc2626;
+}
+
+
+
+.stats-card h3 {
+    font-size:28px;
+    font-weight:700;
+    margin-bottom:5px;
+}
+
+
+.stats-card p {
+    margin:0;
+    color:#6b7280;
+}
+
+
+
+
+
+/* Filter Section */
+
+.filter-row {
+    display:flex;
+    align-items:center;
+}
+
+
+.search-box {
+    height:45px;
+}
+
+
+.search-box .input-group-text {
+
+    background:white;
+    border-right:none;
+    color:#6b7280;
+
+}
+
+
+.search-box .form-control {
+
+    height:45px;
+    border-left:none;
+
+}
+
+
+.search-box .form-control:focus {
+
+    box-shadow:none;
+    border-color:#dee2e6;
+
+}
+
+
+
+.form-select {
+
+    height:45px;
+    border-radius:8px;
+    cursor:pointer;
+
+}
+
+
+
+.filter-row .col-lg-3 {
+
+    padding-left:10px;
+    padding-right:10px;
+
+}
+
+
+
+/* Exam Card */
+
+
+.exam-card {
+
+    border:none;
+    border-radius:16px;
+    background:white;
+    box-shadow:0 4px 15px rgba(0,0,0,0.07);
+    transition:0.3s;
+    height:100%;
+
+}
+
+
+.exam-card:hover {
+
+    transform:translateY(-5px);
+
+}
+
+
+.exam-card h5 {
+
+    font-size:18px;
+    font-weight:700;
+    color:#111827;
+
+}
+
+
+.exam-card p {
+
+    margin-bottom:8px;
+
+}
+
+
+
+.exam-details {
+
+    margin-top:15px;
+
+}
+
+
+.exam-details p {
+
+    font-size:14px;
+    color:#4b5563;
+
+}
+
+
+
+
+
+/* Status */
+
+.status {
+
+    display:inline-block;
+    padding:6px 14px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:600;
+
+}
+
+
+
+.status.upcoming {
+
+    background:#fef3c7;
+    color:#92400e;
+
+}
+
+
+
+.status.completed {
+
+    background:#dcfce7;
+    color:#166534;
+
+}
+
+
+
+.status.cancelled {
+
+    background:#fee2e2;
+    color:#991b1b;
+
+}
+
+
+
+
+
+/* Action Buttons */
+
+.exam-actions {
+
+    display:flex;
+    gap:10px;
+
+}
+
+
+.exam-actions button {
+
+    border-radius:7px;
+    padding:6px 16px;
+    font-weight:600;
+
+}
+
+
+
+
+
+/* Empty State */
+
+.empty-state {
+
+    background:white;
+    padding:40px;
+    text-align:center;
+    border-radius:15px;
+    box-shadow:0 3px 12px rgba(0,0,0,0.05);
+
+}
+
+
+.empty-state h4 {
+
+    color:#374151;
+
+}
+
+
+.empty-state p {
+
+    color:#6b7280;
+
+}
+
+
+
+
+
+/* Responsive */
+
+@media(max-width:768px){
+
+
+    .exam-page {
+
+        padding:15px;
+
+    }
+
+
+    .page-title {
+
+        font-size:22px;
+
+    }
+
+
+    .text-end {
+
+        text-align:left !important;
+        margin-top:15px;
+
+    }
+
+
+    .upload-btn,
+    .add-btn {
+
+        width:100%;
+        margin-bottom:10px;
+
+    }
+
+
+    .filter-row {
+
+        gap:15px;
+
+    }
+
+
+    .filter-row .col-lg-3,
+    .filter-row .col-lg-6 {
+
+        width:100%;
+
+    }
+
+
+}

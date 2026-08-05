@@ -26,7 +26,7 @@ import RuleEngine from "./pages/RuleEngine/RuleEngine";
 import Login from "./pages/Auth/Login";
 // Other Pages
 import Practice from "./pages/Practice";
-import Tests from "./pages/Tests";
+import ExamList from "./pages/Exammodule/ExamList";
 import Sessions from "./pages/Sessions";
 import Results from "./pages/Results";
 import Certificates from "./pages/Certificates";
@@ -212,7 +212,7 @@ function App() {
 
         {/* Learning */}
         <Route path="/practice" element={<Practice />} />
-        <Route path="/tests" element={<Tests />} />
+        <Route path="/Exam" element={<ExamList />} />
         <Route path="/sessions" element={<Sessions />} />
         <Route path="/results" element={<Results />} />
         <Route path="/certificates" element={<Certificates />} />

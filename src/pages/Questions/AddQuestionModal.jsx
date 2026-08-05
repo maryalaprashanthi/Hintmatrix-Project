@@ -169,15 +169,22 @@ const loadTableAttributes = async () => {
   try {
     const response = await TableAttributeService.getAll();
 
+    console.log("TABLE ATTRIBUTE API RESPONSE:", response);
+    console.log("TABLE ATTRIBUTE DATA:", response.data);
+
     const data = response.data.map((item) => ({
       value: item.attributeId,
       label: item.name,
     }));
 
+    console.log("DROPDOWN OPTIONS:", data);
+
     setBalanceOptions(data);
 
   } catch (error) {
-    console.error("Error loading table attributes:", error);
+    console.error("TABLE ATTRIBUTE ERROR:", error);
+    console.error("STATUS:", error.response?.status);
+    console.error("ERROR DATA:", error.response?.data);
   }
 };
 
@@ -456,8 +463,8 @@ const loadChapters = async(courseId)=>{
         selected ? selected.value : ""
       )
     }
-    placeholder="Select "
-    isSearchable={false}
+    placeholder=" "
+    isSearchable
   />
 </td>
 
@@ -496,8 +503,8 @@ const loadChapters = async(courseId)=>{
         selected ? selected.value : ""
       )
     }
-    placeholder="Select "
-    isSearchable={false}
+    placeholder=" "
+    isSearchable
   />
 </td>
                  {/* Credit Amount */}
