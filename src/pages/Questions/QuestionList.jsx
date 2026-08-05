@@ -16,6 +16,43 @@ import { useNavigate } from "react-router-dom";
 import "./QuestionList.css";
 import AddQuestionModal from "./AddQuestionModal";
 import { NavLink } from "react-router-dom";
+import CourseService from "../../services/CourseService";
+import ChapterService from "../../services/ChapterService";
+import QuestionCategoryService from "../../services/QuestionCategoryService";
+import TableAttributeService from "../../services/TableAttributeService";
+
+const getData = async () =>
+{
+  console.log("Full data");
+  
+  // get courses
+  let courseData = await CourseService.getAllCourses();
+  courseData = await courseData.data;
+  let allCourses = courseData.map((c)=> ({"id":c.id,"name":c.name}));
+  // get chapter
+  let response = await ChapterService.getAll();
+  let chapterData = await response.data;
+  // console.log("Chapter data: ",chapterData);
+  let allChapters = chapterData.map((c)=>({"id":c.id,"name":c.name}));
+  console.log("Chapter data: ",allChapters);
+  // get category 
+  let categoriesData = await QuestionCategoryService.getAll();
+  categoriesData = await categoriesData.data;
+  let allCategories = categoriesData.map((c)=>({"id":c.id,"name":c.name}));
+  console.log("Categories: ",allCategories);
+  const attributesResponse =
+  await TableAttributeService.getAll();
+
+const attributesData = attributesResponse.data;
+
+console.log("Table Attributes: ", attributesData);
+
+ 
+
+  data = {"categories":allCategories,"chapters":allChapters,"courses":allCourses};
+}
+
+let data;
 
 const QuestionList = () => {
   const [search, setSearch] = useState("");
@@ -29,6 +66,7 @@ const QuestionList = () => {
   const [questions, setQuestions] = useState([]);
   useEffect(() => {
     loadQuestions();
+    getData();
   }, []);
 
   const loadQuestions = async () => {
@@ -251,7 +289,7 @@ const QuestionList = () => {
 
           setShowModal(false);
         }}
-        questionData={null}
+        questionData={data}
       />
     </Container>
   );
