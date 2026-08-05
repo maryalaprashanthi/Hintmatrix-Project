@@ -1,0 +1,13 @@
+.grid-container {
+  display: grid;
+  /* Creates exactly two columns of equal width */
+  grid-template-columns: repeat(2, 1fr);
+  /* Adds space between the rows and columns */
+  gap: 16px;
+}
+
+.item {
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 8px;
+}

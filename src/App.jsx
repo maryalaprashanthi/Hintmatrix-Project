@@ -46,6 +46,7 @@ import combo from "./assets/courses/combo.png.jpeg";
 import inter from "./assets/courses/inter.png.jpeg";
 import Landing from "./pages/Landing/Landing";
 import QuestionPage from "./components/Question/QuestionPage";
+import JournalPage from "./components/Journal Question/JournalPage";
 
 function App() {
   const navigate = useNavigate();
@@ -216,6 +217,7 @@ function App() {
           path="/questions/question-list/:id/"
           element={<QuestionPage />}
         />
+        <Route path="/journal" element={<JournalPage />}></Route>
       </Route>
     </Routes>
   );
