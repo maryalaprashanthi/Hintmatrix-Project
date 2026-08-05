@@ -391,3 +391,92 @@ input[type="file"].form-control {
     max-height: 82vh;
   }
 }
+
+/* ==========================================
+   React Select Fix
+========================================== */
+
+.react-select-container .react-select__control {
+  min-height: 50px;
+  height: 50px;
+
+  border: 1px solid #dbe4f0;
+  border-radius: 12px;
+
+  padding-left: 45px;
+
+  box-shadow: none;
+  transition: 0.3s;
+}
+
+.react-select-container .react-select__control:hover {
+  border-color: #dbe4f0;
+}
+
+.react-select-container .react-select__control--is-focused {
+  border-color: #356bdf !important;
+  box-shadow: 0 0 0 3px rgba(53, 107, 223, 0.12);
+}
+
+.react-select-container .react-select__value-container {
+  padding: 0;
+}
+
+.react-select-container .react-select__input-container {
+  margin: 0;
+  padding: 0;
+}
+.react-select-container .react-select__input-container input {
+  border: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  background: transparent !important;
+}
+
+.react-select-container .react-select__placeholder {
+  color: #6b7280;
+}
+
+.react-select-container .react-select__single-value {
+  color: #111827;
+}
+
+.react-select-container .react-select__indicator-separator {
+  display: none;
+}
+
+.react-select-container .react-select__menu {
+  z-index: 99999;
+}
+
+/* ==========================================
+   Status Switch
+========================================== */
+
+.course-status-switch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  height: 50px;
+
+  padding: 0 16px;
+
+  border: 1px solid #dbe4f0;
+  border-radius: 12px;
+
+  background: #fff;
+}
+
+.course-status-switch .form-check-input {
+  width: 2.7rem;
+  height: 1.4rem;
+  cursor: pointer;
+}
+
+.course-status-switch .form-check-label {
+  margin: 0;
+  font-weight: 600;
+  cursor: pointer;
+}

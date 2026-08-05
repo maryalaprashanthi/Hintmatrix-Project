@@ -25,8 +25,25 @@ function SectionTable({ refresh, onEdit }) {
   const loadSections = () => {
     SectionService.getAllSections()
       .then((response) => {
-        setSections(response.data);
+        const rawData = response.data || [];
+
+        const sanitizedData = rawData.map((item) => ({
+          ...item,
+
+          sectionId: item.sectionId ?? item.id,
+
+          sectionName: item.sectionName ?? item.name,
+
+          courseName: item.courseName ?? item.course?.courseName ?? "",
+
+          description: item.description,
+
+          activeRow: item.activeRow ?? true,
+        }));
+
+        setSections(sanitizedData);
       })
+
       .catch((error) => {
         console.error("Error loading sections:", error);
       });
