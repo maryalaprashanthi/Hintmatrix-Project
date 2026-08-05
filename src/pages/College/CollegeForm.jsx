@@ -49,6 +49,15 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
   }, [selectedCollegeData, show]);
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
+
+  if (name === "phoneNumber") {
+    setCollege({
+      ...college,
+      [name]: value.replace(/\D/g, ""),
+    });
+    return;
+  }
     setCollege({
       ...college,
       [e.target.name]: e.target.value,
@@ -150,6 +159,7 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
 
                       <input
                         type="tel"
+                        inputMode="numeric"
                         name="phoneNumber"
                         placeholder="Enter Phone Number"
                         value={college.phoneNumber}
