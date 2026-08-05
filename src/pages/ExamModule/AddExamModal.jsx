@@ -216,7 +216,6 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
               <FaTimes />
             </button>
           </div>
-
           <div className="modal-body">
             <div className="form-card">
               <h3 className="section-title">Exam Information</h3>
@@ -335,7 +334,6 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
             </div>
 
             {/* Schedule */}
-
             <div className="form-card">
               <h3 className="section-title">Schedule</h3>
 
@@ -370,18 +368,16 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
                 </div>
               </div>
             </div>
+          </div>{" "}
+          {/* <-- CLOSE modal-body HERE */}
+          <div className="modal-footer">
+            <button className="btn btn-secondary" onClick={onClose}>
+              Cancel
+            </button>
 
-            {/* Footer */}
-
-            <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={onClose}>
-                Cancel
-              </button>
-
-              <button className="btn btn-primary" onClick={handleSave}>
-                {examData ? "Update Exam" : "Save Exam"}
-              </button>
-            </div>
+            <button className="btn btn-primary" onClick={handleSave}>
+              {examData ? "Update Exam" : "Save Exam"}
+            </button>
           </div>
         </div>
       </div>
