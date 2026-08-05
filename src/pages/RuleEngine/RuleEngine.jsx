@@ -89,7 +89,7 @@ function RuleEngine() {
   const handleSave = async (ruleData) => {
     try {
       if (selectedRule) {
-        await RuleEngineService.updateRule(selectedRule.ruleId, ruleData);
+        await RuleEngineService.updateRule(selectedRule.ruleEngineId, ruleData);
       } else {
         await RuleEngineService.saveRule(ruleData);
       }
