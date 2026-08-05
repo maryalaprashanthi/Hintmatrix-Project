@@ -232,3 +232,18 @@
   background-color: #dc2626 !important;
   color: white !important;
 }
+
+.start-btn:disabled {
+  background-color: #cfe2ff !important;
+  border-color: #cfe2ff !important;
+  color: #6c757d !important;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.start-btn:disabled:hover {
+  background-color: #cfe2ff !important;
+  border-color: #cfe2ff !important;
+  color: #6c757d !important;
+  transform: none;
+}

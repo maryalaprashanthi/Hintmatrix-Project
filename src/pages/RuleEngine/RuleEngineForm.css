@@ -216,17 +216,14 @@
   position: relative;
 }
 
-.input-icon {
+.input-box .input-icon {
   position: absolute;
-
   left: 15px;
   top: 50%;
-
   transform: translateY(-50%);
-
+  z-index: 100;
+  pointer-events: none;
   color: #64748b;
-
-  font-size: 15px;
 }
 
 /* ==========================================
@@ -435,4 +432,37 @@
   .rule-modal {
     max-height: 82vh;
   }
+}
+/* ==========================================
+   Typeahead
+========================================== */
+.input-box .rbt {
+  width: 100%;
+}
+
+.input-box .rbt-input-main,
+.input-box .form-control {
+  width: 100% !important;
+  height: 48px !important;
+
+  border: 1px solid #dbe4f0 !important;
+  border-radius: 12px !important;
+
+  padding-left: 45px !important;
+  padding-right: 15px !important;
+
+  font-size: 15px;
+  box-shadow: none !important;
+}
+
+.input-box .rbt-input-main:focus,
+.input-box .form-control:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+}
+
+.input-box .dropdown-menu {
+  width: 100%;
+  border-radius: 12px;
+  margin-top: 4px;
 }

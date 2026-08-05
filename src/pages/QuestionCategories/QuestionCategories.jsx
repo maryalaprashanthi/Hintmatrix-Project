@@ -211,7 +211,13 @@ export default function QuestionCategories() {
                   {category.questions} Questions
                 </div>
 
-                <span className="badge bg-success-subtle text-success">
+                <span
+                  className={`badge ${
+                    category.activeRow
+                      ? "bg-success-subtle text-success"
+                      : "bg-danger-subtle text-danger"
+                  }`}
+                >
                   {category.activeRow ? "Active" : "Inactive"}
                 </span>
 
@@ -221,6 +227,7 @@ export default function QuestionCategories() {
 
                 <button
                   className="btn btn-primary view-btn"
+                  disabled={!category.activeRow}
                   onClick={() => navigate("/questions/question-list")}
                 >
                   View Questions

@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import QuestionService from "../../services/QuestionService";
 import {
   Container,
   Row,
@@ -19,54 +20,33 @@ import { NavLink } from "react-router-dom";
 const QuestionList = () => {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Upload File Reference
   const fileInputRef = useRef(null);
 
-  const [questions, setQuestions] = useState([
-    {
-      id: 1,
-      code: "EMQ-001",
-      title: "Prepare Trading Account from the following information.",
-      type: "MCQ",
-      difficulty: "Easy",
-      marks: 5,
-      enabled: true,
-    },
-    {
-      id: 2,
-      code: "EMQ-002",
-      title: "Prepare Trading Account & Profit & Loss Account.",
-      type: "MCQ",
-      difficulty: "Easy",
-      marks: 5,
-      enabled: true,
-    },
-    {
-      id: 3,
-      code: "EMQ-003",
-      title: "Prepare Final Accounts.",
-      type: "Subjective",
-      difficulty: "Medium",
-      marks: 10,
-      enabled: false,
-    },
-    {
-      id: 4,
-      code: "EMQ-004",
-      title: "Journal Entries.",
-      type: "MCQ",
-      difficulty: "Hard",
-      marks: 10,
-      enabled: true,
-    },
-  ]);
+  const [questions, setQuestions] = useState([]);
+  useEffect(() => {
+    loadQuestions();
+  }, []);
 
+  const loadQuestions = async () => {
+    try {
+      const response = await QuestionService.getQuestionText();
+
+      setQuestions(response.data);
+
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error loading questions:", error);
+    }
+  };
   const navigate = useNavigate();
 
   // Search
   const filteredQuestions = questions.filter((question) =>
-    question.title.toLowerCase().includes(search.toLowerCase()),
+    question.questionText.toLowerCase().includes(search.toLowerCase()),
   );
 
   // Upload
@@ -86,22 +66,22 @@ const QuestionList = () => {
 
   // View
   const handleView = (question) => {
-    navigate(`/questions/question-list/${question.id}`);
+    navigate(`/questions/question-list/${question.questionId}`);
   };
 
   // Edit
   const handleEdit = (question) => {
-    alert(`Editing: ${question.title}`);
+    alert(`Editing: ${question.questionText}`);
   };
 
   // Enable / Disable
   const handleToggle = (id) => {
     setQuestions((prevQuestions) =>
       prevQuestions.map((question) =>
-        question.id === id
+        question.questionId === id
           ? {
               ...question,
-              enabled: !question.enabled,
+              activeRow: !question.activeRow,
             }
           : question,
       ),
@@ -116,7 +96,7 @@ const QuestionList = () => {
 
     if (confirmDelete) {
       setQuestions((prevQuestions) =>
-        prevQuestions.filter((question) => question.id !== id),
+        prevQuestions.filter((question) => question.questionId !== id),
       );
     }
   };
@@ -188,39 +168,25 @@ const QuestionList = () => {
         {filteredQuestions.length > 0 ? (
           filteredQuestions.map((question, index) => (
             <ListGroup.Item
-              key={question.id}
+              key={question.questionId}
               className={`question-item ${
-                !question.enabled ? "disabled-question" : ""
+                !question.activeRow ? "disabled-question" : ""
               }`}
             >
               <Row className="align-items-center">
                 <Col lg={8}>
                   <h5 className="question-title">
-                    {index + 1}. {question.title}
+                    {index + 1}. {question.questionText}
                   </h5>
 
                   <div className="question-meta">
-                    <Badge bg="primary">{question.code}</Badge>
+                    <Badge bg="primary">ID: {question.questionId}</Badge>
 
-                    <Badge bg="secondary">{question.type}</Badge>
+                    <Badge bg="success">{question.courseName}</Badge>
 
-                    <Badge
-                      bg={
-                        question.difficulty === "Easy"
-                          ? "success"
-                          : question.difficulty === "Medium"
-                            ? "warning"
-                            : "danger"
-                      }
-                    >
-                      {question.difficulty}
-                    </Badge>
+                    <Badge bg="warning">{question.chapterName}</Badge>
 
-                    <Badge bg="info">{question.marks} Marks</Badge>
-
-                    <Badge bg={question.enabled ? "success" : "secondary"}>
-                      {question.enabled ? "Enabled" : "Disabled"}
-                    </Badge>
+                    <Badge bg="info">{question.categoryName}</Badge>
                   </div>
                 </Col>
 
@@ -248,16 +214,16 @@ const QuestionList = () => {
 
                   <Form.Check
                     type="switch"
-                    id={`switch-${question.id}`}
-                    checked={question.enabled}
-                    onChange={() => handleToggle(question.id)}
+                    id={`switch-${question.questionId}`}
+                    checked={question.activeRow}
+                    onChange={() => handleToggle(question.questionId)}
                     label="Disable"
                   />
 
                   <Button
                     variant="outline-danger"
                     size="sm"
-                    onClick={() => handleDeleteClick(question.id)}
+                    onClick={() => handleDeleteClick(question.questionId)}
                   >
                     <FaTrash className="me-1" />
                     Delete
@@ -279,14 +245,13 @@ const QuestionList = () => {
 
       <AddQuestionModal
         show={showModal}
-          onClose={() => setShowModal(false)}
-  onSave={(newQuestion) => {
-    console.log(newQuestion);
+        onClose={() => setShowModal(false)}
+        onSave={(newQuestion) => {
+          console.log(newQuestion);
 
-    setShowModal(false);
-  }}
-  questionData={null}
-
+          setShowModal(false);
+        }}
+        questionData={null}
       />
     </Container>
   );
