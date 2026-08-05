@@ -185,8 +185,12 @@ function App() {
           path="/questions/question-categories"
           element={<QuestionCategories />}
         />
-        {/* Questions -> Question List */}
         <Route path="/questions/question-list" element={<QuestionList />} />
+        {/* Questions -> Question List */}
+        <Route
+          path="/questions/question-list/:questionId"
+          element={<QuestionPage />}
+        />
         <Route
           path="/questions/question-categories/:chapterId/:chapterName"
           element={<QuestionCategories />}

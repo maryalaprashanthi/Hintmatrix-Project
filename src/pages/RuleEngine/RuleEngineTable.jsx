@@ -100,7 +100,7 @@ function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
             </button>
 
             <button
-              onClick={() => onDelete(params.data.ruleId)}
+              onClick={() => onDelete(params.data.ruleEngineId)}
               style={{
                 background: "#dc2626",
                 color: "#fff",

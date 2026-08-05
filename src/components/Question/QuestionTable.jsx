@@ -18,6 +18,8 @@ const QuestionTable = () => {
     balanceDataLiabilities,
   } = useQuestionStore();
 
+  console.log("Questions from Store:", questions);
+
   const totalQ = questions.length;
 
   const debitBalances = questions.filter((q) => q.type === "debit");
@@ -39,6 +41,7 @@ const QuestionTable = () => {
     <div className="row g-4 align-items-start">
       <div>
         <Header />
+
         <SummaryCards
           debit={debitTotal}
           credit={creditTotal}
