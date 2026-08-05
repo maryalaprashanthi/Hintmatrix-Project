@@ -8,7 +8,7 @@ import { useParams } from "react-router-dom";
 const QuestionPage = () => {
   const { moveQuestion, setQuestions } = useQuestionStore();
   const { questionId } = useParams();
-  console.log("Question Id:", questionId);
+  // console.log("Question Id:", questionId);
 
   useEffect(() => {
     loadQuestions();
@@ -18,9 +18,9 @@ const QuestionPage = () => {
     try {
       const response = await QuestionService.getQuestionById(questionId);
 
-      console.log("API Response:", response.data);
+      // console.log("API Response:", response.data);
 
-      console.log(response.data);
+      // console.log(response.data);
 
       setQuestions([response.data]);
     } catch (error) {
@@ -36,16 +36,18 @@ const QuestionPage = () => {
         const targetId = Event.operation.target?.id;
 
         if (targetId == null) {
-          console.log("I did nothing");
+          // This is called when not dropped in a dropzone
+          // console.log("I did nothing");
         } else {
-          console.log(`I got dropped into ${targetId}`);
+          // This is called when dropped in a dropzone
+          // console.log(`I got dropped into ${targetId}`);
           // add to respective table
           moveQuestion(sourceId, targetId);
         }
       }}
       onDragStart={(event) => {
-        console.log("drag start event ", event);
-        console.log("drag start source ", event.operation.source);
+        // console.log("drag start event ", event);
+        // console.log("drag start source ", event.operation.source);
       }}
     >
       <QuestionTable />
