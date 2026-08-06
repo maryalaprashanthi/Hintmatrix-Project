@@ -2,12 +2,14 @@ import { useState } from "react";
 import CollegeForm from "./CollegeForm";
 import CollegeTable from "./CollegeTable";
 import CollegeService from "../../services/CollegeService";
+import SuccessModal from "../../components/Common/SuccessModal";
+
 
 function College() {
   const [showModal, setShowModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [selectedCollege, setSelectedCollege] = useState(null);
-  
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // Open Add College
   const handleAddCollege = () => {
@@ -43,6 +45,8 @@ function College() {
 
     setSelectedCollege(null);
     setShowModal(false);
+
+    setShowSuccess(true);
 
   } catch (error) {
 
@@ -151,7 +155,12 @@ function College() {
         onSave={handleSave}
         selectedCollegeData={selectedCollege}
       />
-
+      
+      <SuccessModal
+        show={showSuccess}
+        message="College saved successfully!"
+        onClose={() => setShowSuccess(false)}
+      />
     </div>
   );
 }
