@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import SuccessModal from "../../components/Common/SuccessModal";
+
 
 import {
   FaTimes,
@@ -14,7 +14,6 @@ import {
 import "./CollegeForm.css";
 
 function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
-  const [showSuccess, setShowSuccess] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [college, setCollege] = useState({
     instituteName: "",
@@ -94,9 +93,6 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
       ...college,
       activeRow: isActive,
     });
-
-    // Show success popup
-    setShowSuccess(true);
 
     // Clear form
     setCollege({
@@ -241,11 +237,7 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
         </div>
       )}
 
-      <SuccessModal
-        show={showSuccess}
-        message="College saved successfully!"
-        onClose={() => setShowSuccess(false)}
-      />
+     
     </>,
 
     document.body,

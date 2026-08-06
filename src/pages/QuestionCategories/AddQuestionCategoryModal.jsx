@@ -15,6 +15,7 @@ function AddQuestionCategoryModal({
   chapterId,
   selectedChapter,
   refreshCategories,
+  onSuccess,
 }) {
   const [chapterIdState, setChapterIdState] = useState("");
   const [chapters, setChapters] = useState([]);
@@ -125,13 +126,15 @@ function AddQuestionCategoryModal({
         response = await QuestionCategoryService.create(requestDTO);
       }
 
-      alert(response.data);
-
       if (refreshCategories) {
         refreshCategories();
       }
 
       closeModal();
+
+      if(onSuccess){
+        onSuccess();
+      }
     } catch (error) {
       console.error(error);
 
@@ -237,8 +240,12 @@ function AddQuestionCategoryModal({
                       type="text"
                       placeholder="Enter Category Name"
                       value={categoryName}
-                      onChange={(e) => setCategoryName(e.target.value)}
-                    />
+                       onChange={(e) => {
+                      if (/^[A-Za-z\s]*$/.test(e.target.value)) {
+                     setCategoryName(e.target.value);
+                    }
+                   }}
+                   />
                   </div>
                 </div>
               </div>
