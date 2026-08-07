@@ -131,7 +131,7 @@
 
   padding: 25px;
 
-  margin-bottom: 20px;
+  margin-bottom: 5px;
 
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
@@ -488,4 +488,25 @@
 .transaction-select__option--is-focused {
   background-color: #ffffff !important;
   color: #000000 !important;
+}
+.question-table th:nth-child(1),
+.question-table td:nth-child(1) {
+  width: 35%;
+}
+
+.question-table th:nth-child(2),
+.question-table td:nth-child(2) {
+  width: 15%;
+}
+
+.question-table th:nth-child(3),
+.question-table td:nth-child(3) {
+  width: 15%;
+}
+.question-table th:nth-child(4),
+.question-table td:nth-child(4) {
+  width: 15%;
+}
+.question-attributes-card {
+  margin-top: -5px !important;
 }
