@@ -357,7 +357,7 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
 
           {/* Question Attributes */}
 
-          <div className="form-card">
+          <div className="form-card question-attributes-card">
             <h3 className="section-title">Question Attributes</h3>
             <div className="question-table">
               <table className="table table-bordered">
@@ -397,6 +397,14 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
                             placeholder="Select Transaction"
                             isSearchable
                             isClearable
+                            menuPortalTarget={document.body}
+                            menuPosition="fixed"
+                            styles={{
+                              menuPortal: (base) => ({
+                                ...base,
+                                zIndex: 99999,
+                              }),
+                            }}
                           />
                         </div>
                       </td>
