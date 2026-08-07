@@ -446,78 +446,161 @@
   background-color: #ffffff !important;
   color: #000000 !important;
 }
-/* ==========================================
-   Question Attributes Table
-========================================== */
+/* =========================================================
+   FINAL FIX - QUESTION ATTRIBUTES TABLE
+   ========================================================= */
 
 .question-table {
-  width: 100%;
-  overflow-x: hidden;
+  width: 100% !important;
+  overflow-x: hidden !important;
   margin-top: 5px !important;
   margin-bottom: 5px !important;
 }
 
 .question-table table {
-  width: 100%;
-  table-layout: fixed;
-  border-collapse: collapse;
+  width: 100% !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
 }
 
-/* Debit Balance */
-.question-table th:nth-child(1),
-.question-table td:nth-child(1) {
-  width: 24%;
+/* -----------------------------------------
+   COLUMN WIDTHS
+   Debit Balance = Credit Balance
+   Debit Amount  = Credit Amount
+----------------------------------------- */
+
+.question-table table th:nth-child(1),
+.question-table table td:nth-child(1) {
+  width: 30% !important;
 }
 
-/* Debit Amount */
-.question-table th:nth-child(2),
-.question-table td:nth-child(2) {
-  width: 10%;
+.question-table table th:nth-child(2),
+.question-table table td:nth-child(2) {
+  width: 14% !important;
 }
 
-/* Credit Balance */
-.question-table th:nth-child(3),
-.question-table td:nth-child(3) {
-  width: 24%;
+.question-table table th:nth-child(3),
+.question-table table td:nth-child(3) {
+  width: 30% !important;
 }
 
-/* Credit Amount */
-.question-table th:nth-child(4),
-.question-table td:nth-child(4) {
-  width: 10%;
+.question-table table th:nth-child(4),
+.question-table table td:nth-child(4) {
+  width: 14% !important;
 }
 
-/* Action */
-.question-table th:nth-child(5),
-.question-table td:nth-child(5) {
-  width: 14%;
+.question-table table th:nth-child(5),
+.question-table table td:nth-child(5) {
+  width: 12% !important;
 }
 
-/* Table cells */
+/* -----------------------------------------
+   TABLE CELLS
+----------------------------------------- */
+
 .question-table th,
 .question-table td {
   padding: 6px 8px !important;
-  vertical-align: middle;
+  vertical-align: middle !important;
+  box-sizing: border-box !important;
 }
 
-/* All table inputs */
-.question-table input,
-.question-table select {
-  width: 100%;
-  height: 30px;
-  box-sizing: border-box;
-}
+/* -----------------------------------------
+   AMOUNT INPUTS
+   BOTH AMOUNT BOXES EXACTLY SAME SIZE
+----------------------------------------- */
 
-/* Amount inputs */
+.question-table td:nth-child(2) input,
+.question-table td:nth-child(4) input,
 .question-table .amount-input {
   width: 100% !important;
-  height: 45px !important;
-  box-sizing: border-box;
-  padding: 0 8px;
-  border: 1px solid #dbe4f0;
-  border-radius: 8px;
-  font-size: 14px;
-  outline: none;
+  height: 50px !important;
+  min-height: 50px !important;
+  box-sizing: border-box !important;
+
+  padding: 0 8px !important;
+
+  border: 1px solid #dbe4f0 !important;
+  border-radius: 12px !important;
+
+  font-size: 14px !important;
+  outline: none !important;
+  background: #fff !important;
+}
+
+/* -----------------------------------------
+   DEBIT + CREDIT REACT SELECT
+   BOTH EXACTLY SAME SIZE
+----------------------------------------- */
+
+/* React Select with react-select prefix */
+.question-table td:nth-child(1) .react-select__control,
+.question-table td:nth-child(3) .react-select__control,
+
+/* React Select with credit-select prefix */
+.question-table td:nth-child(1) .credit-select__control,
+.question-table td:nth-child(3) .credit-select__control {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 50px !important;
+  height: 50px !important;
+  box-sizing: border-box !important;
+
+  border: 1px solid #dbe4f0 !important;
+  border-radius: 12px !important;
+
+  box-shadow: none !important;
+  background: #fff !important;
+}
+
+/* React Select internal value area */
+.question-table .react-select__value-container,
+.question-table .credit-select__value-container {
+  height: 48px !important;
+  box-sizing: border-box !important;
+}
+
+/* -----------------------------------------
+   MAKE ALL 4 FIELDS FILL THEIR CELL
+----------------------------------------- */
+
+.question-table td:nth-child(1) > *,
+.question-table td:nth-child(2) > *,
+.question-table td:nth-child(3) > *,
+.question-table td:nth-child(4) > * {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* -----------------------------------------
+   REACT SELECT FOCUS
+----------------------------------------- */
+
+.question-table .react-select__control--is-focused,
+.question-table .credit-select__control--is-focused {
+  border-color: #dbe4f0 !important;
+  box-shadow: none !important;
+}
+
+/* -----------------------------------------
+   DROPDOWN
+----------------------------------------- */
+
+.question-table .react-select__menu,
+.question-table .credit-select__menu {
+  background: #fff !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+/* -----------------------------------------
+   ACTION BUTTON
+----------------------------------------- */
+
+.question-table td:nth-child(5) button {
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 /* Reduce gap between Question Text and Question Attributes */
 .question-attributes-section {
