@@ -263,18 +263,20 @@ function SectionForm({ selectedSectionData, onSave, onCancel }) {
             <div className="input-box">
               <FaLayerGroup className="input-icon" />
               <input
-                type="text"
-                name="sectionName"
-                placeholder="Enter Section Name"
-                value={section.sectionName}
-                onChange={(e) =>
-                  setSection({
-                    ...section,
-                    sectionName: e.target.value,
-                  })
-                }
-                required
-              />
+              type="text"
+              name="sectionName"
+              placeholder="Enter Section Name"
+              value={section.sectionName}
+              onChange={(e) => {
+              const value = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+
+              setSection({
+              ...section,
+              sectionName: value,
+              });
+              }}
+              required
+             />
             </div>
           </div>
         </div>

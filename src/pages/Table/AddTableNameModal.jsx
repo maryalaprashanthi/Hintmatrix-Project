@@ -75,17 +75,15 @@ function AddTableNameModal({ show, onClose, onSave, Inputname }) {
 
                 <div className="input-box">
                   <FaTable className="input-icon" />
-
-
-
-                  <input
-                    type="text"
-                    placeholder="Enter Table Name"
-                    value={name}
-                    onChange={(e) =>
-                      setName(e.target.value)
-                    }
-                  />
+               <input
+               type="text"
+               placeholder="Enter Table Name"
+               value={name}
+               onChange={(e) => {
+               const value = e.target.value.replace(/[^a-zA-Z ]/g, "");
+               setName(value);
+               }}
+              />
                 </div>
               </div>
             </div>
