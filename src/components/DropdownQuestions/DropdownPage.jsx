@@ -1,32 +1,34 @@
-import JournalQuestion from "./JournalQuestion";
-import JournalSolution from "./JournalSolution";
-import { Col, Row } from "react-bootstrap";
 import { useState } from "react";
+import { Row, Col } from "react-bootstrap";
 import Header from "../Question/Header";
 import SummaryCards from "../Question/SummaryCards";
-const JournalPage = () => {
+import DropdownQuestion from "./DropdownQuestion";
+import DropdownSolution from "./DropdownSolution";
+
+const DropdownPage = () => {
   const [answeredData, setAnsweredData] = useState({});
+
   return (
     <div>
       <Row>
         <Header />
       </Row>
       <Row>
-        <SummaryCards />
+        <SummaryCards total={20} solved={10} />
       </Row>
       <Row>
         <Col>
-          <JournalQuestion
+          <DropdownQuestion
             answeredData={answeredData}
             setAnsweredData={setAnsweredData}
           />
         </Col>
         <Col>
-          <JournalSolution answeredData={answeredData} />
+          <DropdownSolution answeredData={answeredData} />
         </Col>
       </Row>
     </div>
   );
 };
 
-export default JournalPage;
+export default DropdownPage;

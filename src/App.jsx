@@ -26,7 +26,7 @@ import RuleEngine from "./pages/RuleEngine/RuleEngine";
 import Login from "./pages/Auth/Login";
 // Other Pages
 import Practice from "./pages/Practice";
-import ExamList from "./pages/Exammodule/ExamList";
+import ExamList from "./pages/ExamModule/ExamList";
 import Sessions from "./pages/Sessions";
 import Results from "./pages/Results";
 import Certificates from "./pages/Certificates";
@@ -46,7 +46,8 @@ import combo from "./assets/courses/combo.png.jpeg";
 import inter from "./assets/courses/inter.png.jpeg";
 import Landing from "./pages/Landing/Landing";
 import QuestionPage from "./components/Question/QuestionPage";
-import JournalPage from "./components/Journal Question/JournalPage";
+import JournalPage from "./components/JournalQuestion/JournalPage";
+import DropdownPage from "./components/DropdownQuestions/DropdownPage";
 
 function App() {
   const navigate = useNavigate();
@@ -219,6 +220,7 @@ function App() {
         <Route path="/settings" element={<Settings />} />
 
         <Route path="/journal" element={<JournalPage />}></Route>
+        <Route path="/dropdown" element={<DropdownPage />}></Route>
       </Route>
     </Routes>
   );

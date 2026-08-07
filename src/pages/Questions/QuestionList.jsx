@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import QuestionService from "../../services/QuestionService";
 import {
   Container,
@@ -15,74 +15,34 @@ import { FaSearch, FaPlus, FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import "./QuestionList.css";
 import AddQuestionModal from "./AddQuestionModal";
-import { NavLink } from "react-router-dom";
-import CourseService from "../../services/CourseService";
-import ChapterService from "../../services/ChapterService";
-import QuestionCategoryService from "../../services/QuestionCategoryService";
-import TableAttributeService from "../../services/TableAttributeService";
-
-const getData = async () =>
-{
-  console.log("Full data");
-  
-  // get courses
-  let courseData = await CourseService.getAllCourses();
-  courseData = await courseData.data;
-  let allCourses = courseData.map((c)=> ({"id":c.id,"name":c.name}));
-  // get chapter
-  let response = await ChapterService.getAll();
-  let chapterData = await response.data;
-  // console.log("Chapter data: ",chapterData);
-  let allChapters = chapterData.map((c)=>({"id":c.id,"name":c.name}));
-  console.log("Chapter data: ",allChapters);
-  // get category 
-  let categoriesData = await QuestionCategoryService.getAll();
-  categoriesData = await categoriesData.data;
-  let allCategories = categoriesData.map((c)=>({"id":c.id,"name":c.name}));
-  console.log("Categories: ",allCategories);
-  const attributesResponse =
-  await TableAttributeService.getAll();
-
-const attributesData = attributesResponse.data;
-
-console.log("Table Attributes: ", attributesData);
-
- 
-
-  data = {"categories":allCategories,"chapters":allChapters,"courses":allCourses};
-}
-
-let data;
 
 const QuestionList = () => {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
+  // edit functionality
+  // const [questionData,setQuestionData] = useState(null);
 
   // Upload File Reference
   const fileInputRef = useRef(null);
 
   const [questions, setQuestions] = useState([]);
+
+  // load questions
   useEffect(() => {
     loadQuestions();
-    getData();
   }, []);
 
   const loadQuestions = async () => {
     try {
       const response = await QuestionService.getQuestionText();
-
       setQuestions(response.data);
-
-      console.log(response.data);
     } catch (error) {
       console.error("Error loading questions:", error);
     }
   };
   const navigate = useNavigate();
 
-  // Search
+  // used to show questions matching searched keywords
   const filteredQuestions = questions.filter((question) =>
     question.questionText.toLowerCase().includes(search.toLowerCase()),
   );
@@ -155,7 +115,7 @@ const QuestionList = () => {
           className="d-flex justify-content-lg-end gap-2 mt-3 mt-lg-0"
         >
           {/* Hidden Upload Input */}
-
+          {/* Look into this */}
           <input
             type="file"
             ref={fileInputRef}
@@ -281,16 +241,16 @@ const QuestionList = () => {
         )}
       </ListGroup>
 
-      <AddQuestionModal
-        show={showModal}
-        onClose={() => setShowModal(false)}
-        onSave={(newQuestion) => {
-          console.log(newQuestion);
+      {showModal && (
+        <AddQuestionModal
+          onClose={() => setShowModal(false)}
+          onSave={(newQuestion) => {
+            console.log(newQuestion);
 
-          setShowModal(false);
-        }}
-        questionData={data}
-      />
+            setShowModal(false);
+          }}
+        />
+      )}
     </Container>
   );
 };

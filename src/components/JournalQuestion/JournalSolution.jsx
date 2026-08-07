@@ -1,38 +1,16 @@
 import React from "react";
-import "./JournalSolution.css";
 import { Table } from "react-bootstrap";
 
-const isTotalRow = (particulars = "") =>
-  particulars.toString().trim().toLowerCase().startsWith("total");
+import "./JournalSolution.css";
 
 const JournalSolution = ({ answeredData }) => {
   // Sample data so the component renders something matching the reference image
   // when no answeredData prop is supplied.
-  const sampleData = {
-    1: [
-      {
-        date: "2024-04-01",
-        particulars: "Stock",
-        lf: "",
-        debit: "15,000",
-        credit: "",
-      },
-      {
-        date: "",
-        particulars: "Total",
-        lf: "",
-        debit: "15,000",
-        credit: "",
-      },
-    ],
-  };
-
-  const data = answeredData || sampleData;
 
   return (
     <div className="journal-wrap">
       <div className="journal-card">
-        <Table bordered hover className="align-middle mb-0 journal-table">
+        <Table bordered className="align-middle mb-0 journal-table">
           <thead>
             <tr>
               <th>Date</th>
@@ -43,18 +21,14 @@ const JournalSolution = ({ answeredData }) => {
             </tr>
           </thead>
           <tbody>
-            {data &&
-              Object.keys(data).map((id) => {
-                const txnData = data[id];
+            {answeredData &&
+              Object.keys(answeredData).map((id) => {
+                const txnData = answeredData[id];
                 return (
                   <React.Fragment key={id}>
                     {txnData.map((item, index) => {
-                      const total = isTotalRow(item.particulars);
                       return (
-                        <tr
-                          key={`${id}-${index}`}
-                          className={total ? "total-row" : "data-row"}
-                        >
+                        <tr key={`${id}-${index}`}>
                           <td className="center">{item.date}</td>
                           <td>{item.particulars}</td>
                           <td className="center">{item.lf}</td>
@@ -63,7 +37,7 @@ const JournalSolution = ({ answeredData }) => {
                         </tr>
                       );
                     })}
-                    <tr className="spacer-row">
+                    <tr className="j-row">
                       <td colSpan="5"></td>
                     </tr>
                   </React.Fragment>
