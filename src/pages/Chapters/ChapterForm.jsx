@@ -141,22 +141,28 @@ function ChapterForm({ show, onClose, onSave, selectedChapterData }) {
 
               {/* Chapter Name */}
 
-              <div className="form-group">
-                <label>
-                  Chapter Name <span>*</span>
-                </label>
+             <div className="form-group">
+             <label>
+               Chapter Name <span>*</span>
+             </label>
 
-                <div className="input-box">
-                  <FaBook className="input-icon" />
+              <div className="input-box">
+              <FaBook className="input-icon" />
 
-                  <input
-                    type="text"
-                    placeholder="Enter Chapter Name"
-                    value={chapterName}
-                    onChange={(e) => setChapterName(e.target.value)}
-                  />
-                </div>
-              </div>
+              <input
+              type="text"
+              placeholder="Enter Chapter Name"
+              value={chapterName}
+              onChange={(e) => {
+              const value = e.target.value;
+
+              if (/^[A-Za-z\s]*$/.test(value)) {
+              setChapterName(value);
+             }
+            }}
+          />
+         </div>
+       </div>
               <div className="form-card">
                 <h3 className="section-title">Status</h3>
 
