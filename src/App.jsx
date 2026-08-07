@@ -20,6 +20,7 @@ import Chapters from "./pages/Chapters/Chapters";
 
 import QuestionCategories from "./pages/QuestionCategories/QuestionCategories";
 import QuestionList from "./pages/Questions/QuestionList";
+import QuestionType2 from "./pages/Questions/QuestionType2Modal";
 
 import RuleEngine from "./pages/RuleEngine/RuleEngine";
 
@@ -50,6 +51,7 @@ import JournalPage from "./components/Journal Question/JournalPage";
 
 function App() {
   const navigate = useNavigate();
+  const [showQuestionType2, setShowQuestionType2] = useState(true);
   const [coursesList, setCoursesList] = useState([
     {
       id: 1,
@@ -187,6 +189,16 @@ function App() {
         />
         {/* Questions -> Question List */}
         <Route path="/questions/question-list" element={<QuestionList />} />
+        <Route
+          path="/questions/questiontype2"
+          element={
+            <QuestionType2
+              show={true}
+              onClose={() => navigate("/questions/question-list")}
+              onSave={(data) => console.log(data)}
+            />
+          }
+        />
         <Route
           path="/questions/question-categories/:chapterId/:chapterName"
           element={<QuestionCategories />}

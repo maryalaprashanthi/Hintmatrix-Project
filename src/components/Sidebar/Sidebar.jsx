@@ -200,6 +200,15 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
                 <MdCategory />
                 <span>Question Categories</span>
               </NavLink>
+
+              <NavLink
+                to="/questions/questiontype2"
+                className={subMenuClass}
+                onClick={closeSidebar}
+              >
+                <MdQuiz />
+                <span>Question Type 2</span>
+              </NavLink>
             </div>
           )}
 
