@@ -72,10 +72,15 @@ function AddTableHeaderModal({ show, onClose, onSave, Inputdata }) {
                   <FaTable className="input-icon" />
 
                   <input
-                    type="text"
-                    placeholder="Enter Table Header Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                  type="text"
+                  placeholder="Enter Table Header Name"
+                  value={name}
+                  onChange={(e) => {
+                  const value = e.target.value.replace(/[^a-zA-Z ]/g, "");
+
+                  setName(value);
+                }}
+
                   />
                 </div>
               </div>

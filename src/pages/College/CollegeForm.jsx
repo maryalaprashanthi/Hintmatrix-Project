@@ -140,7 +140,13 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
                         name="instituteName"
                         placeholder="Enter Institute Name"
                         value={college.instituteName}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                        const value = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                        setCollege({
+                        ...college,
+                        instituteName: value
+                       });
+                      }}
                       />
                     </div>
                   </div>
