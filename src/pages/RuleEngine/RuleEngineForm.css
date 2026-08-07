@@ -27,7 +27,7 @@
 ========================================== */
 
 .rule-modal {
-  width: min(900px, 95vw);
+  width: min(1000px, 95vw);
   max-width: 95vw;
 
   background: #ffffff;
