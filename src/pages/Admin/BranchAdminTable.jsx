@@ -51,12 +51,12 @@ function BranchAdminTable({ data, onEdit, refreshData }) {
       headerName: "Designation",
       width: 170,
     },
-      {
+    {
       field: "collegeName",
       headerName: "college Name",
       width: 130,
     },
-  
+
     {
       field: "branchName",
       headerName: "Branch Name",
@@ -94,15 +94,33 @@ function BranchAdminTable({ data, onEdit, refreshData }) {
           }}
         >
           <button
-            className="btn btn-primary btn-sm"
             onClick={() => onEdit(params.data)}
+            style={{
+              background: "#2563eb",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              padding: "4px 14px",
+              cursor: "pointer",
+              fontSize: "12px",
+              fontWeight: "600",
+            }}
           >
             Edit
           </button>
 
           <button
-            className="btn btn-danger btn-sm"
-            onClick={() => handleDelete(params.data.branchAdminId)}
+            onClick={() => handleDelete(params.data.studentId)}
+            style={{
+              background: "#dc2626",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              padding: "4px 14px",
+              cursor: "pointer",
+              fontSize: "12px",
+              fontWeight: "600",
+            }}
           >
             Delete
           </button>
