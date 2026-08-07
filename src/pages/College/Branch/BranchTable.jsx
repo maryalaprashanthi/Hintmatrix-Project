@@ -48,8 +48,7 @@ function BranchTable({ onEdit, refresh }) {
 
         const sanitizedData = rawData.map((item) => ({
           ...item,
-          branchId: item.branchId ?? item.id,
-          collegeId: item.collegeId,
+          collegeName: item.collegeName,
           branchName: item.branchName ?? item.name,
           address: item.address,
           phoneNumber: item.phoneNumber ?? item.phone,
@@ -97,9 +96,8 @@ function BranchTable({ onEdit, refresh }) {
 
   // Mapped definitions exactly to match properties from your BranchRequestDTO fields
   const columnDefs = [
-    { field: "branchId", headerName: "Branch ID", width: 105 },
     {
-      field: "collegeId",
+      field: "collegeName",
       headerName: "College Name",
       width: 150,
       valueFormatter: (params) => {

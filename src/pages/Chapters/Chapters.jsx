@@ -2,6 +2,8 @@ import "./Chapters.css";
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import SuccessModal from "../../components/Common/SuccessModal";
+
 
 import {
   FaBookOpen,
@@ -33,6 +35,7 @@ function Chapters() {
   const [selectedChapter, setSelectedChapter] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const filteredChapters = chapters.filter((chapter) => {
     const searchMatch = chapter.name
@@ -72,7 +75,7 @@ function Chapters() {
 
       await ChapterService.create(newChapter);
 
-      alert("Chapter created successfully");
+      setShowSuccess(true);
 
       setShowAddChapter(false);
 
@@ -101,8 +104,7 @@ function Chapters() {
 
       await ChapterService.update(id, updatedChapter);
 
-      alert("Chapter updated successfully");
-
+      setShowSuccess(true);
       setShowEditChapter(false);
 
       setSelectedChapter(null);
@@ -333,6 +335,11 @@ function Chapters() {
           onUpdate={handleUpdateChapter}
         />
       )}
+      <SuccessModal
+        show={showSuccess}
+        message="Chapter saved successfully!"
+        onClose={() => setShowSuccess(false)}
+      />
     </div>
   );
 }

@@ -276,10 +276,10 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
             </div>
           </NavLink>
 
-          <NavLink to="/tests" className={menuClass} onClick={closeSidebar}>
+          <NavLink to="/Exam" className={menuClass} onClick={closeSidebar}>
             <div className="menu-left">
               <MdAssignment />
-              <span>Tests</span>
+              <span>Exam</span>
             </div>
           </NavLink>
 

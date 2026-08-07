@@ -20,13 +20,6 @@ function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
 
   const columnDefs = [
     {
-      headerName: "S.No",
-      width: 90,
-      valueGetter: (params) => params.node.rowIndex + 1,
-      sortable: false,
-      filter: false,
-    },
-    {
       field: "chapterName",
       headerName: "Chapter Name",
       flex: 1,
@@ -100,7 +93,7 @@ function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
             </button>
 
             <button
-              onClick={() => onDelete(params.data.ruleId)}
+              onClick={() => onDelete(params.data.ruleEngineId)}
               style={{
                 background: "#dc2626",
                 color: "#fff",

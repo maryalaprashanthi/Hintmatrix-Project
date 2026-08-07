@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import SuccessModal from "../../components/Common/SuccessModal";
+
 
 import {
   FaTimes,
@@ -14,7 +14,6 @@ import {
 import "./CollegeForm.css";
 
 function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
-  const [showSuccess, setShowSuccess] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [college, setCollege] = useState({
     instituteName: "",
@@ -49,6 +48,15 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
   }, [selectedCollegeData, show]);
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
+
+  if (name === "phoneNumber") {
+    setCollege({
+      ...college,
+      [name]: value.replace(/\D/g, ""),
+    });
+    return;
+  }
     setCollege({
       ...college,
       [e.target.name]: e.target.value,
@@ -85,9 +93,6 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
       ...college,
       activeRow: isActive,
     });
-
-    // Show success popup
-    setShowSuccess(true);
 
     // Clear form
     setCollege({
@@ -135,7 +140,13 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
                         name="instituteName"
                         placeholder="Enter Institute Name"
                         value={college.instituteName}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                        const value = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                        setCollege({
+                        ...college,
+                        instituteName: value
+                       });
+                      }}
                       />
                     </div>
                   </div>
@@ -150,6 +161,7 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
 
                       <input
                         type="tel"
+                        inputMode="numeric"
                         name="phoneNumber"
                         placeholder="Enter Phone Number"
                         value={college.phoneNumber}
@@ -231,11 +243,7 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
         </div>
       )}
 
-      <SuccessModal
-        show={showSuccess}
-        message="College saved successfully!"
-        onClose={() => setShowSuccess(false)}
-      />
+     
     </>,
 
     document.body,

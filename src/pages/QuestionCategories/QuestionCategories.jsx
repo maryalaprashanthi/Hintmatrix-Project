@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
+import SuccessModal from "../../components/Common/SuccessModal";
+
 
 import {
   FaBookOpen,
@@ -36,7 +38,7 @@ export default function QuestionCategories() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [categories, setCategories] = useState([]);
-
+  const [showSuccess, setShowSuccess] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   // GET ALL CATEGORIES
   const fetchCategories = async () => {
@@ -279,6 +281,12 @@ export default function QuestionCategories() {
         selectedChapter={selectedChapter}
         initialData={selectedCategory}
         refreshCategories={fetchCategories}
+        onSuccess={() => setShowSuccess(true)}
+      />
+      <SuccessModal
+      show={showSuccess}
+      message="Question Category saved successfully!"
+      onClose={() => setShowSuccess(false)}
       />
     </div>
   );

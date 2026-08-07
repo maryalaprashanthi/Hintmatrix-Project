@@ -1,80 +1,39 @@
 import { create } from "zustand";
 
-const initialQuestions = [
-  {
-    id: 1,
-    name: "Wages",
-    amount: 1000,
-    type: "debit",
-    status: "pending",
-  },
-  {
-    id: 2,
-    name: "Capital",
-    amount: 500,
-    type: "credit",
-    status: "pending",
-  },
-  {
-    id: 3,
-    name: "Purchases",
-    amount: 10,
-    type: "debit",
-    status: "pending",
-  },
-  {
-    id: 4,
-    name: "Purchase Returns",
-    amount: 701,
-    type: "credit",
-    status: "pending",
-  },
-  {
-    id: 5,
-    name: "Stock",
-    amount: 15000,
-    type: "debit",
-    status: "pending",
-  },
-  {
-    id: 6,
-    name: "Opening Stock",
-    amount: 512,
-    type: "credit",
-    status: "pending",
-  },
-  {
-    id: 7,
-    name: "Loans",
-    amount: 10,
-    type: "debit",
-    status: "pending",
-  },
-  {
-    id: 8,
-    name: "Investor capital",
-    amount: 701,
-    type: "credit",
-    status: "pending",
-  },
-  {
-    id: 9,
-    name: "Loss",
-    amount: 15000,
-    type: "debit",
-    status: "pending",
-  },
-  {
-    id: 10,
-    name: "EBITDA",
-    amount: 512,
-    type: "credit",
-    status: "pending",
-  },
-];
-
 const useQuestionStore = create((set) => ({
-  questions: initialQuestions,
+  questions: [],
+  question: null,
+  setQuestions: (apiQuestions) => {
+    const formattedQuestions = [];
+
+    apiQuestions.forEach((question) => {
+      if (question.questionAttributes) {
+        question.questionAttributes.forEach((attribute) => {
+          formattedQuestions.push({
+            id: attribute.questionAttributeId,
+            name: attribute.attributeName,
+            amount: Number(attribute.amount),
+            type:
+              attribute.headerName === "Debit Particulars" ? "debit" : "credit",
+            status: "pending",
+          });
+        });
+      }
+    });
+
+    set({
+      questions: formattedQuestions,
+      question: apiQuestions.length > 0 ? apiQuestions[0] : null,
+
+      // Reset all answer arrays when a new question is loaded
+      tradingDataDebit: [],
+      tradingDataCredit: [],
+      profitDataDebit: [],
+      profitDataCredit: [],
+      balanceDataLiabilities: [],
+      balanceDataAssets: [],
+    });
+  },
   tradingDataDebit: [],
   tradingDataCredit: [],
   profitDataDebit: [],

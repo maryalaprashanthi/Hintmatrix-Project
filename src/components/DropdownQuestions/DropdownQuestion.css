@@ -1,0 +1,137 @@
+/* ---------- Card & table shell ---------- */
+.container .card {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.table-responsive .table {
+  font-size: 0.95rem;
+  margin-bottom: 0;
+}
+
+/* ---------- Header row (overrides bootstrap's table-dark) ---------- */
+.table-responsive .table thead.table-dark tr,
+.table-responsive .table thead.table-dark th {
+  background-color: #d1fae5 !important;
+  color: #047857 !important;
+  border-color: #e0e4f5 !important;
+  font-weight: 700;
+  padding: 12px 16px;
+  vertical-align: middle;
+}
+
+/* ---------- Body rows ---------- */
+.table-responsive .table tbody td {
+  padding: 12px 16px;
+  color: #1f2430;
+  border-color: #f1f2f8;
+  cursor: pointer;
+}
+
+/* Neutralize bootstrap's default zebra striping so rows stay white */
+.table-responsive .table.table-striped > tbody > tr:nth-of-type(odd) > * {
+  --bs-table-accent-bg: transparent;
+  background-color: #ffffff;
+}
+
+/* Hover state uses a soft lavender tint instead of bootstrap's default grey */
+.table-responsive .table.table-hover > tbody > tr:hover > * {
+  --bs-table-accent-bg: transparent;
+  background-color: #f5f6fd;
+  color: #047857;
+}
+
+/* ---------- Popover ---------- */
+.dropdown-popover {
+  border: 1px solid #e0e4f5;
+  box-shadow: 0 4px 16px rgba(67, 56, 202, 0.12);
+  /* Make popover wider and allow the body to scroll when content overflows */
+  max-width: none !important;
+  width: 420px !important;
+}
+
+.dropdown-popover .popover-header {
+  background-color: #d1fae5 !important;
+  color: #047857 !important;
+  font-weight: 700;
+  border-bottom: 1px solid #e0e4f5;
+}
+
+.dropdown-popover .popover-body {
+  color: #1f2430;
+  max-height: 360px;
+  overflow-y: auto;
+  overflow: hidden;
+}
+
+/* .dropdown-popover .popover-body > div > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-weight: 600;
+} */
+
+/* ---------- Debit / Credit buttons inside the popover ---------- */
+.dropdown-popover .btn {
+  background-color: #d1fae5;
+  border: 1px solid #c7d2fe;
+  color: #047857 !important;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+.dropdown-popover .btn:hover,
+.dropdown-popover .btn:focus {
+  background-color: #047857 !important;
+  border-color: #047857 !important;
+  color: white !important;
+}
+
+/* ---------- Autocomplete "Select Debit/Credit A/c" fields ---------- */
+/* .dropdown-select .rbt-input-main {
+  background-color: #d1fae5;
+  border: 1px solid #c7d2fe;
+  border-radius: 8px;
+  color: #047857;
+  font-weight: 700;
+  text-align: center;
+  padding: 10px 14px;
+  box-shadow: none;
+}
+
+.dropdown-select .rbt-input-main::placeholder {
+  color: #047857;
+  opacity: 1;
+}
+
+.dropdown-select .rbt-input-main:focus {
+  background-color: #d1fae5;
+  color: #047857;
+  border-color: #047857;
+  box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.15);
+}
+
+.dropdown-select .rbt-input-hint {
+  color: #047857 !important;
+}
+
+.dropdown-select .rbt-menu {
+  border: 1px solid #e0e4f5;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(67, 56, 202, 0.12);
+  padding: 4px;
+}
+
+.dropdown-select .rbt-menu .dropdown-item {
+  color: #047857;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+.dropdown-select .rbt-menu .dropdown-item:hover,
+.dropdown-select .rbt-menu .dropdown-item.active,
+.dropdown-select .rbt-menu .dropdown-item:focus {
+  color: #047857;
+} 
+*/

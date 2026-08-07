@@ -81,7 +81,6 @@ function TableAttributes() {
   };
 
   const columnDefs = [
-    { field: "id", headerName: "Table Attribute ID", width: 80, flex: 1 },
     { field: "name", headerName: "Table Attribute Name", flex: 1 },
     {
       field: "tableHeaderName",

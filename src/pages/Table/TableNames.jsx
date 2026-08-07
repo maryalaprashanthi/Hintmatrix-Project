@@ -114,13 +114,6 @@ function TableNames() {
 
   const columnDefs = [
     {
-      field: "id",
-      headerName: "Table Name ID",
-      width: 80,
-      flex: 1,
-    },
-
-    {
       field: "name",
       headerName: "Table Name",
       flex: 1,

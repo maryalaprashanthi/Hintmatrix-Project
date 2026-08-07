@@ -1,18 +1,16 @@
-import { useState, useEffect } from "react";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
+import { OverlayTrigger, Popover } from "react-bootstrap";
 
 import "./JournalQuestion.css";
 
 const JournalQuestion = ({ answeredData, setAnsweredData }) => {
-  const [hoverId, setHoverId] = useState(null);
-
   const data = [
     {
       id: "1",
       question: "Ravi takes stock",
       amount1: "1000",
-      amount2: "",
+      amount2: "1000",
       tables: ["Ravi A/C", "Suspense A/C", "Demo A/C"],
     },
     {
@@ -117,17 +115,13 @@ const JournalQuestion = ({ answeredData, setAnsweredData }) => {
     }
   };
 
-  useEffect(() => {
-    console.log("New data is :", answeredData);
-  }, [answeredData]);
-
   return (
     <div className="container py-4">
       <div className="card shadow-sm border-0">
         <div className="card-body">
           <div className="table-responsive">
-            <Table striped bordered hover className="align-middle mb-0">
-              <thead className="table-dark">
+            <Table bordered className="align-middle mb-0 journal-table">
+              <thead>
                 <tr>
                   <th>Transaction</th>
                   <th className="text-end">Amount (₹)</th>
@@ -136,48 +130,72 @@ const JournalQuestion = ({ answeredData, setAnsweredData }) => {
               </thead>
               <tbody>
                 {data.map((item) => (
-                  <>
-                    <tr
-                      key={item.id}
-                      onMouseEnter={() => setHoverId(item.id)}
-                      className={hoverId === item.id ? "table-primary" : ""}
-                    >
+                  <OverlayTrigger
+                    key={item.id}
+                    trigger="click"
+                    placement="bottom"
+                    rootClose
+                    container={document.body}
+                    overlay={
+                      <Popover
+                        id={`popover-${item.id}`}
+                        className="journal-popover"
+                      >
+                        <Popover.Header as="h3" className="popover-header">
+                          Transaction of <strong>{item.question}</strong> is ₹
+                          {item.amount1}
+                          {item.amount2 ? `/${item.amount2}` : ""}
+                        </Popover.Header>
+                        <Popover.Body>
+                          {/* className="journal-grid" */}
+                          <div
+                            style={{ width: "400px" }}
+                            className="popover-body"
+                          >
+                            {/* className="grid-container" */}
+                            <div>
+                              {item.tables.map((table, index) => (
+                                // className="item"
+                                <div key={index}>
+                                  {table}
+                                  <Button
+                                    onClick={() =>
+                                      handleAdd(item.id, "Debit", table)
+                                    }
+                                    className="def"
+                                    style={{
+                                      width: "80px",
+                                      margin: "5px",
+                                    }}
+                                  >
+                                    Debit
+                                  </Button>
+                                  <Button
+                                    onClick={() =>
+                                      handleAdd(item.id, "Credit", table)
+                                    }
+                                    className="def"
+                                    style={{
+                                      width: "80px",
+                                      marginRight: "5px",
+                                    }}
+                                  >
+                                    Credit
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </Popover.Body>
+                      </Popover>
+                    }
+                  >
+                    <tr key={item.id}>
                       <td>{item.question}</td>
                       <td className="text-end">{item.amount1 || "-"}</td>
                       <td className="text-end">{item.amount2 || "-"}</td>
                     </tr>
-                    {hoverId === item.id && (
-                      <tr
-                        className="table-info"
-                        onMouseLeave={() => setHoverId(null)}
-                      >
-                        <td colSpan={3}>
-                          {/* <strong>Tables:</strong> {item.tables.join(", ")} */}
-                          <div className="grid-container">
-                            {item.tables.map((table, index) => (
-                              <div key={index} className="item">
-                                {table}
-                                <Button
-                                  onClick={() =>
-                                    handleAdd(item.id, "Debit", table)
-                                  }
-                                >
-                                  Debit
-                                </Button>
-                                <Button
-                                  onClick={() =>
-                                    handleAdd(item.id, "Credit", table)
-                                  }
-                                >
-                                  Credit
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </>
+                  </OverlayTrigger>
                 ))}
               </tbody>
             </Table>

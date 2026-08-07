@@ -27,7 +27,7 @@ import RuleEngine from "./pages/RuleEngine/RuleEngine";
 import Login from "./pages/Auth/Login";
 // Other Pages
 import Practice from "./pages/Practice";
-import Tests from "./pages/Tests";
+import ExamList from "./pages/ExamModule/ExamList";
 import Sessions from "./pages/Sessions";
 import Results from "./pages/Results";
 import Certificates from "./pages/Certificates";
@@ -47,7 +47,8 @@ import combo from "./assets/courses/combo.png.jpeg";
 import inter from "./assets/courses/inter.png.jpeg";
 import Landing from "./pages/Landing/Landing";
 import QuestionPage from "./components/Question/QuestionPage";
-import JournalPage from "./components/Journal Question/JournalPage";
+import JournalPage from "./components/JournalQuestion/JournalPage";
+import DropdownPage from "./components/DropdownQuestions/DropdownPage";
 
 function App() {
   const navigate = useNavigate();
@@ -187,8 +188,12 @@ function App() {
           path="/questions/question-categories"
           element={<QuestionCategories />}
         />
-        {/* Questions -> Question List */}
         <Route path="/questions/question-list" element={<QuestionList />} />
+        {/* Questions -> Question List */}
+        <Route
+          path="/questions/question-list/:questionId"
+          element={<QuestionPage />}
+        />
         <Route
           path="/questions/questiontype2"
           element={
@@ -220,16 +225,14 @@ function App() {
 
         {/* Learning */}
         <Route path="/practice" element={<Practice />} />
-        <Route path="/tests" element={<Tests />} />
+        <Route path="/Exam" element={<ExamList />} />
         <Route path="/sessions" element={<Sessions />} />
         <Route path="/results" element={<Results />} />
         <Route path="/certificates" element={<Certificates />} />
         <Route path="/settings" element={<Settings />} />
-        <Route
-          path="/questions/question-list/:id/"
-          element={<QuestionPage />}
-        />
+
         <Route path="/journal" element={<JournalPage />}></Route>
+        <Route path="/dropdown" element={<DropdownPage />}></Route>
       </Route>
     </Routes>
   );

@@ -51,14 +51,15 @@ function BranchAdminTable({ data, onEdit, refreshData }) {
       headerName: "Designation",
       width: 170,
     },
-    {
-      field: "collegeId",
-      headerName: "College ID",
+      {
+      field: "collegeName",
+      headerName: "college Name",
       width: 130,
     },
+  
     {
-      field: "branchId",
-      headerName: "Branch ID",
+      field: "branchName",
+      headerName: "Branch Name",
       width: 130,
     },
     {

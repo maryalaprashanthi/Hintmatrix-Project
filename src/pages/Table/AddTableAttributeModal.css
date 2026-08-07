@@ -5,17 +5,16 @@
 .modal-overlay {
     position: fixed;
 
-    top: 82px;              /* Navbar height */
+    top: 82px;
     left: 0;
     right: 0;
     bottom: 0;
 
     display: flex;
-    justify-content: center;   /* Horizontal center */
-    align-items: flex-start;   /* Don't center vertically */
+    justify-content: center;
+    align-items: flex-start;
 
-    padding-top: 40px;         /* Move popup down */
-    
+    padding-top: 40px;
 
     background: rgba(15, 23, 42, 0.35);
     backdrop-filter: blur(8px);
@@ -23,6 +22,7 @@
 
     z-index: 9999;
 }
+
 
 /* ==========================================
    Modal
@@ -43,12 +43,13 @@
 
     overflow: hidden;
 
-    margin: 0 auto;      /* Center horizontally */
+    margin: 0 auto;
 
-    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .25);
 
     animation: popup .3s ease;
 }
+
 
 /* ==========================================
    Header
@@ -58,28 +59,36 @@
     display: flex;
     justify-content: center;
     align-items: center;
+
     position: relative;
+
     padding: 50px 28px 22px;
+
     border-bottom: 1px solid #e5e7eb;
 
     background: #fff;
 }
- .modal-header > div {
-    transform: translateY(15px);
-    text-align: center;
-    width: 100%;
 
+.modal-header > div {
+    transform: translateY(15px);
+
+    text-align: center;
+
+    width: 100%;
 }
 
 .modal-header h2 {
     margin: 0;
+
     font-size: 28px;
     font-weight: 700;
+
     color: #0e1323;
 }
 
 .modal-header p {
     margin-top: 6px;
+
     color: #0e1323;
 }
 
@@ -99,8 +108,8 @@
 
 .close-btn:hover {
     background: #ef4444;
-   
 }
+
 
 /* ==========================================
    Body
@@ -116,6 +125,7 @@
     background: #f8fafc;
 }
 
+
 /* ==========================================
    Card
 ========================================== */
@@ -129,8 +139,9 @@
 
     margin-bottom: 20px;
 
-    box-shadow: 0 4px 12px rgba(0,0,0,.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .05);
 }
+
 
 /* ==========================================
    Section Title
@@ -145,6 +156,7 @@
     color: #08170b;
 }
 
+
 /* ==========================================
    Grid
 ========================================== */
@@ -152,14 +164,24 @@
 .form-grid {
     display: grid;
 
-    grid-template-columns: repeat(2,1fr);
+    grid-template-columns: 1fr 1fr;
 
-    gap: 20px;
+    gap: 30px;
+
+    width: 100%;
+
+    box-sizing: border-box;
 }
+
 
 /* ==========================================
    Form Group
 ========================================== */
+
+.form-group {
+    width: 100%;
+    min-width: 0;
+}
 
 .form-group label {
     display: block;
@@ -173,13 +195,21 @@
     color: red;
 }
 
+
 /* ==========================================
-   Inputs
+   Input Box
 ========================================== */
 
 .input-box {
     position: relative;
+
+    width: 100%;
 }
+
+
+/* ==========================================
+   Input Icon
+========================================== */
 
 .input-icon {
     position: absolute;
@@ -190,18 +220,27 @@
     transform: translateY(-50%);
 
     color: #64748b;
+
+    z-index: 1;
 }
+
+
+/* ==========================================
+   Inputs
+========================================== */
 
 .input-box input {
     width: 100%;
 
     height: 50px;
 
+    box-sizing: border-box;
+
     border: 1px solid #dbe4f0;
 
     border-radius: 12px;
 
-    padding-left: 45px;
+    padding: 0 16px 0 45px;
 
     font-size: 15px;
 
@@ -214,6 +253,7 @@
     border-color: #356bdf;
 }
 
+
 /* ==========================================
    Textarea
 ========================================== */
@@ -224,6 +264,7 @@
 
 .textarea-box .input-icon {
     top: 22px;
+
     transform: none;
 }
 
@@ -231,6 +272,8 @@
     width: 100%;
 
     height: 80px;
+
+    box-sizing: border-box;
 
     border: 1px solid #dbe4f0;
 
@@ -249,28 +292,47 @@
     border-color: #2563eb;
 }
 
+
 /* ==========================================
    Footer
 ========================================== */
 
-.modal-footer{
-    margin-right:20px;
-    margin-bottom:10px;
+.modal-footer {
+    display: flex;
+
+    justify-content: flex-end;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin-right: 20px;
+
+    margin-bottom: 10px;
+
+    margin-top: 10px;
 }
-.modal-footer .btn{
-    width:110px;
-    height:40px;
 
-    padding:0;
+.modal-footer .btn {
+    width: 130px;
 
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    height: 40px;
 
-    border-radius:10px;
-    font-size:15px;
-    font-weight:600;
+    padding: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 10px;
+
+    font-size: 15px;
+
+    font-weight: 600;
 }
+
 
 /* ==========================================
    Bootstrap Button Styling
@@ -285,41 +347,58 @@
 }
 
 
-
 /* ==========================================
    Responsive
 ========================================== */
 
-@media(max-width:768px){
+@media (max-width: 768px) {
 
-.form-grid{
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
 
-grid-template-columns:1fr;
+    .table-attribute-modal {
+        width: 95%;
+    }
 
+    .modal-header h2 {
+        font-size: 22px;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+    }
+}
+/* FIX AMOUNT 1 & AMOUNT 2 ALIGNMENT */
+.table-attribute-modal > .form-grid {
+    margin-left: 30px !important;
+    margin-right: 30px !important;
+
+    width: calc(100% - 60px) !important;
+
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 30px !important;
+
+    padding: 0 !important;
+    box-sizing: border-box !important;
 }
 
-.table-attribute-modal{
-
-width:95%;
-
+.table-attribute-modal > .form-grid .form-group {
+    width: 100% !important;
+    min-width: 0 !important;
 }
 
-.modal-header h2{
-
-font-size:22px;
-
+.table-attribute-modal > .form-grid .input-box {
+    width: 100% !important;
 }
 
-.modal-footer{
-
-flex-direction:column;
-
-}
-
-.btn{
-
-width:100%;
-
-}
-
+.table-attribute-modal > .form-grid .input-box input {
+    width: 100% !important;
+    height: 50px !important;
+    box-sizing: border-box !important;
 }
