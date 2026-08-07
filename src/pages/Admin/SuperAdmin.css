@@ -111,6 +111,7 @@
 .btn-primary {
   padding: 10px 25px;
   border-radius: 8px;
+  font-weight: 600 !important;
 }
 
 .btn-outline-secondary {
@@ -185,3 +186,6 @@
     flex: 1;
   }
 }
+/*.add-super-admin-btn {
+  font-weight: 600 !important;
+}*/
