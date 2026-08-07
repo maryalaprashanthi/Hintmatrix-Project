@@ -4,7 +4,6 @@
     min-height: 100vh;
 }
 
-
 /* Header */
 
 .page-title {
@@ -14,12 +13,10 @@
     color: #1f2937;
 }
 
-
 .breadcrumb-text {
     color: #6b7280;
     font-size: 14px;
 }
-
 
 
 /* Buttons */
@@ -31,7 +28,6 @@
     border-radius: 8px;
     font-weight: 600;
 }
-
 
 .add-btn:hover {
     background: #1d4ed8;
@@ -47,90 +43,107 @@
     font-weight: 600;
 }
 
-
 .upload-btn:hover {
     background: #2563eb;
-    color:white;
+    color: white;
 }
 
 
-
-/* Stats Cards */
+/* =========================
+   Stats Cards
+========================= */
 
 .stats-card {
-    border:none;
-    border-radius:14px;
-    background:white;
-    box-shadow:0 4px 15px rgba(0,0,0,0.06);
-    transition:0.3s;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    background: white;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+    transition: 0.3s;
+    height: 105px;
 }
 
 
 .stats-card:hover {
-    transform:translateY(-4px);
+    transform: translateY(-3px);
 }
 
 
 .stats-card .card-body {
-    padding:22px;
+
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+
 }
 
+
+/* Icon */
 
 .stats-icon {
-    font-size:28px;
-    margin-bottom:12px;
+
+    font-size: 32px;
+    flex-shrink: 0;
+
 }
 
 
-/* Different Icon Colors */
+/* Icon Colors */
 
 .total-icon {
     color:#2563eb;
 }
 
-
 .upcoming-icon {
     color:#f59e0b;
 }
 
-
 .completed-icon {
     color:#16a34a;
 }
-
 
 .cancelled-icon {
     color:#dc2626;
 }
 
 
+/* Text */
 
 .stats-card h3 {
-    font-size:28px;
-    font-weight:700;
-    margin-bottom:5px;
+
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    color:#111827;
+
 }
 
 
 .stats-card p {
-    margin:0;
+
+    margin: 2px 0 0;
     color:#6b7280;
+    font-size:14px;
+
 }
-
-
 
 
 
 /* Filter Section */
 
 .filter-row {
+
     display:flex;
     align-items:center;
+
 }
 
 
 .search-box {
+
     height:45px;
+
 }
 
 
@@ -159,7 +172,6 @@
 }
 
 
-
 .form-select {
 
     height:45px;
@@ -167,7 +179,6 @@
     cursor:pointer;
 
 }
-
 
 
 .filter-row .col-lg-3 {
@@ -179,18 +190,19 @@
 
 
 
-/* Exam Card */
+/* =========================
+   Exam Cards
+========================= */
 
 
 .exam-card {
 
-    border:none;
+    border:1px solid #e5e7eb;
     border-radius:16px;
     background:white;
     box-shadow:0 4px 15px rgba(0,0,0,0.07);
     transition:0.3s;
     height:100%;
-
 }
 
 
@@ -217,7 +229,6 @@
 }
 
 
-
 .exam-details {
 
     margin-top:15px;
@@ -233,9 +244,6 @@
 }
 
 
-
-
-
 /* Status */
 
 .status {
@@ -249,14 +257,12 @@
 }
 
 
-
 .status.upcoming {
 
     background:#fef3c7;
     color:#92400e;
 
 }
-
 
 
 .status.completed {
@@ -267,15 +273,12 @@
 }
 
 
-
 .status.cancelled {
 
     background:#fee2e2;
     color:#991b1b;
 
 }
-
-
 
 
 
@@ -296,8 +299,6 @@
     font-weight:600;
 
 }
-
-
 
 
 
@@ -329,24 +330,17 @@
 
 
 
-
-
 /* Responsive */
 
 @media(max-width:768px){
 
-
     .exam-page {
-
         padding:15px;
-
     }
 
 
     .page-title {
-
         font-size:22px;
-
     }
 
 
@@ -357,29 +351,19 @@
 
     }
 
-
     .upload-btn,
     .add-btn {
-
         width:100%;
         margin-bottom:10px;
 
     }
-
-
     .filter-row {
-
         gap:15px;
 
     }
-
-
     .filter-row .col-lg-3,
     .filter-row .col-lg-6 {
-
         width:100%;
 
     }
-
-
 }

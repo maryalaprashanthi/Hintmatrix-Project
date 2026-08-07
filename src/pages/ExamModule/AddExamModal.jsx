@@ -13,7 +13,9 @@ const CheckboxOption = (props) => {
     <components.Option {...props}>
       <input type="checkbox" checked={props.isSelected} readOnly />
 
-      <span className="ms-2">{props.label}</span>
+      <span className="ms-2" style={{ color: "#212529" }}>
+  {props.label}
+</span>
     </components.Option>
   );
 };
@@ -342,7 +344,7 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
                   <label>Start Date</label>
 
                   <div className="input-box">
-                    <FaCalendarAlt className="input-icon" />
+                    
 
                     <input
                       type="date"
@@ -356,7 +358,7 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
                   <label>End Date</label>
 
                   <div className="input-box">
-                    <FaCalendarAlt className="input-icon" />
+                    
 
                     <input
                       type="date"
