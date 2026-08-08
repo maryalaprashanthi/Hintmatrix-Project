@@ -2,10 +2,10 @@ import { AgGridReact } from "ag-grid-react";
 import {
     AllCommunityModule,
     ValidationModule,
-    ModuleRegistry
+    ModuleRegistry,
+    themeQuartz,
 } from "ag-grid-community";
 
-import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 
 ModuleRegistry.registerModules([
@@ -19,37 +19,50 @@ function DataGrid({
     height = 500,
     pageSize = 10,
     loading = false,
+    defaultColDef,
+    theme = themeQuartz,
+    rowHeight = 50,
+    popupParent,
+    paginationPageSizeSelector = false,
+    className,
+    containerStyle = {},
+    noRowsMessage = "No rows to show",
+    ...rest
 }) {
-
-    const defaultColDef = {
+    const mergedDefaultColDef = {
         sortable: true,
         filter: true,
         resizable: true,
+        ...defaultColDef,
     };
 
-//     const defaultColDef = {
-//     sortable: true,
-//     filter: true,
-//     resizable: true
-//   };
+    const resolvedHeight =
+        typeof height === "number" ? `${height}px` : height;
+    const resolvedPopupParent =
+        popupParent ?? (typeof document !== "undefined" ? document.body : undefined);
 
     return (
         <div
-            className="ag-theme-quartz"
+            className={className ? `ag-theme-quartz ${className}` : "ag-theme-quartz"}
             style={{
-                height,
+                height: resolvedHeight,
                 width: "100%",
+                ...containerStyle,
             }}
         >
             <AgGridReact
                 rowData={rowData}
                 columnDefs={columnDefs}
-                defaultColDef={defaultColDef}
+                defaultColDef={mergedDefaultColDef}
                 pagination
                 paginationPageSize={pageSize}
+                paginationPageSizeSelector={paginationPageSizeSelector}
                 loading={loading}
-                rowHeight={50}
-                popupParent={document.body}
+                rowHeight={rowHeight}
+                popupParent={resolvedPopupParent}
+                theme={theme}
+                overlayNoRowsTemplate={noRowsMessage}
+                {...rest}
             />
         </div>
     );

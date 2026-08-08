@@ -4,6 +4,7 @@ import "./TableAttributes.css";
 import TableAttributeService from "../../services/TableAttributeService";
 import DataGrid from "../../components/DataGrid";
 import SuccessModal from "../../components/Common/SuccessModal";
+import ActionIconButton from "../../components/Common/ActionIconButton";
 
 function TableAttributes() {
   const [showModal, setShowModal] = useState(false);
@@ -65,12 +66,12 @@ function TableAttributes() {
     }
 
     try {
-      const response = await TableHeaderService.uploadExcel(file);
+      const response = await TableAttributeService.uploadExcel(file);
 
       setSuccessMessage(response.data);
       setShowSuccess(true);
 
-      loadTableHeaders();
+      loadTableAttributes();
     } catch (error) {
       console.error("Upload Error:", error);
 
@@ -104,7 +105,8 @@ function TableAttributes() {
               gap: "8px",
             }}
           >
-            <button
+            <ActionIconButton
+              type="edit"
               onClick={() => {
                 let editedData = {
                   name: params.data.name,
@@ -117,43 +119,14 @@ function TableAttributes() {
                 setId(params.data.id);
                 setShowModal(true);
               }}
-              style={{
-                background: "#2563eb",
-                color: "white",
-                border: "none",
-                padding: "2px 10px",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "12px",
-                height: "26px",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              Edit
-            </button>
+              title="Edit table attribute"
+            />
 
-            <button
+            <ActionIconButton
+              type="delete"
               onClick={() => handleDelete(params.data.id)}
-              style={{
-                background: "#dc2626",
-                color: "white",
-                border: "none",
-                padding: "2px 10px",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "12px",
-                height: "26px",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              Delete
-            </button>
+              title="Delete table attribute"
+            />
           </div>
         );
       },
