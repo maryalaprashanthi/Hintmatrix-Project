@@ -48,6 +48,19 @@ const useQuestionStore = create((set) => ({
   // setTotalCredit: (amt) => set({ totalCredit: amt }),
   // setTotalQ: (amt) => set({ totalQ: amt }),
   // setSolvedQ: (amt) => set({ solvedQ: amt }),
+  setError: (id) =>
+    set((state) => {
+      const nextQuestions = state.questions.map((item) => {
+        if (item.id === id) {
+          return { ...item, status: "wrong" };
+        } else {
+          return item;
+        }
+      });
+      return {
+        questions: nextQuestions,
+      };
+    }),
   moveQuestion: (sourceId, targetId) =>
     set((state) => {
       const question = state.questions.find((item) => item.id == sourceId);

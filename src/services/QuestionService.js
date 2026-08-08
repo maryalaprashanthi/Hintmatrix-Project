@@ -15,6 +15,10 @@ class QuestionService {
     });
   }
 
+  getQuestionAnswers(id) {
+    return axios.get(`${BASE_URL}/answers/${id}`, { withCredentials: true });
+  }
+
   getQuestionById(questionId) {
     return axios.get(`${BASE_URL}/${questionId}`, {
       withCredentials: true,

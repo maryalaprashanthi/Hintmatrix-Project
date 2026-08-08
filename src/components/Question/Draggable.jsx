@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useDraggable } from "@dnd-kit/react";
 import "./Draggable.css";
+import { VscError } from "react-icons/vsc";
 
 const CheckIcon = () => (
   <svg
@@ -42,16 +43,22 @@ const PendingIcon = () => (
 
 export default function Draggable({ id, children, type, status = "pending" }) {
   const solved = status === "solved";
-
+  console.log("My status is ", status);
   const { ref } = useDraggable({
     id,
     type,
     disabled: solved,
   });
-
+  {
+    /* <CheckIcon /> */
+    // <PendingIcon />
+  }
   return (
-    <div className={`drag-item ${solved ? "drag-item-solved" : ""}`}>
+    <div
+      className={`drag-item ${status == "solved" ? "drag-item-solved" : status == "wrong" ? "drag-item-wrong" : ""}`}
+    >
       <button
+        //to disable dragging after solved
         ref={solved ? undefined : ref}
         type="button"
         className="drag-btn"
@@ -60,7 +67,13 @@ export default function Draggable({ id, children, type, status = "pending" }) {
       >
         <span className="drag-btn-content">{children}</span>
         <span className="drag-status-icon">
-          {solved ? <CheckIcon /> : <PendingIcon />}
+          {solved ? (
+            <CheckIcon />
+          ) : status === "wrong" ? (
+            <VscError id="icons-styling-wrong" />
+          ) : (
+            <PendingIcon />
+          )}
         </span>
       </button>
     </div>
