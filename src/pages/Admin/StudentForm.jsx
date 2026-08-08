@@ -1,3 +1,5 @@
+import { Typeahead } from "react-bootstrap-typeahead";
+import "react-bootstrap-typeahead/css/Typeahead.css";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import SuccessModal from "../../components/Common/SuccessModal";
@@ -107,7 +109,7 @@ function StudentForm({
     };
 
     onSave(studentData);
-    setShowtSuccess(true);
+    setShowSuccess(true);
   };
 
   return createPortal(
@@ -181,18 +183,19 @@ function StudentForm({
                 <div className="input-box">
                   <FaUniversity className="input-icon" />
 
-                  <select
-                    value={collegeId}
-                    onChange={(e) => setCollegeId(e.target.value)}
-                  >
-                    <option value="">Select College</option>
-
-                    {colleges.map((college) => (
-                      <option key={college.collegeId} value={college.collegeId}>
-                        {college.collegeName}
-                      </option>
-                    ))}
-                  </select>
+                  <Typeahead
+                    id="college"
+                    labelKey="collegeName"
+                    options={colleges}
+                    placeholder="Select College"
+                    selected={colleges.filter(
+                      (college) =>
+                        String(college.collegeId) === String(collegeId),
+                    )}
+                    onChange={(selected) =>
+                      setCollegeId(selected.length ? selected[0].collegeId : "")
+                    }
+                  />
                 </div>
               </div>
 
@@ -205,18 +208,18 @@ function StudentForm({
                 <div className="input-box">
                   <FaCodeBranch className="input-icon" />
 
-                  <select
-                    value={branchId}
-                    onChange={(e) => setBranchId(e.target.value)}
-                  >
-                    <option value="">Select Branch</option>
-
-                    {branches.map((branch) => (
-                      <option key={branch.branchId} value={branch.branchId}>
-                        {branch.branchName}
-                      </option>
-                    ))}
-                  </select>
+                  <Typeahead
+                    id="branch"
+                    labelKey="branchName"
+                    options={branches}
+                    placeholder="Select Branch"
+                    selected={branches.filter(
+                      (branch) => String(branch.branchId) === String(branchId),
+                    )}
+                    onChange={(selected) =>
+                      setBranchId(selected.length ? selected[0].branchId : "")
+                    }
+                  />
                 </div>
               </div>
               {/* Section */}
@@ -228,18 +231,19 @@ function StudentForm({
                 <div className="input-box">
                   <FaUsers className="input-icon" />
 
-                  <select
-                    value={sectionId}
-                    onChange={(e) => setSectionId(e.target.value)}
-                  >
-                    <option value="">Select Section</option>
-
-                    {sections.map((section) => (
-                      <option key={section.sectionId} value={section.sectionId}>
-                        {section.sectionName}
-                      </option>
-                    ))}
-                  </select>
+                  <Typeahead
+                    id="section"
+                    labelKey="sectionName"
+                    options={sections}
+                    placeholder="Select Section"
+                    selected={sections.filter(
+                      (section) =>
+                        String(section.sectionId) === String(sectionId),
+                    )}
+                    onChange={(selected) =>
+                      setSectionId(selected.length ? selected[0].sectionId : "")
+                    }
+                  />
                 </div>
               </div>
 
@@ -367,18 +371,18 @@ function StudentForm({
           </button>
         </div>
       </div>
-     <SuccessModal
-      show={showSuccess}
-      message={
-      selectedStudentData
-      ? "Student updated successfully!"
-      : "Student saved successfully!"
-    }
-      onClose={() => {
-      setShowSuccess(false);
-      onClose();
-     }}
-     />  
+      <SuccessModal
+        show={showSuccess}
+        message={
+          selectedStudentData
+            ? "Student updated successfully!"
+            : "Student saved successfully!"
+        }
+        onClose={() => {
+          setShowSuccess(false);
+          onClose();
+        }}
+      />
     </div>,
     document.body,
   );
