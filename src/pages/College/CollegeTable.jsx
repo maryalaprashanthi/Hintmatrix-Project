@@ -1,18 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { AgGridReact } from "ag-grid-react";
-// 🌟 FIXED ERROR #239: Import ValidationModule alongside AllCommunityModule
-import {
-  AllCommunityModule,
-  ValidationModule,
-  ModuleRegistry,
-} from "ag-grid-community";
 import CollegeService from "../../services/CollegeService";
-
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-quartz.css";
-
-// 🌟 FIXED ERROR #239: Explicitly register both community modules here
-ModuleRegistry.registerModules([AllCommunityModule, ValidationModule]);
+import DataGrid from "../../components/DataGrid";
+import ActionIconButton from "../../components/Common/ActionIconButton";
 
 function CollegeTable({ onEdit, refresh }) {
   const [colleges, setColleges] = useState([]);
@@ -89,20 +78,32 @@ function CollegeTable({ onEdit, refresh }) {
       width: 120,
 
       cellRenderer: (params) => {
+        const isActive = Boolean(params.value);
         return (
           <span
             style={{
-              padding: "5px 12px",
-              borderRadius: "15px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "4px 10px",
+              borderRadius: "999px",
               fontSize: "12px",
-              fontWeight: "bold",
-
-              background: params.value ? "#dcfce7" : "#fee2e2",
-
-              color: params.value ? "#166534" : "#991b1b",
+              fontWeight: "600",
+              lineHeight: 1,
+              background: isActive ? "#dcfce7" : "#fef2f2",
+              color: isActive ? "#166534" : "#b91c1c",
             }}
           >
-            {params.value ? "Active" : "Inactive"}
+            <span
+              style={{
+                width: "7px",
+                height: "7px",
+                borderRadius: "50%",
+                background: isActive ? "#16a34a" : "#ef4444",
+                display: "inline-block",
+              }}
+            />
+            {isActive ? "Active" : "Inactive"}
           </span>
         );
       },
@@ -111,7 +112,6 @@ function CollegeTable({ onEdit, refresh }) {
     {
       headerName: "Action",
       width: 180,
-      suppressMenu: true,
       sortable: false,
       cellRenderer: (params) => {
         if (!params.data) return null;
@@ -124,44 +124,16 @@ function CollegeTable({ onEdit, refresh }) {
               gap: "8px",
             }}
           >
-            <button
+            <ActionIconButton
+              type="edit"
               onClick={() => handleEdit(params.data)}
-              style={{
-                background: "#2563eb",
-                color: "white",
-                border: "none",
-                padding: "2px 10px",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "12px",
-                height: "26px",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              Edit
-            </button>
-            <button
+              title="Edit college"
+            />
+            <ActionIconButton
+              type="delete"
               onClick={() => handleDelete(params.data.collegeId)}
-              style={{
-                background: "#dc2626",
-                color: "white",
-                border: "none",
-                padding: "2px 10px",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "12px",
-                height: "26px",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              Delete
-            </button>
+              title="Delete college"
+            />
           </div>
         );
       },
@@ -215,21 +187,12 @@ function CollegeTable({ onEdit, refresh }) {
         }
       `}</style>
 
-      <div
-        className="ag-theme-quartz"
-        style={{ height: "450px", width: "100%" }}
-      >
-        <AgGridReact
-          rowData={colleges}
-          columnDefs={columnDefs}
-          defaultColDef={defaultColDef}
-          pagination={true}
-          paginationPageSize={10}
-          paginationPageSizeSelector={false}
-          rowHeight={50}
-          popupParent={document.body}
-        />
-      </div>
+      <DataGrid
+        rowData={colleges}
+        columnDefs={columnDefs}
+        height="450px"
+        pageSize={10}
+      />
     </div>
   );
 }
