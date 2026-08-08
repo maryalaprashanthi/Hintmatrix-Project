@@ -26,11 +26,19 @@ const QuestionTable = () => {
   const creditBalances = questions.filter((q) => q.type === "credit");
 
   const debitTotal = debitBalances.reduce(
-    (sum, q) => sum + (q.status == "pending" ? Number(q.amount || 0) : 0),
+    (sum, q) =>
+      sum +
+      (q.status == "pending" || q.status == "wrong"
+        ? Number(q.amount || 0)
+        : 0),
     0,
   );
   const creditTotal = creditBalances.reduce(
-    (sum, q) => sum + (q.status == "pending" ? Number(q.amount || 0) : 0),
+    (sum, q) =>
+      sum +
+      (q.status == "pending" || q.status == "wrong"
+        ? Number(q.amount || 0)
+        : 0),
     0,
   );
 

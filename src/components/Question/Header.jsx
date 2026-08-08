@@ -1,7 +1,6 @@
-import { Navbar, Container, Button } from "react-bootstrap";
+import { Container, Button } from "react-bootstrap";
 import useQuestionStore from "./questionStore";
 import {
-  FaBars,
   FaRedo,
   FaSave,
   FaPaperPlane,
@@ -10,7 +9,6 @@ import {
 
 function Header() {
   const { question } = useQuestionStore();
-  console.log("Header Question:", question);
   return (
     <>
       <Container fluid className="py-3">
