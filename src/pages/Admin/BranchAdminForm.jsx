@@ -1,3 +1,5 @@
+import { Typeahead } from "react-bootstrap-typeahead";
+import "react-bootstrap-typeahead/css/Typeahead.css";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import CollegeService from "../../services/CollegeService";
@@ -208,48 +210,47 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
               {/* College */}
               <div className="form-group">
                 <label>
-                  College Id <span>*</span>
+                  College Name <span>*</span>
                 </label>
 
                 <div className="input-box">
                   <FaUniversity className="input-icon" />
-
-                  <select
-                    value={collegeId}
-                    onChange={(e) => setCollegeId(e.target.value)}
-                  >
-                    <option value="">Select College Id</option>
-
-                    {collegesList.map((college) => (
-                      <option key={college.collegeId} value={college.collegeId}>
-                        {college.instituteName}
-                      </option>
-                    ))}
-                  </select>
+                  <Typeahead
+                    id="collegeId"
+                    labelKey="collegeId"
+                    options={collegesList}
+                    placeholder="Select College Name"
+                    selected={collegesList.filter(
+                      (college) =>
+                        String(college.collegeId) === String(collegeId),
+                    )}
+                    onChange={(selected) =>
+                      setCollegeId(selected.length ? selected[0].collegeId : "")
+                    }
+                  />
                 </div>
               </div>
 
               {/* Branch */}
               <div className="form-group">
                 <label>
-                  Branch Id <span>*</span>
+                  Branch Name <span>*</span>
                 </label>
 
                 <div className="input-box">
                   <FaCodeBranch className="input-icon" />
-
-                  <select
-                    value={branchId}
-                    onChange={(e) => setBranchId(e.target.value)}
-                  >
-                    <option value="">Select Branch Id</option>
-
-                    {branchesList.map((branch) => (
-                      <option key={branch.branchId} value={branch.branchId}>
-                        {branch.branchName}
-                      </option>
-                    ))}
-                  </select>
+                  <Typeahead
+                    id="branchId"
+                    labelKey="branchId"
+                    options={branchesList}
+                    placeholder="Select Branch Name"
+                    selected={branchesList.filter(
+                      (branch) => String(branch.branchId) === String(branchId),
+                    )}
+                    onChange={(selected) =>
+                      setBranchId(selected.length ? selected[0].branchId : "")
+                    }
+                  />
                 </div>
               </div>
 

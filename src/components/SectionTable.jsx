@@ -1,13 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { AgGridReact } from "ag-grid-react";
-import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import SectionService from "../services/SectionService";
-
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-quartz.css";
-
-// Register AG Grid Modules
-ModuleRegistry.registerModules([AllCommunityModule]);
+import DataGrid from "./DataGrid";
+import ActionIconButton from "./Common/ActionIconButton";
 
 function SectionTable({ refresh, onEdit }) {
   const [sections, setSections] = useState([]);
@@ -80,34 +74,36 @@ function SectionTable({ refresh, onEdit }) {
       field: "activeRow",
       headerName: "Status",
       width: 120,
-      cellRenderer: (params) =>
-        params.value ? (
+      cellRenderer: (params) => {
+        const isActive = Boolean(params.value);
+        return (
           <span
             style={{
-              background: "#dcfce7",
-              color: "#15803d",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
               padding: "4px 10px",
-              borderRadius: "6px",
+              borderRadius: "999px",
               fontSize: "12px",
               fontWeight: "600",
+              lineHeight: 1,
+              background: isActive ? "#dcfce7" : "#fef2f2",
+              color: isActive ? "#166534" : "#b91c1c",
             }}
           >
-            Active
+            <span
+              style={{
+                width: "7px",
+                height: "7px",
+                borderRadius: "50%",
+                background: isActive ? "#16a34a" : "#ef4444",
+                display: "inline-block",
+              }}
+            />
+            {isActive ? "Active" : "Inactive"}
           </span>
-        ) : (
-          <span
-            style={{
-              background: "#fee2e2",
-              color: "#b91c1c",
-              padding: "4px 10px",
-              borderRadius: "6px",
-              fontSize: "12px",
-              fontWeight: "600",
-            }}
-          >
-            Inactive
-          </span>
-        ),
+        );
+      },
     },
     {
       field: "createdAt",
@@ -134,41 +130,17 @@ function SectionTable({ refresh, onEdit }) {
             height: "100%",
           }}
         >
-          <button
-            className="btn btn-primary btn-sm"
+          <ActionIconButton
+            type="edit"
             onClick={() => onEdit(params.data)}
-            style={{
-              padding: "2px 14px", // Overrides global large padding
-              fontSize: "12px",
-              fontWeight: "bold",
-              height: "26px", // Forces consistent layout height
-              borderRadius: "4px",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              border: "none",
-            }}
-          >
-            Edit
-          </button>
+            title="Edit section"
+          />
 
-          <button
-            className="btn btn-danger btn-sm"
+          <ActionIconButton
+            type="delete"
             onClick={() => deleteSection(params.data.sectionId)}
-            style={{
-              padding: "2px 14px", // Overrides global large padding
-              fontSize: "12px",
-              fontWeight: "bold",
-              height: "26px", // Forces consistent layout height
-              borderRadius: "4px",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              border: "none",
-            }}
-          >
-            Delete
-          </button>
+            title="Delete section"
+          />
         </div>
       ),
     },
@@ -176,24 +148,16 @@ function SectionTable({ refresh, onEdit }) {
 
   return (
     <div style={{ marginTop: "10px" }}>
-      <div
-        className="ag-theme-quartz"
-        style={{
-          width: "100%",
-          height: "450px",
-        }}
-      >
-        <AgGridReact
-          rowData={sections}
-          columnDefs={columnDefs}
-          defaultColDef={defaultColDef}
-          pagination={true}
-          paginationPageSize={10}
-          paginationPageSizeSelector={false}
-          rowHeight={50}
-          popupParent={document.body}
-        />
-      </div>
+      <DataGrid
+        rowData={sections}
+        columnDefs={columnDefs}
+        defaultColDef={defaultColDef}
+        height="450px"
+        pageSize={10}
+        paginationPageSizeSelector={false}
+        rowHeight={50}
+        popupParent={document.body}
+      />
     </div>
   );
 }

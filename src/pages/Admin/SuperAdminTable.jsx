@@ -1,17 +1,8 @@
 import React from "react";
-import { AgGridReact } from "ag-grid-react";
-import {
-  AllCommunityModule,
-  ValidationModule,
-  ModuleRegistry,
-  themeQuartz,
-} from "ag-grid-community";
-
+import { themeQuartz } from "ag-grid-community";
 import SuperAdminService from "../../services/UserService";
-
-import "ag-grid-community/styles/ag-grid.css";
-
-ModuleRegistry.registerModules([AllCommunityModule, ValidationModule]);
+import DataGrid from "../../components/DataGrid";
+import ActionIconButton from "../../components/Common/ActionIconButton";
 
 function SuperAdminTable({ data, onEdit, refreshData }) {
   const defaultColDef = {
@@ -82,37 +73,17 @@ function SuperAdminTable({ data, onEdit, refreshData }) {
             height: "100%",
           }}
         >
-          <button
+          <ActionIconButton
+            type="edit"
             onClick={() => onEdit(params.data)}
-            style={{
-              background: "#2563eb",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              padding: "4px 14px",
-              cursor: "pointer",
-              fontSize: "12px",
-              fontWeight: "600",
-            }}
-          >
-            Edit
-          </button>
+            title="Edit super admin"
+          />
 
-          <button
+          <ActionIconButton
+            type="delete"
             onClick={() => handleDelete(params.data.superAdminId)}
-            style={{
-              background: "#dc2626",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              padding: "4px 14px",
-              cursor: "pointer",
-              fontSize: "12px",
-              fontWeight: "600",
-            }}
-          >
-            Delete
-          </button>
+            title="Delete super admin"
+          />
         </div>
       ),
     },
@@ -135,18 +106,16 @@ function SuperAdminTable({ data, onEdit, refreshData }) {
         }}
       />
 
-      <div style={{ height: "500px", width: "100%" }}>
-        <AgGridReact
-          rowData={data}
-          columnDefs={columnDefs}
-          defaultColDef={defaultColDef}
-          theme={themeQuartz}
-          pagination={true}
-          paginationPageSize={10}
-          paginationPageSizeSelector={false}
-          rowHeight={50}
-        />
-      </div>
+      <DataGrid
+        rowData={data}
+        columnDefs={columnDefs}
+        defaultColDef={defaultColDef}
+        theme={themeQuartz}
+        height="500px"
+        pageSize={10}
+        paginationPageSizeSelector={false}
+        rowHeight={50}
+      />
     </div>
   );
 }

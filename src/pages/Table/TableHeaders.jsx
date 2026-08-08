@@ -4,6 +4,7 @@ import AddTableHeaderModal from "./AddTableHeaderModal";
 import TableHeaderService from "../../services/TableHeaderService";
 import DataGrid from "../../components/DataGrid";
 import SuccessModal from "../../components/Common/SuccessModal";
+import ActionIconButton from "../../components/Common/ActionIconButton";
 
 function TableHeaders() {
   const [showModal, setShowModal] = useState(false);
@@ -121,49 +122,21 @@ function TableHeaders() {
               gap: "8px",
             }}
           >
-            <button
+            <ActionIconButton
+              type="edit"
               onClick={() => {
                 setId(params.data.id);
                 setName(params.data.name);
                 setShowModal(true);
               }}
-              style={{
-                background: "#2563eb",
-                color: "white",
-                border: "none",
-                padding: "2px 10px",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "12px",
-                height: "26px",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              Edit
-            </button>
+              title="Edit table header"
+            />
 
-            <button
+            <ActionIconButton
+              type="delete"
               onClick={() => handleDelete(params.data.id)}
-              style={{
-                background: "#dc2626",
-                color: "white",
-                border: "none",
-                padding: "2px 10px",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "12px",
-                height: "26px",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              Delete
-            </button>
+              title="Delete table header"
+            />
           </div>
         );
       },

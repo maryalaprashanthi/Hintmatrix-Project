@@ -157,7 +157,7 @@ function AddBranchModal({ show, onClose, onSave, selectedBranchData }) {
                     onChange={(selectedOption) =>
                       setCollegeId(selectedOption ? selectedOption.value : "")
                     }
-                    placeholder="Search College..."
+                    placeholder="Search College"
                     isSearchable={true}
                     isClearable={true}
                   />
@@ -172,13 +172,16 @@ function AddBranchModal({ show, onClose, onSave, selectedBranchData }) {
 
                 <div className="input-box">
                   <FaCodeBranch className="input-icon" />
-
-                  <input
-                    type="text"
-                    placeholder="Enter Branch Name"
-                    value={branchName}
-                    onChange={(e) => setBranchName(e.target.value)}
+                   <input
+                     type="text"
+                     placeholder="Enter Branch Name"
+                     value={branchName}
+                     onChange={(e) => {
+                     const value = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                     setBranchName(value);
+                    }}
                   />
+                  
                 </div>
               </div>
 
