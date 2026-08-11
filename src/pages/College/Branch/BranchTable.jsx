@@ -1,20 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { AgGridReact } from "ag-grid-react";
-// Import ValidationModule alongside AllCommunityModule
-import {
-  AllCommunityModule,
-  ValidationModule,
-  ModuleRegistry,
-} from "ag-grid-community";
-// Import the official themeQuartz token object from the library
 import { themeQuartz } from "ag-grid-community";
 import BranchService from "../../../services/BranchService"; // Exit pages/College/Branch hierarchy
 import CollegeService from "../../../services/CollegeService";
-
-import "ag-grid-community/styles/ag-grid.css";
-
-// Explicitly register both community modules here
-ModuleRegistry.registerModules([AllCommunityModule, ValidationModule]);
+import DataGrid from "../../../components/DataGrid";
+import ActionIconButton from "../../../components/Common/ActionIconButton";
 
 function BranchTable({ onEdit, refresh }) {
   const [branches, setBranches] = useState([]);
@@ -120,18 +109,32 @@ function BranchTable({ onEdit, refresh }) {
       cellRenderer: (params) => {
         if (!params.data) return null;
 
+        const isActive = Boolean(params.value);
         return (
           <span
             style={{
-              padding: "5px 12px",
-              borderRadius: "15px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "4px 10px",
+              borderRadius: "999px",
               fontSize: "12px",
               fontWeight: "600",
-              background: params.value ? "#dcfce7" : "#fee2e2",
-              color: params.value ? "#16a34a" : "#dc2626",
+              lineHeight: 1,
+              background: isActive ? "#dcfce7" : "#fef2f2",
+              color: isActive ? "#166534" : "#b91c1c",
             }}
           >
-            {params.value ? "Active" : "Inactive"}
+            <span
+              style={{
+                width: "7px",
+                height: "7px",
+                borderRadius: "50%",
+                background: isActive ? "#16a34a" : "#ef4444",
+                display: "inline-block",
+              }}
+            />
+            {isActive ? "Active" : "Inactive"}
           </span>
         );
       },
@@ -152,44 +155,16 @@ function BranchTable({ onEdit, refresh }) {
               gap: "8px",
             }}
           >
-            <button
+            <ActionIconButton
+              type="edit"
               onClick={() => handleEdit(params.data)}
-              style={{
-                background: "#2563eb",
-                color: "white",
-                border: "none",
-                padding: "2px 14px",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "12px",
-                height: "26px",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              Edit
-            </button>
-            <button
+              title="Edit branch"
+            />
+            <ActionIconButton
+              type="delete"
               onClick={() => handleDelete(params.data.branchId)}
-              style={{
-                background: "#dc2626",
-                color: "white",
-                border: "none",
-                padding: "2px 14px",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "12px",
-                height: "26px",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              Delete
-            </button>
+              title="Delete branch"
+            />
           </div>
         );
       },
@@ -215,20 +190,17 @@ function BranchTable({ onEdit, refresh }) {
         }}
       />
 
-      {/* Passing theme={themeQuartz} configuration object directly to resolve Error #240 layout warnings */}
-      <div style={{ height: "450px", width: "100%" }}>
-        <AgGridReact
-          rowData={branches}
-          columnDefs={columnDefs}
-          defaultColDef={defaultColDef}
-          theme={themeQuartz}
-          pagination={true}
-          paginationPageSize={10}
-          paginationPageSizeSelector={false}
-          rowHeight={50}
-          popupParent={document.body}
-        />
-      </div>
+      <DataGrid
+        rowData={branches}
+        columnDefs={columnDefs}
+        defaultColDef={defaultColDef}
+        theme={themeQuartz}
+        height="450px"
+        pageSize={10}
+        paginationPageSizeSelector={false}
+        rowHeight={50}
+        popupParent={document.body}
+      />
     </div>
   );
 }

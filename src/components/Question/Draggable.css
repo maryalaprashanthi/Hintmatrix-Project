@@ -58,6 +58,17 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
+.drag-item-wrong .drag-btn {
+  background-color: #fff0f0;
+  border-color: #ff9999;
+  opacity: 1;
+}
+
+/* .drag-item-wrong .drag-btn:hover {
+  transform: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+} */
+
 /* Native disabled buttons already block pointer events in most browsers,
    this just makes sure no browser shows a "not-allowed" flicker on drag start */
 .drag-item-solved .drag-btn[disabled] {
@@ -69,4 +80,9 @@
     font-size: 0.85rem;
     padding: 8px 10px;
   }
+}
+
+#icons-styling-wrong {
+  color: red;
+  font-size: 19px;
 }

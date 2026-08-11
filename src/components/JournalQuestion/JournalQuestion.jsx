@@ -1,10 +1,11 @@
+import React from "react";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import { OverlayTrigger, Popover } from "react-bootstrap";
-
 import "./JournalQuestion.css";
 
 const JournalQuestion = ({ answeredData, setAnsweredData }) => {
+  // DO NOT CHANGE THESE AMOUNTS
   const data = [
     {
       id: "1",
@@ -45,19 +46,22 @@ const JournalQuestion = ({ answeredData, setAnsweredData }) => {
 
   const handleAdd = (id, type, table) => {
     const neededData = data.find((obj) => obj.id === id);
+
+    if (!neededData) return;
+
     let text;
+
     if (type === "Debit") {
       text = `${table}..........Dr`;
     } else {
       text = `To ${table}`;
     }
+
     if (!(id in answeredData)) {
-      // Key does NOT exist
       setAnsweredData((prev) => ({
         ...prev,
         [id]: [
           {
-            // add aditional properties table and type to represent uniqueness of transaction
             date: "",
             particulars: text,
             lf: "",
@@ -73,134 +77,193 @@ const JournalQuestion = ({ answeredData, setAnsweredData }) => {
           },
         ],
       }));
-    } else {
-      // Key EXISTS
-      let txnData = answeredData[id];
-      let duplicateEntry = txnData.find((txn) => txn.particulars === text);
-      if (duplicateEntry) {
-        console.log(
-          "Duplicate entry found for id:",
-          id,
-          "and particulars:",
-          text,
-        );
-        return;
-      }
-      let updatedTxnData;
-      if (type === "Debit") {
-        updatedTxnData = [
-          {
-            date: "",
-            particulars: text,
-            lf: "",
-            debit: type === "Debit" ? neededData.amount1 : "",
-            credit: type === "Credit" ? neededData.amount1 : "",
-          },
-          ...txnData,
-        ];
-      } else {
-        updatedTxnData = [
-          ...txnData.slice(0, -1),
-          {
-            date: "",
-            particulars: text,
-            lf: "",
-            debit: type === "Debit" ? neededData.amount1 : "",
-            credit: type === "Credit" ? neededData.amount1 : "",
-          },
-          ...txnData.slice(-1),
-        ];
-      }
-      setAnsweredData((prev) => ({ ...prev, [id]: updatedTxnData }));
+
+      return;
     }
+
+    const txnData = answeredData[id];
+
+    const duplicateEntry = txnData.find(
+      (txn) => txn.particulars === text
+    );
+
+    if (duplicateEntry) {
+      return;
+    }
+
+    let updatedTxnData;
+
+    if (type === "Debit") {
+      updatedTxnData = [
+        {
+          date: "",
+          particulars: text,
+          lf: "",
+          debit: neededData.amount1,
+          credit: "",
+        },
+        ...txnData,
+      ];
+    } else {
+      updatedTxnData = [
+        ...txnData.slice(0, -1),
+        {
+          date: "",
+          particulars: text,
+          lf: "",
+          debit: "",
+          credit: neededData.amount1,
+        },
+        ...txnData.slice(-1),
+      ];
+    }
+
+    setAnsweredData((prev) => ({
+      ...prev,
+      [id]: updatedTxnData,
+    }));
   };
 
   return (
-    <div className="container py-4">
-      <div className="card shadow-sm border-0">
-        <div className="card-body">
-          <div className="table-responsive">
-            <Table bordered className="align-middle mb-0 journal-table">
-              <thead>
-                <tr>
-                  <th>Transaction</th>
-                  <th className="text-end">Amount (₹)</th>
-                  <th className="text-end">Amount (₹)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.map((item) => (
-                  <OverlayTrigger
-                    key={item.id}
-                    trigger="click"
-                    placement="bottom"
-                    rootClose
-                    container={document.body}
-                    overlay={
-                      <Popover
-                        id={`popover-${item.id}`}
-                        className="journal-popover"
-                      >
-                        <Popover.Header as="h3" className="popover-header">
-                          Transaction of <strong>{item.question}</strong> is ₹
-                          {item.amount1}
-                          {item.amount2 ? `/${item.amount2}` : ""}
-                        </Popover.Header>
-                        <Popover.Body>
-                          {/* className="journal-grid" */}
-                          <div
-                            style={{ width: "400px" }}
-                            className="popover-body"
-                          >
-                            {/* className="grid-container" */}
-                            <div>
-                              {item.tables.map((table, index) => (
-                                // className="item"
-                                <div key={index}>
-                                  {table}
-                                  <Button
-                                    onClick={() =>
-                                      handleAdd(item.id, "Debit", table)
-                                    }
-                                    className="def"
-                                    style={{
-                                      width: "80px",
-                                      margin: "5px",
-                                    }}
-                                  >
-                                    Debit
-                                  </Button>
-                                  <Button
-                                    onClick={() =>
-                                      handleAdd(item.id, "Credit", table)
-                                    }
-                                    className="def"
-                                    style={{
-                                      width: "80px",
-                                      marginRight: "5px",
-                                    }}
-                                  >
-                                    Credit
-                                  </Button>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </Popover.Body>
-                      </Popover>
-                    }
+    <div className="transaction-details-card">
+      {/* LEFT CARD HEADING */}
+      <div className="transaction-details-title">
+        Transaction Details
+      </div>
+
+      {/* TABLE */}
+      <div className="transaction-details-table-wrapper">
+        <Table
+          bordered
+          hover
+          className="journal-table"
+        >
+          <thead>
+            <tr>
+              <th className="transaction-column">
+                Transaction
+              </th>
+
+              <th className="amount-column">
+                Amount (₹)
+              </th>
+
+              <th className="amount-column">
+                Amount (₹)
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {data.map((item) => (
+              <OverlayTrigger
+                key={item.id}
+                trigger="click"
+                placement="bottom"
+                rootClose
+                container={document.body}
+                overlay={
+                  <Popover
+                    id={`popover-${item.id}`}
+                    className="journal-popover"
                   >
-                    <tr key={item.id}>
-                      <td>{item.question}</td>
-                      <td className="text-end">{item.amount1 || "-"}</td>
-                      <td className="text-end">{item.amount2 || "-"}</td>
-                    </tr>
-                  </OverlayTrigger>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-        </div>
+                    {/* POPUP HEADER */}
+                    <Popover.Header
+                      as="div"
+                      className="journal-popover-header"
+                    >
+                      <span className="popover-title">
+                        Transaction of {item.question} is ₹
+                        {item.amount1}
+                        {item.amount2
+                          ? `/${item.amount2}`
+                          : ""}
+                      </span>
+
+                      {/* CLOSE ICON */}
+                      <button
+                        type="button"
+                        className="popover-close"
+                        aria-label="Close"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+
+                          document.body.click();
+                        }}
+                      >
+                        ×
+                      </button>
+                    </Popover.Header>
+
+                    {/* POPUP BODY */}
+                    <Popover.Body className="journal-popover-body">
+                      {item.tables.map((table) => (
+                        <div
+                          className="account-row"
+                          key={table}
+                        >
+                          {/* ACCOUNT */}
+                          <div className="account-name">
+                            {table}
+                          </div>
+
+                          {/* DEBIT */}
+                          <Button
+                            type="button"
+                            className="def transaction-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+
+                              handleAdd(
+                                item.id,
+                                "Debit",
+                                table
+                              );
+                            }}
+                          >
+                            Debit
+                          </Button>
+
+                          {/* CREDIT */}
+                          <Button
+                            type="button"
+                            className="def transaction-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+
+                              handleAdd(
+                                item.id,
+                                "Credit",
+                                table
+                              );
+                            }}
+                          >
+                            Credit
+                          </Button>
+                        </div>
+                      ))}
+                    </Popover.Body>
+                  </Popover>
+                }
+              >
+                <tr>
+                  <td className="transaction-cell">
+                    {item.question}
+                  </td>
+
+                  <td className="amount-cell">
+                    {item.amount1 || "-"}
+                  </td>
+
+                  <td className="amount-cell">
+                    {item.amount2 || "-"}
+                  </td>
+                </tr>
+              </OverlayTrigger>
+            ))}
+          </tbody>
+        </Table>
       </div>
     </div>
   );

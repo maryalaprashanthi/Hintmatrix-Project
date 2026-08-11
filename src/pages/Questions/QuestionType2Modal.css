@@ -27,9 +27,8 @@
 ========================================== */
 
 .table-name-modal {
-  width: 1000px !important;
-  max-width: 95% !important;
-  min-width: 0 !important;
+  width: 850px;
+  max-width: 95%;
 
   background: #fff;
 
@@ -132,7 +131,7 @@
 
   padding: 25px;
 
-  margin-bottom: 8px;
+  margin-bottom: 5px;
 
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
@@ -142,7 +141,7 @@
 ========================================== */
 
 .section-title {
-  margin-bottom: 10px !important;
+  margin-bottom: 22px;
 
   font-size: 20px;
   font-weight: 700;
@@ -191,9 +190,9 @@
 
   left: 15px;
   top: 50%;
-
+  z-index: 2;
   transform: translateY(-50%);
-
+  pointer-events: none;
   color: #64748b;
 }
 
@@ -268,8 +267,16 @@
 ========================================== */
 
 .modal-footer {
-  margin-right: 20px;
-  margin-bottom: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+
+  padding: 18px 25px;
+
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+
+  flex-shrink: 0;
 }
 
 .modal-footer .btn {
@@ -326,7 +333,20 @@
   }
 
   .table-name-modal {
-    width: 95%;
+    width: 850px;
+    max-width: 95%;
+
+    background: #fff;
+    border-radius: 16px;
+
+    display: flex;
+    flex-direction: column;
+
+    max-height: calc(100vh - 140px);
+
+    overflow: hidden;
+
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   }
 
   .modal-header h2 {
@@ -343,70 +363,93 @@
 }
 .question-table {
   width: 100%;
-  overflow-x: hidden;
+  overflow-x: auto;
 }
 
 .question-table table {
   width: 100%;
   table-layout: fixed;
+  border-collapse: collapse;
 }
 
 .question-table th,
 .question-table td {
   padding: 10px;
   vertical-align: middle;
+  background: #fff;
+  font-size: 18px;
+  font-weight: 200;
+  padding: 16px;
+  text-align: left;
 }
 
 .question-table input,
 .question-table select {
   width: 100%;
   height: 40px;
-  box-sizing: border-box;
+}
+/* ==========================================
+   Course / Chapter / Category Select
+========================================== */
+
+.react-select__value-container {
+  padding: 0 10px 0 10px !important;
 }
 
 /* ===========================
    React Select - Branch Style
 =========================== */
 
-.credit-select__control {
-  min-height: 50px !important;
-  height: 50px !important;
+.transaction-select__control {
+  min-height: 40px !important;
+  height: 40px !important;
   border: 1px solid #dbe4f0 !important;
-  border-radius: 12px !important;
+  border-radius: 10px !important;
   box-shadow: none !important;
   background: #fff !important;
 }
-
-.react-select__control:hover {
-  border-color: #dbe4f0 !important;
+.transaction-select__value-container {
+  padding: 0 10px 0 12px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  flex-wrap: nowrap !important;
 }
 
-/* FIX: Remove blue focus color/glow */
-.react-select__control--is-focused {
-  border-color: #dc5e30 !important;
-  box-shadow: none !important;
-}
-
-.react-select__value-container {
-  padding: 0 10px 0 0 !important;
-}
-
-.react-select__placeholder {
+.transaction-select__placeholder {
   margin: 0 !important;
   padding: 0 !important;
   color: #9ca3af !important;
 }
 
-.react-select__indicator-separator {
+.transaction-select__single-value {
+  margin: 0 !important;
+  color: #000 !important;
+}
+
+.transaction-select__control:hover {
+  border-color: #dbe4f0 !important;
+}
+
+/* FIX: Remove blue focus color/glow */
+.transaction-select__control--is-focused {
+  border-color: #4480cf !important;
+  box-shadow: none !important;
+}
+
+.transaction-select__placeholder {
+  color: #9ca3af !important;
+}
+
+.transaction-select__indicator-separator {
   display: none;
 }
 
-.react-select__dropdown-indicator {
+.transaction-select__dropdown-indicator {
   color: #94a3b8 !important;
   padding-right: 12px;
 }
 
-.react-select__menu {
+.transaction-select__menu {
   border-radius: 12px;
   overflow: hidden;
 }
@@ -425,184 +468,64 @@
   pointer-events: none;
 }
 /* Make dropdown background white */
-.react-select__menu {
+.transaction-select__menu {
   background: white !important;
 }
 
 /* Selected option */
-.react-select__option--is-selected {
+.transaction-select__option--is-selected {
   background: white !important;
   color: #000 !important;
 }
 /* Active (when clicking) */
-.react-select__option:active {
+.transaction-select__option:active {
   background: #4a88ca !important;
 }
-.react-select__option:hover {
-  background-color: rgb(137, 184, 237) !important;
+.transaction-select__option:hover {
+  background-color: rgb(66, 142, 228) !important;
   color: white !important;
 }
-.react-select__option--is-focused {
+.transaction-select__option--is-focused {
   background-color: #ffffff !important;
   color: #000000 !important;
 }
-/* =========================================================
-   FINAL FIX - QUESTION ATTRIBUTES TABLE
-   ========================================================= */
+.question-table th:nth-child(1),
+.question-table td:nth-child(1) {
+  width: 35%;
+}
 
-.question-table {
+.question-table th:nth-child(2),
+.question-table td:nth-child(2),
+.question-table th:nth-child(3),
+.question-table td:nth-child(3) {
+  width: 15% !important;
+  min-width: 15% !important;
+  max-width: 15% !important;
+}
+
+.question-table td:nth-child(2) .question-attribute-cell,
+.question-table td:nth-child(3) .question-attribute-cell {
   width: 100% !important;
-  overflow-x: hidden !important;
-  margin-top: 5px !important;
-  margin-bottom: 5px !important;
 }
-
-.question-table table {
-  width: 100% !important;
-  table-layout: fixed !important;
-  border-collapse: collapse !important;
-}
-
-/* -----------------------------------------
-   COLUMN WIDTHS
-   Debit Balance = Credit Balance
-   Debit Amount  = Credit Amount
------------------------------------------ */
-
-.question-table table th:nth-child(1),
-.question-table table td:nth-child(1) {
-  width: 30% !important;
-}
-
-.question-table table th:nth-child(2),
-.question-table table td:nth-child(2) {
-  width: 14% !important;
-}
-
-.question-table table th:nth-child(3),
-.question-table table td:nth-child(3) {
-  width: 30% !important;
-}
-
-.question-table table th:nth-child(4),
-.question-table table td:nth-child(4) {
-  width: 14% !important;
-}
-
-.question-table table th:nth-child(5),
-.question-table table td:nth-child(5) {
-  width: 12% !important;
-}
-
-/* -----------------------------------------
-   TABLE CELLS
------------------------------------------ */
-
-.question-table th,
-.question-table td {
-  padding: 6px 8px !important;
-  vertical-align: middle !important;
-  box-sizing: border-box !important;
-}
-
-/* -----------------------------------------
-   AMOUNT INPUTS
-   BOTH AMOUNT BOXES EXACTLY SAME SIZE
------------------------------------------ */
 
 .question-table td:nth-child(2) input,
-.question-table td:nth-child(4) input,
-.question-table .amount-input {
+.question-table td:nth-child(3) input {
   width: 100% !important;
-  height: 50px !important;
-  min-height: 50px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  max-height: 40px !important;
   box-sizing: border-box !important;
-
-  padding: 0 8px !important;
-
   border: 1px solid #dbe4f0 !important;
-  border-radius: 12px !important;
-
-  font-size: 14px !important;
-  outline: none !important;
-  background: #fff !important;
+  border-radius: 10px !important;
+  padding: 8px 12px !important;
 }
-
-/* -----------------------------------------
-   DEBIT + CREDIT REACT SELECT
-   BOTH EXACTLY SAME SIZE
------------------------------------------ */
-
-/* React Select with react-select prefix */
-.question-table td:nth-child(1) .react-select__control,
-.question-table td:nth-child(3) .react-select__control,
-
-/* React Select with credit-select prefix */
-.question-table td:nth-child(1) .credit-select__control,
-.question-table td:nth-child(3) .credit-select__control {
-  width: 100% !important;
-  min-width: 0 !important;
-  min-height: 50px !important;
-  height: 50px !important;
-  box-sizing: border-box !important;
-
-  border: 1px solid #dbe4f0 !important;
-  border-radius: 12px !important;
-
-  box-shadow: none !important;
-  background: #fff !important;
+.question-attributes-card {
+  margin-top: -5px !important;
 }
-
-/* React Select internal value area */
-.question-table .react-select__value-container,
-.question-table .credit-select__value-container {
-  height: 48px !important;
-  box-sizing: border-box !important;
-}
-
-/* -----------------------------------------
-   MAKE ALL 4 FIELDS FILL THEIR CELL
------------------------------------------ */
-
-.question-table td:nth-child(1) > *,
-.question-table td:nth-child(2) > *,
-.question-table td:nth-child(3) > *,
-.question-table td:nth-child(4) > * {
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-/* -----------------------------------------
-   REACT SELECT FOCUS
------------------------------------------ */
-
-.question-table .react-select__control--is-focused,
-.question-table .credit-select__control--is-focused {
-  border-color: #dbe4f0 !important;
-  box-shadow: none !important;
-}
-
-/* -----------------------------------------
-   DROPDOWN
------------------------------------------ */
-
-.question-table .react-select__menu,
-.question-table .credit-select__menu {
-  background: #fff !important;
-  border-radius: 12px !important;
-  overflow: hidden !important;
-}
-
-/* -----------------------------------------
-   ACTION BUTTON
------------------------------------------ */
-
-.question-table td:nth-child(5) button {
-  width: 100% !important;
-  box-sizing: border-box !important;
-}
-/* Reduce gap between Question Text and Question Attributes */
-.question-attributes-section {
-  margin-top: -60px !important;
+.question-table td:nth-child(2) input,
+.question-table td:nth-child(3) input {
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  line-height: 40px !important;
+  font-family: inherit !important;
 }

@@ -272,7 +272,7 @@ function AddQuestionModal({ onClose, onSave }) {
         </div>
         {/* Body */}
 
-        <div className="modal-body">
+        <div div className="modal-body">
           <div className="form-card">
             <h3 className="section-title">Question Details</h3>
 
@@ -280,7 +280,7 @@ function AddQuestionModal({ onClose, onSave }) {
               {/* Course ID */}
               <div className="form-group">
                 <label>
-                  Course ID <span>*</span>
+                  Course Name <span>*</span>
                 </label>
 
                 <div className="input-box ">
@@ -291,7 +291,7 @@ function AddQuestionModal({ onClose, onSave }) {
                     options={courseOptions}
                     value={courseId}
                     onChange={setCourseId}
-                    placeholder="Select Course Id"
+                    placeholder="Select Course Name"
                     isSearchable={true}
                     menuPortalTarget={document.body}
                     menuPosition="fixed"
@@ -308,7 +308,7 @@ function AddQuestionModal({ onClose, onSave }) {
 
               <div className="form-group">
                 <label>
-                  Chapter ID <span>*</span>
+                  Chapter Name <span>*</span>
                 </label>
 
                 <div className="input-box">
@@ -319,7 +319,7 @@ function AddQuestionModal({ onClose, onSave }) {
                     options={chapterOptions}
                     value={chapterId}
                     onChange={setChapterId}
-                    placeholder="Select Chapter Id"
+                    placeholder="Select Chapter Name"
                     isSearchable={true}
                     menuPortalTarget={document.body}
                     menuPosition="fixed"
@@ -337,7 +337,7 @@ function AddQuestionModal({ onClose, onSave }) {
 
               <div className="form-group">
                 <label>
-                  Category ID <span>*</span>
+                  Category <span>*</span>
                 </label>
 
                 <div className="input-box">
@@ -349,7 +349,7 @@ function AddQuestionModal({ onClose, onSave }) {
                     options={categoryOptions}
                     value={categoryId}
                     onChange={setCategoryId}
-                    placeholder="Select "
+                    placeholder="Select Category"
                     isSearchable={true}
                     menuPortalTarget={document.body}
                     menuPosition="fixed"
@@ -384,12 +384,10 @@ function AddQuestionModal({ onClose, onSave }) {
           </div>
           {/* Question Attributes */}
 
-          <div className="form-card">
-            <h3 className="section-title">Question Attributes</h3>
+          <div className="form-card question-attributes-section">
+            <h3 className="section-title ">Question Attributes</h3>
 
-            <p>Add debit and credit balances for this question.</p>
-
-            <div className="question-table">
+            <div className="question-table ">
               <table className="table table-bordered mt-3">
                 <thead>
                   <tr>
@@ -408,8 +406,8 @@ function AddQuestionModal({ onClose, onSave }) {
 
                       <td>
                         <Select
-                          // className="react-select-container"
-                          // classNamePrefix="react-select"
+                          className="react-select-container"
+                          classNamePrefix="credit-select"
                           options={balanceOptions}
                           value={balanceOptions.find(
                             (option) => option.value == row.debitBalance,
@@ -421,15 +419,23 @@ function AddQuestionModal({ onClose, onSave }) {
                               selected ? selected.value : "",
                             )
                           }
-                          placeholder="Enter"
+                          placeholder="Enter Debit Balance"
                           isSearchable
+                          menuPortalTarget={document.body}
+                          menuPosition="fixed"
+                          styles={{
+                            menuPortal: (base) => ({
+                              ...base,
+                              zIndex: 99999,
+                            }),
+                          }}
                         />
                       </td>
-
                       {/* Debit Amount */}
 
                       <td>
                         <input
+                          className="amount-input"
                           type="number"
                           min="0"
                           placeholder="0"
@@ -447,8 +453,8 @@ function AddQuestionModal({ onClose, onSave }) {
                       {/* Credit Balance */}
                       <td>
                         <Select
-                          // className="react-select-container"
-                          // classNamePrefix="react-select"
+                          className="react-select-container"
+                          classNamePrefix="credit-select"
                           options={balanceOptions}
                           value={balanceOptions.find(
                             (option) => option.value === row.creditBalance,
@@ -460,13 +466,22 @@ function AddQuestionModal({ onClose, onSave }) {
                               selected ? selected.value : "",
                             )
                           }
-                          placeholder="Enter"
+                          placeholder="Enter Credit Balance"
                           isSearchable
+                          menuPortalTarget={document.body}
+                          menuPosition="fixed"
+                          styles={{
+                            menuPortal: (base) => ({
+                              ...base,
+                              zIndex: 99999,
+                            }),
+                          }}
                         />
                       </td>
                       {/* Credit Amount */}
                       <td>
                         <input
+                          className="amount-input"
                           type="number"
                           min="0"
                           placeholder="0"
@@ -501,33 +516,33 @@ function AddQuestionModal({ onClose, onSave }) {
 
             <button
               type="button"
-              className="btn btn-outline-primary mt-3"
+              className="btn btn-outline-primary add-row-btn"
               onClick={handleAddRow}
             >
               <FaPlus className="me-2" />
               Add Row
             </button>
           </div>
-          {/* Footer */}
+        </div>
+        {/* Footer */}
 
-          <div className="modal-footer">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={handleClose}
-            >
-              Cancel
-            </button>
+        <div className="modal-footer">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={handleClose}
+          >
+            Cancel
+          </button>
 
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={handleSave}
-            >
-              <FaSave className="me-2" />
-              Save
-            </button>
-          </div>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleSave}
+          >
+            <FaSave className="me-2" />
+            Save
+          </button>
         </div>
       </div>
     </div>,
