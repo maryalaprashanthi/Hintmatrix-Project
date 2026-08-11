@@ -115,7 +115,7 @@ export default function ExamList() {
 
       {/* Stats Cards */}
 
-      <Row className="g-3 mb-4">
+      <Row className="stats-row mb-4">
         <Col lg={3} md={6}>
           <Card className="stats-card">
             <Card.Body>

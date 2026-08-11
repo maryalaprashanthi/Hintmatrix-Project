@@ -133,11 +133,7 @@ const JournalQuestion = ({ answeredData, setAnsweredData }) => {
 
       {/* TABLE */}
       <div className="transaction-details-table-wrapper">
-        <Table
-          bordered
-          hover
-          className="journal-table"
-        >
+        <Table bordered hover className="journal-table">
           <thead>
             <tr>
               <th className="transaction-column">
@@ -157,16 +153,41 @@ const JournalQuestion = ({ answeredData, setAnsweredData }) => {
           <tbody>
             {data.map((item) => (
               <OverlayTrigger
-                key={item.id}
-                trigger="click"
-                placement="bottom"
-                rootClose
-                container={document.body}
-                overlay={
-                  <Popover
-                    id={`popover-${item.id}`}
-                    className="journal-popover"
-                  >
+  key={item.id}
+  trigger="click"
+  placement="bottom"
+  rootClose
+  container={() => document.body}
+  popperConfig={{
+    strategy: "fixed",
+    modifiers: [
+      {
+        name: "flip",
+        enabled: true,
+        options: {
+          fallbackPlacements: ["top"],
+          boundary: "viewport",
+          rootBoundary: "viewport",
+          padding: 12,
+        },
+      },
+      {
+        name: "preventOverflow",
+        enabled: true,
+        options: {
+          boundary: "viewport",
+          rootBoundary: "viewport",
+          padding: 12,
+          altAxis: true,
+        },
+      },
+    ],
+  }}
+  overlay={
+    <Popover
+      id={`popover-${item.id}`}
+      className="journal-popover"
+    >
                     {/* POPUP HEADER */}
                     <Popover.Header
                       as="div"
