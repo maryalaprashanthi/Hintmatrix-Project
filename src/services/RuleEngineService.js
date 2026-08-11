@@ -22,6 +22,13 @@ const RuleEngineService = {
     return response.data;
   },
 
+  // Get Rule Engine by Attribute Id
+  getRuleEngineByAttributeId: async (attributeId) => {
+    const response = await axios.get(`${BASE_URL}/attribute/${attributeId}`);
+
+    return response.data;
+  },
+
   // Update Rule
   updateRule: async (id, ruleData) => {
     const response = await axios.put(`${BASE_URL}/${id}`, ruleData);

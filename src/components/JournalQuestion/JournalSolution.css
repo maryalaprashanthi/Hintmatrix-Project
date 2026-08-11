@@ -69,3 +69,15 @@
   font-size: 0 !important;
   border-bottom: none !important;
 }
+
+.journal-solution-table tbody tr.answer-correct > td {
+  background-color: #d4edda !important;
+  --bs-table-bg: #d4edda !important;
+  --bs-table-accent-bg: #d4edda !important;
+}
+
+.journal-solution-table tbody tr.answer-wrong > td {
+  background-color: #f8d7da !important;
+  --bs-table-bg: #f8d7da !important;
+  --bs-table-accent-bg: #f8d7da !important;
+}

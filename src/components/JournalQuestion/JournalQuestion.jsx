@@ -1,207 +1,259 @@
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import { OverlayTrigger, Popover } from "react-bootstrap";
-
 import "./JournalQuestion.css";
+import QuestionAnswerService from "../../services/QuestionAnswerService";
 
-const JournalQuestion = ({ answeredData, setAnsweredData }) => {
-  const data = [
-    {
-      id: "1",
-      question: "Ravi takes stock",
-      amount1: "1000",
-      amount2: "1000",
-      tables: ["Ravi A/C", "Suspense A/C", "Demo A/C"],
-    },
-    {
-      id: "2",
-      question: "Charan purchased goods",
-      amount1: "5000",
-      amount2: "",
-      tables: ["Charan A/C", "Suspense A/C"],
-    },
-    {
-      id: "3",
-      question: "Ravi sold goods",
-      amount1: "2000",
-      amount2: "",
-      tables: ["Suspense A/C", "Ravi A/C"],
-    },
-    {
-      id: "4",
-      question: "Charan sold goods",
-      amount1: "3000",
-      amount2: "",
-      tables: ["Suspense A/C", "Charan A/C"],
-    },
-    {
-      id: "5",
-      question: "Ravi paid rent",
-      amount1: "1000",
-      amount2: "",
-      tables: ["Rent A/C", "Ravi A/C"],
-    },
-  ];
+const JournalQuestion = ({
+  data = [],
+  answeredData,
+  setAnsweredData,
+  questionText,
+}) => {
+  const handleAdd = async (item, type, table) => {
+    try {
+      const id = item.questionAttributeId;
 
-  const handleAdd = (id, type, table) => {
-    const neededData = data.find((obj) => obj.id === id);
-    let text;
-    if (type === "Debit") {
-      text = `${table}..........Dr`;
-    } else {
-      text = `To ${table}`;
-    }
-    if (!(id in answeredData)) {
-      // Key does NOT exist
-      setAnsweredData((prev) => ({
-        ...prev,
-        [id]: [
-          {
-            // add aditional properties table and type to represent uniqueness of transaction
-            date: "",
-            particulars: text,
-            lf: "",
-            debit: type === "Debit" ? neededData.amount1 : "",
-            credit: type === "Credit" ? neededData.amount1 : "",
-          },
-          {
-            date: "",
-            particulars: `(Being ${neededData.question})`,
-            lf: "",
-            debit: "",
-            credit: "",
-          },
-        ],
-      }));
-    } else {
-      // Key EXISTS
-      let txnData = answeredData[id];
-      let duplicateEntry = txnData.find((txn) => txn.particulars === text);
-      if (duplicateEntry) {
-        console.log(
-          "Duplicate entry found for id:",
-          id,
-          "and particulars:",
-          text,
-        );
+      console.log("========== JOURNAL SELECTION ==========");
+      console.log("Question Attribute ID:", id);
+      console.log("Attribute:", item.attributeName);
+      console.log("Selected Table:", table);
+      console.log("Selected Type:", type);
+
+      const selectedCondition = type === "Debit" ? table.debit : table.credit;
+
+      console.log("Selected Condition:", selectedCondition);
+
+      const text =
+        type === "Debit" ? `${table.name}..........Dr` : `To ${table.name}`;
+
+      const selectedHeaderId =
+        selectedCondition?.headerId ?? (type === "Debit" ? 1 : 3);
+
+      const selectedArithmetic = selectedCondition?.arithmetic ?? null;
+
+      const existingAnswers = answeredData[id] || [];
+
+      const duplicate = existingAnswers.some(
+        (entry) =>
+          entry.particulars === text &&
+          entry.tableNameId === table.id &&
+          entry.headerId === selectedHeaderId,
+      );
+
+      if (duplicate) {
+        console.log("Duplicate selection ignored.");
         return;
       }
-      let updatedTxnData;
-      if (type === "Debit") {
-        updatedTxnData = [
-          {
-            date: "",
-            particulars: text,
-            lf: "",
-            debit: type === "Debit" ? neededData.amount1 : "",
-            credit: type === "Credit" ? neededData.amount1 : "",
-          },
-          ...txnData,
-        ];
-      } else {
-        updatedTxnData = [
-          ...txnData.slice(0, -1),
-          {
-            date: "",
-            particulars: text,
-            lf: "",
-            debit: type === "Debit" ? neededData.amount1 : "",
-            credit: type === "Credit" ? neededData.amount1 : "",
-          },
-          ...txnData.slice(-1),
-        ];
+
+      const request = {
+        userId: 1,
+        questionId: item.questionId,
+
+        tableNameId: table.id,
+
+        headerId: selectedHeaderId,
+
+        attributeId: item.attributeId,
+
+        arithmetic: selectedArithmetic,
+
+        amount: item.amount,
+
+        description: `User selected ${text}`,
+
+        action: "SELECT",
+
+        userAnswer: text,
+
+        answerBy: "USER",
+
+        hint: null,
+      };
+
+      console.log("ANSWER EVENT REQUEST:", request);
+
+      const result = await QuestionAnswerService.processAnswerEvent(request);
+
+      console.log("ANSWER EVENT RESPONSE:", result);
+
+      const isCorrect = result.valid === true;
+
+      console.log("Answer Valid:", isCorrect);
+
+      const newEntry = {
+        questionAttributeId: item.questionAttributeId,
+
+        date: "",
+        particulars: text,
+        lf: "",
+
+        debit: type === "Debit" ? item.amount : "",
+        credit: type === "Credit" ? item.amount : "",
+
+        valid: isCorrect,
+
+        answerId: result.answerId || null,
+
+        tableNameId: table.id,
+
+        headerId: selectedHeaderId,
+
+        attributeId: item.attributeId,
+
+        arithmetic: selectedArithmetic,
+
+        answerEventId: result.answerEventId,
+      };
+
+      setAnsweredData((prev) => {
+        const existing = prev[id] || [];
+
+        const beingRow = existing.find((entry) =>
+          entry.particulars?.startsWith("(Being"),
+        );
+
+        const answerRows = existing.filter(
+          (entry) => !entry.particulars?.startsWith("(Being"),
+        );
+
+        let updatedRows;
+
+        if (type === "Debit") {
+          updatedRows = [newEntry, ...answerRows];
+        } else {
+          updatedRows = [...answerRows, newEntry];
+        }
+
+        const finalBeingRow = beingRow || {
+          date: "",
+          particulars: `(Being ${item.attributeName})`,
+          lf: "",
+          debit: "",
+          credit: "",
+        };
+
+        return {
+          ...prev,
+          [id]: [...updatedRows, finalBeingRow],
+        };
+      });
+    } catch (error) {
+      console.error("Failed to process answer event:", error);
+
+      if (error.response) {
+        console.error("Backend response:", error.response.data);
       }
-      setAnsweredData((prev) => ({ ...prev, [id]: updatedTxnData }));
     }
   };
 
   return (
-    <div className="container py-4">
-      <div className="card shadow-sm border-0">
-        <div className="card-body">
-          <div className="table-responsive">
-            <Table bordered className="align-middle mb-0 journal-table">
-              <thead>
-                <tr>
-                  <th>Transaction</th>
-                  <th className="text-end">Amount (₹)</th>
-                  <th className="text-end">Amount (₹)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.map((item) => (
-                  <OverlayTrigger
-                    key={item.id}
-                    trigger="click"
-                    placement="bottom"
-                    rootClose
-                    container={document.body}
-                    overlay={
-                      <Popover
-                        id={`popover-${item.id}`}
-                        className="journal-popover"
-                      >
-                        <Popover.Header as="h3" className="popover-header">
-                          Transaction of <strong>{item.question}</strong> is ₹
-                          {item.amount1}
-                          {item.amount2 ? `/${item.amount2}` : ""}
-                        </Popover.Header>
-                        <Popover.Body>
-                          {/* className="journal-grid" */}
-                          <div
-                            style={{ width: "400px" }}
-                            className="popover-body"
-                          >
-                            {/* className="grid-container" */}
-                            <div>
-                              {item.tables.map((table, index) => (
-                                // className="item"
-                                <div key={index}>
-                                  {table}
+    <div>
+      <Table bordered hover>
+        <thead>
+          <tr>
+            <th>Transaction</th>
+            <th>Amount (₹)</th>
+            <th>Amount (₹)</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {data.map((item) => (
+            <tr key={item.questionAttributeId}>
+              <td>
+                <OverlayTrigger
+                  trigger="click"
+                  placement="bottom"
+                  rootClose
+                  container={document.body}
+                  overlay={
+                    <Popover
+                      id={`popover-${item.questionAttributeId}`}
+                      className="journal-popover"
+                    >
+                      <Popover.Header as="h3" className="popover-header">
+                        Transaction
+                      </Popover.Header>
+
+                      <Popover.Body>
+                        <div
+                          style={{ width: "400px" }}
+                          className="popover-body"
+                        >
+                          <div>
+                            <strong>{item.attributeName}</strong>
+                          </div>
+
+                          <div style={{ marginTop: "10px" }}>
+                            Amount: ₹{item.amount || "-"}
+                          </div>
+
+                          <div style={{ marginTop: "10px" }}>
+                            {item.tables?.map((table) => (
+                              <div
+                                key={table.id}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  marginBottom: "10px",
+                                }}
+                              >
+                                <strong>{table.name}</strong>
+
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    gap: "8px",
+                                  }}
+                                >
                                   <Button
                                     onClick={() =>
-                                      handleAdd(item.id, "Debit", table)
+                                      handleAdd(item, "Debit", table)
                                     }
                                     className="def"
                                     style={{
                                       width: "80px",
-                                      margin: "5px",
                                     }}
                                   >
                                     Debit
                                   </Button>
+
                                   <Button
                                     onClick={() =>
-                                      handleAdd(item.id, "Credit", table)
+                                      handleAdd(item, "Credit", table)
                                     }
                                     className="def"
                                     style={{
                                       width: "80px",
-                                      marginRight: "5px",
                                     }}
                                   >
                                     Credit
                                   </Button>
                                 </div>
-                              ))}
-                            </div>
+                              </div>
+                            ))}
                           </div>
-                        </Popover.Body>
-                      </Popover>
-                    }
-                  >
-                    <tr key={item.id}>
-                      <td>{item.question}</td>
-                      <td className="text-end">{item.amount1 || "-"}</td>
-                      <td className="text-end">{item.amount2 || "-"}</td>
-                    </tr>
-                  </OverlayTrigger>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-        </div>
-      </div>
+                        </div>
+                      </Popover.Body>
+                    </Popover>
+                  }
+                >
+                  <span style={{ cursor: "pointer" }}>
+                    {item.attributeName}
+                  </span>
+                </OverlayTrigger>
+              </td>
+
+              <td>{item.amount || "-"}</td>
+
+              <td>{item.amount2 || "-"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
     </div>
   );
 };

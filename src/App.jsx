@@ -231,7 +231,7 @@ function App() {
         <Route path="/certificates" element={<Certificates />} />
         <Route path="/settings" element={<Settings />} />
 
-        <Route path="/journal" element={<JournalPage />}></Route>
+        <Route path="/journal/:questionId" element={<JournalPage />} />
         <Route path="/dropdown" element={<DropdownPage />}></Route>
       </Route>
     </Routes>
