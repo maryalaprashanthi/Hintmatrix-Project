@@ -207,6 +207,11 @@ function AddCourseModal({ show, onClose, onSave, selectedCourseData }) {
                   <Select
                     className="react-select-container"
                     classNamePrefix="react-select"
+                    menuPlacement="bottom"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                    }}
                     options={collegeOptions}
                     value={collegeOptions.find(
                       (item) => String(item.value) === String(collegeId),

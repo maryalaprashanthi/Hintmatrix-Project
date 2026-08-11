@@ -144,6 +144,11 @@ function AddBranchModal({ show, onClose, onSave, selectedBranchData }) {
                   <Select
                     className="react-select-container"
                     classNamePrefix="react-select"
+                    menuPlacement="bottom"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                    }}
                     value={collegesList
                       .map((college) => ({
                         value: college.collegeId,
@@ -197,8 +202,8 @@ function AddBranchModal({ show, onClose, onSave, selectedBranchData }) {
                     placeholder="Enter Phone Number"
                     value={phoneNumber}
                     onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, "");
-                    setPhoneNumber(value);
+                      const value = e.target.value.replace(/\D/g, "");
+                      setPhoneNumber(value);
                     }}
                     maxLength={10}
                   />

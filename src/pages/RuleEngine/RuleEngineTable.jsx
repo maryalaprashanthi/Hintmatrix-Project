@@ -31,16 +31,12 @@ function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
       flex: 1,
       minWidth: 180,
     },
+
     {
-      field: "fieldName",
-      headerName: "Field Name",
+      field: "tableAttributeName",
+      headerName: "Table Attribute Name",
       flex: 1,
-      minWidth: 170,
-    },
-    {
-      field: "fieldType",
-      headerName: "Field Type",
-      width: 140,
+      minWidth: 200,
     },
     {
       field: "relationshipName",
@@ -113,6 +109,10 @@ function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
       },
     },
   ];
+  const formattedRuleEngineList = (ruleEngineList || []).map((item) => ({
+    ...item,
+    tableAttributeName: item.tableAttributeName || item.attributeName || "",
+  }));
 
   return (
     <div style={{ marginTop: "20px" }}>
@@ -156,7 +156,7 @@ function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
         }}
       >
         <AgGridReact
-          rowData={ruleEngineList}
+          rowData={formattedRuleEngineList}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           theme={themeQuartz}
