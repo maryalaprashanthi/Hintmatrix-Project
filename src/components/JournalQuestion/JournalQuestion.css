@@ -1,88 +1,437 @@
-/* ---------- Card & table shell ---------- */
-.container .card {
-  border-radius: 10px;
-  overflow: hidden;
+/* =========================================================
+TRANSACTION DETAILS CARD
+========================================================= */
+
+.transaction-details-card {
+  width: 100%;
+  background: #ffffff;
+
+  border-radius: 12px;
+
+  box-shadow: 0 2px 10px rgba(31, 41, 55, 0.08);
+
+  padding: 18px;
+
+  overflow: visible;
 }
 
-.table-responsive .table {
-  font-size: 0.95rem;
-  margin-bottom: 0;
+/* =========================================================
+TRANSACTION DETAILS HEADING
+========================================================= */
+
+.transaction-details-title {
+  color: #4338ca;
+
+  font-size: 18px;
+
+  font-weight: 700;
+
+  margin: 0 0 14px 4px;
 }
 
-/* ---------- Header row (overrides bootstrap's table-dark) ---------- */
+/* =========================================================
+TABLE WRAPPER
+========================================================= */
+
+.transaction-details-table-wrapper {
+  width: 100%;
+
+  overflow: visible;
+}
+
+/* =========================================================
+TABLE
+========================================================= */
+
+.journal-table {
+  width: 100% !important;
+
+  margin: 0 !important;
+
+  border-collapse: collapse;
+
+  font-size: 15px;
+}
+
+/* =========================================================
+COLUMN WIDTHS
+========================================================= */
+
+.journal-table .transaction-column {
+  width: 50%;
+}
+
+.journal-table .amount-column {
+  width: 25%;
+
+  text-align: center;
+}
+
+/* =========================================================
+HEADER
+========================================================= */
+
 .journal-table thead th {
   background-color: #eef2ff !important;
+
   color: #4338ca !important;
-  border-color: #e0e4f5 !important;
+
+  border: 1px solid #e0e4f5 !important;
+
+  font-size: 16px;
+
   font-weight: 700;
-  padding: 12px 16px;
+
+  padding: 13px 16px !important;
+
+  height: 52px;
+
   vertical-align: middle;
 }
 
-/* ---------- Body rows ---------- */
-.table-responsive .table tbody td {
-  padding: 12px 16px;
-  color: #1f2430;
-  border-color: #f1f2f8;
-  cursor: pointer;
+/* =========================================================
+BODY
+========================================================= */
+
+.journal-table tbody td {
+  background-color: #ffffff !important;
+
+  color: #1f2937 !important;
+
+  border: 1px solid #edf0f7 !important;
+
+  padding: 13px 16px !important;
+
+  height: 58px;
+
+  vertical-align: middle;
 }
 
-/* Neutralize bootstrap's default zebra striping so rows stay white */
-.table-responsive .table.table-striped > tbody > tr:nth-of-type(odd) > * {
-  --bs-table-accent-bg: transparent;
-  background-color: #ffffff;
+/* =========================================================
+REMOVE BOOTSTRAP STRIPING
+========================================================= */
+
+.journal-table.table-striped
+  > tbody
+  > tr:nth-of-type(odd)
+  > * {
+  background-color: #ffffff !important;
+
+  --bs-table-accent-bg: #ffffff !important;
 }
 
-/* Hover state uses a soft lavender tint instead of bootstrap's default grey */
-.table-responsive .table.table-hover > tbody > tr:hover > * {
-  --bs-table-accent-bg: transparent;
-  background-color: #f5f6fd;
-  color: #4338ca;
+/* =========================================================
+HOVER
+========================================================= */
+
+.journal-table.table-hover
+  > tbody
+  > tr:hover
+  > * {
+  background-color: #f7f8ff !important;
+
+  color: #1f2937 !important;
 }
 
-/* ---------- Popover ---------- */
+/* =========================================================
+TRANSACTION TEXT
+========================================================= */
+
+.transaction-cell {
+  text-align: left;
+
+  font-size: 15px;
+
+  font-weight: 500;
+}
+
+/* =========================================================
+AMOUNTS
+========================================================= */
+
+.amount-cell {
+  text-align: center;
+
+  font-size: 15px;
+
+  font-weight: 500;
+}
+
+/* =========================================================
+POPUP
+========================================================= */
+
 .journal-popover {
-  border: 1px solid #e0e4f5;
-  box-shadow: 0 4px 16px rgba(67, 56, 202, 0.12);
-  /* Make popover wider and allow the body to scroll when content overflows */
-  max-width: none !important;
-  width: 420px !important;
-}
+  width: 430px !important;
 
-.journal-popover .popover-header {
-  background-color: #eef2ff !important;
-  color: #4338ca !important;
-  font-weight: 700;
-  border-bottom: 1px solid #e0e4f5;
-}
+  max-width: 430px !important;
 
-.journal-popover .popover-body {
-  color: #1f2430;
-  max-height: 360px;
-  overflow-y: auto;
+  border: 1px solid #dfe3f0 !important;
+
+  border-radius: 10px !important;
+
   overflow: hidden;
+
+  box-shadow:
+    0 8px 24px rgba(67, 56, 202, 0.14) !important;
+
+  z-index: 9999 !important;
 }
 
-/* .journal-popover .popover-body > div > div {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 4px 0;
-  font-weight: 600;
-} */
+/* =========================================================
+POPUP HEADER
+========================================================= */
 
-/* ---------- Debit / Credit buttons inside the popover ---------- */
+.journal-popover-header {
+  position: relative;
+
+  min-height: 52px;
+
+  display: flex;
+
+  align-items: center;
+
+  padding: 12px 48px 12px 18px !important;
+
+  background-color: #eef2ff !important;
+
+  color: #4338ca !important;
+
+  border-bottom: 1px solid #e0e4f5 !important;
+
+  font-size: 16px;
+
+  font-weight: 700;
+}
+
+.popover-title {
+  display: block;
+
+  width: 100%;
+
+  line-height: 1.4;
+}
+
+/* =========================================================
+POPUP CLOSE ICON
+========================================================= */
+
+.popover-close {
+  position: absolute;
+
+  top: 50%;
+
+  right: 10px;
+
+  transform: translateY(-50%);
+
+  width: 30px;
+
+  height: 30px;
+
+  padding: 0;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: transparent;
+
+  color: #333333;
+
+  font-size: 23px;
+
+  font-weight: 400;
+
+  line-height: 30px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  cursor: pointer;
+
+  z-index: 10;
+}
+
+.popover-close:hover {
+  background-color: #f1f1f1;
+
+  color: #dc3545;
+}
+
+/* =========================================================
+POPUP BODY
+========================================================= */
+
+.journal-popover-body {
+  width: 100%;
+
+  padding: 18px 16px !important;
+
+  background: #ffffff;
+}
+
+/* =========================================================
+POPUP ACCOUNT ROW
+========================================================= */
+
+.account-row {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns: 1fr 100px 100px;
+
+  column-gap: 12px;
+
+  align-items: center;
+
+  margin-bottom: 12px;
+}
+
+.account-row:last-child {
+  margin-bottom: 0;
+}
+
+/* =========================================================
+ACCOUNT NAME
+========================================================= */
+
+.account-name {
+  min-width: 0;
+
+  text-align: left;
+
+  white-space: nowrap;
+
+  color: #212529;
+
+  font-size: 15px;
+
+  font-weight: 500;
+}
+
+/* =========================================================
+DEBIT / CREDIT BUTTONS
+========================================================= */
+
+.transaction-btn {
+  width: 100px !important;
+
+  min-width: 100px !important;
+
+  height: 40px !important;
+
+  margin: 0 !important;
+
+  padding: 0 !important;
+
+  display: flex !important;
+
+  align-items: center !important;
+
+  justify-content: center !important;
+
+  border-radius: 6px !important;
+}
+
+/* =========================================================
+BUTTON STYLE
+========================================================= */
+
 .def {
   background-color: #c7d2fe !important;
-  border: 1px solid grey !important;
+
+  border: 1px solid #9ca3af !important;
+
   color: #4338ca !important;
-  font-weight: 600;
-  border-radius: 6px;
+
+  font-size: 15px !important;
+
+  font-weight: 600 !important;
+
+  box-shadow: none !important;
 }
 
-.btn:hover,
-.btn:focus {
+.def:hover {
   background-color: #4338ca !important;
+
   border-color: #4338ca !important;
+
   color: #ffffff !important;
+}
+
+.def:focus,
+.def:active {
+  background-color: #4338ca !important;
+
+  border-color: #4338ca !important;
+
+  color: #ffffff !important;
+
+  box-shadow: none !important;
+}
+
+/* =========================================================
+POPUP ARROW - BOTTOM
+========================================================= */
+
+.journal-popover.bs-popover-bottom > .popover-arrow::before {
+  border-bottom-color: #dfe3f0;
+}
+
+.journal-popover.bs-popover-bottom > .popover-arrow::after {
+  border-bottom-color: #eef2ff;
+}
+
+/* =========================================================
+POPUP ARROW - TOP
+========================================================= */
+
+.journal-popover.bs-popover-top > .popover-arrow::before {
+  border-top-color: #dfe3f0;
+}
+
+.journal-popover.bs-popover-top > .popover-arrow::after {
+  border-top-color: #ffffff;
+}
+
+/* =========================================================
+RESPONSIVE
+========================================================= */
+
+@media (max-width: 700px) {
+  .transaction-details-card {
+    padding: 12px;
+  }
+
+  .transaction-details-title {
+    font-size: 17px;
+  }
+
+  .journal-table thead th,
+  .journal-table tbody td {
+    padding: 10px !important;
+  }
+
+  .journal-popover {
+    width: 380px !important;
+
+    max-width: calc(100vw - 20px) !important;
+  }
+
+  .account-row {
+    grid-template-columns: 1fr 90px 90px;
+
+    column-gap: 8px;
+  }
+
+  .transaction-btn {
+    width: 90px !important;
+
+    min-width: 90px !important;
+  }
 }

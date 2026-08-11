@@ -1,17 +1,8 @@
 import React from "react";
-import { AgGridReact } from "ag-grid-react";
-import {
-  AllCommunityModule,
-  ValidationModule,
-  ModuleRegistry,
-  themeQuartz,
-} from "ag-grid-community";
-
+import { themeQuartz } from "ag-grid-community";
 import BranchAdminService from "../../services/UserService";
-
-import "ag-grid-community/styles/ag-grid.css";
-
-ModuleRegistry.registerModules([AllCommunityModule, ValidationModule]);
+import DataGrid from "../../components/DataGrid";
+import ActionIconButton from "../../components/Common/ActionIconButton";
 
 function BranchAdminTable({ data, onEdit, refreshData }) {
   const defaultColDef = {
@@ -81,51 +72,38 @@ function BranchAdminTable({ data, onEdit, refreshData }) {
     },
     {
       headerName: "Action",
-      width: 190,
+      width: 110,
+      minWidth: 110,
       sortable: false,
       filter: false,
-      cellRenderer: (params) => (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            height: "100%",
-          }}
-        >
-          <button
-            onClick={() => onEdit(params.data)}
-            style={{
-              background: "#2563eb",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              padding: "4px 14px",
-              cursor: "pointer",
-              fontSize: "12px",
-              fontWeight: "600",
-            }}
-          >
-            Edit
-          </button>
+      cellRenderer: (params) => {
+        if (!params.data) return null;
 
-          <button
-            onClick={() => handleDelete(params.data.studentId)}
+        return (
+          <div
             style={{
-              background: "#dc2626",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              padding: "4px 14px",
-              cursor: "pointer",
-              fontSize: "12px",
-              fontWeight: "600",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              height: "100%",
+              width: "100%",
             }}
           >
-            Delete
-          </button>
-        </div>
-      ),
+            <ActionIconButton
+              type="edit"
+              onClick={() => onEdit(params.data)}
+              title="Edit branch admin"
+            />
+
+            <ActionIconButton
+              type="delete"
+              onClick={() => handleDelete(params.data.userId || params.data.studentId)}
+              title="Delete branch admin"
+            />
+          </div>
+        );
+      },
     },
   ];
 
@@ -146,18 +124,16 @@ function BranchAdminTable({ data, onEdit, refreshData }) {
         }}
       />
 
-      <div style={{ height: "500px", width: "100%" }}>
-        <AgGridReact
-          rowData={data}
-          columnDefs={columnDefs}
-          defaultColDef={defaultColDef}
-          theme={themeQuartz}
-          pagination={true}
-          paginationPageSize={10}
-          paginationPageSizeSelector={false}
-          rowHeight={50}
-        />
-      </div>
+      <DataGrid
+        rowData={data}
+        columnDefs={columnDefs}
+        defaultColDef={defaultColDef}
+        theme={themeQuartz}
+        height="500px"
+        pageSize={10}
+        paginationPageSizeSelector={false}
+        rowHeight={50}
+      />
     </div>
   );
 }

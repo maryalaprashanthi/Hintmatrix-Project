@@ -1,3 +1,4 @@
+import React from "react";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import { OverlayTrigger, Popover } from "react-bootstrap";
@@ -145,6 +146,11 @@ const JournalQuestion = ({
         console.error("Backend response:", error.response.data);
       }
     }
+
+    setAnsweredData((prev) => ({
+      ...prev,
+      [id]: updatedTxnData,
+    }));
   };
 
   return (

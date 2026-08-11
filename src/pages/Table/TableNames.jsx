@@ -4,6 +4,7 @@ import AddTableNameModal from "./AddTableNameModal";
 import TableNameService from "../../services/TableNameService";
 import DataGrid from "../../components/DataGrid";
 import SuccessModal from "../../components/Common/SuccessModal";
+import ActionIconButton from "../../components/Common/ActionIconButton";
 
 function TableNames() {
   const [showModal, setShowModal] = useState(false);
@@ -137,43 +138,21 @@ function TableNames() {
               gap: "8px",
             }}
           >
-            <button
+            <ActionIconButton
+              type="edit"
               onClick={() => {
                 setId(params.data.id);
                 setName(params.data.name);
                 setShowModal(true);
               }}
-              style={{
-                background: "#2563eb",
-                color: "white",
-                border: "none",
-                padding: "2px 10px",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "12px",
-                height: "26px",
-              }}
-            >
-              Edit
-            </button>
+              title="Edit table name"
+            />
 
-            <button
+            <ActionIconButton
+              type="delete"
               onClick={() => handleDelete(params.data.id)}
-              style={{
-                background: "#dc2626",
-                color: "white",
-                border: "none",
-                padding: "2px 10px",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "12px",
-                height: "26px",
-              }}
-            >
-              Delete
-            </button>
+              title="Delete table name"
+            />
           </div>
         );
       },

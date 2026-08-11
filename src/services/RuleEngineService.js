@@ -62,6 +62,11 @@ const RuleEngineService = {
     return response.data;
   },
 
+  getAttributeAnswers: async (id) => {
+    const response = await axios.get(`${BASE_URL}/attribute/${id}`);
+    return await response.data;
+  },
+
   // Upload Rules Excel
   uploadRulesExcel: async (file) => {
     const formData = new FormData();

@@ -1,15 +1,8 @@
 import React from "react";
 import { AgGridReact } from "ag-grid-react";
-import {
-  AllCommunityModule,
-  ValidationModule,
-  ModuleRegistry,
-  themeQuartz,
-} from "ag-grid-community";
-
-import "ag-grid-community/styles/ag-grid.css";
-
-ModuleRegistry.registerModules([AllCommunityModule, ValidationModule]);
+import { themeQuartz } from "ag-grid-community";
+import DataGrid from "../../components/DataGrid";
+import ActionIconButton from "../../components/Common/ActionIconButton";
 
 function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
   const defaultColDef = {
@@ -31,16 +24,12 @@ function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
       flex: 1,
       minWidth: 180,
     },
+
     {
-      field: "fieldName",
-      headerName: "Field Name",
+      field: "tableAttributeName",
+      headerName: "Table Attribute Name",
       flex: 1,
-      minWidth: 170,
-    },
-    {
-      field: "fieldType",
-      headerName: "Field Type",
-      width: 140,
+      minWidth: 200,
     },
     {
       field: "relationshipName",
@@ -75,44 +64,26 @@ function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
               height: "100%",
             }}
           >
-            <button
+            <ActionIconButton
+              type="edit"
               onClick={() => onEdit(params.data)}
-              style={{
-                background: "#2563eb",
-                color: "#fff",
-                border: "none",
-                padding: "2px 14px",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "12px",
-                height: "26px",
-              }}
-            >
-              Edit
-            </button>
+              title="Edit rule"
+            />
 
-            <button
+            <ActionIconButton
+              type="delete"
               onClick={() => onDelete(params.data.ruleEngineId)}
-              style={{
-                background: "#dc2626",
-                color: "#fff",
-                border: "none",
-                padding: "2px 14px",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "12px",
-                height: "26px",
-              }}
-            >
-              Delete
-            </button>
+              title="Delete rule"
+            />
           </div>
         );
       },
     },
   ];
+  const formattedRuleEngineList = (ruleEngineList || []).map((item) => ({
+    ...item,
+    tableAttributeName: item.tableAttributeName || item.attributeName || "",
+  }));
 
   return (
     <div style={{ marginTop: "20px" }}>
@@ -156,7 +127,7 @@ function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
         }}
       >
         <AgGridReact
-          rowData={ruleEngineList}
+          rowData={formattedRuleEngineList}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           theme={themeQuartz}

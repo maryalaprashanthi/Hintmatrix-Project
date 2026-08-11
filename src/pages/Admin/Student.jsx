@@ -1,3 +1,6 @@
+import CollegeService from "../../services/CollegeService";
+import BranchService from "../../services/BranchService";
+import SectionService from "../../services/SectionService";
 import { useEffect, useRef, useState } from "react";
 import StudentForm from "./StudentForm";
 import "./Student.css";
@@ -8,6 +11,9 @@ function Student() {
   const [showModal, setShowModal] = useState(false);
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [colleges, setColleges] = useState([]);
+  const [branches, setBranches] = useState([]);
+  const [sections, setSections] = useState([]);
 
   const fileInputRef = useRef(null);
 
@@ -21,9 +27,47 @@ function Student() {
         console.error("Error fetching Students:", error);
       });
   };
+  const fetchColleges = async () => {
+    try {
+      const response = await CollegeService.getAllColleges();
+
+      console.log("COLLEGE API RESPONSE:", response.data);
+
+      setColleges(response.data);
+    } catch (error) {
+      console.error("COLLEGE API ERROR:", error);
+    }
+  };
+
+  const fetchBranches = async () => {
+    try {
+      const response = await BranchService.getAllBranches();
+
+      console.log("BRANCH API RESPONSE:", response.data);
+
+      setBranches(response.data);
+    } catch (error) {
+      console.error("BRANCH API ERROR:", error);
+    }
+  };
+
+  const fetchSections = async () => {
+    try {
+      const response = await SectionService.getAllSections();
+
+      console.log("SECTION API RESPONSE:", response.data);
+
+      setSections(response.data);
+    } catch (error) {
+      console.error("SECTION API ERROR:", error);
+    }
+  };
 
   useEffect(() => {
     fetchStudents();
+    fetchColleges();
+    fetchBranches();
+    fetchSections();
   }, []);
 
   // Upload
@@ -32,36 +76,28 @@ function Student() {
   };
 
   const handleFileChange = (e) => {
-  const file = e.target.files[0];
+    const file = e.target.files[0];
 
-  if (!file) return;
+    if (!file) return;
 
-  console.log("Selected File:", file);
+    console.log("Selected File:", file);
 
+    StudentService.uploadUsersExcel(file)
+      .then((response) => {
+        alert(response.data.message || "Students uploaded successfully!");
 
-  StudentService.uploadUsersExcel(file)
-    .then((response) => {
+        // Refresh table after upload
+        fetchStudents();
+      })
+      .catch((error) => {
+        console.error("Upload Error:", error);
 
-      alert(
-        response.data.message || "Students uploaded successfully!"
-      );
+        alert("Failed to upload students.");
+      });
 
-      // Refresh table after upload
-      fetchStudents();
-
-    })
-    .catch((error) => {
-
-      console.error("Upload Error:", error);
-
-      alert("Failed to upload students.");
-
-    });
-
-
-  // reset input so same file can be selected again
-  e.target.value = "";
-};
+    // reset input so same file can be selected again
+    e.target.value = "";
+  };
 
   // Open Add Form
   const handleAddStudent = () => {
@@ -77,26 +113,25 @@ function Student() {
 
   // Save / Update Student
   const handleSave = (studentData) => {
-  if (selectedStudent) {
-    StudentService.updateStudent(selectedStudent.studentId, studentData)
-      .then(() => {
-        fetchStudents();
-        setSelectedStudent(null);
-      })
-      .catch((error) => {
-        console.error("Update Error:", error);
-        alert("Failed to update Student.");
-      });
-
-  } else {
-    StudentService.createStudent(studentData)
-      .then(() => {
-        fetchStudents();
-      })
-      .catch((error) => {
-        console.error("Save Error:", error);
-        alert("Failed to add Student.");
-      });
+    if (selectedStudent) {
+      StudentService.updateStudent(selectedStudent.studentId, studentData)
+        .then(() => {
+          fetchStudents();
+          setSelectedStudent(null);
+        })
+        .catch((error) => {
+          console.error("Update Error:", error);
+          alert("Failed to update Student.");
+        });
+    } else {
+      StudentService.createStudent(studentData)
+        .then(() => {
+          fetchStudents();
+        })
+        .catch((error) => {
+          console.error("Save Error:", error);
+          alert("Failed to add Student.");
+        });
     }
   };
 
@@ -149,6 +184,9 @@ function Student() {
         }}
         onSave={handleSave}
         selectedStudentData={selectedStudent}
+        colleges={colleges}
+        branches={branches}
+        sections={sections}
       />
     </div>
   );
