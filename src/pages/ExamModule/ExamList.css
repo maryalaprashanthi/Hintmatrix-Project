@@ -1,369 +1,390 @@
 .exam-page {
-    padding: 25px;
-    background: #f8f9fc;
-    min-height: 100vh;
+  padding: 25px;
+  background: #f8f9fc;
+  min-height: 100vh;
 }
 
-/* Header */
+/* =========================================================
+   HEADER
+========================================================= */
 
 .page-title {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 5px;
-    color: #1f2937;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 5px;
+  color: #1f2937;
 }
 
 .breadcrumb-text {
-    color: #6b7280;
-    font-size: 14px;
+  color: #6b7280;
+  font-size: 14px;
 }
 
-
-/* Buttons */
+/* =========================================================
+   BUTTONS
+========================================================= */
 
 .add-btn {
-    background: #2563eb;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
+  background: #2563eb;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
 }
 
 .add-btn:hover {
-    background: #1d4ed8;
+  background: #1d4ed8;
 }
 
-
 .upload-btn {
-    background: white;
-    color: #2563eb;
-    border: 1px solid #2563eb;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
+  background: white;
+  color: #2563eb;
+  border: 1px solid #2563eb;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
 }
 
 .upload-btn:hover {
-    background: #2563eb;
-    color: white;
+  background: #2563eb;
+  color: white;
 }
 
+/* =========================================================
+   STATS CARDS
+   TOTAL / UPCOMING / COMPLETED / CANCELLED
+========================================================= */
 
-/* =========================
-   Stats Cards
-========================= */
+/* Reduce the overall stats row width */
+
+.exam-page > .row.g-3.mb-4 {
+  width: 88%;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* Make each Bootstrap column slightly smaller */
+
+.exam-page > .row.g-3.mb-4 > .col-lg-3 {
+  flex: 0 0 25%;
+  max-width: 25%;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* Card */
 
 .stats-card {
+  height: 115px !important;
+  min-height: 115px !important;
 
-    border: 1px solid #e5e7eb;
-    border-radius: 18px;
-    background: white;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.06);
-    transition: 0.3s;
-    height: 105px;
+  border: 1px solid #d9dee7 !important;
+  border-radius: 18px !important;
+
+  background: #ffffff;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  overflow: hidden;
 }
-
 
 .stats-card:hover {
-    transform: translateY(-3px);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.07);
 }
 
+/* Card content */
 
 .stats-card .card-body {
+  height: 100%;
 
-    padding: 18px 22px;
-    display: flex;
-    align-items: center;
-    gap: 18px;
+  padding: 15px 18px !important;
 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 13px;
 }
 
-
-/* Icon */
+/* =========================================================
+   STATS ICONS
+========================================================= */
 
 .stats-icon {
-
-    font-size: 32px;
-    flex-shrink: 0;
-
+  font-size: 36px !important;
+  flex-shrink: 0;
 }
 
-
-/* Icon Colors */
+/* Icon colors */
 
 .total-icon {
-    color:#2563eb;
+  color: #2563eb;
 }
 
 .upcoming-icon {
-    color:#f59e0b;
+  color: #f59e0b;
 }
 
 .completed-icon {
-    color:#16a34a;
+  color: #16a34a;
 }
 
 .cancelled-icon {
-    color:#dc2626;
+  color: #dc2626;
 }
 
-
-/* Text */
+/* =========================================================
+   STATS TEXT
+========================================================= */
 
 .stats-card h3 {
+  font-size: 21px !important;
+  font-weight: 700;
 
-    font-size: 22px;
-    font-weight: 700;
-    margin: 0;
-    color:#111827;
+  margin: 0 !important;
 
+  color: #111827;
+  line-height: 1.2;
 }
-
 
 .stats-card p {
+  margin: 3px 0 0 !important;
 
-    margin: 2px 0 0;
-    color:#6b7280;
-    font-size:14px;
+  color: #64748b;
+  font-size: 13px;
 
+  line-height: 1.3;
 }
 
-
-
-/* Filter Section */
+/* =========================================================
+   FILTER SECTION
+========================================================= */
 
 .filter-row {
-
-    display:flex;
-    align-items:center;
-
+  display: flex;
+  align-items: center;
 }
-
 
 .search-box {
-
-    height:45px;
-
+  height: 45px;
 }
-
 
 .search-box .input-group-text {
-
-    background:white;
-    border-right:none;
-    color:#6b7280;
-
+  background: white;
+  border-right: none;
+  color: #6b7280;
 }
-
 
 .search-box .form-control {
-
-    height:45px;
-    border-left:none;
-
+  height: 45px;
+  border-left: none;
 }
-
 
 .search-box .form-control:focus {
-
-    box-shadow:none;
-    border-color:#dee2e6;
-
+  box-shadow: none;
+  border-color: #dee2e6;
 }
-
 
 .form-select {
-
-    height:45px;
-    border-radius:8px;
-    cursor:pointer;
-
+  height: 45px;
+  border-radius: 8px;
+  cursor: pointer;
 }
-
 
 .filter-row .col-lg-3 {
-
-    padding-left:10px;
-    padding-right:10px;
-
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
-
-
-/* =========================
-   Exam Cards
-========================= */
-
+/* =========================================================
+   EXAM CARDS
+========================================================= */
 
 .exam-card {
-
-    border:1px solid #e5e7eb;
-    border-radius:16px;
-    background:white;
-    box-shadow:0 4px 15px rgba(0,0,0,0.07);
-    transition:0.3s;
-    height:100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+  transition: 0.3s;
+  height: 100%;
 }
-
 
 .exam-card:hover {
-
-    transform:translateY(-5px);
-
+  transform: translateY(-5px);
 }
-
 
 .exam-card h5 {
-
-    font-size:18px;
-    font-weight:700;
-    color:#111827;
-
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
 }
-
 
 .exam-card p {
-
-    margin-bottom:8px;
-
+  margin-bottom: 8px;
 }
-
 
 .exam-details {
-
-    margin-top:15px;
-
+  margin-top: 15px;
 }
-
 
 .exam-details p {
-
-    font-size:14px;
-    color:#4b5563;
-
+  font-size: 14px;
+  color: #4b5563;
 }
 
-
-/* Status */
+/* =========================================================
+   STATUS
+========================================================= */
 
 .status {
-
-    display:inline-block;
-    padding:6px 14px;
-    border-radius:20px;
-    font-size:13px;
-    font-weight:600;
-
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
 }
-
 
 .status.upcoming {
-
-    background:#fef3c7;
-    color:#92400e;
-
+  background: #fef3c7;
+  color: #92400e;
 }
-
 
 .status.completed {
-
-    background:#dcfce7;
-    color:#166534;
-
+  background: #dcfce7;
+  color: #166534;
 }
-
 
 .status.cancelled {
-
-    background:#fee2e2;
-    color:#991b1b;
-
+  background: #fee2e2;
+  color: #991b1b;
 }
 
-
-
-/* Action Buttons */
+/* =========================================================
+   ACTION BUTTONS
+========================================================= */
 
 .exam-actions {
-
-    display:flex;
-    gap:10px;
-
+  display: flex;
+  gap: 10px;
 }
-
 
 .exam-actions button {
-
-    border-radius:7px;
-    padding:6px 16px;
-    font-weight:600;
-
+  border-radius: 7px;
+  padding: 6px 16px;
+  font-weight: 600;
 }
 
-
-
-/* Empty State */
+/* =========================================================
+   EMPTY STATE
+========================================================= */
 
 .empty-state {
-
-    background:white;
-    padding:40px;
-    text-align:center;
-    border-radius:15px;
-    box-shadow:0 3px 12px rgba(0,0,0,0.05);
-
+  background: white;
+  padding: 40px;
+  text-align: center;
+  border-radius: 15px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
 }
-
 
 .empty-state h4 {
-
-    color:#374151;
-
+  color: #374151;
 }
-
 
 .empty-state p {
-
-    color:#6b7280;
-
+  color: #6b7280;
 }
 
+/* =========================================================
+   RESPONSIVE
+========================================================= */
 
+@media (max-width: 992px) {
+  .exam-page > .row.g-3.mb-4 {
+    width: 100%;
+  }
 
-/* Responsive */
+  .exam-page > .row.g-3.mb-4 > .col-lg-3 {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
 
-@media(max-width:768px){
+@media (max-width: 768px) {
+  .exam-page {
+    padding: 15px;
+  }
 
-    .exam-page {
-        padding:15px;
-    }
+  .page-title {
+    font-size: 22px;
+  }
 
+  .text-end {
+    text-align: left !important;
+    margin-top: 15px;
+  }
 
-    .page-title {
-        font-size:22px;
-    }
+  .upload-btn,
+  .add-btn {
+    width: 100%;
+    margin-bottom: 10px;
+  }
 
+  .filter-row {
+    gap: 15px;
+  }
 
-    .text-end {
+  .filter-row .col-lg-3,
+  .filter-row .col-lg-6 {
+    width: 100%;
+  }
 
-        text-align:left !important;
-        margin-top:15px;
+  /* Stats cards */
 
-    }
+  .exam-page > .row.g-3.mb-4 {
+    width: 100%;
+  }
 
-    .upload-btn,
-    .add-btn {
-        width:100%;
-        margin-bottom:10px;
+  .exam-page > .row.g-3.mb-4 > .col-lg-3 {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
 
-    }
-    .filter-row {
-        gap:15px;
+  .stats-card {
+    height: 110px !important;
+    min-height: 110px !important;
+  }
 
-    }
-    .filter-row .col-lg-3,
-    .filter-row .col-lg-6 {
-        width:100%;
+  .stats-card .card-body {
+    padding: 14px !important;
+    gap: 10px;
+  }
 
-    }
+  .stats-icon {
+    font-size: 32px !important;
+  }
+
+  .stats-card h3 {
+    font-size: 20px !important;
+  }
+
+  .stats-card p {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 576px) {
+  .exam-page > .row.g-3.mb-4 > .col-lg-3 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .stats-card {
+    height: 105px !important;
+    min-height: 105px !important;
+  }
 }
