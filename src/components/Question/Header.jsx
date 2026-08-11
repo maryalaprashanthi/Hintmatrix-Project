@@ -7,7 +7,7 @@ import {
   FaExclamationTriangle,
 } from "react-icons/fa";
 
-function Header() {
+function Header({ onCheck, onSubmit }) {
   const { question } = useQuestionStore();
   return (
     <>
@@ -41,10 +41,11 @@ function Header() {
             <Button
               variant="warning"
               size="sm"
+              onClick={onCheck}
               style={{ minWidth: "95px", height: "35px" }}
             >
               <FaExclamationTriangle className="me-1" />
-              Check
+              Mistakes
             </Button>
 
             <Button
@@ -59,6 +60,7 @@ function Header() {
             <Button
               variant="primary"
               size="sm"
+              onClick={onSubmit}
               style={{ minWidth: "95px", height: "35px" }}
             >
               <FaPaperPlane className="me-1" />

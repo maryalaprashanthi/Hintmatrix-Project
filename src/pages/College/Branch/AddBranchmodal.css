@@ -419,3 +419,49 @@
   color: #64748b !important;
   opacity: 1 !important;
 }
+
+/* ==========================================
+   College Dropdown Alignment
+========================================== */
+
+/* 1. Keep the main control without extra padding */
+.select-box .react-select__control {
+  padding-left: 0 !important;
+}
+
+/* 2. Leave space for the university icon */
+.select-box .react-select__value-container {
+  padding-left: 45px !important;
+
+  justify-content: flex-start !important;
+
+  text-align: left !important;
+}
+
+/* 3. Search text should NOT have another 45px padding */
+.select-box .react-select__input-container {
+  padding-left: 0 !important;
+
+  margin: 0 !important;
+
+  text-align: left !important;
+}
+
+/* 4. Placeholder should start from the left */
+.select-box .react-select__placeholder {
+  margin-left: 0 !important;
+
+  text-align: left !important;
+}
+
+/* 5. Selected college should start from the left */
+.select-box .react-select__single-value {
+  margin-left: 0 !important;
+
+  text-align: left !important;
+}
+
+/* 6. Indicators */
+.select-box .react-select__indicators {
+  height: 100%;
+}

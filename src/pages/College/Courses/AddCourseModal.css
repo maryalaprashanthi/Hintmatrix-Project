@@ -480,3 +480,21 @@ input[type="file"].form-control {
   font-weight: 600;
   cursor: pointer;
 }
+/* ==========================================================
+   React Select Layout Alignment Overwrite
+========================================================== */
+
+/* 1. Strip the outer wrapper padding that pushes the component contents right */
+.react-select-container .react-select__control {
+  padding-left: 0 !important;
+}
+
+/* 2. Apply the matching 45px inset padding directly to the internal text container instead */
+.react-select-container .react-select__value-container {
+  padding-left: 45px !important;
+}
+
+/* 3. Handle baseline alignment for absolute placeholder elements inside React-Select */
+.react-select-container .react-select__placeholder {
+  margin-left: 0 !important;
+}

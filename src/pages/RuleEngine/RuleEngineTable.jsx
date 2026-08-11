@@ -23,16 +23,12 @@ function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
       flex: 1,
       minWidth: 180,
     },
+
     {
-      field: "fieldName",
-      headerName: "Field Name",
+      field: "tableAttributeName",
+      headerName: "Table Attribute Name",
       flex: 1,
-      minWidth: 170,
-    },
-    {
-      field: "fieldType",
-      headerName: "Field Type",
-      width: 140,
+      minWidth: 200,
     },
     {
       field: "relationshipName",
@@ -83,6 +79,10 @@ function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
       },
     },
   ];
+  const formattedRuleEngineList = (ruleEngineList || []).map((item) => ({
+    ...item,
+    tableAttributeName: item.tableAttributeName || item.attributeName || "",
+  }));
 
   return (
     <div style={{ marginTop: "20px" }}>
@@ -119,17 +119,24 @@ function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
         }}
       />
 
-      <DataGrid
-        rowData={ruleEngineList}
-        columnDefs={columnDefs}
-        defaultColDef={defaultColDef}
-        theme={themeQuartz}
-        height="450px"
-        pageSize={10}
-        paginationPageSizeSelector={false}
-        rowHeight={50}
-        popupParent={document.body}
-      />
+      <div
+        style={{
+          width: "100%",
+          height: "450px",
+        }}
+      >
+        <AgGridReact
+          rowData={formattedRuleEngineList}
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+          theme={themeQuartz}
+          pagination={true}
+          paginationPageSize={10}
+          paginationPageSizeSelector={false}
+          rowHeight={50}
+          popupParent={document.body}
+        />
+      </div>
     </div>
   );
 }

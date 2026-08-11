@@ -29,10 +29,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
     { name: "1to3" },
     { name: "1to4" },
   ];
-  const arithmeticOptions = [
-  { name: "Add" },
-  { name: "Subtract" },
-];
+  const arithmeticOptions = [{ name: "Add" }, { name: "Subtract" }];
   // Mock Data States
   const [chapters, setChapters] = useState([]);
   const [tableNames, setTableNames] = useState([]);
@@ -74,8 +71,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
   const [formData, setFormData] = useState({
     chapterName: "",
     pairAttributeName: "",
-    fieldName: "",
-    fieldType: "",
+    tableAttributeName: "",
     relationshipName: "",
     pairOrder: "",
 
@@ -117,9 +113,10 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
 
         pairAttributeName: selectedRuleData.pairAttributeName || "",
 
-        fieldName: selectedRuleData.fieldName || "",
-
-        fieldType: selectedRuleData.fieldType || "",
+        tableAttributeName:
+          selectedRuleData.tableAttributeName ||
+          selectedRuleData.attributeName ||
+          "",
 
         relationshipName: selectedRuleData.relationshipName || "",
 
@@ -135,8 +132,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
       setFormData({
         chapterName: "",
         pairAttributeName: "",
-        fieldName: "",
-        fieldType: "",
+        tableAttributeName: "",
         relationshipName: "",
         pairOrder: "",
 
@@ -195,7 +191,13 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
   };
 
   const handleSave = async () => {
-    if (!formData.chapterName || !formData.fieldName || !formData.fieldType) {
+    if (
+      !formData.chapterName ||
+      !formData.pairAttributeName ||
+      !formData.tableAttributeName ||
+      !formData.relationshipName ||
+      !formData.pairOrder
+    ) {
       alert("Please fill the mandatory fields.");
       return;
     }
@@ -203,8 +205,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
     const payload = {
       chapterName: formData.chapterName,
       pairAttributeName: formData.pairAttributeName,
-      fieldName: formData.fieldName,
-      fieldType: formData.fieldType,
+      attributeName: formData.tableAttributeName,
       relationshipName: formData.relationshipName,
       pairOrder: formData.pairOrder,
 
@@ -260,7 +261,6 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
 
             <div className="form-grid">
               {/* Chapter */}
-
               <div className="form-group">
                 <label>Chapter Name</label>
 
@@ -285,9 +285,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                   />
                 </div>
               </div>
-
               {/* Pair Attribute */}
-
               <div className="form-group">
                 <label>Pair Attribute Name</label>
 
@@ -314,63 +312,33 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                   />
                 </div>
               </div>
-
-              {/* Field Name */}
-
+              {/* Table Attribute Name */}{" "}
               <div className="form-group">
-                <label>Field Name</label>
-
+                {" "}
+                <label>Table Attribute Name</label>{" "}
                 <div className="input-box">
-                  <FaFont className="input-icon" />
-
+                  {" "}
+                  <FaTag className="input-icon" />{" "}
                   <Typeahead
-                    id="fieldName"
+                    id="tableAttributeName"
                     labelKey="name"
                     options={tableAttributes}
-                    placeholder="Select Field"
+                    placeholder="Select Table Attribute"
                     selected={tableAttributes.filter(
-                      (item) => item.name === formData.fieldName,
+                      (item) => item.name === formData.tableAttributeName,
                     )}
                     onChange={(selected) =>
                       setFormData((prev) => ({
                         ...prev,
-
-                        fieldName: selected.length ? selected[0].name : "",
+                        tableAttributeName: selected.length
+                          ? selected[0].name
+                          : "",
                       }))
                     }
-                  />
-                </div>
+                  />{" "}
+                </div>{" "}
               </div>
-
-              {/* Field Type */}
-
-              <div className="form-group">
-                <label>Field Type</label>
-
-                <div className="input-box">
-                  <FaFont className="input-icon" />
-
-                  <Typeahead
-                    id="fieldType"
-                    labelKey="name"
-                    options={tableHeaders}
-                    placeholder="Select Field Type"
-                    selected={tableHeaders.filter(
-                      (item) => item.name === formData.fieldType,
-                    )}
-                    onChange={(selected) =>
-                      setFormData((prev) => ({
-                        ...prev,
-
-                        fieldType: selected.length ? selected[0].name : "",
-                      }))
-                    }
-                  />
-                </div>
-              </div>
-
               {/* Relationship */}
-
               <div className="form-group">
                 <label>Relationship Name</label>
 
@@ -396,9 +364,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                   />
                 </div>
               </div>
-
               {/* Pair Order */}
-
               <div className="form-group">
                 <label>Pair Order</label>
 
@@ -432,23 +398,22 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                   <div className="input-box">
                     <FaCalculator className="input-icon" />
 
-                    
                     <Typeahead
-                    id={`arithmetic-${index}`}
-                    labelKey="name"
-                    options={arithmeticOptions}
-                    placeholder="Select Arithmetic"
-                    selected={arithmeticOptions.filter(
-                    (item) => item.name === rule.arithmetic
-                    )}
-                    onChange={(selected) =>
-                    handleRuleChange(
-                    index,
-                   "arithmetic",
-                    selected.length ? selected[0].name : ""
-                  )
-               }
-            />
+                      id={`arithmetic-${index}`}
+                      labelKey="name"
+                      options={arithmeticOptions}
+                      placeholder="Select Arithmetic"
+                      selected={arithmeticOptions.filter(
+                        (item) => item.name === rule.arithmetic,
+                      )}
+                      onChange={(selected) =>
+                        handleRuleChange(
+                          index,
+                          "arithmetic",
+                          selected.length ? selected[0].name : "",
+                        )
+                      }
+                    />
                   </div>
                 </div>
 
