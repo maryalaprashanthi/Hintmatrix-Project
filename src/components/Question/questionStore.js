@@ -13,9 +13,12 @@ const useQuestionStore = create((set) => ({
             id: attribute.questionAttributeId,
             name: attribute.attributeName,
             amount: Number(attribute.amount),
+            hints: [],
             type:
               attribute.headerName === "Debit Particulars" ? "debit" : "credit",
             status: "pending",
+            answered: [],
+            totalAnswers: 1,
           });
         });
       }
@@ -61,6 +64,31 @@ const useQuestionStore = create((set) => ({
         questions: nextQuestions,
       };
     }),
+
+  setHints: (id, hints) =>
+    set((state) => {
+      const nextQuestions = state.questions.map((item) => {
+        if (item.id === id) {
+          return { ...item, hints: hints };
+        } else {
+          return item;
+        }
+      });
+      return { questions: nextQuestions };
+    }),
+
+  setTotalAnswers: (id, count) =>
+    set((state) => {
+      const nextQuestions = state.questions.map((item) => {
+        if (item.id === id) {
+          return { ...item, totalAnswers: count };
+        } else {
+          return item;
+        }
+      });
+      return { questions: nextQuestions };
+    }),
+
   moveQuestion: (sourceId, targetId) =>
     set((state) => {
       const question = state.questions.find((item) => item.id == sourceId);
@@ -68,14 +96,35 @@ const useQuestionStore = create((set) => ({
       if (!question) {
         return state;
       }
+      console.log("I got here");
+
+      // const nextQuestions = [...item.answered, targetId];
 
       const nextQuestions = state.questions.map((item) => {
-        if (item.id === sourceId) {
-          return { ...item, status: "solved" };
-        } else {
+        if (item.id !== sourceId) {
           return item;
         }
+
+        const updatedAnswered = [...item.answered, targetId];
+
+        return {
+          ...item,
+          answered: updatedAnswered,
+          status:
+            item.totalAnswers === updatedAnswered.length ? "solved" : "pending",
+        };
       });
+
+      console.log("I got here too");
+      // const nextQuestions = state.questions.map((item) => {
+      //   if (item.totalAnswers === item.answered.length) {
+      //     return { ...item, status: "solved" };
+      //   } else {
+      //     return item;
+      //   }
+      // });
+
+      // notice that I am not passing the latest data to below components because it's not needed
 
       if (targetId === "trading-dr-add") {
         return {
