@@ -10,10 +10,22 @@ const JournalQuestion = ({
   answeredData,
   setAnsweredData,
   questionText,
+  loadTotalScore,
 }) => {
   const handleAdd = async (item, type, table) => {
     try {
       const id = item.questionAttributeId;
+
+      const currentAnswers = answeredData[id] || [];
+
+      const alreadySolved = currentAnswers.some(
+        (entry) => entry.valid === true,
+      );
+
+      if (alreadySolved) {
+        console.log("Attribute already solved. Answer disabled.");
+        return;
+      }
 
       console.log("========== JOURNAL SELECTION ==========");
       console.log("Question Attribute ID:", id);
@@ -25,13 +37,23 @@ const JournalQuestion = ({
 
       console.log("Selected Condition:", selectedCondition);
 
-      const text =
-        type === "Debit" ? `${table.name}..........Dr` : `To ${table.name}`;
+      // Rule Engine tells us the correct option.
+      // It does NOT control whether the user can see/select
+      // Debit or Credit.
 
       const selectedHeaderId =
         selectedCondition?.headerId ?? (type === "Debit" ? 1 : 3);
 
       const selectedArithmetic = selectedCondition?.arithmetic ?? null;
+
+      const text =
+        type === "Debit" ? `${table.name}..........Dr` : `To ${table.name}`;
+
+      console.log("Selected Header ID:", selectedHeaderId);
+      console.log("Selected Arithmetic:", selectedArithmetic);
+      console.log("User Answer:", text);
+
+      const isCorrect = selectedCondition?.headerName === item.headerName;
 
       const existingAnswers = answeredData[id] || [];
 
@@ -47,40 +69,63 @@ const JournalQuestion = ({
         return;
       }
 
-      const request = {
+      // ===============================
+      // 1. ANSWER EVENT REQUEST
+      // ===============================
+      const answerEventRequest = {
         userId: 1,
         questionId: item.questionId,
-
-        tableNameId: table.id,
-
-        headerId: selectedHeaderId,
-
         attributeId: item.attributeId,
-
         arithmetic: selectedArithmetic,
-
-        amount: item.amount,
-
-        description: `User selected ${text}`,
-
-        action: "SELECT",
-
-        userAnswer: text,
-
-        answerBy: "USER",
-
+        eventType: "ANSWER",
+        isCorrect: isCorrect,
         hint: null,
+        description: `User selected ${text}`,
+        userAnswer: text,
       };
 
-      console.log("ANSWER EVENT REQUEST:", request);
+      console.log("ANSWER EVENT REQUEST:", answerEventRequest);
 
-      const result = await QuestionAnswerService.processAnswerEvent(request);
+      // ===============================
+      // 2. ALWAYS CALL ANSWER EVENT API
+      // ===============================
+      const eventResult =
+        await QuestionAnswerService.processAnswerEvent(answerEventRequest);
 
-      console.log("ANSWER EVENT RESPONSE:", result);
+      console.log("ANSWER EVENT RESPONSE:", eventResult);
 
-      const isCorrect = result.valid === true;
+      // ===============================
+      // 3. ONLY IF CORRECT
+      //    CALL QUESTION ANSWER API
+      // ===============================
+      let questionAnswerResult = null;
 
-      console.log("Answer Valid:", isCorrect);
+      if (isCorrect) {
+        const questionAnswerRequest = {
+          userId: 1,
+          questionId: item.questionId,
+          tableNameId: table.id,
+          headerId: selectedHeaderId,
+          attributeId: item.attributeId,
+          arithmetic: selectedArithmetic,
+          amount: item.amount,
+        };
+
+        console.log("QUESTION ANSWER REQUEST:", questionAnswerRequest);
+
+        questionAnswerResult = await QuestionAnswerService.saveAnswer(
+          questionAnswerRequest,
+        );
+
+        console.log("QUESTION ANSWER RESPONSE:", questionAnswerResult);
+      }
+
+      // ===============================
+      // 4. UPDATE SCORE
+      // ===============================
+      if (loadTotalScore) {
+        await loadTotalScore();
+      }
 
       const newEntry = {
         questionAttributeId: item.questionAttributeId,
@@ -93,18 +138,13 @@ const JournalQuestion = ({
         credit: type === "Credit" ? item.amount : "",
 
         valid: isCorrect,
-
-        answerId: result.answerId || null,
+        answerId: questionAnswerResult?.answerId || null,
+        answerEventId: eventResult?.answerEventId || null,
 
         tableNameId: table.id,
-
         headerId: selectedHeaderId,
-
         attributeId: item.attributeId,
-
         arithmetic: selectedArithmetic,
-
-        answerEventId: result.answerEventId,
       };
 
       setAnsweredData((prev) => {
@@ -146,11 +186,6 @@ const JournalQuestion = ({
         console.error("Backend response:", error.response.data);
       }
     }
-
-    setAnsweredData((prev) => ({
-      ...prev,
-      [id]: updatedTxnData,
-    }));
   };
 
   return (
@@ -165,99 +200,119 @@ const JournalQuestion = ({
         </thead>
 
         <tbody>
-          {data.map((item) => (
-            <tr key={item.questionAttributeId}>
-              <td>
-                <OverlayTrigger
-                  trigger="click"
-                  placement="bottom"
-                  rootClose
-                  container={document.body}
-                  overlay={
-                    <Popover
-                      id={`popover-${item.questionAttributeId}`}
-                      className="journal-popover"
-                    >
-                      <Popover.Header as="h3" className="popover-header">
-                        Transaction
-                      </Popover.Header>
+          {data.map((item) => {
+            const existingAnswers =
+              answeredData[item.questionAttributeId] || [];
 
-                      <Popover.Body>
-                        <div
-                          style={{ width: "400px" }}
-                          className="popover-body"
-                        >
-                          <div>
-                            <strong>{item.attributeName}</strong>
-                          </div>
+            const isSolved = existingAnswers.some(
+              (entry) => entry.valid === true,
+            );
 
-                          <div style={{ marginTop: "10px" }}>
-                            Amount: ₹{item.amount || "-"}
-                          </div>
+            console.log(
+              "SOLVED CHECK:",
+              item.questionAttributeId,
+              answeredData[item.questionAttributeId],
+            );
 
-                          <div style={{ marginTop: "10px" }}>
-                            {item.tables?.map((table) => (
-                              <div
-                                key={table.id}
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "space-between",
-                                  marginBottom: "10px",
-                                }}
-                              >
-                                <strong>{table.name}</strong>
+            return (
+              <tr key={item.questionAttributeId}>
+                <td>
+                  <OverlayTrigger
+                    trigger={isSolved ? [] : "click"}
+                    placement="bottom"
+                    rootClose
+                    container={document.body}
+                    overlay={
+                      <Popover
+                        id={`popover-${item.questionAttributeId}`}
+                        className="journal-popover"
+                      >
+                        <Popover.Header as="h3" className="popover-header">
+                          Transaction
+                        </Popover.Header>
 
+                        <Popover.Body>
+                          <div
+                            style={{ width: "400px" }}
+                            className="popover-body"
+                          >
+                            <div>
+                              <strong>{item.attributeName}</strong>
+                            </div>
+
+                            <div style={{ marginTop: "10px" }}>
+                              Amount: ₹{item.amount || "-"}
+                            </div>
+
+                            <div style={{ marginTop: "10px" }}>
+                              {item.tables?.map((table) => (
                                 <div
+                                  key={table.id}
                                   style={{
                                     display: "flex",
-                                    flexDirection: "row",
-                                    gap: "8px",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    marginBottom: "10px",
                                   }}
                                 >
-                                  <Button
-                                    onClick={() =>
-                                      handleAdd(item, "Debit", table)
-                                    }
-                                    className="def"
-                                    style={{
-                                      width: "80px",
-                                    }}
-                                  >
-                                    Debit
-                                  </Button>
+                                  <strong>{table.name}</strong>
 
-                                  <Button
-                                    onClick={() =>
-                                      handleAdd(item, "Credit", table)
-                                    }
-                                    className="def"
+                                  <div
                                     style={{
-                                      width: "80px",
+                                      display: "flex",
+                                      flexDirection: "row",
+                                      gap: "8px",
                                     }}
                                   >
-                                    Credit
-                                  </Button>
+                                    <Button
+                                      onClick={() =>
+                                        handleAdd(item, "Debit", table)
+                                      }
+                                      className="def"
+                                      style={{
+                                        width: "80px",
+                                      }}
+                                    >
+                                      Debit
+                                    </Button>
+
+                                    <Button
+                                      onClick={() =>
+                                        handleAdd(item, "Credit", table)
+                                      }
+                                      className="def"
+                                      style={{
+                                        width: "80px",
+                                      }}
+                                    >
+                                      Credit
+                                    </Button>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      </Popover.Body>
-                    </Popover>
-                  }
-                >
-                  <span style={{ cursor: "pointer" }}>
-                    {item.attributeName}
-                  </span>
-                </OverlayTrigger>
-              </td>
+                        </Popover.Body>
+                      </Popover>
+                    }
+                  >
+                    <span
+                      style={{
+                        cursor: isSolved ? "not-allowed" : "pointer",
+                        opacity: isSolved ? 0.6 : 1,
+                      }}
+                    >
+                      {item.attributeName}
+                    </span>
+                  </OverlayTrigger>
+                </td>
 
-              <td>{item.amount || "-"}</td>
+                <td>{item.amount || "-"}</td>
 
-              <td>{item.amount2 || "-"}</td>
-            </tr>
-          ))}
+                <td>{item.amount2 || "-"}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </Table>
     </div>

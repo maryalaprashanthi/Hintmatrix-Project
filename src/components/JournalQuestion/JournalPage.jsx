@@ -15,12 +15,14 @@ const JournalPage = () => {
 
   const [question, setQuestion] = useState(null);
   const [answeredData, setAnsweredData] = useState({});
+  const [totalScore, setTotalScore] = useState(0);
 
   useEffect(() => {
     const loadPage = async () => {
       const loadedQuestion = await loadQuestion();
 
       await loadAnsweredData(loadedQuestion);
+      await loadTotalScore();
     };
 
     loadPage();
@@ -73,13 +75,14 @@ const JournalPage = () => {
               return;
             }
 
-            let table = tables.find((item) => item.id === condition.tableId);
+            let table = tables.find(
+              (item) => String(item.id) === String(condition.tableId),
+            );
 
             if (!table) {
               table = {
                 id: condition.tableId,
                 name: condition.tableName,
-
                 debit: null,
                 credit: null,
               };
@@ -141,19 +144,43 @@ const JournalPage = () => {
     }
   };
 
+  const loadTotalScore = async () => {
+    try {
+      const userId = 1;
+
+      const score = await QuestionAnswerService.getOverallMarks(userId);
+
+      console.log("TOTAL USER SCORE:", score);
+
+      setTotalScore(Number(score) || 0);
+    } catch (error) {
+      console.error("Failed to load total score:", error);
+      setTotalScore(0);
+    }
+  };
+
   const loadAnsweredData = async (loadedQuestion) => {
     try {
       console.log("Loading current answers:", questionId);
 
       // 1. Get CURRENT answers
+      const userId = 1;
+
       const answerResponse =
-        await QuestionAnswerService.getAnswersByQuestionId(questionId);
+        await QuestionAnswerService.getAnswersByUserAndQuestion(
+          userId,
+          questionId,
+        );
 
       console.log("Current Answers:", answerResponse);
 
       // 2. Get ALL answer events/history
+
       const eventResponse =
-        await QuestionAnswerService.getAnswerEventsByQuestionId(questionId);
+        await QuestionAnswerService.getAnswerEventsByQuestionId(
+          userId,
+          questionId,
+        );
 
       console.log("Answer Events:", eventResponse);
 
@@ -161,17 +188,17 @@ const JournalPage = () => {
       const eventMap = new Map();
 
       eventResponse.forEach((event) => {
-        if (!event.answerId) {
+        if (!event.attributeId) {
           return;
         }
 
-        const existing = eventMap.get(event.answerId);
+        const existing = eventMap.get(event.attributeId);
 
         if (
           !existing ||
           Number(event.answerEventId) > Number(existing.answerEventId)
         ) {
-          eventMap.set(event.answerId, event);
+          eventMap.set(event.attributeId, event);
         }
       });
 
@@ -181,17 +208,17 @@ const JournalPage = () => {
 
       // 3. Restore ONLY current active QuestionAnswers
       answerResponse.forEach((answer) => {
-        const id = answer.attributeId;
+        const questionAttribute = loadedQuestion?.questionAttributes?.find(
+          (item) => String(item.attributeId) === String(answer.attributeId),
+        );
+
+        const id = questionAttribute?.questionAttributeId;
 
         if (!formattedData[id]) {
           formattedData[id] = [];
         }
 
-        const questionAttribute = loadedQuestion?.questionAttributes?.find(
-          (item) => String(item.attributeId) === String(answer.attributeId),
-        );
-
-        const event = eventMap.get(answer.answerId);
+        const event = eventMap.get(answer.attributeId);
 
         const text =
           answer.headerName === "Debit Particulars"
@@ -211,7 +238,7 @@ const JournalPage = () => {
             answer.headerName === "Credit Particulars" ? answer.amount : "",
 
           // Get correctness from AnswerEvent
-          valid: event?.valid === true,
+          valid: true,
 
           answerId: answer.answerId,
 
@@ -227,7 +254,7 @@ const JournalPage = () => {
       // 4. Add Being row
       Object.keys(formattedData).forEach((id) => {
         const attribute = loadedQuestion?.questionAttributes?.find(
-          (item) => String(item.attributeId) === String(id),
+          (item) => String(item.questionAttributeId) === String(id),
         );
 
         formattedData[id].push({
@@ -240,6 +267,11 @@ const JournalPage = () => {
       });
 
       console.log("Restored Current Answered Data:", formattedData);
+
+      console.log(
+        "FINAL RESTORED ANSWERED DATA:",
+        JSON.stringify(formattedData, null, 2),
+      );
 
       setAnsweredData(formattedData);
     } catch (error) {
@@ -295,6 +327,7 @@ const JournalPage = () => {
           credit={credit}
           total={question.questionAttributes?.length || 0}
           solved={solved}
+          totalScore={totalScore}
         />
       </Row>
 
@@ -305,6 +338,7 @@ const JournalPage = () => {
             questionText={question.questionText}
             answeredData={answeredData}
             setAnsweredData={setAnsweredData}
+            loadTotalScore={loadTotalScore}
           />
         </Col>
 

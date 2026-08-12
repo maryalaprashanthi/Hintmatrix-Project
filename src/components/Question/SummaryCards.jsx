@@ -5,7 +5,7 @@ import { FaLongArrowAltDown } from "react-icons/fa";
 import StatCard from "./StatCard";
 import { CiMemoPad } from "react-icons/ci";
 
-function SummaryCards({ debit, credit, total, solved }) {
+function SummaryCards({ debit, credit, total, solved, totalScore }) {
   const summary = [
     {
       title: "Debit",
@@ -22,11 +22,11 @@ function SummaryCards({ debit, credit, total, solved }) {
       subtext: "Credits in trial balance",
     },
     {
-      title: "Difference",
-      value: "₹0",
+      title: "Total Score",
+      value: `${totalScore}`,
       color: "teritary",
       icon: <GoLaw />,
-      subtext: "",
+      subtext: "Total marks earned",
     },
     {
       title: "Progress",
