@@ -3,119 +3,148 @@ import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import { OverlayTrigger, Popover } from "react-bootstrap";
 import "./JournalQuestion.css";
+import QuestionAnswerService from "../../services/QuestionAnswerService";
 
-const JournalQuestion = ({ answeredData, setAnsweredData }) => {
-  // DO NOT CHANGE THESE AMOUNTS
-  const data = [
-    {
-      id: "1",
-      question: "Ravi takes stock",
-      amount1: "1000",
-      amount2: "1000",
-      tables: ["Ravi A/C", "Suspense A/C", "Demo A/C"],
-    },
-    {
-      id: "2",
-      question: "Charan purchased goods",
-      amount1: "5000",
-      amount2: "",
-      tables: ["Charan A/C", "Suspense A/C"],
-    },
-    {
-      id: "3",
-      question: "Ravi sold goods",
-      amount1: "2000",
-      amount2: "",
-      tables: ["Suspense A/C", "Ravi A/C"],
-    },
-    {
-      id: "4",
-      question: "Charan sold goods",
-      amount1: "3000",
-      amount2: "",
-      tables: ["Suspense A/C", "Charan A/C"],
-    },
-    {
-      id: "5",
-      question: "Ravi paid rent",
-      amount1: "1000",
-      amount2: "",
-      tables: ["Rent A/C", "Ravi A/C"],
-    },
-  ];
+const JournalQuestion = ({
+  data = [],
+  answeredData,
+  setAnsweredData,
+  questionText,
+}) => {
+  const handleAdd = async (item, type, table) => {
+    try {
+      const id = item.questionAttributeId;
 
-  const handleAdd = (id, type, table) => {
-    const neededData = data.find((obj) => obj.id === id);
+      console.log("========== JOURNAL SELECTION ==========");
+      console.log("Question Attribute ID:", id);
+      console.log("Attribute:", item.attributeName);
+      console.log("Selected Table:", table);
+      console.log("Selected Type:", type);
 
-    if (!neededData) return;
+      const selectedCondition = type === "Debit" ? table.debit : table.credit;
 
-    let text;
+      console.log("Selected Condition:", selectedCondition);
 
-    if (type === "Debit") {
-      text = `${table}..........Dr`;
-    } else {
-      text = `To ${table}`;
-    }
+      const text =
+        type === "Debit" ? `${table.name}..........Dr` : `To ${table.name}`;
 
-    if (!(id in answeredData)) {
-      setAnsweredData((prev) => ({
-        ...prev,
-        [id]: [
-          {
-            date: "",
-            particulars: text,
-            lf: "",
-            debit: type === "Debit" ? neededData.amount1 : "",
-            credit: type === "Credit" ? neededData.amount1 : "",
-          },
-          {
-            date: "",
-            particulars: `(Being ${neededData.question})`,
-            lf: "",
-            debit: "",
-            credit: "",
-          },
-        ],
-      }));
+      const selectedHeaderId =
+        selectedCondition?.headerId ?? (type === "Debit" ? 1 : 3);
 
-      return;
-    }
+      const selectedArithmetic = selectedCondition?.arithmetic ?? null;
 
-    const txnData = answeredData[id];
+      const existingAnswers = answeredData[id] || [];
 
-    const duplicateEntry = txnData.find(
-      (txn) => txn.particulars === text
-    );
+      const duplicate = existingAnswers.some(
+        (entry) =>
+          entry.particulars === text &&
+          entry.tableNameId === table.id &&
+          entry.headerId === selectedHeaderId,
+      );
 
-    if (duplicateEntry) {
-      return;
-    }
+      if (duplicate) {
+        console.log("Duplicate selection ignored.");
+        return;
+      }
 
-    let updatedTxnData;
+      const request = {
+        userId: 1,
+        questionId: item.questionId,
 
-    if (type === "Debit") {
-      updatedTxnData = [
-        {
+        tableNameId: table.id,
+
+        headerId: selectedHeaderId,
+
+        attributeId: item.attributeId,
+
+        arithmetic: selectedArithmetic,
+
+        amount: item.amount,
+
+        description: `User selected ${text}`,
+
+        action: "SELECT",
+
+        userAnswer: text,
+
+        answerBy: "USER",
+
+        hint: null,
+      };
+
+      console.log("ANSWER EVENT REQUEST:", request);
+
+      const result = await QuestionAnswerService.processAnswerEvent(request);
+
+      console.log("ANSWER EVENT RESPONSE:", result);
+
+      const isCorrect = result.valid === true;
+
+      console.log("Answer Valid:", isCorrect);
+
+      const newEntry = {
+        questionAttributeId: item.questionAttributeId,
+
+        date: "",
+        particulars: text,
+        lf: "",
+
+        debit: type === "Debit" ? item.amount : "",
+        credit: type === "Credit" ? item.amount : "",
+
+        valid: isCorrect,
+
+        answerId: result.answerId || null,
+
+        tableNameId: table.id,
+
+        headerId: selectedHeaderId,
+
+        attributeId: item.attributeId,
+
+        arithmetic: selectedArithmetic,
+
+        answerEventId: result.answerEventId,
+      };
+
+      setAnsweredData((prev) => {
+        const existing = prev[id] || [];
+
+        const beingRow = existing.find((entry) =>
+          entry.particulars?.startsWith("(Being"),
+        );
+
+        const answerRows = existing.filter(
+          (entry) => !entry.particulars?.startsWith("(Being"),
+        );
+
+        let updatedRows;
+
+        if (type === "Debit") {
+          updatedRows = [newEntry, ...answerRows];
+        } else {
+          updatedRows = [...answerRows, newEntry];
+        }
+
+        const finalBeingRow = beingRow || {
           date: "",
-          particulars: text,
-          lf: "",
-          debit: neededData.amount1,
-          credit: "",
-        },
-        ...txnData,
-      ];
-    } else {
-      updatedTxnData = [
-        ...txnData.slice(0, -1),
-        {
-          date: "",
-          particulars: text,
+          particulars: `(Being ${item.attributeName})`,
           lf: "",
           debit: "",
-          credit: neededData.amount1,
-        },
-        ...txnData.slice(-1),
-      ];
+          credit: "",
+        };
+
+        return {
+          ...prev,
+          [id]: [...updatedRows, finalBeingRow],
+        };
+      });
+    } catch (error) {
+      console.error("Failed to process answer event:", error);
+
+      if (error.response) {
+        console.error("Backend response:", error.response.data);
+      }
     }
 
     setAnsweredData((prev) => ({
@@ -125,146 +154,112 @@ const JournalQuestion = ({ answeredData, setAnsweredData }) => {
   };
 
   return (
-    <div className="transaction-details-card">
-      {/* LEFT CARD HEADING */}
-      <div className="transaction-details-title">
-        Transaction Details
-      </div>
+    <div>
+      <Table bordered hover>
+        <thead>
+          <tr>
+            <th>Transaction</th>
+            <th>Amount (₹)</th>
+            <th>Amount (₹)</th>
+          </tr>
+        </thead>
 
-      {/* TABLE */}
-      <div className="transaction-details-table-wrapper">
-        <Table
-          bordered
-          hover
-          className="journal-table"
-        >
-          <thead>
-            <tr>
-              <th className="transaction-column">
-                Transaction
-              </th>
-
-              <th className="amount-column">
-                Amount (₹)
-              </th>
-
-              <th className="amount-column">
-                Amount (₹)
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {data.map((item) => (
-              <OverlayTrigger
-                key={item.id}
-                trigger="click"
-                placement="bottom"
-                rootClose
-                container={document.body}
-                overlay={
-                  <Popover
-                    id={`popover-${item.id}`}
-                    className="journal-popover"
-                  >
-                    {/* POPUP HEADER */}
-                    <Popover.Header
-                      as="div"
-                      className="journal-popover-header"
+        <tbody>
+          {data.map((item) => (
+            <tr key={item.questionAttributeId}>
+              <td>
+                <OverlayTrigger
+                  trigger="click"
+                  placement="bottom"
+                  rootClose
+                  container={document.body}
+                  overlay={
+                    <Popover
+                      id={`popover-${item.questionAttributeId}`}
+                      className="journal-popover"
                     >
-                      <span className="popover-title">
-                        Transaction of {item.question} is ₹
-                        {item.amount1}
-                        {item.amount2
-                          ? `/${item.amount2}`
-                          : ""}
-                      </span>
+                      <Popover.Header as="h3" className="popover-header">
+                        Transaction
+                      </Popover.Header>
 
-                      {/* CLOSE ICON */}
-                      <button
-                        type="button"
-                        className="popover-close"
-                        aria-label="Close"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-
-                          document.body.click();
-                        }}
-                      >
-                        ×
-                      </button>
-                    </Popover.Header>
-
-                    {/* POPUP BODY */}
-                    <Popover.Body className="journal-popover-body">
-                      {item.tables.map((table) => (
+                      <Popover.Body>
                         <div
-                          className="account-row"
-                          key={table}
+                          style={{ width: "400px" }}
+                          className="popover-body"
                         >
-                          {/* ACCOUNT */}
-                          <div className="account-name">
-                            {table}
+                          <div>
+                            <strong>{item.attributeName}</strong>
                           </div>
 
-                          {/* DEBIT */}
-                          <Button
-                            type="button"
-                            className="def transaction-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
+                          <div style={{ marginTop: "10px" }}>
+                            Amount: ₹{item.amount || "-"}
+                          </div>
 
-                              handleAdd(
-                                item.id,
-                                "Debit",
-                                table
-                              );
-                            }}
-                          >
-                            Debit
-                          </Button>
+                          <div style={{ marginTop: "10px" }}>
+                            {item.tables?.map((table) => (
+                              <div
+                                key={table.id}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  marginBottom: "10px",
+                                }}
+                              >
+                                <strong>{table.name}</strong>
 
-                          {/* CREDIT */}
-                          <Button
-                            type="button"
-                            className="def transaction-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    gap: "8px",
+                                  }}
+                                >
+                                  <Button
+                                    onClick={() =>
+                                      handleAdd(item, "Debit", table)
+                                    }
+                                    className="def"
+                                    style={{
+                                      width: "80px",
+                                    }}
+                                  >
+                                    Debit
+                                  </Button>
 
-                              handleAdd(
-                                item.id,
-                                "Credit",
-                                table
-                              );
-                            }}
-                          >
-                            Credit
-                          </Button>
+                                  <Button
+                                    onClick={() =>
+                                      handleAdd(item, "Credit", table)
+                                    }
+                                    className="def"
+                                    style={{
+                                      width: "80px",
+                                    }}
+                                  >
+                                    Credit
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      ))}
-                    </Popover.Body>
-                  </Popover>
-                }
-              >
-                <tr>
-                  <td className="transaction-cell">
-                    {item.question}
-                  </td>
+                      </Popover.Body>
+                    </Popover>
+                  }
+                >
+                  <span style={{ cursor: "pointer" }}>
+                    {item.attributeName}
+                  </span>
+                </OverlayTrigger>
+              </td>
 
-                  <td className="amount-cell">
-                    {item.amount1 || "-"}
-                  </td>
+              <td>{item.amount || "-"}</td>
 
-                  <td className="amount-cell">
-                    {item.amount2 || "-"}
-                  </td>
-                </tr>
-              </OverlayTrigger>
-            ))}
-          </tbody>
-        </Table>
-      </div>
+              <td>{item.amount2 || "-"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
     </div>
   );
 };

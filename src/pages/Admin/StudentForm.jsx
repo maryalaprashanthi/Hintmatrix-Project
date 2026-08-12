@@ -50,7 +50,9 @@ function StudentForm({
       setBranchId(selectedStudentData.branchId || "");
       setSectionId(selectedStudentData.sectionId || "");
       setGuardianName(selectedStudentData.guardianName || "");
-      setGuardianPhoneNumber(selectedStudentData.guardianPhoneNumber || "");
+      setGuardianPhoneNumber(
+        selectedStudentData.guardianPhoneNumber || "",
+      );
       setEmail(selectedStudentData.email || "");
       setPhoneNumber(selectedStudentData.phoneNumber || "");
       setPassword(selectedStudentData.password || "");
@@ -69,6 +71,11 @@ function StudentForm({
       setAddress("");
     }
   }, [selectedStudentData, show]);
+
+  // TEMPORARY CHECK
+  console.log("STUDENT FORM COLLEGES:", colleges);
+  console.log("STUDENT FORM BRANCHES:", branches);
+  console.log("STUDENT FORM SECTIONS:", sections);
 
   if (!show) return null;
 
@@ -118,7 +125,9 @@ function StudentForm({
         {/* Header */}
         <div className="modal-header">
           <div>
-            <h2>{selectedStudentData ? "Edit Student" : "Add Student"}</h2>
+            <h2>
+              {selectedStudentData ? "Edit Student" : "Add Student"}
+            </h2>
 
             <p>
               {selectedStudentData
@@ -185,16 +194,27 @@ function StudentForm({
 
                   <Typeahead
                     id="college"
-                    labelKey="collegeName"
+                    labelKey={(college) =>
+                      college.collegeName ||
+                      college.instituteName ||
+                      college.name ||
+                      String(college.collegeId || "")
+                    }
                     options={colleges}
                     placeholder="Select College"
                     selected={colleges.filter(
                       (college) =>
-                        String(college.collegeId) === String(collegeId),
+                        String(college.collegeId) ===
+                        String(collegeId),
                     )}
-                    onChange={(selected) =>
-                      setCollegeId(selected.length ? selected[0].collegeId : "")
-                    }
+                    onChange={(selected) => {
+                      setCollegeId(
+                        selected.length
+                          ? selected[0].collegeId
+                          : "",
+                      );
+                    }}
+                    clearButton
                   />
                 </div>
               </div>
@@ -210,18 +230,30 @@ function StudentForm({
 
                   <Typeahead
                     id="branch"
-                    labelKey="branchName"
+                    labelKey={(branch) =>
+                      branch.branchName ||
+                      branch.name ||
+                      String(branch.branchId || "")
+                    }
                     options={branches}
                     placeholder="Select Branch"
                     selected={branches.filter(
-                      (branch) => String(branch.branchId) === String(branchId),
+                      (branch) =>
+                        String(branch.branchId) ===
+                        String(branchId),
                     )}
-                    onChange={(selected) =>
-                      setBranchId(selected.length ? selected[0].branchId : "")
-                    }
+                    onChange={(selected) => {
+                      setBranchId(
+                        selected.length
+                          ? selected[0].branchId
+                          : "",
+                      );
+                    }}
+                    clearButton
                   />
                 </div>
               </div>
+
               {/* Section */}
               <div className="form-group">
                 <label>
@@ -233,16 +265,26 @@ function StudentForm({
 
                   <Typeahead
                     id="section"
-                    labelKey="sectionName"
+                    labelKey={(section) =>
+                      section.sectionName ||
+                      section.name ||
+                      String(section.sectionId || "")
+                    }
                     options={sections}
                     placeholder="Select Section"
                     selected={sections.filter(
                       (section) =>
-                        String(section.sectionId) === String(sectionId),
+                        String(section.sectionId) ===
+                        String(sectionId),
                     )}
-                    onChange={(selected) =>
-                      setSectionId(selected.length ? selected[0].sectionId : "")
-                    }
+                    onChange={(selected) => {
+                      setSectionId(
+                        selected.length
+                          ? selected[0].sectionId
+                          : "",
+                      );
+                    }}
+                    clearButton
                   />
                 </div>
               </div>
@@ -260,7 +302,9 @@ function StudentForm({
                     type="text"
                     placeholder="Enter Guardian Name"
                     value={guardianName}
-                    onChange={(e) => setGuardianName(e.target.value)}
+                    onChange={(e) =>
+                      setGuardianName(e.target.value)
+                    }
                   />
                 </div>
               </div>
@@ -278,7 +322,9 @@ function StudentForm({
                     type="tel"
                     placeholder="Enter Guardian Phone Number"
                     value={guardianPhoneNumber}
-                    onChange={(e) => setGuardianPhoneNumber(e.target.value)}
+                    onChange={(e) =>
+                      setGuardianPhoneNumber(e.target.value)
+                    }
                   />
                 </div>
               </div>
@@ -314,7 +360,9 @@ function StudentForm({
                     type="tel"
                     placeholder="Enter Phone Number"
                     value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    onChange={(e) =>
+                      setPhoneNumber(e.target.value)
+                    }
                   />
                 </div>
               </div>
@@ -332,7 +380,9 @@ function StudentForm({
                     type="password"
                     placeholder="Enter Password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) =>
+                      setPassword(e.target.value)
+                    }
                   />
                 </div>
               </div>
@@ -357,7 +407,11 @@ function StudentForm({
 
         {/* Footer */}
         <div className="modal-footer">
-          <button type="button" className="btn btn-secondary" onClick={onClose}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onClose}
+          >
             Cancel
           </button>
 
@@ -371,6 +425,7 @@ function StudentForm({
           </button>
         </div>
       </div>
+
       <SuccessModal
         show={showSuccess}
         message={

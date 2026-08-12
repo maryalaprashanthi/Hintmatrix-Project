@@ -6,10 +6,14 @@ import useQuestionStore from "./questionStore";
 import "./QuestionTable.css";
 import Header from "./Header";
 import SummaryCards from "./SummaryCards";
+import { useState } from "react"; // Added react hook
+import WrongAnswersModal from "./WrongAnswersModal";
+import QuestionService from "../../services/QuestionService";
 
 const QuestionTable = () => {
   const {
     questions,
+    question,
     tradingDataDebit,
     tradingDataCredit,
     profitDataDebit,
@@ -17,6 +21,147 @@ const QuestionTable = () => {
     balanceDataAssets,
     balanceDataLiabilities,
   } = useQuestionStore();
+
+  // Control popup visibility state and active errors array
+  const [showModal, setShowModal] = useState(false);
+  const [wrongAnswers, setWrongAnswers] = useState([]);
+
+  // --- 1. ERROR-ONLY VALIDATION ENGINE (SHOWS ONLY WRONG ANSWERS IN POPUP) ---
+  const handleCheckValidation = () => {
+    const activeErrors = [];
+    const currentTime = new Date().toISOString();
+
+    // Helper closure function to evaluate any container side for errors exclusively
+    const evaluateContainerForErrors = (
+      itemsArray,
+      containerDescription,
+      allowedItems,
+    ) => {
+      if (!itemsArray || !Array.isArray(itemsArray)) return;
+
+      itemsArray.forEach((item) => {
+        // If the item dropped here is NOT in the allowed items list, it is an error!
+        if (!allowedItems.includes(item.name)) {
+          activeErrors.push({
+            created_at: currentTime,
+            user_answer: item.name,
+            action: `Misplaced in ${containerDescription}`,
+            description: "Incorrect container routing",
+            valid: false,
+            result: "wrong",
+            hint: `${item.name} is a direct manufacturing expense item. It belongs exclusively inside the Trading Account - Dr. (Debit) side.`,
+          });
+        }
+      });
+    };
+
+    // Run evaluations across all active drop-zone containers
+    // Opening Stock and Purchases belong exclusively inside Trading Debit (Dr.)
+    evaluateContainerForErrors(
+      tradingDataDebit,
+      "Trading Account - Dr. (Debit)",
+      ["Opening Stock", "Purchases"],
+    );
+    evaluateContainerForErrors(
+      tradingDataCredit,
+      "Trading Account - Cr. (Credit)",
+      [],
+    );
+    evaluateContainerForErrors(
+      profitDataDebit,
+      "Profit & Loss Account - Dr. (Expenses)",
+      [],
+    );
+    evaluateContainerForErrors(
+      profitDataCredit,
+      "Profit & Loss Account - Cr. (Incomes)",
+      [],
+    );
+    evaluateContainerForErrors(balanceDataAssets, "Balance Sheet - Assets", []);
+    evaluateContainerForErrors(
+      balanceDataLiabilities,
+      "Balance Sheet - Liabilities",
+      [],
+    );
+
+    // ONLY open the modal if actual mistakes were collected
+    if (activeErrors.length > 0) {
+      setWrongAnswers(activeErrors); // Stores only the bad entries
+      setShowModal(true); // Triggers the popup view panel
+    } else {
+      // Check if they placed them in the right spot or if workspace is completely empty
+      const correctTradingCount = tradingDataDebit.filter(
+        (item) => item.name === "Opening Stock" || item.name === "Purchases",
+      ).length;
+
+      if (correctTradingCount === 2) {
+        alert(
+          "🎉 Perfect! All items are placed in their precise accounting ledger targets.",
+        );
+      } else {
+        alert(
+          "⚠️ Your workspace has no wrong answers, but some items are still unplaced in the Trial Balance!",
+        );
+      }
+    }
+  };
+
+  // --- 2. SUBMIT COMPLETED WORKSPACE SUMMARY ENGINE (SUBMIT BUTTON) ---
+  const handleSubmitFinalWorkspace = async () => {
+    const confirmSubmit = window.confirm(
+      "Are you sure you want to final submit? This action will lock your answers for grading.",
+    );
+    if (!confirmSubmit) return;
+
+    try {
+      let correctPlacementsCount = 0;
+      let incorrectPlacementsCount = 0;
+
+      const checkContainer = (boxData, expectedSideType) => {
+        if (!boxData || !Array.isArray(boxData)) return;
+        boxData.forEach((item) => {
+          if (item.type === expectedSideType) {
+            correctPlacementsCount++;
+          } else {
+            incorrectPlacementsCount++;
+          }
+        });
+      };
+
+      checkContainer(tradingDataDebit, "debit");
+      checkContainer(tradingDataCredit, "credit");
+      checkContainer(profitDataDebit, "debit");
+      checkContainer(profitDataCredit, "credit");
+      checkContainer(balanceDataAssets, "debit");
+      checkContainer(balanceDataLiabilities, "credit");
+
+      const totalItemsAttempted =
+        correctPlacementsCount + incorrectPlacementsCount;
+      const finalScorePercentage =
+        totalItemsAttempted > 0
+          ? ((correctPlacementsCount / totalItemsAttempted) * 100).toFixed(1)
+          : 0;
+
+      const completionPayload = {
+        questionId: question?.questionId || questions?.[0]?.id || 1,
+        totalItemsAttempted,
+        correctCount: correctPlacementsCount,
+        wrongCount: incorrectPlacementsCount,
+        finalGrade: `${finalScorePercentage}%`,
+        submittedAt: new Date().toISOString(),
+      };
+
+      const targetId = question?.questionId || questions?.[0]?.id || 1;
+      await QuestionService.submitFinalAnswers(targetId, completionPayload);
+
+      alert(
+        `🎉 Workspace submitted successfully!\nFinal Score: ${correctPlacementsCount} Correct, ${incorrectPlacementsCount} Wrong (${finalScorePercentage}%)`,
+      );
+    } catch (error) {
+      console.error("Submission failed:", error);
+      alert("Failed to submit workspace. Please check server status logs.");
+    }
+  };
 
   console.log("Questions from Store:", questions);
 
@@ -48,7 +193,10 @@ const QuestionTable = () => {
   return (
     <div className="row g-4 align-items-start">
       <div>
-        <Header />
+        <Header
+          onCheck={handleCheckValidation}
+          onSubmit={handleSubmitFinalWorkspace}
+        />
 
         <SummaryCards
           debit={debitTotal}
@@ -201,6 +349,11 @@ const QuestionTable = () => {
           </Accordion.Item>
         </Accordion>
       </div>
+      <WrongAnswersModal
+        show={showModal}
+        onClose={() => setShowModal(false)}
+        incorrectEntries={wrongAnswers}
+      />
     </div>
   );
 };

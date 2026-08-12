@@ -127,22 +127,14 @@
   color: #1f2937 !important;
 }
 
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
+.journal-solution-table tbody tr.answer-correct > td {
+  background-color: #d4edda !important;
+  --bs-table-bg: #d4edda !important;
+  --bs-table-accent-bg: #d4edda !important;
+}
 
-@media (max-width: 900px) {
-  .journal-card {
-    padding: 12px;
-  }
-
-  .journal-table thead th {
-    font-size: 14px;
-    padding: 10px 8px !important;
-  }
-
-  .journal-table tbody td {
-    font-size: 14px;
-    padding: 12px 8px !important;
-  }
+.journal-solution-table tbody tr.answer-wrong > td {
+  background-color: #f8d7da !important;
+  --bs-table-bg: #f8d7da !important;
+  --bs-table-accent-bg: #f8d7da !important;
 }

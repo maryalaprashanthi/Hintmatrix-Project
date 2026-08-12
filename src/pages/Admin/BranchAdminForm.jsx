@@ -32,40 +32,61 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [address, setAddress] = useState("");
+
   const [collegesList, setCollegesList] = useState([]);
   const [branchesList, setBranchesList] = useState([]);
+
   const [showSuccess, setShowSuccess] = useState(false);
 
+  // ==============================
+  // Fetch Colleges
+  // ==============================
   const fetchColleges = async () => {
     try {
       const response = await CollegeService.getAllColleges();
-      setCollegesList(response.data);
+
+      console.log("COLLEGE API RESPONSE:", response.data);
+      setCollegesList(response.data || []);
     } catch (error) {
-      console.error(error);
+      console.error("COLLEGE API ERROR:", error);
     }
   };
 
+  // ==============================
+  // Fetch Branches
+  // ==============================
   const fetchBranches = async () => {
     try {
       const response = await BranchService.getAllBranches();
-      setBranchesList(response.data);
+
+      console.log("BRANCH API RESPONSE:", response.data);
+
+      setBranchesList(response.data || []);
     } catch (error) {
-      console.error(error);
+      console.error("BRANCH API ERROR:", error);
     }
   };
-  // useEffect here
+
+  // ==============================
+  // Load College & Branch Data
+  // ==============================
   useEffect(() => {
     fetchColleges();
     fetchBranches();
   }, []);
 
+  // ==============================
+  // Edit / Reset Form
+  // ==============================
   useEffect(() => {
     if (selectedBranchAdminData) {
       setName(selectedBranchAdminData.name || "");
       setEmployeeId(selectedBranchAdminData.employeeId || "");
       setDesignation(selectedBranchAdminData.designation || "");
+
       setCollegeId(selectedBranchAdminData.collegeId || "");
       setBranchId(selectedBranchAdminData.branchId || "");
+
       setEmail(selectedBranchAdminData.email || "");
       setPhoneNumber(selectedBranchAdminData.phoneNumber || "");
       setPassword(selectedBranchAdminData.password || "");
@@ -85,6 +106,9 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
 
   if (!show) return null;
 
+  // ==============================
+  // Save
+  // ==============================
   const handleSave = () => {
     if (
       !name.trim() ||
@@ -124,7 +148,7 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
   return createPortal(
     <div className="modal-overlay">
       <div className="branch-modal">
-        {/* Header */}
+        {/*  HEADER  */}
 
         <div className="modal-header">
           <div>
@@ -146,14 +170,15 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
           </button>
         </div>
 
-        {/* Body */}
+        {/*  BODY  */}
 
         <div className="modal-body">
           <div className="form-card">
             <h3 className="section-title">Branch Admin Information</h3>
 
             <div className="form-grid">
-              {/* Name */}
+              {/*  NAME  */}
+
               <div className="form-group">
                 <label>
                   Name <span>*</span>
@@ -171,7 +196,8 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
                 </div>
               </div>
 
-              {/* Employee ID */}
+              {/*  EMPLOYEE ID  */}
+
               <div className="form-group">
                 <label>
                   Employee ID <span>*</span>
@@ -189,7 +215,8 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
                 </div>
               </div>
 
-              {/* Designation */}
+              {/*  DESIGNATION  */}
+
               <div className="form-group">
                 <label>
                   Designation <span>*</span>
@@ -207,7 +234,8 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
                 </div>
               </div>
 
-              {/* College */}
+              {/* COLLEGE  */}
+
               <div className="form-group">
                 <label>
                   College Name <span>*</span>
@@ -217,21 +245,24 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
                   <FaUniversity className="input-icon" />
                   <Typeahead
                     id="collegeId"
-                    labelKey="collegeId"
+                    labelKey="instituteName"
                     options={collegesList}
                     placeholder="Select College Name"
                     selected={collegesList.filter(
                       (college) =>
                         String(college.collegeId) === String(collegeId),
                     )}
-                    onChange={(selected) =>
-                      setCollegeId(selected.length ? selected[0].collegeId : "")
-                    }
+                    onChange={(selected) => {
+                      setCollegeId(
+                        selected.length ? selected[0].collegeId : "",
+                      );
+                    }}
                   />
                 </div>
               </div>
 
-              {/* Branch */}
+              {/*  BRANCH  */}
+
               <div className="form-group">
                 <label>
                   Branch Name <span>*</span>
@@ -239,22 +270,45 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
 
                 <div className="input-box">
                   <FaCodeBranch className="input-icon" />
+
                   <Typeahead
                     id="branchId"
-                    labelKey="branchId"
+                    labelKey={(branch) =>
+                      String(
+                        branch.branchName ??
+                          branch.name ??
+                          branch.branch ??
+                          branch.branchId ??
+                          "",
+                      )
+                    }
                     options={branchesList}
                     placeholder="Select Branch Name"
                     selected={branchesList.filter(
                       (branch) => String(branch.branchId) === String(branchId),
                     )}
-                    onChange={(selected) =>
-                      setBranchId(selected.length ? selected[0].branchId : "")
-                    }
+                    onChange={(selected) => {
+                      setBranchId(selected.length ? selected[0].branchId : "");
+                    }}
+                    filterBy={(option, props) => {
+                      const searchText = props.text?.toLowerCase() || "";
+
+                      const label = String(
+                        option.branchName ??
+                          option.name ??
+                          option.branch ??
+                          option.branchId ??
+                          "",
+                      ).toLowerCase();
+
+                      return label.includes(searchText);
+                    }}
                   />
                 </div>
               </div>
 
-              {/* Email */}
+              {/*  EMAIL  */}
+
               <div className="form-group">
                 <label>
                   Email <span>*</span>
@@ -272,7 +326,8 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
                 </div>
               </div>
 
-              {/* Phone Number */}
+              {/*  PHONE */}
+
               <div className="form-group">
                 <label>
                   Phone Number <span>*</span>
@@ -291,7 +346,8 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
                 </div>
               </div>
 
-              {/* Password */}
+              {/*  PASSWORD  */}
+
               <div className="form-group">
                 <label>
                   Password <span>*</span>
@@ -311,7 +367,7 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
             </div>
           </div>
 
-          {/* Address */}
+          {/*  ADDRESS  */}
 
           <div className="form-card">
             <h3 className="section-title">Address</h3>
@@ -327,7 +383,8 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
             </div>
           </div>
         </div>
-        {/* Footer */}
+
+        {/*  FOOTER */}
 
         <div className="modal-footer">
           <button type="button" className="btn btn-secondary" onClick={onClose}>
@@ -344,6 +401,9 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
           </button>
         </div>
       </div>
+
+      {/*  SUCCESS  */}
+
       <SuccessModal
         show={showSuccess}
         message={

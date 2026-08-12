@@ -35,7 +35,6 @@ function SectionForm({ selectedSectionData, onSave, onCancel }) {
     loadCourses();
   }, []);
 
- 
   const loadColleges = () => {
     CollegeService.getAllColleges()
       .then((response) => {
@@ -48,7 +47,6 @@ function SectionForm({ selectedSectionData, onSave, onCancel }) {
       .catch(console.error);
   };
 
-  
   const loadBranches = () => {
     BranchService.getAllBranches()
       .then((response) => {
@@ -60,7 +58,6 @@ function SectionForm({ selectedSectionData, onSave, onCancel }) {
       .catch(console.error);
   };
 
-  
   const loadCourses = () => {
     CourseService.getAllCourses()
       .then((response) => {
@@ -170,6 +167,11 @@ function SectionForm({ selectedSectionData, onSave, onCancel }) {
               <Select
                 className="react-select-container"
                 classNamePrefix="react-select"
+                menuPlacement="bottom"
+                menuPortalTarget={document.body}
+                styles={{
+                  menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                }}
                 options={collegeOptions}
                 value={
                   collegeOptions.find(
@@ -297,7 +299,6 @@ function SectionForm({ selectedSectionData, onSave, onCancel }) {
         </div>
       </div>
 
-     
       <div className="form-card">
         <h3 className="section-title">Status</h3>
         <div className="form-check form-switch">
