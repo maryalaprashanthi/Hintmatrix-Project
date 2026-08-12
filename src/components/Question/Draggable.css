@@ -86,3 +86,153 @@
   color: red;
   font-size: 19px;
 }
+
+/* ================================
+   Main Action Popover
+================================ */
+
+.question-actions-popover {
+  width: 240px;
+  padding: 0;
+  border: 1px solid #e7e9ee;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow:
+    0 12px 30px rgba(15, 23, 42, 0.12),
+    0 3px 8px rgba(15, 23, 42, 0.06);
+}
+
+.question-actions-popover .popover-body {
+  padding: 8px;
+}
+
+/* ================================
+   Action Menu Items
+================================ */
+
+.action-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 10px 11px;
+  margin: 0;
+
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+
+  text-align: left;
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+.action-menu-item:hover {
+  background: #f5f7fa;
+}
+
+.action-menu-item:active {
+  transform: scale(0.98);
+}
+
+/* ================================
+   Icon
+================================ */
+
+.action-icon {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 9px;
+
+  font-size: 16px;
+}
+
+/* Different subtle backgrounds */
+
+.hint-icon {
+  background: #fff7df;
+}
+
+.retry-icon {
+  background: #eef4ff;
+  color: #3b82f6;
+  font-size: 21px;
+}
+
+.autofill-icon {
+  background: #f3edff;
+  color: #7c3aed;
+}
+
+/* ================================
+   Text
+================================ */
+
+.action-menu-item span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.action-menu-item strong {
+  color: #1f2937;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.action-menu-item small {
+  color: #8a93a3;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+/* ================================
+   Hint Popover
+================================ */
+
+.hint-popover {
+  width: 220px;
+  border: 1px solid #e7e9ee;
+  border-radius: 12px;
+
+  box-shadow:
+    0 12px 30px rgba(15, 23, 42, 0.12),
+    0 3px 8px rgba(15, 23, 42, 0.06);
+}
+
+.hint-popover .popover-header {
+  padding: 10px 13px;
+
+  border-bottom: 1px solid #eef0f3;
+  border-radius: 12px 12px 0 0;
+
+  background: #fff;
+  color: #1f2937;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.hint-popover .popover-body {
+  padding: 12px 13px;
+
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.hidden {
+  display: none !important;
+}
