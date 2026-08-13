@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 const useQuestionStore = create((set) => ({
   questions: [],
-  question: null,
+  droppableData: {},
   setQuestions: (apiQuestions) => {
     const formattedQuestions = [];
 
@@ -14,10 +14,13 @@ const useQuestionStore = create((set) => ({
             name: attribute.attributeName,
             amount: Number(attribute.amount),
             hints: [],
+            usedHint: false,
+            attemptingId: 1,
             type:
               attribute.headerName === "Debit Particulars" ? "debit" : "credit",
             status: "pending",
             answered: [],
+            actualAnswers: [],
             totalAnswers: 1,
           });
         });
@@ -26,31 +29,37 @@ const useQuestionStore = create((set) => ({
 
     set({
       questions: formattedQuestions,
-      question: apiQuestions.length > 0 ? apiQuestions[0] : null,
-
-      // Reset all answer arrays when a new question is loaded
-      tradingDataDebit: [],
-      tradingDataCredit: [],
-      profitDataDebit: [],
-      profitDataCredit: [],
-      balanceDataLiabilities: [],
-      balanceDataAssets: [],
     });
   },
-  tradingDataDebit: [],
-  tradingDataCredit: [],
-  profitDataDebit: [],
-  profitDataCredit: [],
-  balanceDataLiabilities: [],
-  balanceDataAssets: [],
-  // totalDebit: 0,
-  // totalCredit: 0,
-  // totalQ: 0,
-  // solvedQ: 0,
-  // setTotalDebit: (amt) => set({ totalDebit: amt }),
-  // setTotalCredit: (amt) => set({ totalCredit: amt }),
-  // setTotalQ: (amt) => set({ totalQ: amt }),
-  // setSolvedQ: (amt) => set({ solvedQ: amt }),
+
+  setActualAnswers: (id, actualAnswers) =>
+    set((state) => {
+      const nextQuestions = state.questions.map((item) => {
+        if (item.id === id) {
+          return { ...item, actualAnswers: actualAnswers };
+        } else {
+          return item;
+        }
+      });
+      return {
+        questions: nextQuestions,
+      };
+    }),
+
+  setHintUsed: (id) =>
+    set((state) => {
+      const nextQuestions = state.questions.map((item) => {
+        if (item.id === id) {
+          return { ...item, usedHint: true };
+        } else {
+          return item;
+        }
+      });
+      return {
+        questions: nextQuestions,
+      };
+    }),
+
   setError: (id) =>
     set((state) => {
       const nextQuestions = state.questions.map((item) => {
@@ -89,7 +98,27 @@ const useQuestionStore = create((set) => ({
       return { questions: nextQuestions };
     }),
 
-  moveQuestion: (sourceId, targetId) =>
+  setAttributeId: (id, attributeId) =>
+    set((state) => {
+      const nextQuestions = state.questions.map((item) => {
+        if (item.id === id) {
+          return { ...item, attemptingId: attributeId };
+        } else {
+          return item;
+        }
+      });
+      return { questions: nextQuestions };
+    }),
+
+  setTableData: (data) => {
+    const allTablesData = Object.fromEntries(data.map((d) => [d, []]));
+
+    console.log("This is full table data", allTablesData);
+
+    set({ droppableData: allTablesData });
+  },
+
+  moveQuestion: (sourceId, targetId, condId) =>
     set((state) => {
       const question = state.questions.find((item) => item.id == sourceId);
 
@@ -105,7 +134,11 @@ const useQuestionStore = create((set) => ({
           return item;
         }
 
-        const updatedAnswered = [...item.answered, targetId];
+        const updatedAnswered = [
+          ...item.answered,
+          { conditionId: condId, answer: targetId },
+        ];
+        // console.log("Updated answered is ", updatedAnswered);
 
         return {
           ...item,
@@ -115,114 +148,23 @@ const useQuestionStore = create((set) => ({
         };
       });
 
-      console.log("I got here too");
-      // const nextQuestions = state.questions.map((item) => {
-      //   if (item.totalAnswers === item.answered.length) {
-      //     return { ...item, status: "solved" };
-      //   } else {
-      //     return item;
-      //   }
-      // });
+      const myId = targetId.split("-").slice(0, 2).join("-");
+      const ops = targetId.split("-").pop();
+      const updatedData = [
+        ...state.droppableData[myId],
+        {
+          name: question.name,
+          amount: question.amount,
+          operation: ops,
+        },
+      ];
 
-      // notice that I am not passing the latest data to below components because it's not needed
-
-      if (targetId === "trading-dr-add") {
-        return {
-          questions: nextQuestions,
-          tradingDataDebit: [
-            ...state.tradingDataDebit,
-            { ...question, operation: "+" },
-          ],
-        };
-      } else if (targetId === "trading-dr-sub") {
-        return {
-          questions: nextQuestions,
-          tradingDataDebit: [
-            ...state.tradingDataDebit,
-            { ...question, operation: "-" },
-          ],
-        };
-      } else if (targetId === "trading-cr-add") {
-        return {
-          questions: nextQuestions,
-          tradingDataCredit: [
-            ...state.tradingDataCredit,
-            { ...question, operation: "+" },
-          ],
-        };
-      } else if (targetId === "trading-cr-sub") {
-        return {
-          questions: nextQuestions,
-          tradingDataCredit: [
-            ...state.tradingDataCredit,
-            { ...question, operation: "-" },
-          ],
-        };
-      } else if (targetId === "pnl-dr-add") {
-        return {
-          questions: nextQuestions,
-          profitDataDebit: [
-            ...state.profitDataDebit,
-            { ...question, operation: "+" },
-          ],
-        };
-      } else if (targetId === "pnl-dr-sub") {
-        return {
-          questions: nextQuestions,
-          profitDataDebit: [
-            ...state.profitDataDebit,
-            { ...question, operation: "-" },
-          ],
-        };
-      } else if (targetId === "pnl-cr-add") {
-        return {
-          questions: nextQuestions,
-          profitDataCredit: [
-            ...state.profitDataCredit,
-            { ...question, operation: "+" },
-          ],
-        };
-      } else if (targetId === "pnl-cr-sub") {
-        return {
-          questions: nextQuestions,
-          profitDataCredit: [
-            ...state.profitDataCredit,
-            { ...question, operation: "-" },
-          ],
-        };
-      } else if (targetId === "balance-liabilities-add") {
-        return {
-          questions: nextQuestions,
-          balanceDataLiabilities: [
-            ...state.balanceDataLiabilities,
-            { ...question, operation: "+" },
-          ],
-        };
-      } else if (targetId === "balance-liabilities-sub") {
-        return {
-          questions: nextQuestions,
-          balanceDataLiabilities: [
-            ...state.balanceDataLiabilities,
-            { ...question, operation: "-" },
-          ],
-        };
-      } else if (targetId === "balance-assets-add") {
-        return {
-          questions: nextQuestions,
-          balanceDataAssets: [
-            ...state.balanceDataAssets,
-            { ...question, operation: "+" },
-          ],
-        };
-      } else if (targetId === "balance-assets-sub") {
-        return {
-          questions: nextQuestions,
-          balanceDataAssets: [
-            ...state.balanceDataAssets,
-            { ...question, operation: "-" },
-          ],
-        };
-      }
+      // console.log("I got here too with updated data ", updatedData);
+      return {
+        questions: nextQuestions,
+        droppableData: { ...state.droppableData, [myId]: updatedData },
+      };
+      // console.log("I finally got here");
     }),
 }));
 

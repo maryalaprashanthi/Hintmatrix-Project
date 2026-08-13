@@ -9,18 +9,9 @@ import SummaryCards from "./SummaryCards";
 import { useState } from "react"; // Added react hook
 import WrongAnswersModal from "./WrongAnswersModal";
 import QuestionService from "../../services/QuestionService";
-
+import { data } from "./SampleData";
 const QuestionTable = () => {
-  const {
-    questions,
-    question,
-    tradingDataDebit,
-    tradingDataCredit,
-    profitDataDebit,
-    profitDataCredit,
-    balanceDataAssets,
-    balanceDataLiabilities,
-  } = useQuestionStore();
+  const { questions } = useQuestionStore();
 
   // Control popup visibility state and active errors array
   const [showModal, setShowModal] = useState(false);
@@ -187,6 +178,9 @@ const QuestionTable = () => {
     0,
   );
 
+  const allTableNames = data.map((d) => d.name);
+  // console.log("These are all table names I got ", allTableNames);
+
   let pendingQ = questions.filter((q) => q.status === "solved");
   let solvedQ = pendingQ.length;
 
@@ -273,80 +267,44 @@ const QuestionTable = () => {
         </div>
       </div>
 
+      {/* Accordion event key arrives as following add all names */}
+
       {/* RIGHT: Accounts accordion */}
       <div className="col-12 col-lg-9">
-        <Accordion defaultActiveKey={["trading", "pnl", "balance"]} alwaysOpen>
-          <Accordion.Item eventKey="trading" className="acc-item mb-4">
-            <Accordion.Header>
-              <span className="acc-icon icon-badge-purple">📘</span>
-              <span className="acc-title">Trading Account</span>
-            </Accordion.Header>
-            <Accordion.Body>
-              <div className="row g-3">
-                <div className="col-12 col-md-6">
-                  <div className="text-primary fw-semibold small mb-2">
-                    Dr. (Debit)
+        <Accordion defaultActiveKey={allTableNames} alwaysOpen>
+          {data.map((obj, idx) => (
+            <Accordion.Item
+              eventKey={obj.name}
+              className="acc-item mb-4"
+              key={idx}
+            >
+              <Accordion.Header>
+                <span className="acc-title">{obj.name}</span>
+              </Accordion.Header>
+              <Accordion.Body>
+                <div className="row g-3">
+                  <div className="col-12 col-md-6">
+                    <div className="text-primary fw-semibold small mb-2">
+                      {obj.headers[0]}
+                    </div>
+                    <Droppable
+                      id={`${obj.name}-${obj.headers[0]}`}
+                      isCreditSide={false}
+                    />
                   </div>
-                  <Droppable id="trading-dr" data={tradingDataDebit} />
-                </div>
-                <div className="col-12 col-md-6">
-                  <div className="text-success fw-semibold small mb-2">
-                    Cr. (Credit)
+                  <div className="col-12 col-md-6">
+                    <div className="text-success fw-semibold small mb-2">
+                      {obj.headers[1]}
+                    </div>
+                    <Droppable
+                      id={`${obj.name}-${obj.headers[1]}`}
+                      isCreditSide={true}
+                    />
                   </div>
-                  <Droppable id="trading-cr" data={tradingDataCredit} />
                 </div>
-              </div>
-            </Accordion.Body>
-          </Accordion.Item>
-
-          <Accordion.Item eventKey="pnl" className="acc-item mb-4">
-            <Accordion.Header>
-              <span className="acc-icon icon-badge-pink">💰</span>
-              <span className="acc-title">Profit &amp; Loss Account</span>
-            </Accordion.Header>
-            <Accordion.Body>
-              <div className="row g-3">
-                <div className="col-12 col-md-6">
-                  <div className="text-primary fw-semibold small mb-2">
-                    Dr. (Expenses &amp; Losses)
-                  </div>
-                  <Droppable id="pnl-dr" data={profitDataDebit} />
-                </div>
-                <div className="col-12 col-md-6">
-                  <div className="text-success fw-semibold small mb-2">
-                    Cr. (Incomes &amp; Gains)
-                  </div>
-                  <Droppable id="pnl-cr" data={profitDataCredit} />
-                </div>
-              </div>
-            </Accordion.Body>
-          </Accordion.Item>
-
-          <Accordion.Item eventKey="balance" className="acc-item">
-            <Accordion.Header>
-              <span className="acc-icon icon-badge-indigo">🏦</span>
-              <span className="acc-title">Balance Sheet</span>
-            </Accordion.Header>
-            <Accordion.Body>
-              <div className="row g-3">
-                <div className="col-12 col-md-6">
-                  <div className="text-primary fw-semibold small mb-2">
-                    Liabilities
-                  </div>
-                  <Droppable
-                    id="balance-liabilities"
-                    data={balanceDataLiabilities}
-                  />
-                </div>
-                <div className="col-12 col-md-6">
-                  <div className="text-success fw-semibold small mb-2">
-                    Assets
-                  </div>
-                  <Droppable id="balance-assets" data={balanceDataAssets} />
-                </div>
-              </div>
-            </Accordion.Body>
-          </Accordion.Item>
+              </Accordion.Body>
+            </Accordion.Item>
+          ))}
         </Accordion>
       </div>
       <WrongAnswersModal
