@@ -268,6 +268,17 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
               <span>Rule Engine</span>
             </div>
           </NavLink>
+          {/*student attendance*/}
+          <NavLink
+            to="/studentattendance"
+            className={menuClass}
+            onClick={closeSidebar}
+          >
+            <div className="menu-left">
+              <MdTableChart />
+              <span>Student Attendance</span>
+            </div>
+          </NavLink>
 
           <NavLink to="/practice" className={menuClass} onClick={closeSidebar}>
             <div className="menu-left">
