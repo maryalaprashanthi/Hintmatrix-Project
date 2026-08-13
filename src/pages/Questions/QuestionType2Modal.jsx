@@ -30,41 +30,63 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
   const [courseOptions, setCourseOptions] = useState([]);
   const [chapterOptions, setChapterOptions] = useState([]);
   const [categoryOptions, setCategoryOptions] = useState([]);
-  const transactionOptions = [{}];
 
   const [headerOptions, setHeaderOptions] = useState([]);
   const [attributeOptions, setAttributeOptions] = useState([]);
+  const transactionOptions = attributeOptions;
 
   const emptyRow = () => ({
     transaction: "",
-    amount: "",
+    amount1: "",
     amount2: "",
   });
 
   const [questionAttributes, setQuestionAttributes] = useState([emptyRow()]);
+  console.log("Transaction Options:", transactionOptions);
+
+  /* =========================================================
+     LOAD INITIAL DATA
+  ========================================================= */
 
   useEffect(() => {
     loadCourses();
     loadCategories();
+    loadChapters();
     loadHeaders();
     loadAttributes();
   }, []);
 
+  /* =========================================================
+     LOAD CHAPTERS WHEN COURSE CHANGES
+  ========================================================= */
+
   useEffect(() => {
     if (courseId) {
-      loadChapters(courseId.value);
+      loadChapters(courseId);
     } else {
       setChapterOptions([]);
     }
   }, [courseId]);
 
+  /* =========================================================
+     EDIT / RESET FORM
+  ========================================================= */
+
   useEffect(() => {
     if (questionData) {
       setQuestionText(questionData.questionText || "");
 
-      setCourseId(questionData.courseId || null);
-      setChapterId(questionData.chapterId || null);
-      setCategoryId(questionData.categoryId || null);
+      /*
+       * courseId, chapterId and categoryId are stored
+       * as IDs in state.
+       */
+      setCourseId(questionData.courseId ?? questionData.course_id ?? null);
+
+      setChapterId(questionData.chapterId ?? questionData.chapter_id ?? null);
+
+      setCategoryId(
+        questionData.categoryId ?? questionData.category_id ?? null,
+      );
 
       if (
         questionData.questionAttributes &&
@@ -79,50 +101,97 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
     }
   }, [questionData]);
 
+  /* =========================================================
+     COURSES
+  ========================================================= */
+
   const loadCourses = async () => {
     try {
       const response = await CourseService.getAllCourses();
 
       setCourseOptions(
         response.data.map((item) => ({
-          value: item.course_id,
-          label: item.course_name,
+          value: item.course_id ?? item.courseId ?? item.id,
+          label: item.course_name ?? item.name,
         })),
       );
-    } catch (e) {
-      console.log(e);
+    } catch (error) {
+      console.error("Error loading courses:", error);
     }
   };
+
+  /* =========================================================
+     CATEGORIES
+  ========================================================= */
 
   const loadCategories = async () => {
     try {
-      const response = await CategoryService.getAllCategories();
+      const response = await CategoryService.getAll();
 
-      setCategoryOptions(
-        response.data.map((item) => ({
-          value: item.category_id,
-          label: item.category_name,
-        })),
-      );
-    } catch (e) {
-      console.log(e);
+      console.log("CATEGORY API RESPONSE:", response);
+      console.log("CATEGORY DATA:", response?.data);
+
+      const data = Array.isArray(response?.data)
+        ? response.data
+        : Array.isArray(response?.data?.data)
+          ? response.data.data
+          : Array.isArray(response?.data?.results)
+            ? response.data.results
+            : [];
+
+      console.log("CATEGORY ARRAY:", data);
+
+      const options = data.map((item) => ({
+        value: item.category_id ?? item.categoryId ?? item.id,
+        label: item.category_name ?? item.categoryName ?? item.name ?? "",
+      }));
+
+      console.log("CATEGORY OPTIONS:", options);
+
+      setCategoryOptions(options);
+    } catch (error) {
+      console.error("Error loading categories:", error);
+      setCategoryOptions([]);
     }
   };
 
-  const loadChapters = async (courseId) => {
+  /* =========================================================
+     CHAPTERS
+  ========================================================= */
+
+  const loadChapters = async () => {
     try {
-      const response = await ChapterService.getChaptersByCourse(courseId);
+      const response = await ChapterService.getAll();
 
-      setChapterOptions(
-        response.data.map((item) => ({
-          value: item.chapter_id,
-          label: item.chapter_name,
-        })),
-      );
-    } catch (e) {
-      console.log(e);
+      console.log("CHAPTER API RESPONSE:", response);
+      console.log("CHAPTER DATA:", response?.data);
+
+      const data = Array.isArray(response?.data)
+        ? response.data
+        : Array.isArray(response?.data?.data)
+          ? response.data.data
+          : Array.isArray(response?.data?.results)
+            ? response.data.results
+            : [];
+
+      console.log("CHAPTER ARRAY:", data);
+
+      const options = data.map((item) => ({
+        value: item.chapter_id ?? item.chapterId ?? item.id,
+        label: item.chapter_name ?? item.chapterName ?? item.name ?? "",
+      }));
+
+      console.log("CHAPTER OPTIONS:", options);
+
+      setChapterOptions(options);
+    } catch (error) {
+      console.error("Error loading chapters:", error);
+      setChapterOptions([]);
     }
   };
+  /* =========================================================
+     TABLE HEADERS
+  ========================================================= */
 
   const loadHeaders = async () => {
     try {
@@ -130,46 +199,86 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
 
       setHeaderOptions(
         response.data.map((item) => ({
-          value: item.headerId,
+          value: item.headerId ?? item.header_id ?? item.id,
           label: item.name,
         })),
       );
-    } catch (e) {
-      console.log(e);
+    } catch (error) {
+      console.error("Error loading headers:", error);
     }
   };
+
+  /* =========================================================
+     TABLE ATTRIBUTES
+  ========================================================= */
 
   const loadAttributes = async () => {
     try {
       const response = await TableAttributeService.getAll();
 
-      setAttributeOptions(
-        response.data.map((item) => ({
-          value: item.attributeId,
-          label: item.name,
-        })),
-      );
-    } catch (e) {
-      console.log(e);
+      console.log("TABLE ATTRIBUTE RESPONSE:", response);
+      console.log("TABLE ATTRIBUTE DATA:", response.data);
+
+      const data = Array.isArray(response?.data)
+        ? response.data
+        : Array.isArray(response?.data?.data)
+          ? response.data.data
+          : [];
+
+      console.log("TABLE ATTRIBUTE ARRAY:", data);
+
+      const options = data.map((item) => ({
+        value: item.attributeId ?? item.attribute_id ?? item.id,
+        label: item.name ?? item.attributeName ?? item.attribute_name ?? "",
+      }));
+
+      console.log("TABLE ATTRIBUTE OPTIONS:", options);
+
+      setAttributeOptions(options);
+    } catch (error) {
+      console.error("Error loading attributes:", error);
     }
   };
+  /* =========================================================
+     ATTRIBUTE CHANGE
+  ========================================================= */
+
   const handleAttributeChange = (index, field, value) => {
     const updated = [...questionAttributes];
-    updated[index][field] = value;
+
+    updated[index] = {
+      ...updated[index],
+      [field]: value,
+    };
+
     setQuestionAttributes(updated);
   };
+
+  /* =========================================================
+     ADD ROW
+  ========================================================= */
 
   const handleAddRow = () => {
     setQuestionAttributes([...questionAttributes, emptyRow()]);
   };
 
+  /* =========================================================
+     DELETE ROW
+  ========================================================= */
+
   const handleDeleteRow = (index) => {
-    if (questionAttributes.length === 1) return;
+    if (questionAttributes.length === 1) {
+      return;
+    }
 
     const updated = questionAttributes.filter((_, i) => i !== index);
 
     setQuestionAttributes(updated);
   };
+
+  /* =========================================================
+     RESET FORM
+  ========================================================= */
 
   const resetForm = () => {
     setCourseId(null);
@@ -180,6 +289,10 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
     setQuestionAttributes([emptyRow()]);
   };
 
+  /* =========================================================
+     CLOSE MODAL
+  ========================================================= */
+
   const handleClose = () => {
     resetForm();
 
@@ -188,6 +301,10 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
     }
   };
 
+  /* =========================================================
+     SAVE
+  ========================================================= */
+
   const handleSave = async () => {
     if (!courseId || !chapterId || !categoryId || !questionText.trim()) {
       alert("Please fill all required fields.");
@@ -195,19 +312,36 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
     }
 
     const payload = {
-      courseId: courseId.value,
-      chapterId: chapterId.value,
-      categoryId: categoryId.value,
-      questionText: questionText,
+      courseId: courseId,
+      chapterId: chapterId,
+      categoryId: categoryId,
+      questionText: questionText.trim(),
+
       questionAttributes: questionAttributes.map((row) => ({
-        headerId: null,
-        attributeId: null,
+        headerId: row.headerId ?? null,
+        attributeId: row.attributeId ?? null,
+
         transaction: row.transaction || null,
-        amount: row.amount === "" ? null : Number(row.amount),
-        amount2: row.amount2 === "" ? null : Number(row.amount2),
-        note: null,
+
+        amount1:
+          row.amount1 === "" ||
+          row.amount1 === null ||
+          row.amount1 === undefined
+            ? null
+            : Number(row.amount1),
+
+        amount2:
+          row.amount2 === "" ||
+          row.amount2 === null ||
+          row.amount2 === undefined
+            ? null
+            : Number(row.amount2),
+
+        note: row.note ?? null,
       })),
     };
+
+    console.log("Question Type 2 Payload:", payload);
 
     try {
       if (onSave) {
@@ -216,51 +350,69 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
 
       handleClose();
     } catch (error) {
-      console.log(error);
+      console.error("Error saving Question Type 2:", error);
     }
   };
 
-  if (!show) return null;
-  return createPortal(
-    <div className="modal-overlay">
-      <div className="table-name-modal">
-        {/* Header */}
+  /* =========================================================
+     RENDER
+  ========================================================= */
 
-        <div className="modal-header">
+  if (!show) {
+    return null;
+  }
+
+  return createPortal(
+    <div className="qt2-modal-overlay">
+      <div className="qt2-table-name-modal">
+        {/* =================================================
+            HEADER
+        ================================================= */}
+
+        <div className="qt2-modal-header">
           <div>
             <h2>
               {questionData ? "Edit Question Type 2" : "Add Question Type 2"}
             </h2>
 
-            <p>Fill in the details below to create a new question.</p>
+            <p>
+              {questionData
+                ? "Update Question Type 2 details."
+                : "Create a new Question Type 2."}
+            </p>
           </div>
 
-          <button type="button" className="close-btn" onClick={handleClose}>
+          <button type="button" className="qt2-close-btn" onClick={handleClose}>
             <FaTimes />
           </button>
         </div>
 
-        {/* Body */}
+        {/* =================================================
+            BODY
+        ================================================= */}
 
-        <div className="modal-body">
-          {/* Question Details */}
+        <div className="qt2-modal-body">
+          {/* =================================================
+              QUESTION DETAILS
+          ================================================= */}
 
-          <div className="form-card">
-            <h3 className="section-title">Question Details</h3>
+          <div className="qt2-form-card">
+            <h3 className="qt2-section-title">Question Details</h3>
 
-            <div className="form-grid">
-              {/* Course */}
+            <div className="qt2-form-grid">
+              {/* COURSE */}
 
-              <div className="form-group">
+              <div className="qt2-form-group">
                 <label>
                   Course Name <span>*</span>
                 </label>
 
-                <div className="input-box course-select-box">
-                  <FaBook className="input-icon" />
+                <div className="qt2-input-box qt2-course-select-box">
+                  <FaBook className="qt2-input-icon" />
 
                   <Select
-                    className="react-select-container"
+                    className="qt2-react-select-container"
+                    classNamePrefix="qt2-react-select"
                     options={courseOptions}
                     value={
                       courseOptions.find(
@@ -268,29 +420,39 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
                       ) || null
                     }
                     onChange={(selected) => {
-                      setCourseId(selected ? selected.value : "");
-                      setChapterId("");
+                      setCourseId(selected ? selected.value : null);
+
+                      setChapterId(null);
+                      setChapterOptions([]);
                     }}
                     placeholder="Select Course"
                     isSearchable
                     isClearable
-                    classNamePrefix="react-select"
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+                    styles={{
+                      menuPortal: (base) => ({
+                        ...base,
+                        zIndex: 99999,
+                      }),
+                    }}
                   />
                 </div>
               </div>
 
-              {/* Chapter */}
+              {/* CHAPTER */}
 
-              <div className="form-group">
+              <div className="qt2-form-group">
                 <label>
                   Chapter Name <span>*</span>
                 </label>
 
-                <div className="input-box">
-                  <FaLayerGroup className="input-icon" />
+                <div className="qt2-input-box">
+                  <FaLayerGroup className="qt2-input-icon" />
 
                   <Select
-                    className="react-select-container"
+                    className="qt2-react-select-container"
+                    classNamePrefix="qt2-react-select"
                     options={chapterOptions}
                     value={
                       chapterOptions.find(
@@ -298,53 +460,70 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
                       ) || null
                     }
                     onChange={(selected) => {
-                      setChapterId(selected ? selected.value : "");
+                      setChapterId(selected ? selected.value : null);
                     }}
                     placeholder="Select Chapter"
                     isSearchable
                     isClearable
-                    classNamePrefix="react-select"
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+                    styles={{
+                      menuPortal: (base) => ({
+                        ...base,
+                        zIndex: 99999,
+                      }),
+                    }}
                   />
                 </div>
               </div>
 
-              {/* Category */}
+              {/* CATEGORY */}
 
-              <div className="form-group">
+              <div className="qt2-form-group">
                 <label>
                   Category <span>*</span>
                 </label>
 
-                <div className="input-box">
-                  <FaList className="input-icon" />
+                <div className="qt2-input-box">
+                  <FaList className="qt2-input-icon" />
 
                   <Select
-                    className="react-select-container"
-                    classNamePrefix="react-select"
+                    className="qt2-react-select-container"
+                    classNamePrefix="qt2-react-select"
                     options={categoryOptions}
                     value={
                       categoryOptions.find(
-                        (option) => option.value === categoryId,
+                        (option) => String(option.value) === String(categoryId),
                       ) || null
                     }
                     onChange={(selected) => {
-                      setCategoryId(selected ? selected.value : "");
+                      setCategoryId(selected ? selected.value : null);
                     }}
                     placeholder="Select Category"
                     isSearchable
                     isClearable
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+                    styles={{
+                      menuPortal: (base) => ({
+                        ...base,
+                        zIndex: 99999,
+                      }),
+                    }}
                   />
                 </div>
               </div>
             </div>
 
-            <div className="form-group mt-4">
+            {/* QUESTION TEXT */}
+
+            <div className="qt2-form-group mt-4">
               <label>
                 Question Text <span>*</span>
               </label>
 
-              <div className="textarea-box">
-                <FaFileAlt className="input-icon" />
+              <div className="qt2-textarea-box">
+                <FaFileAlt className="qt2-input-icon" />
 
                 <textarea
                   placeholder="Enter Question Text"
@@ -355,32 +534,34 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
             </div>
           </div>
 
-          {/* Question Attributes */}
+          {/* =================================================
+              QUESTION ATTRIBUTES
+          ================================================= */}
 
-          <div className="form-card question-attributes-card">
-            <h3 className="section-title">Question Attributes</h3>
-            <div className="question-table">
+          <div className="qt2-form-card qt2-question-attributes-card">
+            <h3 className="qt2-section-title">Question Attributes</h3>
+
+            <div className="qt2-question-table">
               <table className="table table-bordered">
                 <thead>
                   <tr>
                     <th>Transaction</th>
-
-                    <th>Amount</th>
-
+                    <th>Amount 1</th>
                     <th>Amount 2</th>
-
                     <th>Action</th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {questionAttributes.map((row, index) => (
                     <tr key={index}>
-                      {/* Transaction */}
+                      {/* TRANSACTION */}
+
                       <td>
-                        <div className="question-attribute-cell">
+                        <div className="qt2-question-attribute-cell">
                           <Select
-                            className="react-select-container"
-                            classNamePrefix="transaction-select"
+                            className="qt2-react-select-container"
+                            classNamePrefix="qt2-transaction-select"
                             options={transactionOptions}
                             value={
                               transactionOptions.find(
@@ -394,31 +575,27 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
                                 selected ? selected.value : "",
                               )
                             }
-                            placeholder="Select Transaction"
-                            isSearchable
-                            isClearable
+                            placeholder="Search Transaction..."
+                            isSearchable={true}
+                            isClearable={true}
                             menuPortalTarget={document.body}
                             menuPosition="fixed"
-                            styles={{
-                              menuPortal: (base) => ({
-                                ...base,
-                                zIndex: 99999,
-                              }),
-                            }}
                           />
                         </div>
                       </td>
 
+                      {/* AMOUNT 1*/}
+
                       <td>
-                        <div className="question-attribute-cell">
+                        <div className="qt2-question-attribute-cell">
                           <input
                             type="number"
                             placeholder="0"
-                            value={row.amount || ""}
+                            value={row.amount1 || ""}
                             onChange={(e) =>
                               handleAttributeChange(
                                 index,
-                                "amount",
+                                "amount1",
                                 e.target.value,
                               )
                             }
@@ -426,8 +603,10 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
                         </div>
                       </td>
 
+                      {/* AMOUNT 2 */}
+
                       <td>
-                        <div className="question-attribute-cell">
+                        <div className="qt2-question-attribute-cell">
                           <input
                             type="number"
                             placeholder="0"
@@ -443,11 +622,12 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
                         </div>
                       </td>
 
-                      {/* Delete */}
+                      {/* DELETE */}
+
                       <td className="text-center">
                         <button
                           type="button"
-                          className="btn btn-outline-danger"
+                          className="qt2-delete-btn btn btn-outline-danger"
                           onClick={() => handleDeleteRow(index)}
                           disabled={questionAttributes.length === 1}
                         >
@@ -460,9 +640,11 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
               </table>
             </div>
 
+            {/* ADD ROW */}
+
             <button
               type="button"
-              className="btn btn-outline-primary mt-3"
+              className="qt2-add-row-btn btn btn-outline-primary mt-3"
               onClick={handleAddRow}
             >
               <FaPlus className="me-2" />
@@ -470,9 +652,12 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
             </button>
           </div>
         </div>
-        {/* Footer */}
 
-        <div className="modal-footer">
+        {/* =================================================
+            FOOTER
+        ================================================= */}
+
+        <div className="qt2-modal-footer">
           <button
             type="button"
             className="btn btn-secondary"
