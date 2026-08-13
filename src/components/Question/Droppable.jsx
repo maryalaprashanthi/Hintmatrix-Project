@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { useDroppable } from "@dnd-kit/react";
 import { Overlay, Tooltip } from "react-bootstrap";
 import "./Droppable.css";
+import useQuestionStore from "./questionStore";
 
 const mergeRefs =
   (...refs) =>
@@ -14,11 +15,38 @@ const mergeRefs =
 
 const Droppable = ({
   id,
-  data,
   addLabel = "Particulars",
   amtLabel = "Amt (₹)",
+  isCreditSide,
 }) => {
-  const isCreditSide = /cr|credit|assets/i.test(id || "");
+  const data = useQuestionStore((state) => state.droppableData[id]);
+  // console.log("I am rendering Droppable for id: ", id);
+  // console.log(
+  //   "This is data I am getting in component Droppable for id: ",
+  //   id,
+  //   " and data is ",
+  //   data,
+  // );
+  // const temp = questions.filter((q) =>
+  //   q.answered.some((tar) => tar.startsWith(`${id}-`)),
+  // );
+
+  // const data = temp.map((q) => {
+  //   for (let tar of q.answered) {
+  //     if (tar.startsWith(`${id}-`) && tar.split("-").pop() == "add") {
+  //       // console.log("I entered + with value: ", tar.split("-").pop());
+  //       return { ...q, operation: "+" };
+  //     } else if (tar.startsWith(`${id}-`) && tar.split("-").pop() == "less") {
+  //       // console.log("I entered - with value: ", tar.split("-").pop());
+  //       return { ...q, operation: "-" };
+  //     }
+  //   }
+  // });
+
+  // console.log("This is data I got for id: ", id, " and data is ", data);
+
+  // const isCreditSide = /(Credit Particulars|assets)$/i.test(id || "");
+
   const theme = isCreditSide ? "theme-credit" : "theme-debit";
 
   const addZoneRef = useRef(null);
@@ -28,15 +56,15 @@ const Droppable = ({
     id: `${id}-add`,
   });
   const { ref: subRef, isDropTarget: isSubOver } = useDroppable({
-    id: `${id}-sub`,
+    id: `${id}-less`,
   });
 
   const addTotal = (data || [])
-    .filter((o) => o.operation === "+")
+    .filter((o) => o.operation === "add")
     .reduce((sum, o) => sum + Number(o.amount || 0), 0);
 
   const subTotal = (data || [])
-    .filter((o) => o.operation === "-")
+    .filter((o) => o.operation === "less")
     .reduce((sum, o) => sum + Number(o.amount || 0), 0);
 
   return (
@@ -60,10 +88,10 @@ const Droppable = ({
             <tbody>
               {data !== undefined &&
                 data.map((obj) => (
-                  <tr key={obj.id}>
+                  <tr key={`${obj.id}-add`}>
                     <td>{obj.name}</td>
                     <td className="text-end">
-                      {obj.operation === "+"
+                      {obj.operation === "add"
                         ? Number(obj.amount).toLocaleString("en-IN")
                         : ""}
                     </td>
@@ -108,9 +136,9 @@ const Droppable = ({
             <tbody>
               {data !== undefined &&
                 data.map((obj) => (
-                  <tr key={obj.id}>
+                  <tr key={`${obj.id}-less`}>
                     <td className="text-end">
-                      {obj.operation === "-"
+                      {obj.operation === "less"
                         ? `-${Number(obj.amount).toLocaleString("en-IN")}`
                         : "\u00A0"}
                     </td>

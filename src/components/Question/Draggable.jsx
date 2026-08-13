@@ -4,6 +4,9 @@ import "./Draggable.css";
 import { VscError } from "react-icons/vsc";
 import { OverlayTrigger, Popover } from "react-bootstrap";
 import useQuestionStore from "./questionStore";
+import RuleEngineService from "../../services/RuleEngineService";
+import { useParams } from "react-router-dom";
+import QuestionAnswerService from "../../services/QuestionAnswerService";
 
 const CheckIcon = () => (
   <svg
@@ -44,6 +47,7 @@ const PendingIcon = () => (
 );
 
 export default function Draggable({ id, children, type, status = "pending" }) {
+  const { questionId } = useParams();
   const solved = status === "solved";
   console.log("My status is ", status);
   const { ref } = useDraggable({
@@ -55,15 +59,16 @@ export default function Draggable({ id, children, type, status = "pending" }) {
     /* <CheckIcon /> */
     // <PendingIcon />
   }
-  const { questions } = useQuestionStore();
-  const allHints = questions.find((q) => q.id == id).hints;
+  const { questions, setHintUsed } = useQuestionStore();
+  const myQuestion = questions.find((q) => q.id == id);
+  const allHints = myQuestion.hints;
   const dragButton = (
     <button
       ref={solved ? undefined : ref}
       type="button"
       className="drag-btn"
-      // disabled={solved}
-      // aria-disabled={solved}
+      disabled={solved}
+      aria-disabled={solved}
     >
       <span className="drag-btn-content">{children}</span>
 
@@ -81,14 +86,105 @@ export default function Draggable({ id, children, type, status = "pending" }) {
 
   const handleHint = () => {
     console.log("Hint was clicked");
+    setHintUsed(id);
   };
 
-  const handleTryAgain = () => {
-    console.log("Try again was clicked");
-  };
+  // const handleTryAgain = () => {
+  //   console.log("Try again was clicked");
+  //   // call answer events with attributeId to remove the correct answers on this id.
+  // };
 
-  const handleAutoFill = () => {
+  const handleAutoFill = async () => {
     console.log("Autofill was clicked");
+
+    try {
+      const response = await RuleEngineService.getAttributeAnswers(id);
+      const apiData = response?.[0];
+      if (!apiData) return;
+
+      const validTargets = [];
+
+      for (let i = 1; i <= 4; i++) {
+        const condition = apiData[`condition${i}`];
+        if (!condition || condition.arithmetic == null) continue;
+
+        validTargets.push(
+          `${condition.tableName}-${condition.headerName}-${condition.arithmetic}`,
+        );
+      }
+
+      if (!validTargets.length) return;
+
+      useQuestionStore.setState((state) => {
+        const currentQuestion = state.questions.find((q) => q.id == id);
+        if (!currentQuestion) return state;
+
+        const uniqueAnswered = Array.from(
+          new Set([...currentQuestion.answered, ...validTargets]),
+        );
+
+        const nextQuestions = state.questions.map((item) => {
+          if (item.id !== id) return item;
+
+          return {
+            ...item,
+            answered: uniqueAnswered,
+            totalAnswers: validTargets.length || item.totalAnswers,
+            status:
+              uniqueAnswered.length >= validTargets.length
+                ? "solved"
+                : "pending",
+          };
+        });
+
+        const nextDroppableData = { ...state.droppableData };
+
+        validTargets.forEach((targetId) => {
+          const [table, header, operation] = targetId.split("-");
+          const bucketKey = `${table}-${header}`;
+          const currentBucket = nextDroppableData[bucketKey] ?? [];
+          const alreadyPresent = currentBucket.some(
+            (entry) =>
+              entry.name === currentQuestion.name &&
+              entry.operation === operation &&
+              Number(entry.amount) === Number(currentQuestion.amount),
+          );
+
+          if (!alreadyPresent) {
+            nextDroppableData[bucketKey] = [
+              ...currentBucket,
+              {
+                name: currentQuestion.name,
+                amount: currentQuestion.amount,
+                operation,
+              },
+            ];
+          }
+        });
+
+        return {
+          questions: nextQuestions,
+          droppableData: nextDroppableData,
+        };
+      });
+      const post_body = {
+        userId: 1,
+        questionId: questionId,
+        attributeId: id,
+        arithmetic: "add",
+        answerPosition: "1",
+        eventType: "AUTOFILL",
+        isCorrect: true,
+        description: "empty",
+        userAnswer: "empty",
+      };
+      console.log(post_body);
+      const response2 =
+        await QuestionAnswerService.processAnswerEvent(post_body);
+      console.log(response2);
+    } catch (error) {
+      console.error("I got this error: ", error);
+    }
   };
 
   return (
@@ -134,13 +230,13 @@ export default function Draggable({ id, children, type, status = "pending" }) {
                     </button>
                   </OverlayTrigger>
 
-                  <button className="action-menu-item" onClick={handleTryAgain}>
+                  {/* <button className="action-menu-item" onClick={handleTryAgain}>
                     <span className="action-icon retry-icon">↻</span>
                     <span>
                       <strong>Try Again</strong>
                       <small>Reset your answer</small>
                     </span>
-                  </button>
+                  </button> */}
 
                   <button className="action-menu-item" onClick={handleAutoFill}>
                     <span className="action-icon autofill-icon">✦</span>
@@ -155,31 +251,8 @@ export default function Draggable({ id, children, type, status = "pending" }) {
           >
             {dragButton}
           </OverlayTrigger>
-        ) : status == "pending" ? (
-          dragButton
         ) : (
-          <OverlayTrigger
-            key={id}
-            trigger="click"
-            placement="bottom"
-            rootClose
-            container={document.body}
-            overlay={
-              <Popover className="question-actions-popover">
-                <Popover.Body>
-                  <button className="action-menu-item" onClick={handleTryAgain}>
-                    <span className="action-icon retry-icon">↻</span>
-                    <span>
-                      <strong>Try Again</strong>
-                      <small>Reset your answer</small>
-                    </span>
-                  </button>
-                </Popover.Body>
-              </Popover>
-            }
-          >
-            {dragButton}
-          </OverlayTrigger>
+          dragButton
         )}
       </>
     </div>

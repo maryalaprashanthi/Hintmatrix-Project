@@ -2,11 +2,17 @@ import axios from "axios";
 
 const QUESTION_ANSWER_URL = "http://localhost:8080/api/question_answers";
 
-const ANSWER_EVENT_URL = "http://localhost:8080/api/answer-events";
+const ANSWER_EVENT_URL = "http://localhost:8080/api/answer_events";
 
 const QuestionAnswerService = {
   processAnswerEvent: async (answerData) => {
     const response = await axios.post(ANSWER_EVENT_URL, answerData);
+
+    return response.data;
+  },
+
+  processQuestionAnswers: async (answerData) => {
+    const response = await axios.post(QUESTION_ANSWER_URL, answerData);
 
     return response.data;
   },

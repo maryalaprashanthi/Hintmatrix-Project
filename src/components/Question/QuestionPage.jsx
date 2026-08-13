@@ -5,8 +5,8 @@ import useQuestionStore from "./questionStore";
 import { useParams } from "react-router-dom";
 import RuleEngineService from "../../services/RuleEngineService";
 import QuestionService from "../../services/QuestionService";
-
-// import { data } from "./sample";
+import { data } from "./SampleData";
+import QuestionAnswerService from "../../services/QuestionAnswerService";
 
 const termMap = {
   "Balance Sheet": "balance",
@@ -34,7 +34,7 @@ const answerMap = {
   trading: "Trading Account",
   balance: "Balance Sheet",
   add: "ADD",
-  sub: "SUBTRACT",
+  less: "SUBTRACT",
 };
 
 const QuestionPage = () => {
@@ -45,6 +45,9 @@ const QuestionPage = () => {
     setHints,
     questions,
     setTotalAnswers,
+    setTableData,
+    setActualAnswers,
+    setAttributeId,
   } = useQuestionStore();
   const { questionId } = useParams();
   // console.log("Question Id:", questionId);
@@ -57,16 +60,16 @@ const QuestionPage = () => {
     try {
       const response = await QuestionService.getQuestionById(questionId);
 
-      // console.log("API Response:", response.data);
-
-      // console.log(response.data);
-
+      let allStrings = data.flatMap((obj) =>
+        obj.headers.map((header) => `${obj.name}-${header}`),
+      );
+      // console.log("All strings are ", allStrings);
       setQuestions([response.data]);
+      setTableData(allStrings);
     } catch (error) {
       console.error("Failed to load question:", error);
     }
   };
-  // return <ProgressCard solvedCount={10} />;
   return (
     <DragDropProvider
       onDragEnd={async (Event) => {
@@ -80,8 +83,6 @@ const QuestionPage = () => {
         } else {
           // This is called when dropped in a dropzone
           console.log(`I got dropped into ${targetId}`);
-          // console.log("This is data I got ", data[0].condition1);
-          // is it present in answered
           const myQuestion = questions.find((q) => q.id == sourceId);
           for (const cur of myQuestion.answered) {
             if (cur === targetId) {
@@ -91,31 +92,84 @@ const QuestionPage = () => {
           }
           const [first, second, third] = targetId.split("-");
           try {
-            const data = await RuleEngineService.getAttributeAnswers(sourceId);
-            const apiData = data[0];
-            let matched = false;
-            let count = 0;
-            let allHints = [];
-            for (let i = 1; i <= 4; i++) {
-              const condition = apiData[`condition${i}`];
-              if (condition.arithmetic == null) continue;
-              count = count + 1;
-              allHints.push(condition.information);
-              console.log(`This is data I got (condition${i}) `, condition);
-              const string = `${termMap[condition.tableName]}-${termMap[condition.headerName]}-${termMap[condition.arithmetic]}`;
-              console.log("The string is ", string);
-              if (!matched && string === targetId) {
-                console.log("I entered correct");
-                matched = true;
+            let actualAnswers = myQuestion.actualAnswers;
+            if (myQuestion.actualAnswers.length == 0) {
+              const data =
+                await RuleEngineService.getAttributeAnswers(sourceId);
+              const apiData = data[0];
+              let count = 0;
+              let allHints = [];
+              for (let i = 1; i <= 4; i++) {
+                const condition = apiData[`condition${i}`];
+                if (condition.arithmetic == null) continue;
+                count = count + 1;
+                allHints.push(condition.information);
+                // console.log(`This is data I got (condition${i}) `, condition);
+                const string = `${condition.tableName}-${condition.headerName}-${condition.arithmetic}`;
+                actualAnswers.push({
+                  conditionId: i,
+                  answer: string,
+                  tableNameId: condition.tableId,
+                  headerId: condition.headerId,
+                });
+                // console.log(
+                //   "The string is ",
+                //   string,
+                //   " and targetId is ",
+                //   targetId,
+                // );
               }
+              console.log("I am getting data from db: ", actualAnswers);
+              setActualAnswers(sourceId, actualAnswers);
+              // if (myQuestion.totalAnswers != count)
+              setTotalAnswers(sourceId, count);
+              setHints(sourceId, allHints);
             }
-            setTotalAnswers(sourceId, count);
-            setHints(sourceId, allHints);
+            let matched = false;
+            let answerId = null;
+
+            // check if present in myQuestion.actualAnswers if yes set matched to true
+            // set a variable answerId to actualAnswers.id and call moveQuestion with answerId as well.
+            // if not present set matched to false and call setError with sourceId
+            console.log("This is actual answers hh ", actualAnswers);
+
+            const alreadyAnswered = myQuestion.answered.find(
+              (a) => a.answer === targetId,
+            );
+            if (alreadyAnswered) {
+              return;
+            }
+
+            const correctAnswer = actualAnswers.find(
+              (a) => a.answer === targetId,
+            );
+            if (correctAnswer) {
+              matched = true;
+              answerId = correctAnswer.conditionId;
+            }
+
             if (!matched) {
               console.log("I entered wrong into ", targetId);
-              // send post request to answer events
 
-              // const questionData = ;
+              // if attemptingId is present in answered give a value from actualAnswers that is not
+              // present in answered to attemptingId. if there's no such id return
+
+              console.log("I have already answered ", myQuestion.answered);
+
+              const answeredIds = myQuestion.answered.map((a) => a.conditionId);
+              let enter = false;
+              let newValue = null;
+              if (answeredIds.includes(myQuestion.attemptingId)) {
+                enter = true;
+                const nextAttempt = myQuestion.actualAnswers.find(
+                  (a) => !answeredIds.includes(a.conditionId),
+                );
+                if (!nextAttempt) return;
+                newValue = nextAttempt.conditionId;
+                setAttributeId(sourceId, nextAttempt.conditionId);
+              }
+
+              console.log("I am attempting on ", myQuestion.answered);
 
               let body = {
                 userId: 1,
@@ -123,49 +177,63 @@ const QuestionPage = () => {
                 attributeId: sourceId,
                 arithmetic: answerMap[third],
                 eventType: "ANSWER",
+                answerPosition: enter ? newValue : myQuestion.attemptingId,
                 isCorrect: false,
-                description: `from ${questionMap[myQuestion.type]} of ${myQuestion.name} is ${myQuestion.amount} >> attempted to ${answerMap[third]} on ${answerMap[second]} of ${answerMap[first]}.`,
-                userAnswer: `attempted to ${answerMap[third]} on ${answerMap[second]} of ${answerMap[first]}.`,
+                description: `from ${questionMap[myQuestion.type]} of ${myQuestion.name} is ${myQuestion.amount} >> attempted to ${answerMap[third]} on ${second} of ${first}.`,
+                userAnswer: `attempted to ${answerMap[third]} on ${second} of ${first}.`,
               };
 
               console.log(body);
-
-              // {
-              //     "userId": 1,
-              //     "questionId": 1,
-              //     "attributeId": 5,
-              //     "tableNameId": 1,
-              //     "headerId": 2,
-              //     "arithmetic": "subtract",
-              //     "eventType": "ANSWER",
-              //     "isCorrect": false,
-              //     "description": "from credit particulars of sales amount is 19000.0 >> attempted to subtract on debit particulars of trading account.",
-              //     "userAnswer": "attempted to subtract on debit particulars of trading account"
-              // }
-
-              setError(sourceId);
+              console.log("I did wrong answer ");
+              if (myQuestion.status != "wrong") setError(sourceId);
+              // call answer events with post and body
+              const response =
+                await QuestionAnswerService.processAnswerEvent(body);
+              console.log(response);
             } else {
-              // send post request to answer events
-
               let body = {
                 userId: 1,
                 questionId: questionId,
                 attributeId: sourceId,
                 arithmetic: answerMap[third],
-                eventType: "ANSWER",
+                answerPosition: answerId, // pass answer id here
+                eventType: myQuestion.usedHint ? "HINT" : "ANSWER",
                 isCorrect: true,
-                description: `from ${questionMap[myQuestion.type]} of ${myQuestion.name} is ${myQuestion.amount} >> attempted to ${answerMap[third]} on ${answerMap[second]} of ${answerMap[first]}.`,
-                userAnswer: `attempted to ${answerMap[third]} on ${answerMap[second]} of ${answerMap[first]}.`,
+                description: `from ${questionMap[myQuestion.type]} of ${myQuestion.name} is ${myQuestion.amount} >> attempted to ${answerMap[third]} on ${second} of ${first}.`,
+                userAnswer: `attempted to ${answerMap[third]} on ${second} of ${first}.`,
               };
 
+              console.log("Did I use hint? ", myQuestion.usedHint);
               console.log(body);
-              moveQuestion(sourceId, targetId);
+              // call answer events and question answers with post and body
+
+              const correctAnswer = myQuestion.actualAnswers.find(
+                (a) => a.answer === targetId,
+              );
+
+              const questionBody = {
+                userId: 1,
+                questionId: questionId,
+                tableNameId: correctAnswer.tableNameId,
+                headerId: correctAnswer.headerId,
+                attributeId: sourceId,
+                arithmetic: third,
+                amount: myQuestion.amount,
+              };
+
+              const response =
+                await QuestionAnswerService.processAnswerEvent(body);
+              console.log(response);
+              const response2 =
+                await QuestionAnswerService.processQuestionAnswers(
+                  questionBody,
+                );
+              console.log(response2);
+              moveQuestion(sourceId, targetId, answerId);
             }
           } catch (error) {
             console.log("Error  is  ", error, " for id ", sourceId);
           }
-
-          // add to respective table
         }
       }}
       onDragStart={(event) => {
