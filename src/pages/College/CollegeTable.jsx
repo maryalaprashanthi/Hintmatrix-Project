@@ -3,7 +3,7 @@ import CollegeService from "../../services/CollegeService";
 import DataGrid from "../../components/DataGrid";
 import ActionIconButton from "../../components/Common/ActionIconButton";
 
-function CollegeTable({ onEdit, refresh }) {
+function CollegeTable({ onEdit, onDelete, refresh }) {
   const [colleges, setColleges] = useState([]);
 
   const defaultColDef = {
@@ -24,7 +24,7 @@ function CollegeTable({ onEdit, refresh }) {
         const sanitizedData = rawData.map((item) => ({
           ...item,
           // Checks for alternative naming formats commonly used in DTO files
-         // collegeId: item.collegeId ?? item.id,
+          // collegeId: item.collegeId ?? item.id,
           instituteName: item.instituteName ?? item.name,
           address: item.address,
           phoneNumber: item.phoneNumber ?? item.phone,
@@ -42,26 +42,6 @@ function CollegeTable({ onEdit, refresh }) {
   const handleEdit = (college) => {
     if (onEdit) {
       onEdit(college);
-    }
-  };
-
-  const handleDelete = (id) => {
-    if (!id) {
-      alert("Cannot delete: College ID is missing or undefined.");
-      return;
-    }
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this college?",
-    );
-    if (confirmDelete) {
-      CollegeService.deleteCollege(id)
-        .then(() => {
-          alert("Deleted Successfully");
-          loadColleges();
-        })
-        .catch((error) => {
-          console.error("Error deleting college:", error);
-        });
     }
   };
 
@@ -131,7 +111,7 @@ function CollegeTable({ onEdit, refresh }) {
             />
             <ActionIconButton
               type="delete"
-              onClick={() => handleDelete(params.data.collegeId)}
+              onClick={() => onDelete(params.data.collegeId)}
               title="Delete college"
             />
           </div>

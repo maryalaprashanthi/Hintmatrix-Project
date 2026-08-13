@@ -3,7 +3,7 @@ import SectionService from "../services/SectionService";
 import DataGrid from "./DataGrid";
 import ActionIconButton from "./Common/ActionIconButton";
 
-function SectionTable({ refresh, onEdit }) {
+function SectionTable({ refresh, onDelete, onEdit }) {
   const [sections, setSections] = useState([]);
 
   const defaultColDef = {
@@ -39,19 +39,6 @@ function SectionTable({ refresh, onEdit }) {
       .catch((error) => {
         console.error("Error loading sections:", error);
       });
-  };
-
-  const deleteSection = (id) => {
-    if (window.confirm("Are you sure you want to delete this section?")) {
-      SectionService.deleteSection(id)
-        .then(() => {
-          alert("Section Deleted Successfully");
-          loadSections();
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    }
   };
 
   const columnDefs = [
@@ -138,7 +125,7 @@ function SectionTable({ refresh, onEdit }) {
 
           <ActionIconButton
             type="delete"
-            onClick={() => deleteSection(params.data.sectionId)}
+            onClick={() => onDelete(params.data.sectionId)}
             title="Delete section"
           />
         </div>

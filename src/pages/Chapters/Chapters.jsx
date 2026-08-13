@@ -3,7 +3,7 @@ import "./Chapters.css";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import SuccessModal from "../../components/Common/SuccessModal";
-
+import DeleteModal from "../../components/Common/DeleteModal";
 
 import {
   FaBookOpen,
@@ -36,6 +36,7 @@ function Chapters() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
 
   const filteredChapters = chapters.filter((chapter) => {
     const searchMatch = chapter.name
@@ -118,24 +119,31 @@ function Chapters() {
   };
 
   // DELETE CHAPTER
-
   const handleDelete = async (id) => {
+    if (!id) {
+      alert("Cannot delete: Chapter ID is missing.");
+      return;
+    }
+
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this chapter?",
+      "Are you sure you want to permanently delete this chapter?",
     );
 
     if (!confirmDelete) return;
 
     try {
+      // Permanently delete from database
       await ChapterService.delete(id);
 
-      alert("Chapter deleted successfully");
+      // Refresh chapters from database
+      await loadChapters();
 
-      loadChapters();
+      // Show delete success popup
+      setShowDelete(true);
     } catch (error) {
       console.error("Delete Error:", error.response?.data || error);
 
-      alert("Failed to delete chapter");
+      alert(error.response?.data?.message || "Failed to delete chapter");
     }
   };
 
@@ -339,6 +347,11 @@ function Chapters() {
         show={showSuccess}
         message="Chapter saved successfully!"
         onClose={() => setShowSuccess(false)}
+      />
+      <DeleteModal
+        show={showDelete}
+        message="Chapter deleted successfully!"
+        onClose={() => setShowDelete(false)}
       />
     </div>
   );

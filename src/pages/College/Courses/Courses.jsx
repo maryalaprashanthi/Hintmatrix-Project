@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CourseService from "../../../services/CourseService";
 import SuccessModal from "../../../components/Common/SuccessModal";
+import DeleteModal from "../../../components/Common/DeleteModal";
 
 import {
   FaBookOpen,
@@ -35,6 +36,7 @@ function Courses() {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [showDelete, setShowDelete] = useState(false);
 
   const loadCourses = () => {
     CourseService.getAllCourses()
@@ -55,22 +57,34 @@ function Courses() {
     setShowModal(true);
   };
 
-  const handleDelete = (id) => {
-    if (!id) return;
+  const handleDelete = async (id) => {
+    if (!id) {
+      alert("Cannot delete: Course ID is missing.");
+      return;
+    }
 
     const confirmDelete = window.confirm(
       "Are you sure you want to permanently delete this course?",
     );
 
-    if (confirmDelete) {
-      CourseService.deleteCourse(id)
-        .then(() => {
-          alert("Course deleted successfully!");
-          loadCourses();
-        })
-        .catch((error) => {
-          console.error("Delete Error:", error);
-        });
+    if (!confirmDelete) return;
+
+    try {
+      await CourseService.deleteCourse(id);
+
+      // Reload courses from database
+      loadCourses();
+
+      // Show delete success popup
+      setShowDelete(true);
+    } catch (error) {
+      console.error("Delete Error:", error);
+
+      if (error.response) {
+        alert(error.response.data);
+      } else {
+        alert("Failed to delete course.");
+      }
     }
   };
   const handleSave = async (courseRequestDTO, isEdit, courseId) => {
@@ -381,8 +395,12 @@ function Courses() {
         message={successMessage}
         onClose={() => setShowSuccess(false)}
       />
+      <DeleteModal
+        show={showDelete}
+        message="Course deleted successfully!"
+        onClose={() => setShowDelete(false)}
+      />
     </div>
   );
 }
-
 export default Courses;
