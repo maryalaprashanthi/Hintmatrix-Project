@@ -4,6 +4,7 @@ import "./Branch.css";
 import BranchService from "../../../services/BranchService";
 import BranchTable from "./BranchTable";
 import SuccessModal from "../../../components/Common/SuccessModal";
+import DeleteModal from "../../../components/Common/DeleteModal";
 
 function Branch() {
   const [showModal, setShowModal] = useState(false);
@@ -12,6 +13,7 @@ function Branch() {
   const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [showDelete, setShowDelete] = useState(false);
 
   // Open Add Branch Form Context Block
   const handleAddBranch = () => {
@@ -45,6 +47,36 @@ function Branch() {
     } catch (error) {
       console.error(error);
       alert(error.response?.data || "Operation failed.");
+    }
+  };
+  const handleDeleteBranch = async (branchId) => {
+    if (!branchId) {
+      alert("Cannot delete: Branch ID is missing.");
+      return;
+    }
+
+    const confirmDelete = window.confirm(
+      "Are you sure you want to permanently delete this branch?",
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await BranchService.deleteBranch(branchId);
+
+      // Refresh table from database
+      setRefreshTrigger((prev) => !prev);
+
+      // Show delete success popup
+      setShowDelete(true);
+    } catch (error) {
+      console.error("Error deleting branch:", error);
+
+      if (error.response) {
+        alert(error.response.data);
+      } else {
+        alert("Failed to delete branch.");
+      }
     }
   };
 
@@ -113,7 +145,8 @@ function Branch() {
         <div className="card-body">
           <BranchTable
             refresh={refreshTrigger}
-            onEdit={handleEditBranch} // 🌟 Maps Edit row updates directly from table component cell rows
+            onEdit={handleEditBranch}
+            onDelete={handleDeleteBranch} // 🌟 Maps Edit row updates directly from table component cell rows
           />
         </div>
       </div>
@@ -132,6 +165,11 @@ function Branch() {
         show={showSuccess}
         message={successMessage}
         onClose={() => setShowSuccess(false)}
+      />
+      <DeleteModal
+        show={showDelete}
+        message="Branch deleted successfully!"
+        onClose={() => setShowDelete(false)}
       />
     </div>
   );
