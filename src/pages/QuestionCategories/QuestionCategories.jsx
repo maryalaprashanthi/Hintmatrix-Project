@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import SuccessModal from "../../components/Common/SuccessModal";
-
+import DeleteModal from "../../components/Common/DeleteModal";
 
 import {
   FaBookOpen,
@@ -40,6 +40,7 @@ export default function QuestionCategories() {
   const [categories, setCategories] = useState([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [showDelete, setShowDelete] = useState(false);
   // GET ALL CATEGORIES
   const fetchCategories = async () => {
     try {
@@ -81,6 +82,11 @@ export default function QuestionCategories() {
   };
   // DELETE CATEGORY
   const handleDelete = async (id) => {
+    if (!id) {
+      alert("Cannot delete: Category ID is missing.");
+      return;
+    }
+
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this category?",
     );
@@ -88,13 +94,15 @@ export default function QuestionCategories() {
     if (!confirmDelete) return;
 
     try {
-      const response = await QuestionCategoryService.deleteSection(id);
+      await QuestionCategoryService.deleteSection(id);
 
-      alert(response.data);
+      // Refresh categories from DB
+      await fetchCategories();
 
-      fetchCategories();
+      // Show delete success popup
+      setShowDelete(true);
     } catch (error) {
-      console.error(error);
+      console.error("Delete Error:", error);
 
       alert(error.response?.data || "Delete failed");
     }
@@ -284,9 +292,14 @@ export default function QuestionCategories() {
         onSuccess={() => setShowSuccess(true)}
       />
       <SuccessModal
-      show={showSuccess}
-      message="Question Category saved successfully!"
-      onClose={() => setShowSuccess(false)}
+        show={showSuccess}
+        message="Question Category saved successfully!"
+        onClose={() => setShowSuccess(false)}
+      />
+      <DeleteModal
+        show={showDelete}
+        message="Question Category deleted successfully!"
+        onClose={() => setShowDelete(false)}
       />
     </div>
   );

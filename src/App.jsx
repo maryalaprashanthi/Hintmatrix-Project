@@ -23,6 +23,7 @@ import QuestionList from "./pages/Questions/QuestionList";
 import QuestionType2 from "./pages/Questions/QuestionType2Modal";
 
 import RuleEngine from "./pages/RuleEngine/RuleEngine";
+import StudentAttendance from "./pages/StudentAttendance/StudentAttendance";
 
 import Login from "./pages/Auth/Login";
 // Other Pages
@@ -222,6 +223,9 @@ function App() {
 
         {/* RuleEngine */}
         <Route path="/ruleengine" element={<RuleEngine />} />
+
+        {/* studentattendance */}
+        <Route path="/studentattendance" element={<StudentAttendance />} />
 
         {/* Learning */}
         <Route path="/practice" element={<Practice />} />

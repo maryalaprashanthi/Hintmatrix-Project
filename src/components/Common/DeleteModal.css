@@ -1,4 +1,4 @@
-.success-overlay {
+.delete-success-overlay {
   position: fixed;
 
   top: 0;
@@ -18,7 +18,9 @@
   z-index: 99999;
 }
 
-.success-card {
+/* Delete Popup Card */
+
+.delete-success-card {
   width: 380px;
 
   background: white;
@@ -34,9 +36,9 @@
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
-/* Close icon top right */
+/* Close Icon */
 
-.success-close {
+.delete-success-close {
   position: absolute;
 
   top: 15px;
@@ -54,27 +56,35 @@
   color: #555;
 }
 
-.success-close:hover {
-  color: red;
+.delete-success-close:hover {
+  color: #dc3545;
 }
 
-/* Green check icon */
+/* Red Delete Icon */
 
-.success-icon {
+.delete-success-icon {
   font-size: 60px;
 
-  color: #238a3b;
+  color: #dc3545;
 
   margin-top: 10px;
 }
 
-.success-card h2 {
+/* Heading */
+
+.delete-success-card h2 {
   margin-top: 15px;
 
   color: #333;
+
+  font-size: 28px;
+
+  font-weight: 600;
 }
 
-.success-card p {
+/* Message */
+
+.delete-success-card p {
   margin-top: 10px;
 
   color: #666;
@@ -82,9 +92,9 @@
   font-size: 16px;
 }
 
-/* Bottom button */
+/* Continue Button */
 
-.continue-btn {
+.delete-success-continue {
   width: 35%;
 
   padding: 5px;
@@ -93,7 +103,7 @@
 
   border-radius: 8px;
 
-  background: #238a3b;
+  background: #ee3447 !important;
 
   color: rgb(0, 0, 0);
 
@@ -102,6 +112,6 @@
   cursor: pointer;
 }
 
-.continue-btn:hover {
-  background: #4aaa89;
+.delete-success-continue:hover {
+  background: #dc3545 !important;
 }

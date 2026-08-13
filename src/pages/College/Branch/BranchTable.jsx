@@ -5,7 +5,7 @@ import CollegeService from "../../../services/CollegeService";
 import DataGrid from "../../../components/DataGrid";
 import ActionIconButton from "../../../components/Common/ActionIconButton";
 
-function BranchTable({ onEdit, refresh }) {
+function BranchTable({ onEdit, onDelete, refresh }) {
   const [branches, setBranches] = useState([]);
   const [collegesList, setCollegesList] = useState([]);
   const defaultColDef = {
@@ -162,7 +162,7 @@ function BranchTable({ onEdit, refresh }) {
             />
             <ActionIconButton
               type="delete"
-              onClick={() => handleDelete(params.data.branchId)}
+              onClick={() => onDelete(params.data.branchId)}
               title="Delete branch"
             />
           </div>

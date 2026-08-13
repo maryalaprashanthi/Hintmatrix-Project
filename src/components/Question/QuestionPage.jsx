@@ -225,9 +225,7 @@ const QuestionPage = () => {
                 await QuestionAnswerService.processAnswerEvent(body);
               console.log(response);
               const response2 =
-                await QuestionAnswerService.processQuestionAnswers(
-                  questionBody,
-                );
+                await QuestionAnswerService.saveAnswer(questionBody);
               console.log(response2);
               moveQuestion(sourceId, targetId, answerId);
             }

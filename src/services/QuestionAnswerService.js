@@ -11,7 +11,7 @@ const QuestionAnswerService = {
     return response.data;
   },
 
-  processQuestionAnswers: async (answerData) => {
+  saveAnswer: async (answerData) => {
     const response = await axios.post(QUESTION_ANSWER_URL, answerData);
 
     return response.data;
@@ -25,25 +25,49 @@ const QuestionAnswerService = {
     return response.data;
   },
 
-  getAnswerEventsByQuestionId: async (questionId) => {
+  getAnswersByUserAndQuestion: async (userId, questionId) => {
     const response = await axios.get(
-      `${ANSWER_EVENT_URL}/question/${questionId}`,
+      `${QUESTION_ANSWER_URL}/user/${userId}/question/${questionId}`,
     );
 
     return response.data;
   },
 
-  getMistakesByQuestionId: async (questionId) => {
+  // IMPORTANT: user + question
+  getAnswerEventsByQuestionId: async (userId, questionId) => {
     const response = await axios.get(
-      `${ANSWER_EVENT_URL}/question/${questionId}/mistakes`,
+      `${ANSWER_EVENT_URL}/user/${userId}/question/${questionId}`,
+    );
+
+    return response.data;
+  },
+  getMistakesByQuestionId: async (userId, questionId) => {
+    const response = await axios.get(
+      `${ANSWER_EVENT_URL}/user/${userId}/question/${questionId}/mistakes`,
     );
 
     return response.data;
   },
 
-  resetAnswersByQuestionId: async (questionId) => {
+  resetAnswersByUserAndQuestion: async (userId, questionId) => {
     const response = await axios.put(
-      `${QUESTION_ANSWER_URL}/question/${questionId}/reset`,
+      `${QUESTION_ANSWER_URL}/user/${userId}/question/${questionId}/reset`,
+    );
+
+    return response.data;
+  },
+
+  resetAnswerEventsByUserAndQuestion: async (userId, questionId) => {
+    const response = await axios.put(
+      `${ANSWER_EVENT_URL}/user/${userId}/question/${questionId}/reset`,
+    );
+
+    return response.data;
+  },
+
+  getOverallMarks: async (userId) => {
+    const response = await axios.get(
+      `${ANSWER_EVENT_URL}/user/${userId}/marks`,
     );
 
     return response.data;

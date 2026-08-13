@@ -4,6 +4,7 @@ import AddTableNameModal from "./AddTableNameModal";
 import TableNameService from "../../services/TableNameService";
 import DataGrid from "../../components/DataGrid";
 import SuccessModal from "../../components/Common/SuccessModal";
+import DeleteModal from "../../components/Common/DeleteModal";
 import ActionIconButton from "../../components/Common/ActionIconButton";
 
 function TableNames() {
@@ -14,7 +15,7 @@ function TableNames() {
   const [name, setName] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
-
+  const [showDelete, setShowDelete] = useState(false);
   const fileInputRef = useRef(null);
 
   // ================= SAVE =================
@@ -55,9 +56,10 @@ function TableNames() {
     try {
       await TableNameService.delete(id);
 
-      alert("Table Name deleted successfully.");
+      await loadTableNames();
 
-      loadTableNames();
+      // Show delete success popup
+      setShowDelete(true);
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to delete Table Name.");
@@ -231,6 +233,11 @@ function TableNames() {
         onClose={() => {
           setShowSuccess(false);
         }}
+      />
+      <DeleteModal
+        show={showDelete}
+        message="Table Name deleted successfully!"
+        onClose={() => setShowDelete(false)}
       />
     </div>
   );

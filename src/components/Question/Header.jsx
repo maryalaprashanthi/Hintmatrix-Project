@@ -11,8 +11,6 @@ import useQuestionStore from "./questionStore";
 function Header({ question: propQuestion, answeredData, setAnsweredData }) {
   const { question: storeQuestion } = useQuestionStore();
 
-  // Journal passes question directly.
-  // Other question types use Zustand.
   const question = propQuestion || storeQuestion;
 
   console.log("Header Question:", question);
@@ -27,7 +25,10 @@ function Header({ question: propQuestion, answeredData, setAnsweredData }) {
         return;
       }
 
+      const userId = 1;
+
       const mistakes = await QuestionAnswerService.getMistakesByQuestionId(
+        userId,
         question.questionId,
       );
 
@@ -57,20 +58,36 @@ function Header({ question: propQuestion, answeredData, setAnsweredData }) {
         return;
       }
 
-      console.log("Question ID:", question.questionId);
+      const userId = 1;
+      const questionId = question.questionId;
 
-      const result = await QuestionAnswerService.resetAnswersByQuestionId(
-        question.questionId,
-      );
+      console.log("User ID:", userId);
+      console.log("Question ID:", questionId);
 
-      console.log("RESET RESPONSE:", result);
+      // 1. Reset current QuestionAnswers
+      const questionAnswerResult =
+        await QuestionAnswerService.resetAnswersByUserAndQuestion(
+          userId,
+          questionId,
+        );
 
-      // Clear the current answer rows from the UI
+      console.log("QUESTION ANSWER RESET RESPONSE:", questionAnswerResult);
+
+      // 2. Reset AnswerEvents/history for current cycle
+      const answerEventResult =
+        await QuestionAnswerService.resetAnswerEventsByUserAndQuestion(
+          userId,
+          questionId,
+        );
+
+      console.log("ANSWER EVENT RESET RESPONSE:", answerEventResult);
+
+      // 3. Clear current frontend answers
       if (setAnsweredData) {
         setAnsweredData({});
       }
 
-      console.log("Answered data cleared.");
+      console.log("Frontend answered data cleared.");
     } catch (error) {
       console.error("Reset failed:", error);
 

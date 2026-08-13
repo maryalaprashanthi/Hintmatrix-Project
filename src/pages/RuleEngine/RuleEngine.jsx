@@ -3,12 +3,15 @@ import RuleEngineForm from "./RuleEngineForm";
 import RuleEngineTable from "./RuleEngineTable";
 import "./RuleEngine.css";
 import RuleEngineService from "../../services/RuleEngineService";
+import SuccessModal from "../../components/Common/SuccessModal";
+import DeleteModal from "../../components/Common/DeleteModal";
 
 function RuleEngine() {
   const [showModal, setShowModal] = useState(false);
   const [ruleEngineList, setRuleEngineList] = useState([]);
   const [selectedRule, setSelectedRule] = useState(null);
-
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
   const fileInputRef = useRef(null);
 
   // ===========================
@@ -73,11 +76,19 @@ function RuleEngine() {
   // Delete Rule
   // ===========================
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this rule?")) return;
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this rule?",
+    );
+
+    if (!confirmDelete) return;
 
     try {
       await RuleEngineService.deleteRule(id);
-      fetchRules();
+
+      await fetchRules();
+
+      // Show delete success popup
+      setShowDelete(true);
     } catch (error) {
       console.error("Error deleting rule:", error);
     }
@@ -94,9 +105,11 @@ function RuleEngine() {
         await RuleEngineService.saveRule(ruleData);
       }
 
-      fetchRules();
+      await fetchRules();
+
       setShowModal(false);
       setSelectedRule(null);
+      setShowSuccess(true);
     } catch (error) {
       console.error("Error saving rule:", error);
     }
@@ -158,6 +171,25 @@ function RuleEngine() {
         onSave={handleSave}
         selectedRuleData={selectedRule}
       />
+      {/* Success Popup */}
+      {showSuccess && (
+        <SuccessModal
+          show={showSuccess}
+          onClose={() => setShowSuccess(false)}
+          message={
+            selectedRule
+              ? "Rule updated successfully!"
+              : "Rule added successfully!"
+          }
+        />
+      )}
+      {showDelete && (
+        <DeleteModal
+          show={showDelete}
+          onClose={() => setShowDelete(false)}
+          message="Rule deleted successfully!"
+        />
+      )}
     </div>
   );
 }
