@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import QuestionService from "../../services/QuestionService";
+import SuccessModal from "../../components/Common/SuccessModal";
+import DeleteModal from "../../components/Common/DeleteModal";
 import {
   Container,
   Row,
@@ -19,6 +21,8 @@ import AddQuestionModal from "./AddQuestionModal";
 const QuestionList = () => {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
   // edit functionality
   // const [questionData,setQuestionData] = useState(null);
 
@@ -87,15 +91,28 @@ const QuestionList = () => {
   };
 
   // Delete
-  const handleDeleteClick = (id) => {
+  const handleDeleteClick = async (id) => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this question?",
+      "Are you sure you want to permanently delete this question?",
     );
 
-    if (confirmDelete) {
+    if (!confirmDelete) return;
+
+    try {
+      // Delete from database
+      await QuestionService.deleteQuestion(id);
+
+      // Remove from UI only after successful backend deletion
       setQuestions((prevQuestions) =>
         prevQuestions.filter((question) => question.questionId !== id),
       );
+
+      // Show success message
+      setShowDelete(true);
+    } catch (error) {
+      console.error("Error deleting question:", error);
+
+      alert("Failed to delete question. Please try again.");
     }
   };
 
@@ -178,8 +195,6 @@ const QuestionList = () => {
                   </h5>
 
                   <div className="question-meta">
-                    <Badge bg="primary">ID: {question.questionId}</Badge>
-
                     <Badge bg="success">{question.courseName}</Badge>
 
                     <Badge bg="warning">{question.chapterName}</Badge>
@@ -244,11 +259,28 @@ const QuestionList = () => {
       {showModal && (
         <AddQuestionModal
           onClose={() => setShowModal(false)}
-          onSave={(newQuestion) => {
+          onSave={async (newQuestion) => {
             console.log(newQuestion);
 
             setShowModal(false);
+            setShowSuccess(true);
+
+            await loadQuestions();
           }}
+        />
+      )}
+      {showSuccess && (
+        <SuccessModal
+          show={showSuccess}
+          onClose={() => setShowSuccess(false)}
+          message="Question added successfully!"
+        />
+      )}
+      {showDelete && (
+        <DeleteModal
+          show={showDelete}
+          onClose={() => setShowDelete(false)}
+          message="Question deleted successfully!"
         />
       )}
     </Container>

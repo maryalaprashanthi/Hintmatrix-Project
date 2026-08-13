@@ -4,6 +4,7 @@ import "./TableAttributes.css";
 import TableAttributeService from "../../services/TableAttributeService";
 import DataGrid from "../../components/DataGrid";
 import SuccessModal from "../../components/Common/SuccessModal";
+import DeleteModal from "../../components/Common/DeleteModal";
 import ActionIconButton from "../../components/Common/ActionIconButton";
 
 function TableAttributes() {
@@ -12,6 +13,7 @@ function TableAttributes() {
   const [tableAttributes, setTableAttributes] = useState([]);
   const [id, setId] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
   const loadTableAttributes = async () => {
@@ -49,9 +51,10 @@ function TableAttributes() {
     try {
       await TableAttributeService.delete(id);
 
-      alert("Table Attribute deleted successfully.");
+      await loadTableAttributes();
 
-      loadTableAttributes();
+      // Show delete success popup
+      setShowDelete(true);
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to delete Table Attribute.");
@@ -221,6 +224,11 @@ function TableAttributes() {
         onClose={() => {
           setShowSuccess(false);
         }}
+      />
+      <DeleteModal
+        show={showDelete}
+        message="Table Attribute deleted successfully!"
+        onClose={() => setShowDelete(false)}
       />
     </div>
   );
