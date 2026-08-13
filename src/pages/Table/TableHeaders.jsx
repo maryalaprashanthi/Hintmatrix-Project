@@ -4,6 +4,7 @@ import AddTableHeaderModal from "./AddTableHeaderModal";
 import TableHeaderService from "../../services/TableHeaderService";
 import DataGrid from "../../components/DataGrid";
 import SuccessModal from "../../components/Common/SuccessModal";
+import DeleteModal from "../../components/Common/DeleteModal";
 import ActionIconButton from "../../components/Common/ActionIconButton";
 
 function TableHeaders() {
@@ -13,6 +14,7 @@ function TableHeaders() {
   const [id, setId] = useState(null);
   const [name, setName] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
   // Upload Handler
@@ -58,7 +60,6 @@ function TableHeaders() {
       alert("Operation failed.");
     }
   };
-
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this table header?",
@@ -71,9 +72,10 @@ function TableHeaders() {
     try {
       await TableHeaderService.delete(id);
 
-      alert("Table Header deleted successfully.");
+      await loadTableHeaders();
 
-      loadTableHeaders();
+      // Show Delete success popup
+      setShowDelete(true);
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to delete Table Header.");
@@ -209,6 +211,11 @@ function TableHeaders() {
         onClose={() => {
           setShowSuccess(false);
         }}
+      />
+      <DeleteModal
+        show={showDelete}
+        message="Table Header deleted successfully!"
+        onClose={() => setShowDelete(false)}
       />
     </div>
   );
