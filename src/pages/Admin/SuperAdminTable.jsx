@@ -81,7 +81,7 @@ function SuperAdminTable({ data, onEdit, refreshData }) {
 
           <ActionIconButton
             type="delete"
-            onClick={() => handleDelete(params.data.superAdminId)}
+            onClick={() => handleDelete(params.data.userId)}
             title="Delete super admin"
           />
         </div>

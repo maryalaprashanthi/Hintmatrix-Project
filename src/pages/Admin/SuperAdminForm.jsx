@@ -56,7 +56,8 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
       !email.trim() ||
       !phoneNumber.trim() ||
       !password.trim() ||
-      !address.trim()
+      !address.trim() ||
+      (!selectedSuperAdminData && !password.trim())
     ) {
       alert("Please fill all the fields.");
       return;

@@ -9,14 +9,10 @@ function WrongAnswersModal({ show, onClose, incorrectEntries = [] }) {
       </Modal.Header>
 
       <Modal.Body className="px-4 py-3">
-        <p className="text-muted mb-3">
-          Review your current layout placements below:
-        </p>
+        <p className="text-muted mb-3">Review your incorrect answers below:</p>
 
         {incorrectEntries.length === 0 ? (
-          <div className="text-center py-4 text-muted">
-            No validation logs found.
-          </div>
+          <div className="text-center py-4 text-muted">No mistakes found.</div>
         ) : (
           <Table
             responsive
@@ -35,7 +31,11 @@ function WrongAnswersModal({ show, onClose, incorrectEntries = [] }) {
             </thead>
             <tbody>
               {incorrectEntries.map((item, index) => {
-                const rawDate = item.created_at || item.date;
+                const rawDate =
+                  item.createdAt ||
+                  item.created_at ||
+                  item.date ||
+                  item.timestamp;
                 const formattedDate = rawDate
                   ? new Date(rawDate).toLocaleString("en-IN")
                   : "N/A";
@@ -45,42 +45,52 @@ function WrongAnswersModal({ show, onClose, incorrectEntries = [] }) {
                   item.result?.toLowerCase() === "correct" ||
                   item.valid === true;
 
+                const element =
+                  item.attributeName ||
+                  item.element ||
+                  `Attribute ${item.attributeId ?? "N/A"}`;
+
+                const optionSelected =
+                  item.userAnswer ||
+                  item.user_answer ||
+                  item.arithmetic ||
+                  item.action ||
+                  item.optionSelected ||
+                  "N/A";
+                const result = item.result || (isCorrect ? "correct" : "wrong");
+
+                const hint =
+                  item.hint || item.description || "No hint available.";
                 return (
                   <tr
-                    key={index}
+                    key={item.answerEventId || index}
                     style={isCorrect ? { backgroundColor: "#f4fbf7" } : {}}
                   >
                     {/* 1. Date */}
                     <td className="text-secondary small">{formattedDate}</td>
 
-                    {/* 2. Element Name (Green if Correct, Dark if Wrong) [1] */}
-                    <td
-                      className={`fw-bold ${isCorrect ? "text-success" : "text-dark"}`}
-                    >
-                      {item.user_answer || item.element}
-                    </td>
+                    {/* 2. Element */}
+                    <td className="fw-bold text-dark">{element}</td>
 
-                    {/* 3. Action taken text description row */}
-                    <td className="text-muted small">
-                      {item.action || item.optionSelected}
-                    </td>
+                    {/* 3. Option Selected */}
+                    <td className="text-muted small">{optionSelected}</td>
 
-                    {/* 4. Dynamic Badge color swapping (Success vs Danger) [1] */}
+                    {/* 4. Result */}
                     <td>
                       <Badge
                         bg={isCorrect ? "success" : "danger"}
                         className="text-uppercase px-2 py-1.5"
                       >
-                        {item.result || (isCorrect ? "correct" : "wrong")}
+                        {result}
                       </Badge>
                     </td>
 
-                    {/* 5. Hint container block mapping cell */}
+                    {/* 5. Hint /Description */}
                     <td
                       style={{ whiteSpace: "pre-line" }}
                       className={`small fw-medium ${isCorrect ? "text-success bg-light" : "text-dark bg-light"}`}
                     >
-                      {item.hint}
+                      {hint}
                     </td>
                   </tr>
                 );

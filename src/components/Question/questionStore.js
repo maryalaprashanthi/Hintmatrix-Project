@@ -1,8 +1,10 @@
 import { create } from "zustand";
 
+
 const useQuestionStore = create((set) => ({
   questions: [],
   question: null,
+  wrongAnswers: [],
   setQuestions: (apiQuestions) => {
     const formattedQuestions = [];
 
@@ -35,6 +37,7 @@ const useQuestionStore = create((set) => ({
       profitDataCredit: [],
       balanceDataLiabilities: [],
       balanceDataAssets: [],
+      wrongAnswers: [],
     });
   },
   tradingDataDebit: [],
@@ -43,14 +46,15 @@ const useQuestionStore = create((set) => ({
   profitDataCredit: [],
   balanceDataLiabilities: [],
   balanceDataAssets: [],
-  // totalDebit: 0,
-  // totalCredit: 0,
-  // totalQ: 0,
-  // solvedQ: 0,
-  // setTotalDebit: (amt) => set({ totalDebit: amt }),
-  // setTotalCredit: (amt) => set({ totalCredit: amt }),
-  // setTotalQ: (amt) => set({ totalQ: amt }),
-  // setSolvedQ: (amt) => set({ solvedQ: amt }),
+  addWrongAnswer: (mistake) =>
+    set((state) => ({
+      wrongAnswers: [...state.wrongAnswers, mistake],
+    })),
+  clearWrongAnswers: () =>
+    set({
+      wrongAnswers: [],
+    }),
+ 
   setError: (id) =>
     set((state) => {
       const nextQuestions = state.questions.map((item) => {
@@ -116,15 +120,7 @@ const useQuestionStore = create((set) => ({
       });
 
       console.log("I got here too");
-      // const nextQuestions = state.questions.map((item) => {
-      //   if (item.totalAnswers === item.answered.length) {
-      //     return { ...item, status: "solved" };
-      //   } else {
-      //     return item;
-      //   }
-      // });
-
-      // notice that I am not passing the latest data to below components because it's not needed
+    
 
       if (targetId === "trading-dr-add") {
         return {
@@ -223,6 +219,7 @@ const useQuestionStore = create((set) => ({
           ],
         };
       }
+      return state;
     }),
 }));
 

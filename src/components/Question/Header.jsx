@@ -8,13 +8,19 @@ import {
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import useQuestionStore from "./questionStore";
 
-function Header({ question: propQuestion, answeredData, setAnsweredData }) {
+function Header({
+  question: propQuestion,
+  answeredData,
+  setAnsweredData,
+  onCheck,
+  onSubmit,
+}) {
   const { question: storeQuestion } = useQuestionStore();
 
   const question = propQuestion || storeQuestion;
 
-  console.log("Header Question:", question);
-  console.log("Header Answered Data:", answeredData);
+  // console.log("Header Question:", question);
+  // console.log("Header Answered Data:", answeredData);
 
   const handleCheck = async () => {
     try {
@@ -40,6 +46,10 @@ function Header({ question: propQuestion, answeredData, setAnsweredData }) {
       }
 
       console.log("User mistakes:", mistakes);
+      if (onCheck) {
+        console.log("Sending mistakes to QuestionTable...");
+        onCheck(mistakes);
+      }
     } catch (error) {
       console.error("Failed to get mistakes:", error);
 
@@ -139,7 +149,7 @@ function Header({ question: propQuestion, answeredData, setAnsweredData }) {
             onClick={handleCheck}
           >
             <FaExclamationTriangle className="me-1" />
-            Check
+            Mistakes
           </Button>
 
           <Button

@@ -5,6 +5,7 @@ import useQuestionStore from "./questionStore";
 import { useParams } from "react-router-dom";
 import RuleEngineService from "../../services/RuleEngineService";
 import QuestionService from "../../services/QuestionService";
+import QuestionAnswerService from "../../services/QuestionAnswerService";
 
 // import { data } from "./sample";
 
@@ -45,6 +46,7 @@ const QuestionPage = () => {
     setHints,
     questions,
     setTotalAnswers,
+    addWrongAnswer,
   } = useQuestionStore();
   const { questionId } = useParams();
   // console.log("Question Id:", questionId);
@@ -77,12 +79,15 @@ const QuestionPage = () => {
         if (targetId == null) {
           // This is called when not dropped in a dropzone
           console.log("I did nothing");
+          return;
         } else {
           // This is called when dropped in a dropzone
           console.log(`I got dropped into ${targetId}`);
+          console.log("Source ID:", sourceId);
+          console.log("Target ID:", targetId);
           // console.log("This is data I got ", data[0].condition1);
           // is it present in answered
-          const myQuestion = questions.find((q) => q.id == sourceId);
+          const myQuestion = questions.find((q) => Sq.id == sourceId);
           for (const cur of myQuestion.answered) {
             if (cur === targetId) {
               console.log("This was already added");
@@ -112,7 +117,7 @@ const QuestionPage = () => {
             setTotalAnswers(sourceId, count);
             setHints(sourceId, allHints);
             if (!matched) {
-              console.log("I entered wrong into ", targetId);
+              console.log(" ❌ I entered wrong into ", targetId);
               // send post request to answer events
 
               // const questionData = ;
@@ -128,23 +133,38 @@ const QuestionPage = () => {
                 userAnswer: `attempted to ${answerMap[third]} on ${answerMap[second]} of ${answerMap[first]}.`,
               };
 
-              console.log(body);
+              console.log("Wrong answer API body:", body);
+              const savedEvent =
+                await QuestionAnswerService.processAnswerEvent(body);
 
-              // {
-              //     "userId": 1,
-              //     "questionId": 1,
-              //     "attributeId": 5,
-              //     "tableNameId": 1,
-              //     "headerId": 2,
-              //     "arithmetic": "subtract",
-              //     "eventType": "ANSWER",
-              //     "isCorrect": false,
-              //     "description": "from credit particulars of sales amount is 19000.0 >> attempted to subtract on debit particulars of trading account.",
-              //     "userAnswer": "attempted to subtract on debit particulars of trading account"
-              // }
+              console.log("❌ Wrong answer saved:", savedEvent);
+              // Create mistake record for Mistakes popup
+              const mistake = {
+                created_at: new Date().toISOString(),
+
+                user_answer: myQuestion.name,
+
+                action: `Misplaced in ${answerMap[second]} of ${answerMap[first]}`,
+
+                description: "Incorrect container routing",
+
+                valid: false,
+
+                result: "wrong",
+
+                hint:
+                  allHints.length > 0
+                    ? allHints.join("\n")
+                    : "This item was placed in the wrong location.",
+              };
+
+              // Store mistake in Zustand
+              addWrongAnswer(mistake);
 
               setError(sourceId);
             } else {
+              console.log("✅ I entered correct");
+
               // send post request to answer events
 
               let body = {
@@ -158,7 +178,11 @@ const QuestionPage = () => {
                 userAnswer: `attempted to ${answerMap[third]} on ${answerMap[second]} of ${answerMap[first]}.`,
               };
 
-              console.log(body);
+              console.log("Correct answer API body:", body);
+              const savedEvent =
+                await QuestionAnswerService.processAnswerEvent(body);
+
+              console.log("✅ Correct answer saved:", savedEvent);
               moveQuestion(sourceId, targetId);
             }
           } catch (error) {
