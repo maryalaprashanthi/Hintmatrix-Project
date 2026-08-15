@@ -7,9 +7,17 @@ import {
 } from "react-icons/fa";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import useQuestionStore from "./questionStore";
+import QuestionService from "../../services/QuestionService";
+import { data } from "./SampleData";
+import { useParams } from "react-router-dom";
 
 function Header({ question: propQuestion, answeredData, setAnsweredData }) {
-  const { question: storeQuestion } = useQuestionStore();
+  const {
+    question: storeQuestion,
+    setQuestions,
+    setTableData,
+  } = useQuestionStore();
+  const { questionId } = useParams();
 
   const question = propQuestion || storeQuestion;
 
@@ -49,6 +57,21 @@ function Header({ question: propQuestion, answeredData, setAnsweredData }) {
     }
   };
 
+  const loadQuestions = async () => {
+    try {
+      const response = await QuestionService.getQuestionById(questionId);
+
+      let allStrings = data.flatMap((obj) =>
+        obj.headers.map((header) => `${obj.name}-${header}`),
+      );
+      // console.log("All strings are ", allStrings);
+      setQuestions([response.data]);
+      setTableData(allStrings);
+    } catch (error) {
+      console.error("Failed to load question:", error);
+    }
+  };
+
   const handleReset = async () => {
     try {
       console.log("========== RESET QUESTION ==========");
@@ -85,7 +108,14 @@ function Header({ question: propQuestion, answeredData, setAnsweredData }) {
       // 3. Clear current frontend answers
       if (setAnsweredData) {
         setAnsweredData({});
+        // loadQuestions(); // Reload questions after reset
       }
+      useQuestionStore.setState({
+        questions: [],
+        droppableData: {},
+      });
+
+      await loadQuestions();
 
       console.log("Frontend answered data cleared.");
     } catch (error) {

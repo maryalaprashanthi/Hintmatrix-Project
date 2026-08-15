@@ -11,7 +11,7 @@ import WrongAnswersModal from "./WrongAnswersModal";
 import QuestionService from "../../services/QuestionService";
 import { data } from "./SampleData";
 const QuestionTable = () => {
-  const { questions } = useQuestionStore();
+  const { questions, score, resetFrontend } = useQuestionStore();
 
   // Control popup visibility state and active errors array
   const [showModal, setShowModal] = useState(false);
@@ -190,6 +190,7 @@ const QuestionTable = () => {
         <Header
           onCheck={handleCheckValidation}
           onSubmit={handleSubmitFinalWorkspace}
+          handleReset={resetFrontend}
         />
 
         <SummaryCards
@@ -197,6 +198,7 @@ const QuestionTable = () => {
           credit={creditTotal}
           total={totalQ}
           solved={solvedQ}
+          totalScore={score}
         />
       </div>
       {/* LEFT: Trial Balance accordion */}

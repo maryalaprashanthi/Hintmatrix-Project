@@ -1,14 +1,34 @@
 import { create } from "zustand";
+import QuestionAnswerService from "../../services/QuestionAnswerService";
 
 const useQuestionStore = create((set) => ({
   questions: [],
+  question: {},
   droppableData: {},
-  setQuestions: (apiQuestions) => {
+  score: 0,
+  setCurrentScore: async (id) => {
+    const score = await QuestionAnswerService.getOverallMarks(id);
+    set({ score });
+  },
+  setQuestions: async (apiQuestions) => {
     const formattedQuestions = [];
-
-    apiQuestions.forEach((question) => {
-      if (question.questionAttributes) {
-        question.questionAttributes.forEach((attribute) => {
+    let currentQuestion = {};
+    apiQuestions.forEach((q) => {
+      if (q.questionId != null) {
+        currentQuestion = {
+          questionId: q.questionId,
+          courseId: q.courseId,
+          chapterId: q.chapterId,
+          questionText: q.questionText,
+          questionCategory: q.questionCategory,
+          courseName: q.courseName,
+          chapterName: q.chapterName,
+          categoryId: q.categoryId,
+          categoryName: q.categoryName,
+        };
+      }
+      if (q.questionAttributes) {
+        q.questionAttributes.forEach((attribute) => {
           formattedQuestions.push({
             id: attribute.attributeId,
             name: attribute.attributeName,
@@ -26,9 +46,11 @@ const useQuestionStore = create((set) => ({
         });
       }
     });
-
+    const currentScore = await QuestionAnswerService.getOverallMarks(1);
     set({
       questions: formattedQuestions,
+      question: currentQuestion,
+      score: currentScore,
     });
   },
 
@@ -45,6 +67,10 @@ const useQuestionStore = create((set) => ({
         questions: nextQuestions,
       };
     }),
+
+  resetFrontend: (obj) => {
+    set({ questions: [], droppableData: {} });
+  },
 
   setHintUsed: (id) =>
     set((state) => {

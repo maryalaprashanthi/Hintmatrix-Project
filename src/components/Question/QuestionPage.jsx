@@ -47,6 +47,7 @@ const QuestionPage = () => {
     setTotalAnswers,
     setTableData,
     setActualAnswers,
+    setCurrentScore,
     setAttributeId,
   } = useQuestionStore();
   const { questionId } = useParams();
@@ -221,6 +222,8 @@ const QuestionPage = () => {
                 amount: myQuestion.amount,
               };
 
+              // call score api
+              setCurrentScore(1);
               const response =
                 await QuestionAnswerService.processAnswerEvent(body);
               console.log(response);
