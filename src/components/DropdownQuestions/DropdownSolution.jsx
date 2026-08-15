@@ -25,7 +25,16 @@ const DropdownSolution = ({ answeredData }) => {
                   <React.Fragment key={id}>
                     {txnData.map((item, index) => {
                       return (
-                        <tr key={`${id}-${index}`}>
+                        <tr
+                          key={`${id}-${index}`}
+                          className={
+                            item.valid === true
+                              ? "answer-correct"
+                              : item.valid === false
+                                ? "answer-wrong"
+                                : ""
+                          }
+                        >
                           <td className="center">{item.date}</td>
                           <td>{item.particulars}</td>
                           <td className="center">{item.lf}</td>

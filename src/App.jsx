@@ -236,7 +236,7 @@ function App() {
         <Route path="/settings" element={<Settings />} />
 
         <Route path="/journal/:questionId" element={<JournalPage />} />
-        <Route path="/dropdown" element={<DropdownPage />}></Route>
+        <Route path="/dropdown/:questionId" element={<DropdownPage />} />
       </Route>
     </Routes>
   );
