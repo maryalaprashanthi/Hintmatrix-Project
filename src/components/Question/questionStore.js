@@ -10,7 +10,7 @@ const useQuestionStore = create((set) => ({
       if (question.questionAttributes) {
         question.questionAttributes.forEach((attribute) => {
           formattedQuestions.push({
-            id: attribute.questionAttributeId,
+            id: attribute.attributeId,
             name: attribute.attributeName,
             amount: Number(attribute.amount),
             hints: [],
