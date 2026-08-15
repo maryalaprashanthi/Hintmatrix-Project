@@ -29,7 +29,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
     { name: "1to3" },
     { name: "1to4" },
   ];
-  const arithmeticOptions = [{ name: "Add" }, { name: "Subtract" }];
+  const arithmeticOptions = [{ name: "add" }, { name: "less" }];
   // Mock Data States
   const [chapters, setChapters] = useState([]);
   const [tableNames, setTableNames] = useState([]);
