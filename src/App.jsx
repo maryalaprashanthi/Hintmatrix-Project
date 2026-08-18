@@ -4,6 +4,9 @@ import { useState } from "react";
 import Layout from "./Layout/Layout";
 
 import Dashboard from "./pages/Dashboard";
+import Subscription from "./pages/Subscription/Subscription";
+import SubscriptionPlans from "./pages/Subscription/SubscriptionPlans";
+import SubscriptionPermissions from "./pages/Subscription/SubscriptionPermissions";
 
 // --- UPDATED EXPORT IMPORTS TO MATCH COMMON NESTED FOLDER ARCHITECTURES ---
 import College from "./pages/College/College";
@@ -145,7 +148,13 @@ function App() {
         {/* Dashboard */}
 
         <Route path="/dashboard" element={<Dashboard />} />
-
+        {/* Subscription */}
+        <Route path="/subscriptions" element={<Subscription />} />
+        <Route path="/subscriptions/plans" element={<SubscriptionPlans />} />
+        <Route
+          path="/subscriptions/permissions"
+          element={<SubscriptionPermissions />}
+        />
         {/* College */}
         <Route path="/college" element={<College />} />
         <Route path="/branch" element={<Branch />} />
