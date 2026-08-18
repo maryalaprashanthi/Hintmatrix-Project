@@ -9,6 +9,35 @@ import SummaryCards from "../Question/SummaryCards";
 import QuestionService from "../../services/QuestionService";
 import RuleEngineService from "../../services/RuleEngineService";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
+import { isJournalAttributeSolved } from "./journalAnswerStatus";
+
+const getRuleConditions = (rule) =>
+  [1, 2, 3, 4].map((index) => {
+    const nestedCondition = rule?.[`condition${index}`];
+
+    if (nestedCondition) {
+      return { ...nestedCondition, position: index };
+    }
+
+    // Normalize both the nested attribute response and the flat rule list
+    // response (table1Id, header1Name, etc.) into one condition shape.
+    const tableId = rule?.[`table${index}Id`];
+    const tableName = rule?.[`table${index}Name`];
+
+    if (tableId == null || !tableName) {
+      return null;
+    }
+
+    return {
+      tableId,
+      tableName,
+      headerId: rule?.[`header${index}Id`],
+      headerName: rule?.[`header${index}Name`],
+      arithmetic: rule?.[`arithmetic${index}`],
+      information: rule?.[`information${index}`],
+      position: index,
+    };
+  });
 
 const JournalPage = () => {
   const { questionId } = useParams();
@@ -63,12 +92,7 @@ const JournalPage = () => {
 
           const tables = [];
 
-          const conditions = [
-            rule?.condition1,
-            rule?.condition2,
-            rule?.condition3,
-            rule?.condition4,
-          ];
+          const conditions = getRuleConditions(rule);
 
           conditions.forEach((condition) => {
             if (!condition?.tableId || !condition?.tableName) {
@@ -95,6 +119,8 @@ const JournalPage = () => {
                 headerId: condition.headerId,
                 headerName: condition.headerName,
                 arithmetic: condition.arithmetic,
+                information: condition.information,
+                position: condition.position,
               };
             }
 
@@ -103,6 +129,8 @@ const JournalPage = () => {
                 headerId: condition.headerId,
                 headerName: condition.headerName,
                 arithmetic: condition.arithmetic,
+                information: condition.information,
+                position: condition.position,
               };
             }
           });
@@ -176,11 +204,20 @@ const JournalPage = () => {
 
       // 2. Get ALL answer events/history
 
-      const eventResponse =
-        await QuestionAnswerService.getAnswerEventsByQuestionId(
-          userId,
-          questionId,
-        );
+      let eventResponse = [];
+
+      try {
+        eventResponse =
+          await QuestionAnswerService.getAnswerEventsByQuestionId(
+            userId,
+            questionId,
+          );
+      } catch (error) {
+        // Answer events are still created for every attempt. Do not let a
+        // missing event-history endpoint prevent persisted correct answers
+        // from being restored from QuestionAnswer on page reload.
+        console.warn("Unable to load answer-event history:", error);
+      }
 
       console.log("Answer Events:", eventResponse);
 
@@ -289,10 +326,14 @@ const JournalPage = () => {
   const journalQuestions = question.questionAttributes || [];
 
   const solvedAttributeIds = new Set(
-    Object.values(answeredData)
-      .flat()
-      .filter((entry) => entry.valid === true)
-      .map((entry) => entry.questionAttributeId),
+    journalQuestions
+      .filter((item) =>
+        isJournalAttributeSolved(
+          item,
+          answeredData[item.questionAttributeId] || [],
+        ),
+      )
+      .map((item) => item.questionAttributeId),
   );
 
   const debit = journalQuestions

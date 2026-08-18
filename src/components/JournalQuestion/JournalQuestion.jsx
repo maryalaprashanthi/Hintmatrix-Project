@@ -1,9 +1,15 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
-import { OverlayTrigger, Popover } from "react-bootstrap";
+import { Overlay, OverlayTrigger, Popover } from "react-bootstrap";
 import "./JournalQuestion.css";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
+import {
+  getCorrectAnswerCount,
+  getRequiredAnswerCount,
+  isJournalAttributeSolved,
+  getUnansweredRuleConditions,
+} from "./journalAnswerStatus";
 
 const JournalQuestion = ({
   data = [],
@@ -12,18 +18,172 @@ const JournalQuestion = ({
   questionText,
   loadTotalScore,
 }) => {
+  const [helpRequest, setHelpRequest] = useState(null);
+  const [showHint, setShowHint] = useState(false);
+  const [isAutofilling, setIsAutofilling] = useState(false);
+  const [openAttributeId, setOpenAttributeId] = useState(null);
+  const attributeTargets = useRef({});
+
+  const closeHelp = () => {
+    setHelpRequest(null);
+    setShowHint(false);
+  };
+
+  const getNextCondition = (item) =>
+    getUnansweredRuleConditions(
+      item.tables,
+      answeredData[item.questionAttributeId] || [],
+    )[0];
+
+  const handleHint = async () => {
+    const nextCondition = getNextCondition(helpRequest.item);
+
+    setShowHint(true);
+
+    if (!nextCondition) {
+      return;
+    }
+
+    try {
+      await QuestionAnswerService.processAnswerEvent({
+        userId: 1,
+        questionId: helpRequest.item.questionId,
+        attributeId: helpRequest.item.attributeId,
+        answerPosition: nextCondition.condition.position ?? null,
+        arithmetic: nextCondition.condition.arithmetic,
+        eventType: "HINT",
+        isCorrect: null,
+        hint: nextCondition.condition.information ?? null,
+        description: "Hint requested",
+        userAnswer: null,
+      });
+    } catch (error) {
+      console.error("Failed to save hint event:", error);
+    }
+  };
+
+  const handleAutofill = async () => {
+    const item = helpRequest.item;
+    const remainingConditions = getUnansweredRuleConditions(
+      item.tables,
+      answeredData[item.questionAttributeId] || [],
+    );
+
+    if (!remainingConditions.length) {
+      closeHelp();
+      return;
+    }
+
+    setIsAutofilling(true);
+
+    try {
+      const savedEntries = await Promise.all(
+        remainingConditions.map(async ({ table, type, condition }) => {
+          const particulars =
+            type === "Debit"
+              ? `${table.name}..........Dr`
+              : `To ${table.name}`;
+
+          const [answerResult, eventResult] = await Promise.all([
+            QuestionAnswerService.saveAnswer({
+              userId: 1,
+              questionId: item.questionId,
+              tableNameId: table.id,
+              headerId: condition.headerId,
+              attributeId: item.attributeId,
+              arithmetic: condition.arithmetic,
+              amount: item.amount,
+            }),
+            QuestionAnswerService.processAnswerEvent({
+              userId: 1,
+              questionId: item.questionId,
+              attributeId: item.attributeId,
+              answerPosition: condition.position ?? null,
+              arithmetic: condition.arithmetic,
+              eventType: "AUTOFILL",
+              isCorrect: true,
+              hint: null,
+              description: `Autofilled ${particulars}`,
+              userAnswer: particulars,
+            }),
+          ]);
+
+          return {
+            questionAttributeId: item.questionAttributeId,
+            date: "",
+            particulars,
+            lf: "",
+            debit: type === "Debit" ? item.amount : "",
+            credit: type === "Credit" ? item.amount : "",
+            valid: true,
+            answerId: answerResult?.answerId || null,
+            answerEventId: eventResult?.answerEventId || null,
+            tableNameId: table.id,
+            headerId: condition.headerId,
+            attributeId: item.attributeId,
+            arithmetic: condition.arithmetic,
+          };
+        }),
+      );
+
+      setAnsweredData((prev) => {
+        const id = item.questionAttributeId;
+        const existing = prev[id] || [];
+        const beingRow = existing.find((entry) =>
+          entry.particulars?.startsWith("(Being"),
+        );
+        const answerRows = existing.filter(
+          (entry) =>
+            !entry.particulars?.startsWith("(Being") && entry.valid === true,
+        );
+        const newEntries = savedEntries.filter(
+          (entry) =>
+            !answerRows.some(
+              (existingEntry) =>
+                String(existingEntry.tableNameId) === String(entry.tableNameId) &&
+                String(existingEntry.headerId) === String(entry.headerId),
+            ),
+        );
+
+        return {
+          ...prev,
+          [id]: [
+            ...newEntries.filter((entry) => entry.debit),
+            ...answerRows,
+            ...newEntries.filter((entry) => entry.credit),
+            beingRow || {
+              date: "",
+              particulars: `(Being ${item.attributeName})`,
+              lf: "",
+              debit: "",
+              credit: "",
+            },
+          ],
+        };
+      });
+
+      if (loadTotalScore) {
+        await loadTotalScore();
+      }
+
+      closeHelp();
+    } catch (error) {
+      console.error("Failed to autofill journal answers:", error);
+    } finally {
+      setIsAutofilling(false);
+    }
+  };
+
   const handleAdd = async (item, type, table) => {
     try {
       const id = item.questionAttributeId;
 
       const currentAnswers = answeredData[id] || [];
 
-      const alreadySolved = currentAnswers.some(
-        (entry) => entry.valid === true,
-      );
+      const alreadySolved = isJournalAttributeSolved(item, currentAnswers);
 
       if (alreadySolved) {
-        console.log("Attribute already solved. Answer disabled.");
+        console.log("All rule-defined answers have been completed.");
         return;
       }
 
@@ -53,7 +213,9 @@ const JournalQuestion = ({
       console.log("Selected Arithmetic:", selectedArithmetic);
       console.log("User Answer:", text);
 
-      const isCorrect = selectedCondition?.headerName === item.headerName;
+      // The configured table side is the answer key. The question attribute
+      // header may be "Transaction", so it cannot determine Debit/Credit.
+      const isCorrect = Boolean(selectedCondition);
 
       const existingAnswers = answeredData[id] || [];
 
@@ -179,6 +341,12 @@ const JournalQuestion = ({
           [id]: [...updatedRows, finalBeingRow],
         };
       });
+
+      if (!isCorrect) {
+        setOpenAttributeId(null);
+        setHelpRequest({ item });
+        setShowHint(false);
+      }
     } catch (error) {
       console.error("Failed to process answer event:", error);
 
@@ -204,14 +372,12 @@ const JournalQuestion = ({
             const existingAnswers =
               answeredData[item.questionAttributeId] || [];
 
-            const isSolved = existingAnswers.some(
-              (entry) => entry.valid === true,
-            );
+            const isSolved = isJournalAttributeSolved(item, existingAnswers);
 
             console.log(
               "SOLVED CHECK:",
               item.questionAttributeId,
-              answeredData[item.questionAttributeId],
+              `${getCorrectAnswerCount(existingAnswers)}/${getRequiredAnswerCount(item.tables)}`,
             );
 
             return (
@@ -222,6 +388,12 @@ const JournalQuestion = ({
                     placement="bottom"
                     rootClose
                     container={document.body}
+                    show={openAttributeId === item.questionAttributeId}
+                    onToggle={(nextShow) =>
+                      setOpenAttributeId(
+                        nextShow ? item.questionAttributeId : null,
+                      )
+                    }
                     overlay={
                       <Popover
                         id={`popover-${item.questionAttributeId}`}
@@ -265,9 +437,7 @@ const JournalQuestion = ({
                                     }}
                                   >
                                     <Button
-                                      onClick={() =>
-                                        handleAdd(item, "Debit", table)
-                                      }
+                                      onClick={() => handleAdd(item, "Debit", table)}
                                       className="def"
                                       style={{
                                         width: "80px",
@@ -277,9 +447,7 @@ const JournalQuestion = ({
                                     </Button>
 
                                     <Button
-                                      onClick={() =>
-                                        handleAdd(item, "Credit", table)
-                                      }
+                                      onClick={() => handleAdd(item, "Credit", table)}
                                       className="def"
                                       style={{
                                         width: "80px",
@@ -297,6 +465,10 @@ const JournalQuestion = ({
                     }
                   >
                     <span
+                      ref={(element) => {
+                        attributeTargets.current[item.questionAttributeId] =
+                          element;
+                      }}
                       style={{
                         cursor: isSolved ? "not-allowed" : "pointer",
                         opacity: isSolved ? 0.6 : 1,
@@ -315,6 +487,51 @@ const JournalQuestion = ({
           })}
         </tbody>
       </Table>
+
+      <Overlay
+        show={Boolean(helpRequest)}
+        target={
+          helpRequest &&
+          attributeTargets.current[helpRequest.item.questionAttributeId]
+        }
+        placement="right"
+        container={document.body}
+        popperConfig={{ strategy: "fixed" }}
+        rootClose
+        onHide={closeHelp}
+      >
+        {(props) => (
+          <Popover {...props}>
+            <Popover.Body>
+              <div className="text-danger small fw-semibold mb-2">
+                Incorrect answer
+              </div>
+              <div className="d-grid gap-2">
+                <Button variant="outline-warning" size="sm" onClick={handleHint}>
+                  💡 Hint
+                </Button>
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  onClick={handleAutofill}
+                  disabled={isAutofilling}
+                >
+                  ✦ {isAutofilling ? "Filling..." : "Autofill"}
+                </Button>
+              </div>
+              {showHint && (
+                <div className="alert alert-warning small mt-2 mb-0 p-2">
+                  <strong>💡 Hint: </strong>
+                  <span>
+                    {getNextCondition(helpRequest?.item)?.condition.information ||
+                      "Review the remaining Debit and Credit entries for this transaction."}
+                  </span>
+                </div>
+              )}
+            </Popover.Body>
+          </Popover>
+        )}
+      </Overlay>
     </div>
   );
 };

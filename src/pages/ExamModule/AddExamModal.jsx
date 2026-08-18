@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Select, { components } from "react-select";
-
+import axios from "axios";
 import { FaTimes, FaBook, FaCalendarAlt } from "react-icons/fa";
 
 import "./AddExamModal.css";
@@ -14,87 +14,18 @@ const CheckboxOption = (props) => {
       <input type="checkbox" checked={props.isSelected} readOnly />
 
       <span className="ms-2" style={{ color: "#212529" }}>
-  {props.label}
-</span>
+        {props.label}
+      </span>
     </components.Option>
   );
 };
 
 export default function AddExamModal({ show, handleClose, examData, onSave }) {
-  const collegeOptions = [
-    {
-      value: 1,
-      label: "ABC College",
-    },
-
-    {
-      value: 2,
-      label: "XYZ College",
-    },
-  ];
-
-  const branchOptions = [
-    {
-      value: 1,
-      label: "Commerce",
-    },
-
-    {
-      value: 2,
-      label: "Science",
-    },
-  ];
-
-  const courseOptions = [
-    {
-      value: 1,
-      label: "B.Com",
-    },
-
-    {
-      value: 2,
-      label: "BBA",
-    },
-  ];
-
-  const sectionOptions = [
-    {
-      value: 1,
-      label: "Section A",
-    },
-
-    {
-      value: 2,
-      label: "Section B",
-    },
-  ];
-
-  const chapterOptions = [
-    {
-      value: 1,
-      label: "Prepare Final Accounts",
-    },
-
-    {
-      value: 2,
-      label: "Trial Balance",
-    },
-
-    {
-      value: 3,
-      label: "Depreciation",
-    },
-
-    {
-      value: 4,
-      label: "Partnership Accounts",
-    },
-
-    {
-      value: 5,
-      label: "Bills of Exchange",
-    },
-  ];
+  const [collegeOptions, setCollegeOptions] = useState([]);
+  const [branchOptions, setBranchOptions] = useState([]);
+  const [courseOptions, setCourseOptions] = useState([]);
+  const [sectionOptions, setSectionOptions] = useState([]);
+  const [chapterOptions, setChapterOptions] = useState([]);
 
   const [examName, setExamName] = useState("");
 
@@ -109,29 +40,241 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
   const [chapters, setChapters] = useState([]);
 
   const [startDate, setStartDate] = useState("");
+  const [startTime, setStartTime] = useState("");
 
   const [endDate, setEndDate] = useState("");
-  // Fill form when editing
-
+  const [endTime, setEndTime] = useState("");
   useEffect(() => {
-    if (examData) {
-      setExamName(examData.examName || "");
+    if (!show) return;
 
-      setCollege(examData.college || null);
+    const fetchColleges = async () => {
+      try {
+        const response = await axios.get("http://localhost:8080/api/college");
 
-      setBranch(examData.branch || null);
+        setCollegeOptions(
+          response.data.map((college) => ({
+            value: college.collegeId,
+            label: college.instituteName,
+          })),
+        );
+      } catch (error) {
+        console.error("Error fetching colleges:", error);
+        setCollegeOptions([]);
+      }
+    };
 
-      setCourse(examData.course || null);
+    fetchColleges();
+  }, [show]);
+  const handleCollegeChange = (selected) => {
+    setCollege(selected);
 
-      setSection(examData.section || null);
+    setBranch(null);
+    setCourse(null);
+    setSection(null);
+    setChapters([]);
 
-      setChapters(examData.chapters || []);
-
-      setStartDate(examData.startDate || "");
-
-      setEndDate(examData.endDate || "");
+    setBranchOptions([]);
+    setCourseOptions([]);
+    setSectionOptions([]);
+    setChapterOptions([]);
+  };
+  useEffect(() => {
+    if (!college?.value) {
+      setBranchOptions([]);
+      return;
     }
-  }, [examData]);
+
+    const fetchBranches = async () => {
+      try {
+        const response = await axios.get("http://localhost:8080/api/branch");
+
+        const filtered = response.data
+          .filter((branch) => branch.collegeId === college.value)
+          .map((branch) => ({
+            value: branch.branchId,
+            label: branch.branchName,
+          }));
+
+        setBranchOptions(filtered);
+      } catch (error) {
+        console.error("Error fetching branches:", error);
+        setBranchOptions([]);
+      }
+    };
+
+    fetchBranches();
+  }, [college]);
+  useEffect(() => {
+    if (!college?.value || !branch?.value) {
+      setCourseOptions([]);
+      return;
+    }
+
+    const fetchCourses = async () => {
+      try {
+        const response = await axios.get("http://localhost:8080/api/course");
+
+        const filtered = response.data
+          .filter(
+            (course) =>
+              course.collegeId === college.value &&
+              course.branchId === branch.value,
+          )
+          .map((course) => ({
+            value: course.courseId,
+            label: course.name,
+          }));
+
+        setCourseOptions(filtered);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+        setCourseOptions([]);
+      }
+    };
+
+    fetchCourses();
+  }, [college, branch]);
+  const handleBranchChange = (selected) => {
+    setBranch(selected);
+
+    setCourse(null);
+    setSection(null);
+    setChapters([]);
+
+    setCourseOptions([]);
+    setSectionOptions([]);
+    setChapterOptions([]);
+  };
+  useEffect(() => {
+    if (!course?.value) {
+      setSectionOptions([]);
+      return;
+    }
+
+    const fetchSections = async () => {
+      try {
+        const response = await axios.get("http://localhost:8080/api/section");
+
+        const filtered = response.data
+          .filter((section) => section.courseId === course.value)
+          .map((section) => ({
+            value: section.sectionId,
+            label: section.sectionName,
+          }));
+
+        setSectionOptions(filtered);
+      } catch (error) {
+        console.error("Error fetching sections:", error);
+        setSectionOptions([]);
+      }
+    };
+
+    fetchSections();
+  }, [course]);
+  const handleCourseChange = (selected) => {
+    setCourse(selected);
+
+    setSection(null);
+    setChapters([]);
+
+    setSectionOptions([]);
+    setChapterOptions([]);
+  };
+  useEffect(() => {
+    if (!course?.value) {
+      setChapterOptions([]);
+      return;
+    }
+
+    const fetchChapters = async () => {
+      try {
+        const response = await axios.get("http://localhost:8080/api/chapter");
+
+        const filtered = response.data
+          .filter((chapter) => chapter.courseId === course.value)
+          .map((chapter) => ({
+            value: chapter.chapterId,
+            label: chapter.name,
+          }));
+
+        setChapterOptions(filtered);
+      } catch (error) {
+        console.error("Error fetching chapters:", error);
+        setChapterOptions([]);
+      }
+    };
+
+    fetchChapters();
+  }, [course]);
+  useEffect(() => {
+    if (!examData || collegeOptions.length === 0) return;
+
+    setExamName(examData.examName || "");
+
+    const selectedCollege = collegeOptions.find(
+      (item) => item.value === examData.collegeId,
+    );
+
+    setCollege(selectedCollege || null);
+
+    if (examData.startDate) {
+      const start = examData.startDate.split("T");
+
+      setStartDate(start[0] || "");
+      setStartTime(start[1]?.substring(0, 5) || "");
+    } else {
+      setStartDate("");
+      setStartTime("");
+    }
+
+    if (examData.endDate) {
+      const end = examData.endDate.split("T");
+
+      setEndDate(end[0] || "");
+      setEndTime(end[1]?.substring(0, 5) || "");
+    } else {
+      setEndDate("");
+      setEndTime("");
+    }
+  }, [examData, collegeOptions]);
+  useEffect(() => {
+    if (!examData || !examData.branchId || branchOptions.length === 0) return;
+
+    const selectedBranch = branchOptions.find(
+      (item) => item.value === examData.branchId,
+    );
+
+    setBranch(selectedBranch || null);
+  }, [examData, branchOptions]);
+  useEffect(() => {
+    if (!examData || !examData.courseId || courseOptions.length === 0) return;
+
+    const selectedCourse = courseOptions.find(
+      (item) => item.value === examData.courseId,
+    );
+
+    setCourse(selectedCourse || null);
+  }, [examData, courseOptions]);
+  useEffect(() => {
+    if (!examData || !examData.sectionId || sectionOptions.length === 0) return;
+
+    const selectedSection = sectionOptions.find(
+      (item) => item.value === examData.sectionId,
+    );
+
+    setSection(selectedSection || null);
+  }, [examData, sectionOptions]);
+  useEffect(() => {
+    if (!examData || !examData.chapterIds || chapterOptions.length === 0) {
+      return;
+    }
+
+    const selectedChapters = chapterOptions.filter((item) =>
+      examData.chapterIds.includes(item.value),
+    );
+
+    setChapters(selectedChapters);
+  }, [examData, chapterOptions]);
 
   const handleSave = () => {
     if (!examName.trim()) {
@@ -154,29 +297,51 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
       return;
     }
 
+    if (startDate && endDate && endDate < startDate) {
+      alert("End date cannot be before start date");
+      return;
+    }
+    if (!startDate || !startTime) {
+      alert("Select start date and start time");
+      return;
+    }
+
+    if (!endDate || !endTime) {
+      alert("Select end date and end time");
+      return;
+    }
+
+    const startDateTime = new Date(`${startDate}T${startTime}`);
+    const endDateTime = new Date(`${endDate}T${endTime}`);
+
+    if (endDateTime <= startDateTime) {
+      alert("End date and time must be after start date and time");
+      return;
+    }
     const payload = {
-      examName,
+      examName: examName.trim(),
 
-      college,
+      collegeId: college.value,
 
-      branch,
+      branchId: branch?.value || null,
 
-      course,
+      courseId: course.value,
 
-      section,
+      sectionId: section?.value || null,
 
-      chapters,
+      chapterIds: chapters.map((chapter) => chapter.value),
 
-      startDate,
+      startDate: startDate && startTime ? `${startDate}T${startTime}:00` : null,
 
-      endDate,
+      endDate: endDate && endTime ? `${endDate}T${endTime}:00` : null,
     };
+
+    console.log("Exam payload:", payload);
 
     onSave(payload);
 
     onClose();
   };
-
   const onClose = () => {
     setExamName("");
 
@@ -193,6 +358,8 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
     setStartDate("");
 
     setEndDate("");
+    setStartTime("");
+    setEndTime("");
 
     handleClose();
   };
@@ -252,9 +419,10 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
                   <Select
                     options={collegeOptions}
                     value={college}
-                    onChange={setCollege}
-                    placeholder="Select College"
+                    onChange={handleCollegeChange}
+                    placeholder="Search College..."
                     isSearchable
+                    isClearable
                   />
                 </div>
 
@@ -266,9 +434,11 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
                   <Select
                     options={branchOptions}
                     value={branch}
-                    onChange={setBranch}
-                    placeholder="Select Branch"
+                    onChange={handleBranchChange}
+                    placeholder="Search Branch..."
                     isSearchable
+                    isClearable
+                    isDisabled={!college}
                   />
                 </div>
 
@@ -282,9 +452,11 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
                   <Select
                     options={courseOptions}
                     value={course}
-                    onChange={setCourse}
-                    placeholder="Select Course"
+                    onChange={handleCourseChange}
+                    placeholder="Search Course..."
                     isSearchable
+                    isClearable
+                    isDisabled={!branch}
                   />
                 </div>
 
@@ -297,8 +469,10 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
                     options={sectionOptions}
                     value={section}
                     onChange={setSection}
-                    placeholder="Select Section"
+                    placeholder="Search Section..."
                     isSearchable
+                    isClearable
+                    isDisabled={!course}
                   />
                 </div>
 
@@ -312,40 +486,30 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
                   <Select
                     options={chapterOptions}
                     value={chapters}
-                    onChange={(selected) => {
-                      setChapters(selected || []);
-                    }}
-                    placeholder="Search & Select Chapters"
-                    isSearchable={true}
-                    isMulti={true}
+                    onChange={(selected) => setChapters(selected || [])}
+                    placeholder="Search & Select Chapters..."
+                    isSearchable
+                    isMulti
                     closeMenuOnSelect={false}
                     hideSelectedOptions={false}
                     components={{
                       Option: CheckboxOption,
                     }}
-                    filterOption={(option, inputValue) =>
-                      option.label
-
-                        .toLowerCase()
-
-                        .includes(inputValue.toLowerCase())
-                    }
+                    isDisabled={!course}
                   />
                 </div>
               </div>
             </div>
 
-            {/* Schedule */}
             <div className="form-card">
               <h3 className="section-title">Schedule</h3>
 
               <div className="form-grid">
+                {/* Start Date */}
                 <div className="form-group">
                   <label>Start Date</label>
 
                   <div className="input-box">
-                    
-
                     <input
                       type="date"
                       value={startDate}
@@ -354,17 +518,42 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
                   </div>
                 </div>
 
+                {/* Start Time */}
+                <div className="form-group">
+                  <label>Start Time</label>
+
+                  <div className="input-box">
+                    <input
+                      type="time"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* End Date */}
                 <div className="form-group">
                   <label>End Date</label>
 
                   <div className="input-box">
-                    
-
                     <input
                       type="date"
                       value={endDate}
                       min={startDate}
                       onChange={(e) => setEndDate(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* End Time */}
+                <div className="form-group">
+                  <label>End Time</label>
+
+                  <div className="input-box">
+                    <input
+                      type="time"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
                     />
                   </div>
                 </div>
