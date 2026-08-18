@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Row,
@@ -17,9 +17,10 @@ import {
   FaCheckCircle,
   FaTimesCircle,
 } from "react-icons/fa";
-
+import ExamService from "../../services/ExamService";
 import "./ExamList.css";
 import AddExamModal from "./AddExamModal";
+import QuestionSelectionModal from "./QuestionSelectionModal";
 
 export default function ExamList() {
   const [showModal, setShowModal] = useState(false);
@@ -27,50 +28,78 @@ export default function ExamList() {
   const [search, setSearch] = useState("");
 
   const [editExam, setEditExam] = useState(null);
+  const [showQuestionModal, setShowQuestionModal] = useState(false);
+  const [selectedExamId, setSelectedExamId] = useState(null);
 
-  const [exams, setExams] = useState([
-    {
-      id: 1,
-      examName: "Mid Semester Examination",
-      course: "B.Com",
-      subject: "Financial Accounting",
-      date: "10 Aug 2026",
-      students: 120,
-      status: "Upcoming",
-    },
-    {
-      id: 2,
-      examName: "Model Test Examination",
-      course: "B.Sc",
-      subject: "Mathematics",
-      date: "05 Aug 2026",
-      students: 80,
-      status: "Completed",
-    },
-    {
-      id: 3,
-      examName: "Internal Assessment",
-      course: "BBA",
-      subject: "Management",
-      date: "15 Aug 2026",
-      students: 60,
-      status: "Cancelled",
-    },
-  ]);
+  const [exams, setExams] = useState([]);
 
   const filteredExams = exams.filter((exam) =>
     exam.examName.toLowerCase().includes(search.toLowerCase()),
   );
+  useEffect(() => {
+    fetchExams();
+  }, []);
+
+  const fetchExams = async () => {
+    try {
+      const response = await ExamService.getAll();
+
+      const formattedExams = response.data.map((exam) => ({
+        id: exam.examId,
+        examName: exam.examName,
+        courseId: exam.courseId,
+        courseName: exam.courseName,
+        startDate: exam.startDate,
+        endDate: exam.endDate,
+        status: getExamStatus(exam.startDate, exam.endDate),
+      }));
+
+      setExams(formattedExams);
+    } catch (error) {
+      console.error("Error fetching exams:", error);
+    }
+  };
+  const getExamStatus = (startDate, endDate) => {
+    const now = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (now < start) {
+      return "Upcoming";
+    }
+
+    if (now >= start && now <= end) {
+      return "Ongoing";
+    }
+
+    return "Completed";
+  };
 
   const handleEdit = (exam) => {
     setEditExam(exam);
     setShowModal(true);
   };
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this exam?")) {
+      return;
+    }
 
-  const handleDelete = (id) => {
-    setExams((prev) => prev.filter((exam) => exam.id !== id));
+    try {
+      await ExamService.delete(id);
+
+      alert("Exam deleted successfully");
+
+      fetchExams();
+    } catch (error) {
+      console.error("Error deleting exam:", error);
+
+      alert(error.response?.data?.message || "Failed to delete exam");
+    }
   };
-
+  const handleAddQuestions = (examId) => {
+    setSelectedExamId(examId);
+    setShowQuestionModal(true);
+  };
   return (
     <Container fluid className="exam-page">
       {/* Header */}
@@ -167,8 +196,8 @@ export default function ExamList() {
 
       {/* Search Filters */}
 
-      <Row className="filter-row mb-4 g-3 align-items-center">
-        <Col lg={6} md={12}>
+      <Row className="filter-row mb-4">
+        <Col lg={6} md={12} className="filter-search">
           <InputGroup className="search-box">
             <InputGroup.Text>
               <FaSearch />
@@ -182,7 +211,7 @@ export default function ExamList() {
           </InputGroup>
         </Col>
 
-        <Col lg={3} md={6}>
+        <Col lg={3} md={6} className="filter-select">
           <Form.Select>
             <option>Status</option>
 
@@ -194,7 +223,7 @@ export default function ExamList() {
           </Form.Select>
         </Col>
 
-        <Col lg={3} md={6}>
+        <Col lg={3} md={6} className="filter-select">
           <Form.Select>
             <option>Sort</option>
 
@@ -223,14 +252,17 @@ export default function ExamList() {
                 <Card.Body>
                   <h5>{exam.examName}</h5>
 
-                  <p className="text-muted">
-                    {exam.course} - {exam.subject}
-                  </p>
+                  <p className="text-muted">Course Name: {exam.courseName}</p>
 
                   <div className="exam-details">
-                    <p>📅 {exam.date}</p>
+                    <p>
+                      📅 Start:{" "}
+                      {new Date(exam.startDate).toLocaleString("en-IN")}
+                    </p>
 
-                    <p>👥 Students: {exam.students}</p>
+                    <p>
+                      📅 End: {new Date(exam.endDate).toLocaleString("en-IN")}
+                    </p>
                   </div>
 
                   <span className={`status ${exam.status.toLowerCase()}`}>
@@ -253,6 +285,14 @@ export default function ExamList() {
                     >
                       Delete
                     </Button>
+
+                    <Button
+                      size="sm"
+                      variant="outline-success"
+                      onClick={() => handleAddQuestions(exam.id)}
+                    >
+                      Add Questions
+                    </Button>
                   </div>
                 </Card.Body>
               </Card>
@@ -270,31 +310,37 @@ export default function ExamList() {
           setEditExam(null);
         }}
         examData={editExam}
-        onSave={(exam) => {
-          if (editExam) {
-            setExams((prev) =>
-              prev.map((item) =>
-                item.id === editExam.id
-                  ? {
-                      ...item,
-                      ...exam,
-                    }
-                  : item,
-              ),
-            );
-          } else {
-            setExams((prev) => [
-              ...prev,
+        onSave={async (exam) => {
+          try {
+            if (editExam) {
+              await ExamService.update(editExam.id, exam);
+              alert("Exam updated successfully");
+            } else {
+              await ExamService.create(exam);
+              alert("Exam created successfully");
+            }
 
-              {
-                id: prev.length + 1,
-                ...exam,
-              },
-            ]);
+            // Fetch exams again and calculate status
+            await fetchExams();
+
+            setShowModal(false);
+            setEditExam(null);
+          } catch (error) {
+            console.error("Error saving exam:", error);
+
+            alert(error.response?.data?.message || "Failed to save exam");
           }
-
-          setShowModal(false);
-          setEditExam(null);
+        }}
+      />
+      <QuestionSelectionModal
+        show={showQuestionModal}
+        handleClose={() => {
+          setShowQuestionModal(false);
+          setSelectedExamId(null);
+        }}
+        examId={selectedExamId}
+        onAddQuestions={async (questionIds) => {
+          await ExamService.addQuestions(selectedExamId, questionIds);
         }}
       />
     </Container>
