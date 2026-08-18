@@ -1,95 +1,21 @@
-import React, { useMemo, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Button, Form, Table, InputGroup } from "react-bootstrap";
 import { FaSearch } from "react-icons/fa";
-
+import axios from "axios";
 import "./QuestionSelectionModal.css";
 
 export default function QuestionSelectionModal({
   show,
   handleClose,
-  selectedChapters,
+  examId,
   onAddQuestions,
 }) {
-  // Dummy Data (Replace with API later)
-  const questionData = {
-    "Prepare Final Accounts": [
-      {
-        id: 1,
-        text: "Prepare Final Accounts with Adjustments.",
-      },
-      {
-        id: 2,
-        text: "Prepare Trading & Profit and Loss Account.",
-      },
-      {
-        id: 3,
-        text: "Closing Stock Adjustment.",
-      },
-    ],
-
-    "Trial Balance": [
-      {
-        id: 4,
-        text: "Prepare Trial Balance.",
-      },
-      {
-        id: 5,
-        text: "Rectification of Errors.",
-      },
-      {
-        id: 6,
-        text: "Suspense Account.",
-      },
-    ],
-
-    Depreciation: [
-      {
-        id: 7,
-        text: "Straight Line Method.",
-      },
-      {
-        id: 8,
-        text: "Written Down Value Method.",
-      },
-    ],
-
-    "Partnership Accounts": [
-      {
-        id: 9,
-        text: "Admission of Partner.",
-      },
-      {
-        id: 10,
-        text: "Retirement of Partner.",
-      },
-    ],
-
-    "Bills of Exchange": [
-      {
-        id: 11,
-        text: "Dishonour of Bill.",
-      },
-      {
-        id: 12,
-        text: "Renewal of Bill.",
-      },
-    ],
-  };
-
+  const [questions, setQuestions] = useState([]);
   const [selectedQuestions, setSelectedQuestions] = useState([]);
   const [search, setSearch] = useState("");
 
-  const filteredQuestions = useMemo(() => {
-    return selectedChapters.flatMap((chapter) =>
-      (questionData[chapter] || []).map((q) => ({
-        ...q,
-        chapter,
-      })),
-    );
-  }, [selectedChapters]);
-
-  const displayedQuestions = filteredQuestions.filter((q) =>
-    q.text.toLowerCase().includes(search.toLowerCase()),
+  const displayedQuestions = questions.filter((question) =>
+    question.questionText?.toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleQuestion = (id) => {
@@ -98,14 +24,43 @@ export default function QuestionSelectionModal({
     );
   };
 
-  const handleAdd = () => {
-    const selected = filteredQuestions.filter((q) =>
-      selectedQuestions.includes(q.id),
-    );
+  const handleAdd = async () => {
+    if (selectedQuestions.length === 0) {
+      return;
+    }
 
-    onAddQuestions(selected);
-    handleClose();
+    try {
+      await onAddQuestions(selectedQuestions);
+
+      alert("Questions added to exam successfully.");
+
+      setSelectedQuestions([]);
+      handleClose();
+    } catch (error) {
+      console.error("Error adding questions:", error);
+
+      alert("Failed to add questions to exam.");
+    }
   };
+  useEffect(() => {
+    if (!show || !examId) return;
+
+    const fetchAvailableQuestions = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8080/api/exams/${examId}/available-questions`,
+        );
+
+        setQuestions(response.data);
+        setSelectedQuestions([]);
+      } catch (error) {
+        console.error("Error fetching available questions:", error);
+        setQuestions([]);
+      }
+    };
+
+    fetchAvailableQuestions();
+  }, [show, examId]);
 
   return (
     <Modal show={show} onHide={handleClose} size="xl" centered>
@@ -138,24 +93,24 @@ export default function QuestionSelectionModal({
           <tbody>
             {displayedQuestions.length > 0 ? (
               displayedQuestions.map((question) => (
-                <tr key={question.id}>
+                <tr key={question.questionId}>
                   <td className="text-center">
                     <Form.Check
                       type="checkbox"
-                      checked={selectedQuestions.includes(question.id)}
-                      onChange={() => handleQuestion(question.id)}
+                      checked={selectedQuestions.includes(question.questionId)}
+                      onChange={() => handleQuestion(question.questionId)}
                     />
                   </td>
 
-                  <td>{question.text}</td>
+                  <td>{question.questionText}</td>
 
-                  <td>{question.chapter}</td>
+                  <td>{question.chapterName}</td>
                 </tr>
               ))
             ) : (
               <tr>
                 <td colSpan="3" className="text-center text-muted py-4">
-                  No questions found.
+                  No available questions found.
                 </td>
               </tr>
             )}
@@ -172,7 +127,7 @@ export default function QuestionSelectionModal({
           <Button variant="secondary" className="me-2" onClick={handleClose}>
             Cancel
           </Button>
-
+          <br />
           <Button variant="primary" onClick={handleAdd}>
             Add To Exam ({selectedQuestions.length})
           </Button>
