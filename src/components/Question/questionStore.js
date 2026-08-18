@@ -6,6 +6,10 @@ const useQuestionStore = create((set) => ({
   question: {},
   droppableData: {},
   score: 0,
+  showCheckMistakes: false,
+  setCheckMistakes: (val) => {
+    set({ showCheckMistakes: val });
+  },
   setCurrentScore: async (id) => {
     const score = await QuestionAnswerService.getOverallMarks(id);
     set({ score });
@@ -144,7 +148,7 @@ const useQuestionStore = create((set) => ({
     set({ droppableData: allTablesData });
   },
 
-  moveQuestion: (sourceId, targetId, condId) =>
+  moveQuestion: (sourceId, targetId, condId, pairId) =>
     set((state) => {
       const question = state.questions.find((item) => item.id == sourceId);
 
@@ -175,15 +179,71 @@ const useQuestionStore = create((set) => ({
       });
 
       const myId = targetId.split("-").slice(0, 2).join("-");
+
+      // if an object exists in droppableData[myId] with id as sourceId then return
+      const alreadyPlaced = (state.droppableData[myId] ?? []).some(
+        (obj) => obj.id === sourceId,
+      );
+      if (alreadyPlaced) {
+        return state;
+      }
+
       const ops = targetId.split("-").pop();
-      const updatedData = [
-        ...state.droppableData[myId],
-        {
+      let updatedData = null;
+      // write this logic
+      let found = [...state.droppableData[myId]].filter(
+        (obj) => obj.id === pairId,
+      );
+      if (found.length > 0) {
+        console.log("This is data in droppable ", [
+          ...state.droppableData[myId],
+        ]);
+        updatedData = [...state.droppableData[myId]].filter((obj) => {
+          return obj.id != pairId;
+        });
+        console.log("This is data in updated ", updatedData);
+        // console.log("This is previous data ", updatedData);
+        // what is wrong with this code
+        found = found[0];
+        // console.log("This is actual ", found);
+        found = {
+          id: found.id,
+          name: found.name,
+          amount: found.amount,
+          operation: found.operation,
+          pairId: found.pairId,
+          isPaired: true,
+        };
+        // console.log("This is what is found in store ", found);
+        updatedData.push(found);
+        let newObj = {
+          id: question.id,
           name: question.name,
           amount: question.amount,
           operation: ops,
-        },
-      ];
+          pairId,
+          isPaired: true,
+        };
+        if (newObj.operation == "add") {
+          updatedData.splice(-1, 0, newObj);
+        } else {
+          updatedData.push(newObj);
+        }
+
+        // how do I do this in js when I have a isPaired is true and operation is add
+      } else {
+        updatedData = [
+          ...state.droppableData[myId],
+          {
+            id: question.id,
+            name: question.name,
+            amount: question.amount,
+            operation: ops,
+            pairId,
+            isPaired: false,
+          },
+        ];
+      }
 
       // console.log("I got here too with updated data ", updatedData);
       return {

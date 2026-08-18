@@ -67,6 +67,14 @@ const Droppable = ({
     .filter((o) => o.operation === "less")
     .reduce((sum, o) => sum + Number(o.amount || 0), 0);
 
+  const calcSum = (id, pairId) => {
+    const addObj = data.find((o) => o.id === pairId && o.operation === "add");
+    const subObj = data.find((o) => o.id === id && o.operation === "less");
+    return addObj && subObj
+      ? Number(addObj.amount || 0) - Number(subObj.amount || 0)
+      : 0;
+  };
+  console.log("All data is ", data);
   return (
     <div className={`droppable-group ${theme}`}>
       <div className="row g-0">
@@ -93,7 +101,9 @@ const Droppable = ({
                     <td className="text-end">
                       {obj.operation === "add"
                         ? Number(obj.amount).toLocaleString("en-IN")
-                        : ""}
+                        : obj.isPaired
+                          ? `-${Number(obj.amount).toLocaleString("en-IN")}`
+                          : ""}
                     </td>
                   </tr>
                 ))}
@@ -138,9 +148,11 @@ const Droppable = ({
                 data.map((obj) => (
                   <tr key={`${obj.id}-less`}>
                     <td className="text-end">
-                      {obj.operation === "less"
+                      {obj.operation === "less" && !obj.isPaired
                         ? `-${Number(obj.amount).toLocaleString("en-IN")}`
-                        : "\u00A0"}
+                        : obj.operation === "less" && obj.isPaired
+                          ? calcSum(obj.id, obj.pairId)
+                          : "\u00A0"}
                     </td>
                   </tr>
                 ))}
