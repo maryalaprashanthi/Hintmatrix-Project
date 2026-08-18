@@ -1,0 +1,440 @@
+/* =====================================
+   SUBSCRIPTION PERMISSIONS PAGE
+===================================== */
+
+.subscription-permissions-page {
+  padding: 30px;
+  background: #f5f7fb;
+  min-height: 100vh;
+}
+
+/* =====================================
+   HEADER
+===================================== */
+
+.subscription-permissions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 35px;
+
+  gap: 20px;
+}
+
+/* =====================================
+   HEADER LEFT SECTION
+===================================== */
+
+.subscription-permissions-left {
+  display: flex;
+  align-items: center;
+
+  /* THIS CONTROLS SPACE BETWEEN
+     BACK BUTTON AND TITLE */
+  gap: 8px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* =====================================
+   BACK BUTTON
+===================================== */
+
+.permissions-back-btn {
+  width: 50px !important;
+  height: 50px !important;
+
+  min-width: 50px !important;
+
+  border: none !important;
+
+  border-radius: 14px !important;
+
+  background: #ffffff !important;
+
+  color: #2563eb !important;
+
+  display: flex !important;
+
+  align-items: center !important;
+
+  justify-content: center !important;
+
+  padding: 0 !important;
+
+  margin: 0 !important;
+
+  font-size: 22px !important;
+
+  cursor: pointer;
+
+  flex-shrink: 0;
+
+  transition: all 0.2s ease;
+}
+
+.permissions-back-btn:hover {
+  background: #477bec !important;
+
+  transform: translateX(-2px);
+}
+
+.permissions-back-btn svg {
+  font-size: 22px !important;
+}
+
+/* =====================================
+   TITLE
+===================================== */
+
+.subscription-permissions-title {
+  display: flex;
+
+  align-items: center;
+
+  margin: 0 !important;
+
+  padding: 0 !important;
+
+  gap: 0 !important;
+}
+
+.subscription-permissions-title h2 {
+  margin: 0 !important;
+
+  padding: 0 !important;
+
+  font-size: 3rem;
+
+  font-weight: 700;
+
+  color: #212529;
+
+  line-height: 1.2;
+}
+
+.subscription-permissions-title p {
+  margin: 6px 0 0 0 !important;
+
+  padding: 0 !important;
+
+  color: #6b7280;
+
+  font-size: 15px;
+}
+
+/* =====================================
+   ADD PERMISSION BUTTON
+===================================== */
+
+.add-permission-btn {
+  height: 48px !important;
+
+  min-width: 170px !important;
+
+  padding: 0 20px !important;
+
+  border-radius: 12px !important;
+
+  font-size: 15px !important;
+
+  font-weight: 600 !important;
+
+  display: inline-flex !important;
+
+  align-items: center !important;
+
+  justify-content: center !important;
+
+  gap: 8px !important;
+
+  white-space: nowrap !important;
+
+  flex-shrink: 0 !important;
+}
+
+.add-permission-btn svg {
+  font-size: 18px;
+
+  flex-shrink: 0;
+}
+
+/* =====================================
+   SEARCH TOOLBAR
+===================================== */
+
+.permission-toolbar {
+  background: #ffffff;
+
+  border-radius: 18px;
+
+  padding: 18px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 18px;
+
+  border: 1px solid #edf2f7;
+
+  margin-bottom: 25px;
+}
+
+.permission-search-box {
+  flex: 1;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  background: #f8fafc;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 14px;
+
+  padding: 14px 18px;
+}
+
+.permission-search-box svg {
+  color: #64748b;
+
+  font-size: 17px;
+
+  flex-shrink: 0;
+}
+
+.permission-search-box input {
+  width: 100%;
+
+  border: none;
+
+  outline: none;
+
+  background: transparent;
+
+  font-size: 15px;
+}
+
+/* =====================================
+   AG GRID CONTAINER
+===================================== */
+
+.subscription-permissions-grid {
+  width: 100%;
+
+  height: 500px;
+
+  border-radius: 18px;
+
+  overflow: hidden;
+
+  background: #ffffff;
+
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+/* =====================================
+   AG GRID
+===================================== */
+
+.subscription-permissions-grid .ag-header {
+  font-weight: 700;
+}
+
+.subscription-permissions-grid .ag-header-cell {
+  font-size: 14px;
+}
+
+.subscription-permissions-grid .ag-row {
+  font-size: 14px;
+}
+
+.subscription-permissions-grid .ag-cell {
+  display: flex;
+
+  align-items: center;
+}
+
+/* =====================================
+   STATUS
+===================================== */
+
+.permission-status {
+  display: inline-flex !important;
+
+  align-items: center !important;
+
+  justify-content: center !important;
+
+  min-width: 80px;
+
+  height: 32px;
+
+  padding: 0 12px !important;
+
+  border-radius: 18px;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  margin: 0 !important;
+
+  line-height: 1;
+}
+
+.permission-status.active {
+  background: #e9fff3;
+
+  color: #16a34a;
+}
+
+.permission-status.inactive {
+  background: #fee2e2;
+
+  color: #dc2626;
+}
+
+/* =====================================
+   ACTIONS - ICON ONLY
+===================================== */
+
+.permission-actions {
+  display: flex !important;
+
+  align-items: center !important;
+
+  justify-content: flex-start !important;
+
+  gap: 8px !important;
+
+  width: 100%;
+
+  height: 100%;
+}
+
+.action-icon-btn {
+  width: 34px !important;
+
+  min-width: 34px !important;
+
+  height: 32px !important;
+
+  padding: 0 !important;
+
+  border-radius: 7px !important;
+
+  display: inline-flex !important;
+
+  align-items: center !important;
+
+  justify-content: center !important;
+
+  font-size: 13px !important;
+
+  flex-shrink: 0 !important;
+
+  margin: 0 !important;
+}
+
+.action-icon-btn svg {
+  font-size: 13px !important;
+}
+
+/* =====================================
+   RESPONSIVE
+===================================== */
+
+@media (max-width: 992px) {
+  .subscription-permissions-header {
+    flex-direction: column;
+
+    align-items: flex-start;
+  }
+
+  .add-permission-btn {
+    align-self: flex-start;
+  }
+
+  .subscription-permissions-title h2 {
+    font-size: 30px;
+  }
+}
+
+/* =====================================
+   TABLET
+===================================== */
+
+@media (max-width: 768px) {
+  .subscription-permissions-page {
+    padding: 20px;
+  }
+
+  .permissions-back-btn {
+    width: 46px !important;
+
+    height: 46px !important;
+
+    min-width: 46px !important;
+
+    font-size: 20px !important;
+  }
+
+  .permissions-back-btn svg {
+    font-size: 20px !important;
+  }
+
+  .subscription-permissions-title h2 {
+    font-size: 28px;
+  }
+}
+
+/* =====================================
+   MOBILE
+===================================== */
+
+@media (max-width: 576px) {
+  .subscription-permissions-page {
+    padding: 15px;
+  }
+
+  .subscription-permissions-left {
+    gap: 5px !important;
+  }
+
+  .permissions-back-btn {
+    width: 42px !important;
+
+    height: 42px !important;
+
+    min-width: 42px !important;
+
+    border-radius: 12px !important;
+
+    font-size: 18px !important;
+  }
+
+  .permissions-back-btn svg {
+    font-size: 18px !important;
+  }
+
+  .subscription-permissions-title h2 {
+    font-size: 24px;
+  }
+
+  .add-permission-btn {
+    width: 100%;
+
+    min-width: 100% !important;
+  }
+
+  .permission-search-box {
+    padding: 12px 15px;
+  }
+}
