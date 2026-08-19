@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
+import { FaCreditCard } from "react-icons/fa";
 
 import logo from "../../assets/hintmatrix-logo.png";
 
@@ -73,6 +74,18 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
             <div className="menu-left">
               <MdDashboard />
               <span>Dashboard</span>
+            </div>
+          </NavLink>
+          {/* Subscription */}
+          <NavLink
+            to="/subscriptions"
+            className={({ isActive }) =>
+              `menu-item ${isActive ? "active" : ""}`
+            }
+          >
+            <div className="menu-left">
+              <FaCreditCard />
+              <span>Subscription</span>
             </div>
           </NavLink>
 

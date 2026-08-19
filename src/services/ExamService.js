@@ -1,57 +1,66 @@
 import axios from "axios";
 
-// Matches the Spring Boot Controller's @RequestMapping("/api/exam")
-const BASE_URL = "http://localhost:8080/api/exam";
+const BASE_URL = "http://localhost:8080/api/exams";
 
 class ExamService {
+  // Create exam
+  create(examRequestDTO) {
+    return axios.post(`${BASE_URL}`, examRequestDTO, { withCredentials: true });
+  }
 
-    // Matches @PostMapping
-    // Takes the ExamRequestDTO payload for the request body
-    create(examRequestDTO) {
-        return axios.post(
-            `${BASE_URL}`,
-            examRequestDTO,
-            { withCredentials: true } // Allows backend session cookies/CORS handshakes
-        );
-    }
+  // Get all exams
+  getAll() {
+    return axios.get(`${BASE_URL}`, { withCredentials: true });
+  }
 
-    // Matches @GetMapping
-    // Returns an array of ExamResponseDTO objects
-    getAll() {
-        return axios.get(
-            `${BASE_URL}`,
-            { withCredentials: true } // Passes tracking authorization tokens/cookies
-        );
-    }
+  // Get exam by ID
+  getById(id) {
+    return axios.get(`${BASE_URL}/${id}`, { withCredentials: true });
+  }
 
-    // Matches @GetMapping("/{id}")
-    // Returns a specific Exam entity structure
-    getById(id) {
-        return axios.get(
-            `${BASE_URL}/${id}`,
-            { withCredentials: true }
-        );
-    }
+  // Update exam
+  update(id, examRequestDTO) {
+    return axios.put(`${BASE_URL}/${id}`, examRequestDTO, {
+      withCredentials: true,
+    });
+  }
 
-    // Matches @PutMapping("/{id}")
-    // Takes id for the URL path variable and the DTO payload for the request body
-    update(id, examRequestDTO) {
-        return axios.put(
-            `${BASE_URL}/${id}`,
-            examRequestDTO,
-            { withCredentials: true }
-        );
-    }
+  // Delete exam
+  delete(id) {
+    return axios.delete(`${BASE_URL}/${id}`, { withCredentials: true });
+  }
 
-    // Matches @DeleteMapping("/{id}")
-    // Returns plain string text confirmation from backend layer
-    delete(id) {
-        return axios.delete(
-            `${BASE_URL}/${id}`,
-            { withCredentials: true }
-        );
-    }
+  // Add questions to exam
+  addQuestions(examId, questionIds) {
+    return axios.post(
+      `${BASE_URL}/${examId}/questions`,
+      {
+        questionIds: questionIds,
+      },
+      { withCredentials: true },
+    );
+  }
+
+  // Get questions already added to exam
+  getExamQuestions(examId) {
+    return axios.get(`${BASE_URL}/${examId}/questions`, {
+      withCredentials: true,
+    });
+  }
+
+  // Get questions available for exam
+  getAvailableQuestions(examId) {
+    return axios.get(`${BASE_URL}/${examId}/available-questions`, {
+      withCredentials: true,
+    });
+  }
+
+  // Remove question from exam
+  removeQuestion(examId, questionId) {
+    return axios.delete(`${BASE_URL}/${examId}/questions/${questionId}`, {
+      withCredentials: true,
+    });
+  }
 }
 
-// Export an instantiated instance of the service architecture directly
 export default new ExamService();

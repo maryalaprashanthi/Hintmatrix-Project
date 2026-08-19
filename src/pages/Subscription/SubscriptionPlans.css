@@ -1,0 +1,367 @@
+/* =====================================
+   SUBSCRIPTION PLANS PAGE
+===================================== */
+
+.subscription-plans-page {
+  padding: 30px;
+  background: #f5f7fb;
+  min-height: 100vh;
+}
+
+/* =====================================
+   HEADER
+===================================== */
+
+.subscription-plans-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 35px;
+  gap: 20px;
+}
+
+/* =====================================
+   TITLE SECTION
+===================================== */
+
+.subscription-plans-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* =====================================
+   BACK BUTTON
+===================================== */
+
+.back-btn {
+  width: 50px !important;
+  height: 50px !important;
+  min-width: 50px !important;
+
+  border: none !important;
+  border-radius: 14px !important;
+
+  background: #eaf2ff !important;
+  color: #2563eb !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  cursor: pointer;
+
+  font-size: 18px !important;
+
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  background: #477bec !important;
+  color: #ffffff !important;
+  transform: translateX(-2px);
+}
+
+.back-btn svg {
+  font-size: 18px !important;
+}
+
+/* =====================================
+   TITLE
+===================================== */
+
+.subscription-plans-title h2 {
+  margin: 0;
+
+  font-size: 3rem;
+  font-weight: 700;
+
+  color: #212529;
+
+  line-height: 1.2;
+}
+
+.subscription-plans-title p {
+  margin-top: 6px;
+  margin-bottom: 0;
+
+  color: #6b7280;
+
+  font-size: 15px;
+}
+
+/* =====================================
+   ADD SUBSCRIPTION BUTTON
+===================================== */
+
+.add-subscription-btn {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  background: #2563eb;
+  color: #ffffff;
+
+  border: none;
+
+  border-radius: 12px;
+
+  padding: 12px 22px;
+
+  height: 42px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: all 0.3s ease;
+}
+
+.add-subscription-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+}
+
+.add-subscription-btn svg {
+  font-size: 16px;
+}
+
+/* =====================================
+   TABLE CONTAINER
+===================================== */
+
+.subscription-table-container {
+  background: #ffffff;
+
+  border-radius: 20px;
+
+  border: 1px solid #edf2f7;
+
+  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.05);
+
+  overflow: hidden;
+}
+
+/* =====================================
+   TABLE HEADER
+===================================== */
+
+.table-header {
+  padding: 24px 25px;
+
+  border-bottom: 1px solid #edf2f7;
+}
+
+.table-header h3 {
+  margin: 0 0 5px;
+
+  font-size: 22px;
+  font-weight: 700;
+
+  color: #111827;
+}
+
+.table-header p {
+  margin: 0;
+
+  color: #64748b;
+
+  font-size: 14px;
+}
+
+/* =====================================
+   AG GRID
+===================================== */
+
+.subscription-grid {
+  width: 100%;
+}
+
+/* =====================================
+   AG GRID ROW & CELL ALIGNMENT
+===================================== */
+
+.subscription-grid .ag-row {
+  display: flex !important;
+  align-items: center !important;
+}
+
+.subscription-grid .ag-cell {
+  display: flex !important;
+  align-items: center !important;
+
+  height: 100% !important;
+
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.subscription-grid .ag-cell-wrapper {
+  display: flex !important;
+  align-items: center !important;
+
+  height: 100% !important;
+}
+
+.subscription-grid .ag-cell-value {
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* =====================================
+   ACTIONS CONTAINER
+===================================== */
+
+.subscription-plan-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+
+  width: 100%;
+  height: 100%;
+}
+
+/* =====================================
+   ACTION BUTTON
+===================================== */
+
+.action-icon-only {
+  width: 42px !important;
+  min-width: 42px !important;
+
+  height: 42px !important;
+  min-height: 42px !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  border-radius: 8px !important;
+
+  background: #ffffff !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  cursor: pointer;
+
+  outline: none !important;
+  box-shadow: none !important;
+
+  transition: all 0.2s ease;
+}
+
+/* =====================================
+   EDIT BUTTON - BLUE
+===================================== */
+
+.subscription-plan-actions .edit-icon {
+  border: 1px solid #2563eb !important;
+  color: #2563eb !important;
+}
+
+.subscription-plan-actions .edit-icon svg {
+  color: #2563eb !important;
+  fill: #2563eb !important;
+  font-size: 18px !important;
+}
+
+.subscription-plan-actions .edit-icon:hover {
+  background: #eff6ff !important;
+  border-color: #1d4ed8 !important;
+}
+
+.subscription-plan-actions .edit-icon:hover svg {
+  color: #1d4ed8 !important;
+  fill: #1d4ed8 !important;
+}
+
+/* =====================================
+   DELETE BUTTON - RED
+===================================== */
+
+.subscription-plan-actions .delete-icon {
+  border: 1px solid #ef233c !important;
+  color: #ef233c !important;
+}
+
+.subscription-plan-actions .delete-icon svg {
+  color: #ef233c !important;
+  fill: #ef233c !important;
+  font-size: 18px !important;
+}
+
+.subscription-plan-actions .delete-icon:hover {
+  background: #fff1f2 !important;
+  border-color: #dc2626 !important;
+}
+
+.subscription-plan-actions .delete-icon:hover svg {
+  color: #dc2626 !important;
+  fill: #dc2626 !important;
+}
+/* =====================================
+   RESPONSIVE
+===================================== */
+
+@media (max-width: 768px) {
+  .subscription-plans-page {
+    padding: 20px;
+  }
+
+  .subscription-plans-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .subscription-plans-title h2 {
+    font-size: 28px;
+  }
+
+  .add-subscription-btn {
+    width: 100%;
+  }
+
+  .subscription-plan-actions {
+    gap: 10px !important;
+  }
+}
+
+/* =====================================
+   MOBILE
+===================================== */
+
+@media (max-width: 576px) {
+  .subscription-plans-page {
+    padding: 15px;
+  }
+
+  .subscription-plans-title {
+    gap: 6px;
+  }
+
+  .back-btn {
+    width: 45px !important;
+    height: 45px !important;
+    min-width: 45px !important;
+  }
+
+  .subscription-plans-title h2 {
+    font-size: 24px;
+  }
+
+  .action-icon-only {
+    width: 40px !important;
+    min-width: 40px !important;
+
+    height: 40px !important;
+  }
+}
