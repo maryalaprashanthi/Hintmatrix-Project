@@ -56,7 +56,7 @@ function Chapters() {
     try {
       const response = await ChapterService.getAll();
 
-      console.log("Chapter Data:", response.data);
+      console.log("Chapter Data :", response.data);
 
       setChapters(response.data);
     } catch (error) {
@@ -64,11 +64,12 @@ function Chapters() {
     }
   };
 
+
   useEffect(() => {
     loadChapters();
   }, []);
 
-  // CREATE CHAPTER
+
 
   const handleSaveChapter = async (newChapter) => {
     try {
@@ -188,22 +189,29 @@ function Chapters() {
   // };
 
   const openCategories = (chapter) => {
-    console.log("Navigating to:", chapter);
+    console.log("Selected Course ID:", courseId);
+    console.log("Selected Chapter:", chapter);
+
     const chapterSlug = chapter.name.toLowerCase().replaceAll(" ", "-");
 
+    const chapterWithCourse = {
+      ...chapter,
+      courseId: Number(courseId),
+    };
+    console.log("Navigating with :", chapterWithCourse);
     if (isQuestionsModule) {
       navigate(
         `/questions/question-categories/${chapter.chapterId}/${chapterSlug}`,
         {
           state: {
-            chapter,
+            chapter: chapterWithCourse,
           },
         },
       );
     } else {
       navigate(`/question-categories/${courseId}/${chapterSlug}`, {
         state: {
-          chapter,
+          chapter: chapterWithCourse,
         },
       });
     }
