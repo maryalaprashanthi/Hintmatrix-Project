@@ -5,6 +5,7 @@ import CourseService from "../../services/CourseService";
 import ChapterService from "../../services/ChapterService";
 import QuestionCategoryService from "../../services/QuestionCategoryService";
 import TableAttributeService from "../../services/TableAttributeService";
+import QuestionService from "../../services/QuestionService";
 
 import {
   FaTimes,
@@ -19,7 +20,13 @@ import {
 
 import "./AddQuestionModal.css";
 
-function AddQuestionModal({ onClose, onSave }) {
+function AddQuestionModal({
+  courseId: initialCourseId,
+  chapterId: initialChapterId,
+  categoryId: initialCategoryId,
+  onClose,
+  onSave,
+}) {
   const [courseId, setCourseId] = useState(null);
   const [chapterId, setChapterId] = useState(null);
   const [categoryId, setCategoryId] = useState(null);
@@ -40,72 +47,6 @@ function AddQuestionModal({ onClose, onSave }) {
     },
   ]);
 
-  // use thos code to implement edit functionality
-  // useEffect(() => {
-  //   if (questionData) {
-  //     setCourseId(questionData.courses || null);
-  //     setChapterId(questionData.chapters || null);
-  //     setCategoryId(questionData.categoryies || null);
-  //     let courseOptionsData = questionData.courses.map((item) => ({
-  //       value: item.id,
-  //       label: item.name,
-  //     }));
-
-  //     let categoryOptionsData = questionData.categories.map((item) => ({
-  //       value: item.id,
-  //       label: item.name,
-  //     }));
-
-  //     let chapterOptionData = questionData.chapters.map((item) => ({
-  //       value: item.id,
-  //       label: item.name,
-  //     }));
-
-  //     setCourseOptions(courseOptionsData);
-  //     setCategoryOptions(categoryOptionsData);
-  //     setChapterOptions(chapterOptionData);
-
-  //     const attributesData = questionData.attributes || [
-  //       {
-  //         debitBalance: "",
-  //         debitAmount: "",
-  //         creditBalance: "",
-  //         creditAmount: "",
-  //       },
-  //     ];
-
-  //     setAttributes(attributesData);
-
-  //     // Create balance options from attributes
-  //     const balances = [
-  //       ...attributesData.map((item) => item.debitBalance),
-  //       ...attributesData.map((item) => item.creditBalance),
-  //     ];
-
-  //     const uniqueBalances = [...new Set(balances.filter(Boolean))];
-
-  //     const balanceOptionsData = uniqueBalances.map((balance) => ({
-  //       value: balance,
-  //       label: balance,
-  //     }));
-
-  //     setBalanceOptions(balanceOptionsData);
-  //   } else {
-  //     setCourseId(null);
-  //     setChapterId(null);
-  //     setCategoryId(null);
-  //     setQuestionText("");
-
-  //     setAttributes([
-  //       {
-  //         debitBalance: "",
-  //         debitAmount: "",
-  //         creditBalance: "",
-  //         creditAmount: "",
-  //       },
-  //     ]);
-  //   }
-  // }, [questionData]);
   useEffect(() => {
     getData();
     loadTableAttributes();
@@ -160,16 +101,6 @@ function AddQuestionModal({ onClose, onSave }) {
     }
   };
 
-  // ADD CHAPTER USEEFFECT HERE 👇
-
-  // useEffect(() => {
-  //   if (courseId) {
-  //     loadChapters(courseId.value);
-  //   } else {
-  //     setChapterOptions([]);
-  //   }
-  // }, [courseId]);
-
   const loadTableAttributes = async () => {
     try {
       const response = await TableAttributeService.getAll();
@@ -191,6 +122,39 @@ function AddQuestionModal({ onClose, onSave }) {
       console.error("ERROR DATA:", error.response?.data);
     }
   };
+  useEffect(() => {
+    if (initialCourseId && courseOptions.length > 0) {
+      const selectedCourse = courseOptions.find(
+        (option) => option.value === Number(initialCourseId),
+      );
+      if (selectedCourse) {
+        setCourseId(selectedCourse);
+      }
+    }
+    if (initialChapterId && chapterOptions.length > 0) {
+      const selectedChapter = chapterOptions.find(
+        (option) => option.value === Number(initialChapterId),
+      );
+      if (selectedChapter) {
+        setChapterId(selectedChapter);
+      }
+    }
+    if (initialCategoryId && categoryOptions.length > 0) {
+      const selectedCategory = categoryOptions.find(
+        (option) => option.value === Number(initialCategoryId),
+      );
+      if (selectedCategory) {
+        setCategoryId(selectedCategory);
+      }
+    }
+  }, [
+    initialCourseId,
+    initialChapterId,
+    initialCategoryId,
+    courseOptions,
+    chapterOptions,
+    categoryOptions,
+  ]);
 
   const handleAttributeChange = (index, field, value) => {
     const updated = [...attributes];
@@ -224,16 +188,21 @@ function AddQuestionModal({ onClose, onSave }) {
     }
 
     const newQuestion = {
-      courseId: courseId.value,
-      chapterId: chapterId.value,
-      categoryId: categoryId.value,
-      questionText,
-      attributes,
+      courseId: Number(courseId.value),
+      chapterId: Number(chapterId.value),
+      categoryId: Number(categoryId.value),
+      questionText: questionText.trim(),
+      questionAttributes: [],
     };
-
-    await onSave(newQuestion);
-
-    handleClose();
+    console.log("Creating Question:", newQuestion);
+    try {
+      const response = await QuestionService.create(newQuestion);
+      await onSave(response.data);
+      handleClose();
+    } catch (error) {
+      console.error("Create Question Error:", error);
+      alert("Failed to create question.");
+    }
   };
 
   const handleClose = () => {
@@ -293,6 +262,7 @@ function AddQuestionModal({ onClose, onSave }) {
                     onChange={setCourseId}
                     placeholder="Select Course Name"
                     isSearchable={true}
+                    isDisabled={!!initialCourseId}
                     menuPortalTarget={document.body}
                     menuPosition="fixed"
                     styles={{
@@ -321,6 +291,7 @@ function AddQuestionModal({ onClose, onSave }) {
                     onChange={setChapterId}
                     placeholder="Select Chapter Name"
                     isSearchable={true}
+                    isDisabled={!!initialChapterId}
                     menuPortalTarget={document.body}
                     menuPosition="fixed"
                     styles={{
@@ -351,6 +322,7 @@ function AddQuestionModal({ onClose, onSave }) {
                     onChange={setCategoryId}
                     placeholder="Select Category"
                     isSearchable={true}
+                    isDisabled={!!initialCategoryId}
                     menuPortalTarget={document.body}
                     menuPosition="fixed"
                     styles={{

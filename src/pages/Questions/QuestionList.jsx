@@ -14,7 +14,7 @@ import {
 } from "react-bootstrap";
 
 import { FaSearch, FaPlus, FaEye, FaEdit, FaTrash } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import "./QuestionList.css";
 import AddQuestionModal from "./AddQuestionModal";
 
@@ -30,21 +30,47 @@ const QuestionList = () => {
   const fileInputRef = useRef(null);
 
   const [questions, setQuestions] = useState([]);
+  const navigate = useNavigate();
+
+  const [searchParams] = useSearchParams();
+
+  const courseId = searchParams.get("courseId");
+  const chapterId = searchParams.get("chapterId");
+  const categoryId = searchParams.get("categoryId");
+
+  console.log("Course ID:", courseId);
+  console.log("Chapter ID:", chapterId);
+  console.log("Category ID:", categoryId);
 
   // load questions
   useEffect(() => {
     loadQuestions();
-  }, []);
+  }, [courseId, chapterId, categoryId]);
 
   const loadQuestions = async () => {
     try {
-      const response = await QuestionService.getQuestionText();
+      let response;
+
+      if (courseId && chapterId && categoryId) {
+        // Student flow
+        response = await QuestionService.getQuestionsByMapping(
+          courseId,
+          chapterId,
+          categoryId,
+        );
+        console.log("Question API response:", response);
+        console.log("Question API data:", response.data);
+      } else {
+        // Admin flow
+        response = await QuestionService.getQuestionText();
+        console.log("Admin question response:", response);
+        console.log("Admin question data:", response.data);
+      }
       setQuestions(response.data);
     } catch (error) {
       console.error("Error loading questions:", error);
     }
   };
-  const navigate = useNavigate();
 
   // used to show questions matching searched keywords
   const filteredQuestions = questions.filter((question) =>
@@ -68,7 +94,9 @@ const QuestionList = () => {
 
   // View
   const handleView = (question) => {
-    navigate(`/questions/question-list/${question.questionId}`);
+    navigate(
+      `/questions/question-list/${question.questionId}?courseId=${courseId}&chapterId=${chapterId}&categoryId=${categoryId}`,
+    );
   };
 
   // Edit
@@ -258,10 +286,13 @@ const QuestionList = () => {
 
       {showModal && (
         <AddQuestionModal
+          courseId={courseId}
+          chapterId={chapterId}
+          categoryId={categoryId}
           onClose={() => setShowModal(false)}
           onSave={async (newQuestion) => {
-            console.log(newQuestion);
-
+            console.log("New Question:", newQuestion);
+            await loadQuestions();
             setShowModal(false);
             setShowSuccess(true);
 

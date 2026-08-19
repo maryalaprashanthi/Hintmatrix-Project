@@ -14,15 +14,30 @@ class QuestionService {
       withCredentials: true,
     });
   }
-
+  getQuestionsByMapping(courseId, chapterId, categoryId) {
+    return axios.get(`${BASE_URL}/filter`, {
+      params: {
+        courseId,
+        chapterId,
+        categoryId,
+      },
+      withCredentials: true,
+    });
+  }
   getQuestionAnswers(id) {
     return axios.get(`${BASE_URL}/answers/${id}`, { withCredentials: true });
+  }
+  create(questionRequestDTO) {
+    return axios.post(BASE_URL, questionRequestDTO, { withCredentials: true });
   }
 
   getQuestionById(questionId) {
     return axios.get(`${BASE_URL}/${questionId}`, {
       withCredentials: true,
     });
+  }
+  deleteQuestion(id) {
+    return axios.delete(`${BASE_URL}/${id}`, { withCredentials: true });
   }
 }
 
