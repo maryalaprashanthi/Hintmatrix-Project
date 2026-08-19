@@ -59,7 +59,7 @@ export default function Draggable({ id, children, type, status = "pending" }) {
     /* <CheckIcon /> */
     // <PendingIcon />
   }
-  const { questions, setHintUsed } = useQuestionStore();
+  const { questions, setHintUsed, moveQuestion } = useQuestionStore();
   const myQuestion = questions.find((q) => q.id == id);
   const allHints = myQuestion.hints;
   const dragButton = (
@@ -103,69 +103,21 @@ export default function Draggable({ id, children, type, status = "pending" }) {
       if (!apiData) return;
 
       const validTargets = [];
-
+      const pairedId = apiData.pairAttributeId;
       for (let i = 1; i <= 4; i++) {
         const condition = apiData[`condition${i}`];
         if (!condition || condition.arithmetic == null) continue;
 
-        validTargets.push(
-          `${condition.tableName}-${condition.headerName}-${condition.arithmetic}`,
-        );
+        validTargets.push({
+          targetId: `${condition.tableName}-${condition.headerName}-${condition.arithmetic}`,
+          conditionId: i,
+        });
       }
 
       if (!validTargets.length) return;
 
-      useQuestionStore.setState((state) => {
-        const currentQuestion = state.questions.find((q) => q.id == id);
-        if (!currentQuestion) return state;
-
-        const uniqueAnswered = Array.from(
-          new Set([...currentQuestion.answered, ...validTargets]),
-        );
-
-        const nextQuestions = state.questions.map((item) => {
-          if (item.id !== id) return item;
-
-          return {
-            ...item,
-            answered: uniqueAnswered,
-            totalAnswers: validTargets.length || item.totalAnswers,
-            status:
-              uniqueAnswered.length >= validTargets.length
-                ? "solved"
-                : "pending",
-          };
-        });
-
-        const nextDroppableData = { ...state.droppableData };
-
-        validTargets.forEach((targetId) => {
-          const [table, header, operation] = targetId.split("-");
-          const bucketKey = `${table}-${header}`;
-          const currentBucket = nextDroppableData[bucketKey] ?? [];
-          const alreadyPresent = currentBucket.some(
-            (entry) =>
-              entry.name === currentQuestion.name &&
-              entry.operation === operation &&
-              Number(entry.amount) === Number(currentQuestion.amount),
-          );
-
-          if (!alreadyPresent) {
-            nextDroppableData[bucketKey] = [
-              ...currentBucket,
-              {
-                name: currentQuestion.name,
-                amount: currentQuestion.amount,
-                operation,
-              },
-            ];
-          }
-        });
-
-        return {
-          questions: nextQuestions,
-          droppableData: nextDroppableData,
-        };
+      validTargets.forEach((obj) => {
+        moveQuestion(id, obj.targetId, obj.conditionId, pairedId);
       });
       const post_body = {
         userId: 1,

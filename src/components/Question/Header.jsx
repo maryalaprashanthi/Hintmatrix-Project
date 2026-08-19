@@ -16,6 +16,8 @@ function Header({ question: propQuestion, answeredData, setAnsweredData }) {
     question: storeQuestion,
     setQuestions,
     setTableData,
+    setCheckMistakes,
+    showCheckMistakes,
   } = useQuestionStore();
   const { questionId } = useParams();
 
@@ -42,12 +44,13 @@ function Header({ question: propQuestion, answeredData, setAnsweredData }) {
 
       console.log("Mistakes:", mistakes);
 
-      if (!mistakes || mistakes.length === 0) {
-        alert("No mistakes found.");
-        return;
-      }
+      // if (!mistakes || mistakes.length === 0) {
+      //   alert("No mistakes found.");
+      //   return;
+      // }
 
-      console.log("User mistakes:", mistakes);
+      // console.log("User mistakes:", mistakes);
+      setCheckMistakes(true);
     } catch (error) {
       console.error("Failed to get mistakes:", error);
 

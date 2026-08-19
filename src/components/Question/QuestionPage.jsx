@@ -8,18 +8,6 @@ import QuestionService from "../../services/QuestionService";
 import { data } from "./SampleData";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 
-const termMap = {
-  "Balance Sheet": "balance",
-  "Trading Account": "trading",
-  "Profit and Loss Account": "pnl",
-  "Debit Particulars": "dr",
-  "Credit Particulars": "cr",
-  assets: "assets",
-  add: "add",
-  less: "sub",
-  "Liabilities Side": "liabilities",
-};
-
 const questionMap = {
   credit: "credit particulars",
   debit: "debit particulars",
@@ -101,6 +89,7 @@ const QuestionPage = () => {
               let count = 0;
               let allHints = [];
               for (let i = 1; i <= 4; i++) {
+                const pairId = apiData.pairAttributeId;
                 const condition = apiData[`condition${i}`];
                 if (condition.arithmetic == null) continue;
                 count = count + 1;
@@ -112,6 +101,7 @@ const QuestionPage = () => {
                   answer: string,
                   tableNameId: condition.tableId,
                   headerId: condition.headerId,
+                  pairAttributeId: pairId,
                 });
                 // console.log(
                 //   "The string is ",
@@ -204,6 +194,9 @@ const QuestionPage = () => {
                 userAnswer: `attempted to ${answerMap[third]} on ${second} of ${first}.`,
               };
 
+              // check if paired attribute is present in droppableData if yes take that and add it at last of droppableData[key] along with this attribute
+              // here key is targetId.split("-")[0] + "-" + targetId.split("-")[1]
+
               console.log("Did I use hint? ", myQuestion.usedHint);
               console.log(body);
               // call answer events and question answers with post and body
@@ -230,7 +223,12 @@ const QuestionPage = () => {
               const response2 =
                 await QuestionAnswerService.saveAnswer(questionBody);
               console.log(response2);
-              moveQuestion(sourceId, targetId, answerId);
+              moveQuestion(
+                sourceId,
+                targetId,
+                answerId,
+                correctAnswer.pairAttributeId,
+              );
             }
           } catch (error) {
             console.log("Error  is  ", error, " for id ", sourceId);
