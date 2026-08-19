@@ -46,18 +46,19 @@ export default function QuestionCategories() {
     try {
       const response = await QuestionCategoryService.getAll();
 
-      setCategories(response.data);
+      setCategories(response.data || []);
     } catch (error) {
-      console.error(error);
+      console.error("Error loading Question Categories:", error);
 
       alert("Failed to load Question Categories");
     }
   };
+ 
 
   useEffect(() => {
     fetchCategories();
   }, []);
-
+ 
   // Upload (Frontend Only)
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -202,7 +203,7 @@ export default function QuestionCategories() {
 
       <div className="row g-3">
         {filteredCategories.map((category) => (
-          <div className="col-xl-4 col-lg-6 col-md-6" key={category.id}>
+          <div className="col-xl-4 col-lg-6 col-md-6" key={category.categoryId}>
             <div className="category-card h-100">
               <div className="card-body">
                 <div
@@ -238,7 +239,35 @@ export default function QuestionCategories() {
                 <button
                   className="btn btn-primary view-btn"
                   disabled={!category.activeRow}
-                  onClick={() => navigate("/questions/question-list")}
+                  onClick={() => {
+                    const finalCourseId = selectedChapter?.courseId;
+                    const finalChapterId =
+                      selectedChapter?.chapterId || chapterId;
+                    const finalCategoryId = category.categoryId;
+
+                    console.log("View Questions clicked:", {
+                      courseId: finalCourseId,
+                      chapterId: finalChapterId,
+                      categoryId: finalCategoryId,
+                    });
+
+                    if (!finalCourseId || !finalChapterId || !finalCategoryId) {
+                      console.error("Missing mapping:", {
+                        courseId: finalCourseId,
+                        chapterId: finalChapterId,
+                        categoryId: finalCategoryId,
+                      });
+
+                      alert(
+                        "Course, Chapter, or Category information is missing.",
+                      );
+                      return;
+                    }
+
+                    navigate(
+                      `/questions/question-list?courseId=${finalCourseId}&chapterId=${finalChapterId}&categoryId=${finalCategoryId}`,
+                    );
+                  }}
                 >
                   View Questions
                   <FaArrowRight className="ms-2" />
