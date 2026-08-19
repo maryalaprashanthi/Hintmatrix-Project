@@ -1,8 +1,9 @@
-import { OverlayTrigger, Popover, Table } from "react-bootstrap";
+import { Overlay, OverlayTrigger, Popover, Table } from "react-bootstrap";
 import "./DropdownQuestion.css";
 import Select from "react-select";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
+import { getUnansweredDropdownConditions } from "./dropdownAnswerStatus";
 
 const DropdownQuestion = ({
   data,
@@ -10,6 +11,7 @@ const DropdownQuestion = ({
   questionId,
   answeredData,
   setAnsweredData,
+  loadTotalScore,
 }) => {
   // Hardcoded for now
   const userId = 1;
@@ -17,33 +19,252 @@ const DropdownQuestion = ({
   // Keep Debit/Credit selection separately for every attribute
   const [selections, setSelections] = useState({});
 
+  const [helpRequest, setHelpRequest] = useState(null);
+  const [showHint, setShowHint] = useState(false);
+  const [isAutofilling, setIsAutofilling] = useState(false);
+
+  const attributeTargets = useRef({});
+
+  const closeHelp = () => {
+    setHelpRequest(null);
+    setShowHint(false);
+  };
+
+  const getNextCondition = (item) =>
+    getUnansweredDropdownConditions(
+      item.ruleConditions || [],
+      answeredData[item.questionAttributeId] || [],
+    )[0];
+
+  const handleHint = async () => {
+    const nextCondition = getNextCondition(helpRequest.item);
+
+    setShowHint(true);
+
+    if (!nextCondition) {
+      return;
+    }
+
+    try {
+      await QuestionAnswerService.processAnswerEvent({
+        userId: userId,
+        questionId: helpRequest.item.questionId,
+        attributeId: helpRequest.item.attributeId,
+
+        answerPosition: nextCondition.condition.position ?? null,
+
+        arithmetic: nextCondition.condition.arithmetic ?? null,
+
+        eventType: "HINT",
+
+        isCorrect: null,
+
+        hint: nextCondition.condition.information ?? null,
+
+        description: "Hint requested",
+
+        userAnswer: null,
+      });
+    } catch (error) {
+      console.error("Failed to save hint event:", error);
+    }
+  };
+
+  const handleAutofill = async () => {
+    const requestedAttributeId = helpRequest?.item?.questionAttributeId;
+
+    const item = data.find(
+      (attribute) =>
+        String(attribute.questionAttributeId) === String(requestedAttributeId),
+    );
+
+    if (!item) {
+      console.error("Autofill attribute not found:", requestedAttributeId);
+      return;
+    }
+
+    console.log("========== DROPDOWN AUTOFILL ==========");
+
+    console.log("Autofill Attribute ID:", item.questionAttributeId);
+
+    console.log("Autofill Attribute:", item.attributeName);
+
+    console.log("Autofill Rule:", item.rule);
+
+    console.log("Autofill Rule Conditions:", item.ruleConditions);
+
+    const remainingConditions = getUnansweredDropdownConditions(
+      item.ruleConditions || [],
+      answeredData[item.questionAttributeId] || [],
+    );
+
+    console.log("Autofill Remaining Conditions:", remainingConditions);
+
+    if (!remainingConditions.length) {
+      closeHelp();
+      return;
+    }
+
+    setIsAutofilling(true);
+
+    try {
+      const savedEntries = await Promise.all(
+        remainingConditions.map(async ({ condition }) => {
+          const isDebit = condition.headerName === "Debit Particulars";
+
+          const particulars = isDebit
+            ? `${condition.tableName} ... Dr`
+            : `To ${condition.tableName}`;
+
+          const [questionAnswerResult, answerEventResult] = await Promise.all([
+            QuestionAnswerService.saveAnswer({
+              userId: userId,
+              questionId: item.questionId,
+              tableNameId: condition.tableId,
+              headerId: condition.headerId,
+              attributeId: item.attributeId,
+              arithmetic: condition.arithmetic,
+              amount: item.amount,
+            }),
+
+            QuestionAnswerService.processAnswerEvent({
+              userId: userId,
+              questionId: item.questionId,
+              attributeId: item.attributeId,
+              answerPosition: condition.position ?? null,
+              arithmetic: condition.arithmetic,
+              eventType: "AUTOFILL",
+              isCorrect: true,
+              hint: null,
+              description: `Autofilled ${particulars}`,
+              userAnswer: particulars,
+            }),
+          ]);
+          return {
+            questionAttributeId: item.questionAttributeId,
+
+            date: "",
+            particulars,
+            lf: "",
+
+            debit: isDebit ? item.amount : "",
+
+            credit: isDebit ? "" : item.amount,
+
+            valid: true,
+
+            answerId: questionAnswerResult?.answerId || null,
+
+            answerEventId: answerEventResult?.answerEventId || null,
+
+            tableNameId: condition.tableId,
+
+            headerId: condition.headerId,
+
+            attributeId: item.attributeId,
+
+            arithmetic: condition.arithmetic,
+          };
+        }),
+      );
+
+      setAnsweredData((prev) => {
+        const id = item.questionAttributeId;
+
+        const existing = prev[id] || [];
+
+        const beingRow = existing.find((entry) =>
+          entry.particulars?.startsWith("(Being"),
+        );
+
+        const answerRows = existing.filter(
+          (entry) =>
+            !entry.particulars?.startsWith("(Being") && entry.valid === true,
+        );
+
+        const newEntries = savedEntries.filter(
+          (entry) =>
+            !answerRows.some(
+              (existingEntry) =>
+                String(existingEntry.tableNameId) ===
+                  String(entry.tableNameId) &&
+                String(existingEntry.headerId) === String(entry.headerId),
+            ),
+        );
+
+        return {
+          ...prev,
+
+          [id]: [
+            ...newEntries.filter(
+              (entry) => entry.debit !== "" && entry.debit != null,
+            ),
+
+            ...answerRows,
+
+            ...newEntries.filter(
+              (entry) => entry.credit !== "" && entry.credit != null,
+            ),
+
+            beingRow || {
+              date: "",
+              particulars: `(Being ${item.attributeName})`,
+              lf: "",
+              debit: "",
+              credit: "",
+            },
+          ],
+        };
+      });
+
+      if (loadTotalScore) {
+        await loadTotalScore();
+      }
+
+      closeHelp();
+    } catch (error) {
+      console.error("Failed to autofill dropdown answers:", error);
+    } finally {
+      setIsAutofilling(false);
+    }
+  };
+
   /*
    * Find the Rule Engine condition that matches:
    * selected table + selected Debit/Credit side
    */
-  const findMatchingCondition = (rule, tableId, type) => {
-    if (!rule) {
+  const findMatchingCondition = (rule, tableId, type, ruleConditions = []) => {
+    if (!rule && ruleConditions.length === 0) {
       return null;
     }
 
-    const conditions = [
-      {
-        position: 1,
-        condition: rule.condition1,
-      },
-      {
-        position: 2,
-        condition: rule.condition2,
-      },
-      {
-        position: 3,
-        condition: rule.condition3,
-      },
-      {
-        position: 4,
-        condition: rule.condition4,
-      },
-    ];
+    const conditions =
+      ruleConditions.length > 0
+        ? ruleConditions.map((condition, index) => ({
+            position: condition.position ?? index + 1,
+            condition,
+          }))
+        : [
+            {
+              position: 1,
+              condition: rule?.condition1,
+            },
+            {
+              position: 2,
+              condition: rule?.condition2,
+            },
+            {
+              position: 3,
+              condition: rule?.condition3,
+            },
+            {
+              position: 4,
+              condition: rule?.condition4,
+            },
+          ];
+
+    const expectedHeader =
+      type === "Debit" ? "Debit Particulars" : "Credit Particulars";
 
     return (
       conditions.find(({ condition }) => {
@@ -54,11 +275,6 @@ const DropdownQuestion = ({
         if (condition.tableId == null) {
           return false;
         }
-
-        // Debit = Debit Particulars
-        // Credit = Credit Particulars
-        const expectedHeader =
-          type === "Debit" ? "Debit Particulars" : "Credit Particulars";
 
         return (
           String(condition.tableId) === String(tableId) &&
@@ -71,7 +287,13 @@ const DropdownQuestion = ({
   /*
    * CREATE / UPDATE UI DATA
    */
-  const handleAdd = (id, type, selectedOption, isCorrect) => {
+  const handleAdd = (
+    id,
+    type,
+    selectedOption,
+    isCorrect,
+    matchingCondition = null,
+  ) => {
     if (!selectedOption) {
       return;
     }
@@ -98,6 +320,12 @@ const DropdownQuestion = ({
             debit: type === "Debit" ? neededData.amount : "",
             credit: type === "Credit" ? neededData.amount : "",
             valid: isCorrect,
+
+            tableNameId: matchingCondition?.condition?.tableId ?? null,
+
+            headerId: matchingCondition?.condition?.headerId ?? null,
+
+            attributeId: neededData.attributeId,
           },
           {
             date: "",
@@ -133,6 +361,12 @@ const DropdownQuestion = ({
         debit: type === "Debit" ? neededData.amount : "",
         credit: type === "Credit" ? neededData.amount : "",
         valid: isCorrect,
+
+        tableNameId: matchingCondition?.condition?.tableId ?? null,
+
+        headerId: matchingCondition?.condition?.headerId ?? null,
+
+        attributeId: neededData.attributeId,
       };
 
       if (type === "Debit") {
@@ -170,7 +404,12 @@ const DropdownQuestion = ({
      * Find whether selected table + Debit/Credit
      * matches one of the Rule Engine conditions.
      */
-    const matchingCondition = findMatchingCondition(rule, tableId, type);
+    const matchingCondition = findMatchingCondition(
+      rule,
+      tableId,
+      type,
+      item.ruleConditions || [],
+    );
 
     const isCorrect = matchingCondition !== null;
 
@@ -226,7 +465,7 @@ const DropdownQuestion = ({
 
         attributeId: item.attributeId,
 
-        answerPosition: matchingCondition.position,
+        answerPosition: null,
 
         arithmetic: condition.arithmetic,
 
@@ -244,27 +483,32 @@ const DropdownQuestion = ({
       console.log("QuestionAnswer Payload:", questionAnswerData);
 
       console.log("AnswerEvent Payload:", answerEventData);
-
       try {
-        /*
-         * BOTH APIs are started together
-         */
-        const [questionAnswerResponse, answerEventResponse] = await Promise.all(
-          [
-            QuestionAnswerService.saveAnswer(questionAnswerData),
-
-            QuestionAnswerService.processAnswerEvent(answerEventData),
-          ],
-        );
-
-        console.log("QuestionAnswer API Response:", questionAnswerResponse);
+        // 1. AnswerEvent first
+        const answerEventResponse =
+          await QuestionAnswerService.processAnswerEvent(answerEventData);
 
         console.log("AnswerEvent API Response:", answerEventResponse);
 
-        /*
-         * Update UI after successful API calls
-         */
-        handleAdd(item.questionAttributeId, type, selected, true);
+        // 2. QuestionAnswer only for correct answer
+        const questionAnswerResponse =
+          await QuestionAnswerService.saveAnswer(questionAnswerData);
+
+        console.log("QuestionAnswer API Response:", questionAnswerResponse);
+
+        // 3. Update UI
+        handleAdd(
+          item.questionAttributeId,
+          type,
+          selected,
+          true,
+          matchingCondition,
+        );
+
+        // 4. Refresh score
+        if (loadTotalScore) {
+          await loadTotalScore();
+        }
 
         console.log("CORRECT ANSWER - both APIs completed");
       } catch (error) {
@@ -288,9 +532,6 @@ const DropdownQuestion = ({
      *
      * We record the selected option and mark it false.
      */
-    const selectedOptionIndex = questionTables.findIndex(
-      (table) => String(table.id) === String(tableId),
-    );
 
     const answerEventData = {
       userId: userId,
@@ -299,7 +540,7 @@ const DropdownQuestion = ({
 
       attributeId: item.attributeId,
 
-      answerPosition: selectedOptionIndex >= 0 ? selectedOptionIndex + 1 : null,
+      answerPosition: null,
 
       arithmetic: null,
 
@@ -328,7 +569,17 @@ const DropdownQuestion = ({
       /*
        * Update UI after event is recorded
        */
-      handleAdd(item.questionAttributeId, type, selected, false);
+      handleAdd(item.questionAttributeId, type, selected, false, null);
+
+      if (loadTotalScore) {
+        await loadTotalScore();
+      }
+
+      setHelpRequest({
+        item,
+      });
+
+      setShowHint(false);
 
       console.log("WRONG ANSWER - only AnswerEvent API completed");
     } catch (error) {
@@ -436,12 +687,18 @@ const DropdownQuestion = ({
                     </Popover>
                   }
                 >
-                  <tr key={item.questionAttributeId}>
+                  <tr
+                    key={item.questionAttributeId}
+                    ref={(element) => {
+                      attributeTargets.current[item.questionAttributeId] =
+                        element;
+                    }}
+                  >
                     <td>{item.attributeName}</td>
 
-                    <td className="text-end">{item.amount || "-"}</td>
+                    <td className="text-end">{item.amount ?? "-"}</td>
 
-                    <td className="text-end">{item.amount2 || "-"}</td>
+                    <td className="text-end">{item.amount2 ?? "-"}</td>
                   </tr>
                 </OverlayTrigger>
               );
@@ -449,6 +706,62 @@ const DropdownQuestion = ({
           </tbody>
         </Table>
       </div>
+      <Overlay
+        show={Boolean(helpRequest)}
+        target={
+          helpRequest &&
+          attributeTargets.current[helpRequest.item.questionAttributeId]
+        }
+        placement="right"
+        container={document.body}
+        popperConfig={{ strategy: "fixed" }}
+        rootClose
+        onHide={closeHelp}
+      >
+        {(props) => (
+          <Popover
+            {...props}
+            id="dropdown-help-popover"
+            className="dropdown-help-popover"
+          >
+            <Popover.Body>
+              <div className="text-danger small fw-semibold mb-2">
+                Incorrect answer
+              </div>
+
+              <div className="d-grid gap-2">
+                <button
+                  type="button"
+                  className="btn btn-outline-warning btn-sm"
+                  onClick={handleHint}
+                >
+                  💡 Hint
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-primary btn-sm"
+                  onClick={handleAutofill}
+                  disabled={isAutofilling}
+                >
+                  ✦ {isAutofilling ? "Filling..." : "Autofill"}
+                </button>
+              </div>
+
+              {showHint && (
+                <div className="alert alert-warning small mt-2 mb-0 p-2">
+                  <strong>💡 Hint: </strong>
+                  <span>
+                    {getNextCondition(helpRequest.item)?.condition
+                      ?.information ||
+                      "Review the remaining Debit and Credit entries."}
+                  </span>
+                </div>
+              )}
+            </Popover.Body>
+          </Popover>
+        )}
+      </Overlay>
     </div>
   );
 };
