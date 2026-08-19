@@ -207,11 +207,10 @@ const JournalPage = () => {
       let eventResponse = [];
 
       try {
-        eventResponse =
-          await QuestionAnswerService.getAnswerEventsByQuestionId(
-            userId,
-            questionId,
-          );
+        eventResponse = await QuestionAnswerService.getAnswerEventsByQuestionId(
+          userId,
+          questionId,
+        );
       } catch (error) {
         // Answer events are still created for every attempt. Do not let a
         // missing event-history endpoint prevent persisted correct answers
@@ -364,8 +363,8 @@ const JournalPage = () => {
 
       <Row>
         <SummaryCards
-          debit={debit}
-          credit={credit}
+          debit={0}
+          credit={0}
           total={question.questionAttributes?.length || 0}
           solved={solved}
           totalScore={totalScore}
