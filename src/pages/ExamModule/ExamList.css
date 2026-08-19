@@ -57,21 +57,16 @@
 
 /* Reduce the overall stats row width */
 
-.exam-page > .row.g-3.mb-4 {
-  width: 88%;
+.stats-row {
+  width: 100%;
   margin-left: 0;
   margin-right: 0;
 }
 
-/* Make each Bootstrap column slightly smaller */
-
-.exam-page > .row.g-3.mb-4 > .col-lg-3 {
-  flex: 0 0 25%;
-  max-width: 25%;
+.stats-row > .col-lg-3 {
   padding-left: 8px;
   padding-right: 8px;
 }
-
 /* Card */
 
 .stats-card {
@@ -165,42 +160,81 @@
    FILTER SECTION
 ========================================================= */
 
+/* =========================================================
+   FILTER SECTION
+========================================================= */
+/* =========================================================
+   FILTER SECTION
+========================================================= */
+
 .filter-row {
-  display: flex;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+
+  display: grid !important;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 16px;
+
   align-items: center;
 }
 
-.search-box {
-  height: 45px;
+/* Remove Bootstrap column width behavior */
+.filter-row > .col-lg-6,
+.filter-row > .col-lg-3 {
+  width: 100%;
+  max-width: 100%;
+  padding-left: 0;
+  padding-right: 0;
 }
 
-.search-box .input-group-text {
-  background: white;
+/* Search box */
+.filter-row .search-box {
+  width: 100%;
+  height: 54px;
+  margin: 0;
+}
+
+.filter-row .search-box .input-group-text {
+  height: 54px;
+  background: #ffffff;
+  border: 1px solid #dee2e6;
   border-right: none;
-  color: #6b7280;
+  border-radius: 12px 0 0 12px;
+  padding-left: 20px;
+  color: #60708a;
 }
 
-.search-box .form-control {
-  height: 45px;
+.filter-row .search-box .form-control {
+  height: 54px;
+  border: 1px solid #dee2e6;
   border-left: none;
-}
-
-.search-box .form-control:focus {
+  border-radius: 0 12px 12px 0;
   box-shadow: none;
+  font-size: 16px;
+}
+
+.filter-row .search-box .form-control:focus {
   border-color: #dee2e6;
+  box-shadow: none;
 }
 
-.form-select {
-  height: 45px;
+/* Status and Sort */
+.filter-row .form-select {
+  width: 100%;
+  height: 54px;
+  border: 1px solid #dee2e6;
   border-radius: 8px;
-  cursor: pointer;
+  padding: 0 16px;
+  font-size: 16px;
+  background-color: #ffffff;
+  box-shadow: none;
 }
 
-.filter-row .col-lg-3 {
-  padding-left: 10px;
-  padding-right: 10px;
+.filter-row .form-select:focus {
+  border-color: #dee2e6;
+  box-shadow: none;
 }
-
 /* =========================================================
    EXAM CARDS
 ========================================================= */
@@ -334,26 +368,18 @@
     margin-bottom: 10px;
   }
 
+  /* Filter */
   .filter-row {
+    grid-template-columns: 1fr;
     gap: 15px;
   }
 
-  .filter-row .col-lg-3,
-  .filter-row .col-lg-6 {
+  .filter-row > .col-lg-6,
+  .filter-row > .col-lg-3 {
     width: 100%;
   }
 
-  /* Stats cards */
-
-  .exam-page > .row.g-3.mb-4 {
-    width: 100%;
-  }
-
-  .exam-page > .row.g-3.mb-4 > .col-lg-3 {
-    flex: 0 0 50%;
-    max-width: 50%;
-  }
-
+  /* Stats */
   .stats-card {
     height: 110px !important;
     min-height: 110px !important;
