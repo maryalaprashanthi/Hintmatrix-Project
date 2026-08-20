@@ -1,7 +1,6 @@
-import { Typeahead } from "react-bootstrap-typeahead";
-import "react-bootstrap-typeahead/css/Typeahead.css";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import Select from "react-select";
 import SuccessModal from "../../components/Common/SuccessModal";
 
 import {
@@ -50,9 +49,7 @@ function StudentForm({
       setBranchId(selectedStudentData.branchId || "");
       setSectionId(selectedStudentData.sectionId || "");
       setGuardianName(selectedStudentData.guardianName || "");
-      setGuardianPhoneNumber(
-        selectedStudentData.guardianPhoneNumber || "",
-      );
+      setGuardianPhoneNumber(selectedStudentData.guardianPhoneNumber || "");
       setEmail(selectedStudentData.email || "");
       setPhoneNumber(selectedStudentData.phoneNumber || "");
       setPassword(selectedStudentData.password || "");
@@ -72,10 +69,35 @@ function StudentForm({
     }
   }, [selectedStudentData, show]);
 
-  // TEMPORARY CHECK
-  console.log("STUDENT FORM COLLEGES:", colleges);
-  console.log("STUDENT FORM BRANCHES:", branches);
-  console.log("STUDENT FORM SECTIONS:", sections);
+  const collegeOptions = colleges.map((college) => ({
+    value: college.collegeId,
+    label:
+      college.collegeName ||
+      college.instituteName ||
+      college.name ||
+      String(college.collegeId || ""),
+  }));
+
+  const branchOptions = branches
+    .filter(
+      (branch) => !collegeId || Number(branch.collegeId) === Number(collegeId),
+    )
+    .map((branch) => ({
+      value: branch.branchId,
+      label: branch.branchName || branch.name || String(branch.branchId || ""),
+    }));
+
+  const sectionOptions = sections
+    .filter(
+      (section) =>
+        (!collegeId || Number(section.collegeId) === Number(collegeId)) &&
+        (!branchId || Number(section.branchId) === Number(branchId)),
+    )
+    .map((section) => ({
+      value: section.sectionId,
+      label:
+        section.sectionName || section.name || String(section.sectionId || ""),
+    }));
 
   if (!show) return null;
 
@@ -87,13 +109,15 @@ function StudentForm({
       !branchId ||
       !sectionId ||
       !guardianName.trim() ||
-      !guardianPhoneNumber.trim() ||
+      guardianPhoneNumber.length !== 10 ||
       !email.trim() ||
-      !phoneNumber.trim() ||
+      phoneNumber.length !== 10 ||
       !password.trim() ||
       !address.trim()
     ) {
-      alert("Please fill all the fields.");
+      alert(
+        "Please fill all the fields. Phone numbers must be exactly 10 digits.",
+      );
       return;
     }
 
@@ -125,9 +149,7 @@ function StudentForm({
         {/* Header */}
         <div className="modal-header">
           <div>
-            <h2>
-              {selectedStudentData ? "Edit Student" : "Add Student"}
-            </h2>
+            <h2>{selectedStudentData ? "Edit Student" : "Add Student"}</h2>
 
             <p>
               {selectedStudentData
@@ -192,29 +214,28 @@ function StudentForm({
                 <div className="input-box">
                   <FaUniversity className="input-icon" />
 
-                  <Typeahead
-                    id="college"
-                    labelKey={(college) =>
-                      college.collegeName ||
-                      college.instituteName ||
-                      college.name ||
-                      String(college.collegeId || "")
-                    }
-                    options={colleges}
-                    placeholder="Select College"
-                    selected={colleges.filter(
-                      (college) =>
-                        String(college.collegeId) ===
-                        String(collegeId),
-                    )}
-                    onChange={(selected) => {
-                      setCollegeId(
-                        selected.length
-                          ? selected[0].collegeId
-                          : "",
-                      );
+                  <Select
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
                     }}
-                    clearButton
+                    options={collegeOptions}
+                    value={
+                      collegeOptions.find(
+                        (option) => String(option.value) === String(collegeId),
+                      ) || null
+                    }
+                    onChange={(option) => {
+                      setCollegeId(option?.value || "");
+                      setBranchId("");
+                      setSectionId("");
+                    }}
+                    placeholder="Search College"
+                    isSearchable
+                    isClearable
+                    noOptionsMessage={() => "No college found"}
                   />
                 </div>
               </div>
@@ -228,28 +249,28 @@ function StudentForm({
                 <div className="input-box">
                   <FaCodeBranch className="input-icon" />
 
-                  <Typeahead
-                    id="branch"
-                    labelKey={(branch) =>
-                      branch.branchName ||
-                      branch.name ||
-                      String(branch.branchId || "")
-                    }
-                    options={branches}
-                    placeholder="Select Branch"
-                    selected={branches.filter(
-                      (branch) =>
-                        String(branch.branchId) ===
-                        String(branchId),
-                    )}
-                    onChange={(selected) => {
-                      setBranchId(
-                        selected.length
-                          ? selected[0].branchId
-                          : "",
-                      );
+                  <Select
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
                     }}
-                    clearButton
+                    options={branchOptions}
+                    value={
+                      branchOptions.find(
+                        (option) => String(option.value) === String(branchId),
+                      ) || null
+                    }
+                    onChange={(option) => {
+                      setBranchId(option?.value || "");
+                      setSectionId("");
+                    }}
+                    placeholder="Search Branch"
+                    isSearchable
+                    isClearable
+                    isDisabled={!collegeId}
+                    noOptionsMessage={() => "No branch found"}
                   />
                 </div>
               </div>
@@ -263,28 +284,25 @@ function StudentForm({
                 <div className="input-box">
                   <FaUsers className="input-icon" />
 
-                  <Typeahead
-                    id="section"
-                    labelKey={(section) =>
-                      section.sectionName ||
-                      section.name ||
-                      String(section.sectionId || "")
-                    }
-                    options={sections}
-                    placeholder="Select Section"
-                    selected={sections.filter(
-                      (section) =>
-                        String(section.sectionId) ===
-                        String(sectionId),
-                    )}
-                    onChange={(selected) => {
-                      setSectionId(
-                        selected.length
-                          ? selected[0].sectionId
-                          : "",
-                      );
+                  <Select
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
                     }}
-                    clearButton
+                    options={sectionOptions}
+                    value={
+                      sectionOptions.find(
+                        (option) => String(option.value) === String(sectionId),
+                      ) || null
+                    }
+                    onChange={(option) => setSectionId(option?.value || "")}
+                    placeholder="Search Section"
+                    isSearchable
+                    isClearable
+                    isDisabled={!branchId}
+                    noOptionsMessage={() => "No section found"}
                   />
                 </div>
               </div>
@@ -302,9 +320,7 @@ function StudentForm({
                     type="text"
                     placeholder="Enter Guardian Name"
                     value={guardianName}
-                    onChange={(e) =>
-                      setGuardianName(e.target.value)
-                    }
+                    onChange={(e) => setGuardianName(e.target.value)}
                   />
                 </div>
               </div>
@@ -319,11 +335,13 @@ function StudentForm({
                   <FaPhone className="input-icon" />
 
                   <input
-                    type="tel"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={10}
                     placeholder="Enter Guardian Phone Number"
                     value={guardianPhoneNumber}
                     onChange={(e) =>
-                      setGuardianPhoneNumber(e.target.value)
+                      setGuardianPhoneNumber(e.target.value.replace(/\D/g, ""))
                     }
                   />
                 </div>
@@ -357,11 +375,13 @@ function StudentForm({
                   <FaPhone className="input-icon" />
 
                   <input
-                    type="tel"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={10}
                     placeholder="Enter Phone Number"
                     value={phoneNumber}
                     onChange={(e) =>
-                      setPhoneNumber(e.target.value)
+                      setPhoneNumber(e.target.value.replace(/\D/g, ""))
                     }
                   />
                 </div>
@@ -380,9 +400,7 @@ function StudentForm({
                     type="password"
                     placeholder="Enter Password"
                     value={password}
-                    onChange={(e) =>
-                      setPassword(e.target.value)
-                    }
+                    onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
               </div>
@@ -407,11 +425,7 @@ function StudentForm({
 
         {/* Footer */}
         <div className="modal-footer">
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={onClose}
-          >
+          <button type="button" className="btn btn-secondary" onClick={onClose}>
             Cancel
           </button>
 

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 
-
 import {
   FaTimes,
   FaUniversity,
@@ -50,13 +49,13 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-  if (name === "phoneNumber") {
-    setCollege({
-      ...college,
-      [name]: value.replace(/\D/g, ""),
-    });
-    return;
-  }
+    if (name === "phoneNumber") {
+      setCollege({
+        ...college,
+        [name]: value.replace(/\D/g, ""),
+      });
+      return;
+    }
     setCollege({
       ...college,
       [e.target.name]: e.target.value,
@@ -110,9 +109,7 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
           <div className="branch-modal">
             <div className="modal-header">
               <div>
-                <h2>
-                  {selectedCollegeData ? "Update College" : "Add College"}
-                </h2>
+                <h2>{selectedCollegeData ? "Edit College" : "Add College"}</h2>
 
                 <p>Register a new college.</p>
               </div>
@@ -141,12 +138,15 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
                         placeholder="Enter Institute Name"
                         value={college.instituteName}
                         onChange={(e) => {
-                        const value = e.target.value.replace(/[^a-zA-Z\s]/g, "");
-                        setCollege({
-                        ...college,
-                        instituteName: value
-                       });
-                      }}
+                          const value = e.target.value.replace(
+                            /[^a-zA-Z\s]/g,
+                            "",
+                          );
+                          setCollege({
+                            ...college,
+                            instituteName: value,
+                          });
+                        }}
                       />
                     </div>
                   </div>
@@ -242,8 +242,6 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
           </div>
         </div>
       )}
-
-     
     </>,
 
     document.body,

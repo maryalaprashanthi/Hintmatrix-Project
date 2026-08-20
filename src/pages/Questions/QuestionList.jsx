@@ -77,6 +77,9 @@ const QuestionList = () => {
     question.questionText.toLowerCase().includes(search.toLowerCase()),
   );
 
+  const isQuestionActive = (question) =>
+    question.activeRow !== false && question.activeRow !== "false";
+
   // Upload
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -94,6 +97,8 @@ const QuestionList = () => {
 
   // View
   const handleView = (question) => {
+    if (!isQuestionActive(question)) return;
+
     navigate(
       `/questions/question-list/${question.questionId}?courseId=${courseId}&chapterId=${chapterId}&categoryId=${categoryId}`,
     );
@@ -101,6 +106,8 @@ const QuestionList = () => {
 
   // Edit
   const handleEdit = (question) => {
+    if (!isQuestionActive(question)) return;
+
     alert(`Editing: ${question.questionText}`);
   };
 
@@ -111,7 +118,7 @@ const QuestionList = () => {
         question.questionId === id
           ? {
               ...question,
-              activeRow: !question.activeRow,
+              activeRow: !isQuestionActive(question),
             }
           : question,
       ),
@@ -119,7 +126,10 @@ const QuestionList = () => {
   };
 
   // Delete
-  const handleDeleteClick = async (id) => {
+  const handleDeleteClick = async (question) => {
+    if (!isQuestionActive(question)) return;
+
+    const { questionId: id } = question;
     const confirmDelete = window.confirm(
       "Are you sure you want to permanently delete this question?",
     );
@@ -238,6 +248,7 @@ const QuestionList = () => {
                   <Button
                     variant="outline-primary"
                     size="sm"
+                    disabled={!isQuestionActive(question)}
                     onClick={() => handleView(question)}
                   >
                     <FaEye className="me-1" />
@@ -247,6 +258,7 @@ const QuestionList = () => {
                   <Button
                     variant="outline-warning"
                     size="sm"
+                    disabled={!isQuestionActive(question)}
                     onClick={() => handleEdit(question)}
                   >
                     <FaEdit className="me-1" />
@@ -256,7 +268,7 @@ const QuestionList = () => {
                   <Form.Check
                     type="switch"
                     id={`switch-${question.questionId}`}
-                    checked={question.activeRow}
+                    checked={isQuestionActive(question)}
                     onChange={() => handleToggle(question.questionId)}
                     label="Disable"
                   />
@@ -264,7 +276,8 @@ const QuestionList = () => {
                   <Button
                     variant="outline-danger"
                     size="sm"
-                    onClick={() => handleDeleteClick(question.questionId)}
+                    disabled={!isQuestionActive(question)}
+                    onClick={() => handleDeleteClick(question)}
                   >
                     <FaTrash className="me-1" />
                     Delete

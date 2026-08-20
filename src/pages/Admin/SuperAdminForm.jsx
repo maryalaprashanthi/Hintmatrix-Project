@@ -33,7 +33,12 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
       setDesignation(selectedSuperAdminData.designation || "");
       setEmail(selectedSuperAdminData.email || "");
       setPhoneNumber(selectedSuperAdminData.phoneNumber || "");
-      setPassword(selectedSuperAdminData.password || "");
+      setPassword(
+        selectedSuperAdminData.password ||
+          selectedSuperAdminData.passwordHash ||
+          selectedSuperAdminData.userPassword ||
+          "",
+      );
       setAddress(selectedSuperAdminData.address || "");
     } else {
       setName("");
@@ -54,11 +59,11 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
       !employeeId ||
       !designation.trim() ||
       !email.trim() ||
-      !phoneNumber.trim() ||
+      phoneNumber.length !== 10 ||
       !password.trim() ||
       !address.trim()
     ) {
-      alert("Please fill all the fields.");
+      alert("Please fill all the fields. Phone Number must be 10 characters.");
       return;
     }
 
@@ -190,10 +195,13 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
                   <FaPhone className="input-icon" />
 
                   <input
-                    type="tel"
+                    type="text"
                     placeholder="9876543210"
+                    maxLength={10}
                     value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    onChange={(e) =>
+                      setPhoneNumber(e.target.value.replace(/\D/g, ""))
+                    }
                   />
                 </div>
               </div>

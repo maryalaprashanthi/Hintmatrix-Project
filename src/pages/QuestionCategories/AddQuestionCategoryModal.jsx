@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import Select from "react-select";
 import { FaTimes, FaSave, FaBook, FaListAlt, FaTag } from "react-icons/fa";
 
 import "./QuestionCategories.css";
@@ -39,7 +40,7 @@ function AddQuestionCategoryModal({
   useEffect(() => {
     CourseService.getAllCourses()
       .then((response) => {
-        setCourses(response.data);
+        setCourses(response.data || []);
         // Automatically select the course when coming from Chapters
         if (!initialData && selectedChapter?.courseId) {
           setCourseId(String(selectedChapter.courseId));
@@ -53,6 +54,20 @@ function AddQuestionCategoryModal({
   // Load edit data
   useEffect(() => {
     if (initialData) {
+      setCourseId(
+        initialData.courseId
+          ? String(initialData.courseId)
+          : selectedChapter?.courseId
+            ? String(selectedChapter.courseId)
+            : "",
+      );
+      setChapterIdState(
+        initialData.chapterId
+          ? String(initialData.chapterId)
+          : chapterId
+            ? String(chapterId)
+            : "",
+      );
       setCategoryName(initialData.name || "");
 
       setShortName(initialData.shortName || "");
@@ -78,7 +93,29 @@ function AddQuestionCategoryModal({
 
       setIsActive(true);
     }
-  }, [initialData, show]);
+  }, [initialData, show, chapterId, selectedChapter]);
+
+  const courseOptions = courses.map((course) => ({
+    value: course.courseId,
+    label:
+      course.name ||
+      course.courseName ||
+      course.title ||
+      String(course.courseId || ""),
+  }));
+
+  const chapterOptions = chapters
+    .filter(
+      (chapter) => !courseId || Number(chapter.courseId) === Number(courseId),
+    )
+    .map((chapter) => ({
+      value: chapter.chapterId,
+      label:
+        chapter.name ||
+        chapter.chapterName ||
+        chapter.title ||
+        String(chapter.chapterId || ""),
+    }));
 
   if (!show) return null;
 
@@ -132,7 +169,7 @@ function AddQuestionCategoryModal({
 
       closeModal();
 
-      if(onSuccess){
+      if (onSuccess) {
         onSuccess();
       }
     } catch (error) {
@@ -183,18 +220,28 @@ function AddQuestionCategoryModal({
                   <div className="input-box">
                     <FaBook className="input-icon" />
 
-                    <select
-                      value={courseId}
-                      onChange={(e) => setCourseId(e.target.value)}
-                    >
-                      <option value="">Select Course</option>
-
-                      {courses.map((course) => (
-                        <option key={course.courseId} value={course.courseId}>
-                          {course.name}
-                        </option>
-                      ))}
-                    </select>
+                    <Select
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      menuPortalTarget={document.body}
+                      styles={{
+                        menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                      }}
+                      options={courseOptions}
+                      value={
+                        courseOptions.find(
+                          (option) => String(option.value) === String(courseId),
+                        ) || null
+                      }
+                      onChange={(option) => {
+                        setCourseId(option?.value || "");
+                        setChapterIdState("");
+                      }}
+                      placeholder="Search Course"
+                      isSearchable
+                      isClearable
+                      noOptionsMessage={() => "No course found"}
+                    />
                   </div>
                 </div>
 
@@ -208,21 +255,29 @@ function AddQuestionCategoryModal({
                   <div className="input-box">
                     <FaListAlt className="input-icon" />
 
-                    <select
-                      value={chapterIdState}
-                      onChange={(e) => setChapterIdState(e.target.value)}
-                    >
-                      <option value="">Select Chapter</option>
-
-                      {chapters.map((chapter) => (
-                        <option
-                          key={chapter.chapterId}
-                          value={chapter.chapterId}
-                        >
-                          {chapter.name}
-                        </option>
-                      ))}
-                    </select>
+                    <Select
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      menuPortalTarget={document.body}
+                      styles={{
+                        menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                      }}
+                      options={chapterOptions}
+                      value={
+                        chapterOptions.find(
+                          (option) =>
+                            String(option.value) === String(chapterIdState),
+                        ) || null
+                      }
+                      onChange={(option) =>
+                        setChapterIdState(option?.value || "")
+                      }
+                      placeholder="Search Chapter"
+                      isSearchable
+                      isClearable
+                      isDisabled={!courseId}
+                      noOptionsMessage={() => "No chapter found"}
+                    />
                   </div>
                 </div>
 
@@ -240,12 +295,12 @@ function AddQuestionCategoryModal({
                       type="text"
                       placeholder="Enter Category Name"
                       value={categoryName}
-                       onChange={(e) => {
-                      if (/^[A-Za-z\s]*$/.test(e.target.value)) {
-                     setCategoryName(e.target.value);
-                    }
-                   }}
-                   />
+                      onChange={(e) => {
+                        if (/^[A-Za-z\s]*$/.test(e.target.value)) {
+                          setCategoryName(e.target.value);
+                        }
+                      }}
+                    />
                   </div>
                 </div>
               </div>

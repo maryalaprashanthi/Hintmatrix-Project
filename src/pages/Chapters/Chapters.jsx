@@ -64,12 +64,9 @@ function Chapters() {
     }
   };
 
-
   useEffect(() => {
     loadChapters();
   }, []);
-
-
 
   const handleSaveChapter = async (newChapter) => {
     try {
@@ -253,8 +250,8 @@ function Chapters() {
         </div>
       </div>
 
-      <div className="row align-items-center mb-3">
-        <div className="col-lg-8 col-md-7 mb-3 mb-md-0">
+      <div className="chapter-filters mb-3">
+        <div className="chapter-search">
           <div className="input-group shadow-sm rounded-3 overflow-hidden">
             <span className="input-group-text bg-white border-0">
               <FaSearch />
@@ -270,7 +267,7 @@ function Chapters() {
           </div>
         </div>
 
-        <div className="col-lg-4 col-md-5">
+        <div className="chapter-status-filter">
           <select
             className="form-select shadow-sm"
             value={statusFilter}
