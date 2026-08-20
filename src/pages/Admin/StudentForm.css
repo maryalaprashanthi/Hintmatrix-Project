@@ -377,3 +377,19 @@
     max-height: 82vh;
   }
 }
+/* Custom Modal Footer Buttons Layout Fix */
+.modal-cancel-btn,
+.modal-save-btn {
+  height: 38px !important; /* Forces both buttons to be the exact same height */
+  min-width: 100px; /* Gives them a standard balanced width */
+  font-size: 14px;
+  font-weight: 500;
+  box-sizing: border-box; /* Keeps paddings from messing up the height calculation */
+}
+
+/* Ensure icons and text stack smoothly inside flexbox */
+.modal-cancel-btn *,
+.modal-save-btn * {
+  display: inline-block;
+  vertical-align: middle;
+}

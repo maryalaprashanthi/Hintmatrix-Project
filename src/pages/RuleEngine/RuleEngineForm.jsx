@@ -262,7 +262,10 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
             <div className="form-grid">
               {/* Chapter */}
               <div className="form-group">
-                <label>Chapter Name</label>
+                <label>
+                  Chapter Name
+                  <span className="required">*</span>
+                </label>
 
                 <div className="input-box">
                   <FaBook className="input-icon" />
@@ -287,7 +290,10 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
               </div>
               {/* Pair Attribute */}
               <div className="form-group">
-                <label>Pair Attribute Name</label>
+                <label>
+                  Pair Attribute Name
+                  <span className="required">*</span>
+                </label>
 
                 <div className="input-box">
                   <FaTag className="input-icon" />
@@ -315,7 +321,10 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
               {/* Table Attribute Name */}{" "}
               <div className="form-group">
                 {" "}
-                <label>Table Attribute Name</label>{" "}
+                <label>
+                  Table Attribute Name
+                  <span className="required">*</span>
+                </label>{" "}
                 <div className="input-box">
                   {" "}
                   <FaTag className="input-icon" />{" "}
@@ -340,7 +349,10 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
               </div>
               {/* Relationship */}
               <div className="form-group">
-                <label>Relationship Name</label>
+                <label>
+                  Relationship Name
+                  <span className="required">*</span>
+                </label>
 
                 <div className="input-box">
                   <FaProjectDiagram className="input-icon" />
@@ -366,7 +378,10 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
               </div>
               {/* Pair Order */}
               <div className="form-group">
-                <label>Pair Order</label>
+                <label>
+                  Pair Order
+                  <span className="required">*</span>
+                </label>
 
                 <div className="input-box">
                   <FaSortNumericDown className="input-icon" />
@@ -393,7 +408,10 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                 {/* Arithmetic */}
 
                 <div className="form-group">
-                  <label>Arithmetic</label>
+                  <label>
+                    Arithmetic
+                    <span className="required">*</span>
+                  </label>
 
                   <div className="input-box">
                     <FaCalculator className="input-icon" />
@@ -420,7 +438,10 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                 {/* Table Name */}
 
                 <div className="form-group">
-                  <label>Table Name</label>
+                  <label>
+                    Table Name
+                    <span className="required">*</span>
+                  </label>
 
                   <div className="input-box">
                     <FaTable className="input-icon" />
@@ -447,7 +468,10 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                 {/* Header Name */}
 
                 <div className="form-group">
-                  <label>Header Name</label>
+                  <label>
+                    Header Name
+                    <span className="required">*</span>
+                  </label>
 
                   <div className="input-box">
                     <FaHeading className="input-icon" />
@@ -474,7 +498,10 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                 {/* Amount Position */}
 
                 <div className="form-group">
-                  <label>Amount Position</label>
+                  <label>
+                    Amount Position
+                    <span className="required">*</span>
+                  </label>
 
                   <div className="input-box">
                     <FaMapMarkerAlt className="input-icon" />
@@ -497,7 +524,10 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                 {/* Information */}
 
                 <div className="form-group">
-                  <label>Information</label>
+                  <label>
+                    Information
+                    <span className="required">*</span>
+                  </label>
 
                   <div className="input-box">
                     <FaInfoCircle className="input-icon" />
@@ -558,7 +588,10 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
               </div>
 
               <div className="form-group">
-                <label>Row Status</label>
+                <label>
+                  Row Status
+                  <span className="required">*</span>
+                </label>
 
                 <div className="input-box">
                   <FaSortNumericDown className="input-icon" />

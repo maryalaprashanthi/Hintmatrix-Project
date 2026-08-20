@@ -13,7 +13,7 @@ import {
   FaBoxOpen,
   FaClipboardCheck,
   FaSearch,
-  FaPen,
+  FaEdit,
   FaTrash,
   FaArrowRight,
 } from "react-icons/fa";
@@ -272,7 +272,7 @@ export default function QuestionCategories() {
                     className="btn btn-outline-primary btn-sm action-btn"
                     onClick={() => handleEdit(category)}
                   >
-                    <FaPen className="me-1" />
+                    <FaEdit className="me-1" />
                     Edit
                   </button>
 
