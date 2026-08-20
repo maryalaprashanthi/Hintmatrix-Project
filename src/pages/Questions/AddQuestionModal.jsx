@@ -338,7 +338,8 @@ function AddQuestionModal({
 
             {/* Question Text */}
 
-            <div className="form-group mt-4">
+            {/* <div className="form-group mt-4"> */}
+            <div className="form-group full-width">
               <label>
                 Question Text <span>*</span>
               </label>

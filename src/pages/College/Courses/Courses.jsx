@@ -262,7 +262,12 @@ function Courses() {
 
       <div className="course-toolbar">
         <div className="search-box">
-          <FaSearch />
+          <FaSearch
+            className="search-icon"
+            onClick={() => {
+              console.log("Search icon clicked");
+            }}
+          />
 
           <input
             type="text"

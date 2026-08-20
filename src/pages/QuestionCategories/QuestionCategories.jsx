@@ -13,7 +13,7 @@ import {
   FaBoxOpen,
   FaClipboardCheck,
   FaSearch,
-  FaPen,
+  FaEdit,
   FaTrash,
   FaArrowRight,
 } from "react-icons/fa";
@@ -53,12 +53,11 @@ export default function QuestionCategories() {
       alert("Failed to load Question Categories");
     }
   };
- 
 
   useEffect(() => {
     fetchCategories();
   }, []);
- 
+
   // Upload (Frontend Only)
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -277,7 +276,7 @@ export default function QuestionCategories() {
                     className="btn btn-outline-primary btn-sm action-btn"
                     onClick={() => handleEdit(category)}
                   >
-                    <FaPen className="me-1" />
+                    <FaEdit className="me-1" />
                     Edit
                   </button>
 

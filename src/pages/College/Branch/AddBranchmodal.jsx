@@ -116,7 +116,7 @@ function AddBranchModal({ show, onClose, onSave, selectedBranchData }) {
         {/* Header */}
         <div className="modal-header">
           <div>
-            <h2>Add Branch</h2>
+            <h2>Edit Branch</h2>
             <p>Create a new college branch.</p>
           </div>
 
@@ -177,16 +177,15 @@ function AddBranchModal({ show, onClose, onSave, selectedBranchData }) {
 
                 <div className="input-box">
                   <FaCodeBranch className="input-icon" />
-                   <input
-                     type="text"
-                     placeholder="Enter Branch Name"
-                     value={branchName}
-                     onChange={(e) => {
-                     const value = e.target.value.replace(/[^a-zA-Z\s]/g, "");
-                     setBranchName(value);
+                  <input
+                    type="text"
+                    placeholder="Enter Branch Name"
+                    value={branchName}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                      setBranchName(value);
                     }}
                   />
-                  
                 </div>
               </div>
 
