@@ -53,12 +53,11 @@ export default function QuestionCategories() {
       alert("Failed to load Question Categories");
     }
   };
- 
 
   useEffect(() => {
     fetchCategories();
   }, []);
- 
+
   // Upload (Frontend Only)
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -169,8 +168,8 @@ export default function QuestionCategories() {
         </div>
       </div>
 
-      <div className="row align-items-center mb-3">
-        <div className="col-lg-8 col-md-7 mb-3 mb-md-0">
+      <div className="category-filters mb-3">
+        <div className="category-search">
           <div className="input-group shadow-sm rounded-3 overflow-hidden">
             <span className="input-group-text bg-white border-0">
               <FaSearch />
@@ -186,7 +185,7 @@ export default function QuestionCategories() {
           </div>
         </div>
 
-        <div className="col-lg-4 col-md-5">
+        <div className="category-status-filter">
           <select
             className="form-select shadow-sm"
             value={statusFilter}
@@ -206,14 +205,8 @@ export default function QuestionCategories() {
           <div className="col-xl-4 col-lg-6 col-md-6" key={category.categoryId}>
             <div className="category-card h-100">
               <div className="card-body">
-                <div
-                  className="icon-circle"
-                  style={{
-                    background: category.iconBg,
-                    color: category.iconColor,
-                  }}
-                >
-                  {category.icon}
+                <div className="icon-circle">
+                  <FaBookOpen />
                 </div>
 
                 <h5 className="category-title">{category.name}</h5>
@@ -222,15 +215,17 @@ export default function QuestionCategories() {
                   {category.questions} Questions
                 </div>
 
-                <span
-                  className={`badge ${
-                    category.activeRow
-                      ? "bg-success-subtle text-success"
-                      : "bg-danger-subtle text-danger"
-                  }`}
-                >
-                  {category.activeRow ? "Active" : "Inactive"}
-                </span>
+                <div className="category-status">
+                  <span
+                    className={`badge ${
+                      category.activeRow
+                        ? "bg-success-subtle text-success"
+                        : "bg-danger-subtle text-danger"
+                    }`}
+                  >
+                    {category.activeRow ? "Active" : "Inactive"}
+                  </span>
+                </div>
 
                 <div className="updated-text">Last Updated</div>
 

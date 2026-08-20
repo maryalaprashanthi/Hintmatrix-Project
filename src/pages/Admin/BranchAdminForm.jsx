@@ -1,7 +1,6 @@
-import { Typeahead } from "react-bootstrap-typeahead";
-import "react-bootstrap-typeahead/css/Typeahead.css";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import Select from "react-select";
 import CollegeService from "../../services/CollegeService";
 import BranchService from "../../services/BranchService";
 import SuccessModal from "../../components/Common/SuccessModal";
@@ -46,7 +45,12 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
       const response = await CollegeService.getAllColleges();
 
       console.log("COLLEGE API RESPONSE:", response.data);
-      setCollegesList(response.data || []);
+      setCollegesList(
+        (response.data || []).filter(
+          (college) =>
+            college.activeRow === true || college.activeRow === "true",
+        ),
+      );
     } catch (error) {
       console.error("COLLEGE API ERROR:", error);
     }
@@ -61,7 +65,11 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
 
       console.log("BRANCH API RESPONSE:", response.data);
 
-      setBranchesList(response.data || []);
+      setBranchesList(
+        (response.data || []).filter(
+          (branch) => branch.activeRow === true || branch.activeRow === "true",
+        ),
+      );
     } catch (error) {
       console.error("BRANCH API ERROR:", error);
     }
@@ -106,6 +114,20 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
 
   if (!show) return null;
 
+  const collegeOptions = collegesList.map((college) => ({
+    value: college.collegeId,
+    label: college.instituteName,
+  }));
+
+  const branchOptions = branchesList
+    .filter(
+      (branch) => !collegeId || Number(branch.collegeId) === Number(collegeId),
+    )
+    .map((branch) => ({
+      value: branch.branchId,
+      label: branch.branchName,
+    }));
+
   // ==============================
   // Save
   // ==============================
@@ -117,11 +139,11 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
       !collegeId ||
       !branchId ||
       !email.trim() ||
-      !phoneNumber.trim() ||
+      phoneNumber.length !== 10 ||
       !password.trim() ||
       !address.trim()
     ) {
-      alert("Please fill all the fields.");
+      alert("Please fill all the fields. Phone Number must be 10 digits.");
       return;
     }
 
@@ -243,19 +265,27 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
 
                 <div className="input-box">
                   <FaUniversity className="input-icon" />
-                  <Typeahead
-                    id="collegeId"
-                    labelKey="instituteName"
-                    options={collegesList}
-                    placeholder="Select College Name"
-                    selected={collegesList.filter(
-                      (college) =>
-                        String(college.collegeId) === String(collegeId),
-                    )}
-                    onChange={(selected) => {
-                      setCollegeId(
-                        selected.length ? selected[0].collegeId : "",
-                      );
+                  <Select
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    menuPlacement="bottom"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                    }}
+                    options={collegeOptions}
+                    value={
+                      collegeOptions.find(
+                        (option) => Number(option.value) === Number(collegeId),
+                      ) || null
+                    }
+                    placeholder="Search College"
+                    isSearchable
+                    isClearable
+                    noOptionsMessage={() => "No active college found"}
+                    onChange={(option) => {
+                      setCollegeId(option?.value || "");
+                      setBranchId("");
                     }}
                   />
                 </div>
@@ -271,38 +301,21 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
                 <div className="input-box">
                   <FaCodeBranch className="input-icon" />
 
-                  <Typeahead
-                    id="branchId"
-                    labelKey={(branch) =>
-                      String(
-                        branch.branchName ??
-                          branch.name ??
-                          branch.branch ??
-                          branch.branchId ??
-                          "",
-                      )
+                  <Select
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    options={branchOptions}
+                    value={
+                      branchOptions.find(
+                        (option) => Number(option.value) === Number(branchId),
+                      ) || null
                     }
-                    options={branchesList}
-                    placeholder="Select Branch Name"
-                    selected={branchesList.filter(
-                      (branch) => String(branch.branchId) === String(branchId),
-                    )}
-                    onChange={(selected) => {
-                      setBranchId(selected.length ? selected[0].branchId : "");
-                    }}
-                    filterBy={(option, props) => {
-                      const searchText = props.text?.toLowerCase() || "";
-
-                      const label = String(
-                        option.branchName ??
-                          option.name ??
-                          option.branch ??
-                          option.branchId ??
-                          "",
-                      ).toLowerCase();
-
-                      return label.includes(searchText);
-                    }}
+                    onChange={(option) => setBranchId(option?.value || "")}
+                    placeholder="Search Branch"
+                    isSearchable
+                    isClearable
+                    isDisabled={!collegeId}
+                    noOptionsMessage={() => "No active branch found"}
                   />
                 </div>
               </div>
@@ -341,7 +354,9 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
                     maxLength={10}
                     placeholder="9876543210"
                     value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    onChange={(e) =>
+                      setPhoneNumber(e.target.value.replace(/\D/g, ""))
+                    }
                   />
                 </div>
               </div>

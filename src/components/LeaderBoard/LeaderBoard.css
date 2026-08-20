@@ -1,7 +1,7 @@
 .leaderboard-card {
   background: #fff;
   border-radius: 18px;
-  padding: 22px;
+  padding: 20px;
   box-shadow: 0 8px 25px rgba(15, 23, 42, 0.08);
   height: 100%;
 }
@@ -10,10 +10,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .leaderboard-header h3 {
+  margin: 0;
   font-size: 24px;
   font-weight: 700;
   color: #111827;
@@ -27,13 +28,15 @@
 }
 
 .leader-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 28px 40px minmax(0, 1fr) 44px;
   align-items: center;
-  gap: 14px;
-  padding: 12px;
+  gap: 10px;
+  padding: 10px;
   border-radius: 14px;
   transition: 0.3s;
   margin-bottom: 8px;
+  min-height: 58px;
 }
 
 .leader-row:hover {
@@ -63,21 +66,25 @@
 }
 
 .leader-row img {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
+  display: block;
 }
 
 .leader-info {
-  flex: 1;
+  min-width: 0;
 }
 
 .leader-info h4 {
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: #1f2937;
+  line-height: 1.25;
+  white-space: normal;
+  overflow: visible;
 }
 
 .active-user .leader-info h4 {
@@ -85,7 +92,9 @@
 }
 
 .leader-score {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: #111827;
+  text-align: right;
+  white-space: nowrap;
 }
