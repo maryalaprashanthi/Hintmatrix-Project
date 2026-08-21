@@ -42,7 +42,11 @@ const QuestionPage = () => {
   // console.log("Question Id:", questionId);
 
   useEffect(() => {
-    loadQuestions();
+    const init = async () => {
+      await loadQuestions();
+      await loadAnsweredQuestions();
+    };
+    init();
   }, [questionId]);
 
   const loadQuestions = async () => {
@@ -53,12 +57,96 @@ const QuestionPage = () => {
         obj.headers.map((header) => `${obj.name}-${header}`),
       );
       // console.log("All strings are ", allStrings);
-      setQuestions([response.data]);
+      await setQuestions([response.data]);
       setTableData(allStrings);
     } catch (error) {
       console.error("Failed to load question:", error);
     }
   };
+
+  const loadAnsweredQuestions = async () => {
+    const correctAnswers =
+      await QuestionAnswerService.getAnswersByQuestionId(questionId);
+    console.log("Completed data ", correctAnswers);
+
+    // Guard against a null/undefined/non-array response.
+    const savedAnswers = Array.isArray(correctAnswers) ? correctAnswers : [];
+    if (savedAnswers.length === 0) {
+      console.warn("No saved answers to restore:", correctAnswers);
+      return;
+    }
+
+    console.log("Pampapam all answers: ", savedAnswers);
+
+    // Group by attributeId so we can move each attribute into its solved slot.
+    // Each key maps to an ARRAY of saved answers, since an attribute may have
+    // been placed into more than one target (table/header/arithmetic combo).
+    const answerMap = savedAnswers.reduce((map, answer) => {
+      if (!answer) return map;
+      const entries = (map[answer.attributeId] = map[answer.attributeId] || []);
+      entries.push({
+        totalAnswers: answer.totalAnswers,
+        targetId: `${answer.tableName}-${answer.headerName}-${answer.arithmetic}`,
+      });
+      return map;
+    }, {});
+
+    console.log("I have data in answerMap: ", answerMap);
+
+    // Restore each earlier answer. conditionId/pairAttributeId are often NOT
+    // returned by the question_answers endpoint, so rebuild them from the same
+    // RuleEngine source that the onDragEnd flow uses.
+    for (const [sourceId, answers] of Object.entries(answerMap)) {
+      const attributeId = Number(sourceId);
+      await setTotalAnswers(attributeId, answers[0].totalAnswers);
+      console.log(
+        "I am setting total answers for attributeId: ",
+        attributeId,
+        " as ",
+        answers[0].totalAnswers,
+      );
+      console.log(
+        `Total answers for sourceId ${sourceId}: `,
+        answers[0].totalAnswers,
+      );
+
+      // Build a targetId -> { conditionId, pairAttributeId } lookup from the
+      // rule engine so moveQuestion is never called with undefined/null ids.
+      const targetMap = {};
+      try {
+        const ruleData =
+          await RuleEngineService.getAttributeAnswers(attributeId);
+        const apiData = ruleData?.[0];
+        if (apiData) {
+          const pairId = apiData.pairAttributeId;
+          for (let i = 1; i <= 4; i++) {
+            const condition = apiData[`condition${i}`];
+            if (!condition || condition.arithmetic == null) continue;
+            targetMap[
+              `${condition.tableName}-${condition.headerName}-${condition.arithmetic}`
+            ] = { conditionId: i, pairAttributeId: pairId };
+          }
+        }
+      } catch (error) {
+        console.error(
+          "Failed to load rule data for attribute",
+          attributeId,
+          error,
+        );
+      }
+
+      for (const obj of answers) {
+        const meta = targetMap[obj.targetId] || {};
+        await moveQuestion(
+          attributeId,
+          obj.targetId,
+          meta.conditionId ?? obj.conditionId,
+          meta.pairAttributeId ?? obj.pairAttributeId ?? null,
+        );
+      }
+    }
+  };
+
   return (
     <DragDropProvider
       onDragEnd={async (Event) => {
@@ -80,13 +168,15 @@ const QuestionPage = () => {
             }
           }
           const [first, second, third] = targetId.split("-");
+          let count = 0;
           try {
             let actualAnswers = myQuestion.actualAnswers;
+            console.log("I am about to enter");
             if (myQuestion.actualAnswers.length == 0) {
+              console.log("I entered");
               const data =
                 await RuleEngineService.getAttributeAnswers(sourceId);
               const apiData = data[0];
-              let count = 0;
               let allHints = [];
               for (let i = 1; i <= 4; i++) {
                 const pairId = apiData.pairAttributeId;
@@ -116,6 +206,7 @@ const QuestionPage = () => {
               setTotalAnswers(sourceId, count);
               setHints(sourceId, allHints);
             }
+            if (count == 0) count = myQuestion.totalAnswers;
             let matched = false;
             let answerId = null;
 
@@ -146,10 +237,11 @@ const QuestionPage = () => {
               // present in answered to attemptingId. if there's no such id return
 
               console.log("I have already answered ", myQuestion.answered);
-
+              if (myQuestion.status != "wrong") setError(sourceId);
               const answeredIds = myQuestion.answered.map((a) => a.conditionId);
               let enter = false;
               let newValue = null;
+              console.log("My question si ", myQuestion);
               if (answeredIds.includes(myQuestion.attemptingId)) {
                 enter = true;
                 const nextAttempt = myQuestion.actualAnswers.find(
@@ -176,6 +268,7 @@ const QuestionPage = () => {
 
               console.log(body);
               console.log("I did wrong answer ");
+              console.log("My status is gggg", myQuestion.status);
               if (myQuestion.status != "wrong") setError(sourceId);
               // call answer events with post and body
               const response =
@@ -213,6 +306,9 @@ const QuestionPage = () => {
                 attributeId: sourceId,
                 arithmetic: third,
                 amount: myQuestion.amount,
+                conditionId: correctAnswer.conditionId,
+                pairAttributeId: correctAnswer.pairAttributeId,
+                totalAnswers: count,
               };
 
               // call score api
