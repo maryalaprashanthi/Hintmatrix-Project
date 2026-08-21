@@ -76,8 +76,6 @@ const QuestionPage = () => {
       return;
     }
 
-    console.log("Pampapam all answers: ", savedAnswers);
-
     // Group by attributeId so we can move each attribute into its solved slot.
     // Each key maps to an ARRAY of saved answers, since an attribute may have
     // been placed into more than one target (table/header/arithmetic combo).
@@ -87,6 +85,8 @@ const QuestionPage = () => {
       entries.push({
         totalAnswers: answer.totalAnswers,
         targetId: `${answer.tableName}-${answer.headerName}-${answer.arithmetic}`,
+        conditionId: answer.conditionId,
+        pairAttributeId: answer.pairAttributeId,
       });
       return map;
     }, {});
@@ -110,38 +110,13 @@ const QuestionPage = () => {
         answers[0].totalAnswers,
       );
 
-      // Build a targetId -> { conditionId, pairAttributeId } lookup from the
-      // rule engine so moveQuestion is never called with undefined/null ids.
-      const targetMap = {};
-      try {
-        const ruleData =
-          await RuleEngineService.getAttributeAnswers(attributeId);
-        const apiData = ruleData?.[0];
-        if (apiData) {
-          const pairId = apiData.pairAttributeId;
-          for (let i = 1; i <= 4; i++) {
-            const condition = apiData[`condition${i}`];
-            if (!condition || condition.arithmetic == null) continue;
-            targetMap[
-              `${condition.tableName}-${condition.headerName}-${condition.arithmetic}`
-            ] = { conditionId: i, pairAttributeId: pairId };
-          }
-        }
-      } catch (error) {
-        console.error(
-          "Failed to load rule data for attribute",
-          attributeId,
-          error,
-        );
-      }
-
       for (const obj of answers) {
-        const meta = targetMap[obj.targetId] || {};
+        console.log("This is data fjf", obj);
         await moveQuestion(
           attributeId,
           obj.targetId,
-          meta.conditionId ?? obj.conditionId,
-          meta.pairAttributeId ?? obj.pairAttributeId ?? null,
+          obj.conditionId,
+          obj.pairAttributeId,
         );
       }
     }
