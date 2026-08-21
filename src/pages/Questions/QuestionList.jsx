@@ -66,7 +66,22 @@ const QuestionList = () => {
         console.log("Admin question response:", response);
         console.log("Admin question data:", response.data);
       }
-      setQuestions(response.data);
+
+      const loadedQuestions = Array.isArray(response.data) ? response.data : [];
+
+      if (courseId && chapterId && categoryId) {
+        const matchesMapping = (question) =>
+          String(question.courseId ?? question.course_id) ===
+            String(courseId) &&
+          String(question.chapterId ?? question.chapter_id) ===
+            String(chapterId) &&
+          String(question.categoryId ?? question.category_id) ===
+            String(categoryId);
+
+        setQuestions(loadedQuestions.filter(matchesMapping));
+      } else {
+        setQuestions(loadedQuestions);
+      }
     } catch (error) {
       console.error("Error loading questions:", error);
     }
@@ -74,7 +89,7 @@ const QuestionList = () => {
 
   // used to show questions matching searched keywords
   const filteredQuestions = questions.filter((question) =>
-    question.questionText.toLowerCase().includes(search.toLowerCase()),
+    (question.questionText || "").toLowerCase().includes(search.toLowerCase()),
   );
 
   const isQuestionActive = (question) =>

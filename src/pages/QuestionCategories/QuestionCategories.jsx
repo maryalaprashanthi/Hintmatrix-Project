@@ -31,6 +31,7 @@ export default function QuestionCategories() {
   const navigate = useNavigate();
 
   const selectedChapter = location.state?.chapter;
+  const selectedChapterId = selectedChapter?.chapterId || chapterId;
 
   console.log("Selected Chapter:", selectedChapter);
 
@@ -45,8 +46,21 @@ export default function QuestionCategories() {
   const fetchCategories = async () => {
     try {
       const response = await QuestionCategoryService.getAll();
+      const loadedCategories = Array.isArray(response.data)
+        ? response.data
+        : [];
 
-      setCategories(response.data || []);
+      if (selectedChapterId) {
+        setCategories(
+          loadedCategories.filter(
+            (category) =>
+              String(category.chapterId ?? category.chapter_id) ===
+              String(selectedChapterId),
+          ),
+        );
+      } else {
+        setCategories(loadedCategories);
+      }
     } catch (error) {
       console.error("Error loading Question Categories:", error);
 
@@ -56,7 +70,7 @@ export default function QuestionCategories() {
 
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [selectedChapterId]);
 
   // Upload (Frontend Only)
   const handleFileUpload = async (event) => {
