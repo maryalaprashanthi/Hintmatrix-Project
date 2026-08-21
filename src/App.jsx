@@ -53,6 +53,7 @@ import Landing from "./pages/Landing/Landing";
 import QuestionPage from "./components/Question/QuestionPage";
 import JournalPage from "./components/JournalQuestion/JournalPage";
 import DropdownPage from "./components/DropdownQuestions/DropdownPage";
+import CourseSubscribe from "./pages/CourseSubscribe";
 
 function App() {
   const navigate = useNavigate();
@@ -246,6 +247,7 @@ function App() {
 
         <Route path="/journal/:questionId" element={<JournalPage />} />
         <Route path="/dropdown/:questionId" element={<DropdownPage />} />
+        <Route path="/course-subscribe" element={<CourseSubscribe />} />
       </Route>
     </Routes>
   );
