@@ -58,7 +58,19 @@ function Chapters() {
 
       console.log("Chapter Data :", response.data);
 
-      setChapters(response.data);
+      const loadedChapters = Array.isArray(response.data) ? response.data : [];
+
+      if (courseId) {
+        setChapters(
+          loadedChapters.filter(
+            (chapter) =>
+              String(chapter.courseId ?? chapter.course_id) ===
+              String(courseId),
+          ),
+        );
+      } else {
+        setChapters(loadedChapters);
+      }
     } catch (error) {
       console.error("Error fetching chapters:", error);
     }
@@ -66,7 +78,7 @@ function Chapters() {
 
   useEffect(() => {
     loadChapters();
-  }, []);
+  }, [courseId]);
 
   const handleSaveChapter = async (newChapter) => {
     try {
