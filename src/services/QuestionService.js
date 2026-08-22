@@ -31,6 +31,12 @@ class QuestionService {
     return axios.post(BASE_URL, questionRequestDTO, { withCredentials: true });
   }
 
+  update(questionId, questionRequestDTO) {
+    return axios.put(`${BASE_URL}/${questionId}`, questionRequestDTO, {
+      withCredentials: true,
+    });
+  }
+
   getQuestionById(questionId) {
     return axios.get(`${BASE_URL}/${questionId}`, {
       withCredentials: true,
