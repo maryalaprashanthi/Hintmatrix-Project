@@ -3,7 +3,10 @@ import "./DropdownQuestion.css";
 import Select from "react-select";
 import { useRef, useState } from "react";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
-import { getUnansweredDropdownConditions } from "./dropdownAnswerStatus";
+import {
+  getUnansweredDropdownConditions,
+  isDropdownAttributeSolved,
+} from "./dropdownAnswerStatus";
 
 const DropdownQuestion = ({
   data,
@@ -396,6 +399,15 @@ const DropdownQuestion = ({
       return;
     }
 
+    const isSolved = isDropdownAttributeSolved(
+      item.ruleConditions || [],
+      answeredData[item.questionAttributeId] || [],
+    );
+
+    if (isSolved) {
+      return;
+    }
+
     const rule = item.rule;
 
     const tableId = selected.value;
@@ -617,10 +629,17 @@ const DropdownQuestion = ({
               const creditValue =
                 selections[`${item.questionAttributeId}-Credit`] || null;
 
+              const isSolved = isDropdownAttributeSolved(
+                item.ruleConditions || [],
+                answeredData[item.questionAttributeId] || [],
+              );
+
+              const trigger = isSolved ? [] : "click";
+
               return (
                 <OverlayTrigger
                   key={item.questionAttributeId}
-                  trigger="click"
+                  trigger={trigger}
                   placement="bottom"
                   rootClose
                   container={document.body}
@@ -659,6 +678,7 @@ const DropdownQuestion = ({
                                   onChange={(selected) => {
                                     handleSelection(item, "Debit", selected);
                                   }}
+                                  isDisabled={isSolved}
                                   isSearchable
                                 />
                               </div>
@@ -678,6 +698,7 @@ const DropdownQuestion = ({
                                 onChange={(selected) => {
                                   handleSelection(item, "Credit", selected);
                                 }}
+                                isDisabled={isSolved}
                                 isSearchable
                               />
                             </div>
@@ -692,6 +713,10 @@ const DropdownQuestion = ({
                     ref={(element) => {
                       attributeTargets.current[item.questionAttributeId] =
                         element;
+                    }}
+                    style={{
+                      cursor: isSolved ? "not-allowed" : "pointer",
+                      opacity: isSolved ? 0.6 : 1,
                     }}
                   >
                     <td>{item.attributeName}</td>
