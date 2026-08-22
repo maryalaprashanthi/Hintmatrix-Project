@@ -21,6 +21,7 @@ import AddQuestionModal from "./AddQuestionModal";
 const QuestionList = () => {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   // edit functionality
@@ -123,7 +124,8 @@ const QuestionList = () => {
   const handleEdit = (question) => {
     if (!isQuestionActive(question)) return;
 
-    alert(`Editing: ${question.questionText}`);
+    setSelectedQuestion(question);
+    setShowModal(true);
   };
 
   // Enable / Disable
@@ -205,7 +207,13 @@ const QuestionList = () => {
 
           {/* Add Question */}
 
-          <Button variant="primary" onClick={() => setShowModal(true)}>
+          <Button
+            variant="primary"
+            onClick={() => {
+              setSelectedQuestion(null);
+              setShowModal(true);
+            }}
+          >
             <FaPlus className="me-2" />
             Add Question
           </Button>
@@ -317,14 +325,16 @@ const QuestionList = () => {
           courseId={courseId}
           chapterId={chapterId}
           categoryId={categoryId}
-          onClose={() => setShowModal(false)}
-          onSave={async (newQuestion) => {
-            console.log("New Question:", newQuestion);
+          initialData={selectedQuestion}
+          onClose={() => {
+            setShowModal(false);
+            setSelectedQuestion(null);
+          }}
+          onSave={async () => {
             await loadQuestions();
             setShowModal(false);
+            setSelectedQuestion(null);
             setShowSuccess(true);
-
-            await loadQuestions();
           }}
         />
       )}
