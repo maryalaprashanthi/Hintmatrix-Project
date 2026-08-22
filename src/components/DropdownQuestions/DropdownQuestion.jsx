@@ -25,6 +25,7 @@ const DropdownQuestion = ({
   const [helpRequest, setHelpRequest] = useState(null);
   const [showHint, setShowHint] = useState(false);
   const [isAutofilling, setIsAutofilling] = useState(false);
+  const [openAttributeId, setOpenAttributeId] = useState(null);
 
   const attributeTargets = useRef({});
 
@@ -454,6 +455,8 @@ const DropdownQuestion = ({
     if (isCorrect) {
       const condition = matchingCondition.condition;
 
+      setOpenAttributeId(null);
+
       const questionAnswerData = {
         userId: userId,
 
@@ -640,9 +643,15 @@ const DropdownQuestion = ({
                 <OverlayTrigger
                   key={item.questionAttributeId}
                   trigger={trigger}
+                  show={openAttributeId === item.questionAttributeId && !isSolved}
                   placement="bottom"
                   rootClose
                   container={document.body}
+                  onToggle={(nextShow) => {
+                    if (!nextShow) {
+                      setOpenAttributeId(null);
+                    }
+                  }}
                   overlay={
                     <Popover
                       id={`popover-${item.questionAttributeId}`}
@@ -713,6 +722,15 @@ const DropdownQuestion = ({
                     ref={(element) => {
                       attributeTargets.current[item.questionAttributeId] =
                         element;
+                    }}
+                    onClick={() => {
+                      if (!isSolved) {
+                        setOpenAttributeId((current) =>
+                          current === item.questionAttributeId
+                            ? null
+                            : item.questionAttributeId,
+                        );
+                      }
                     }}
                     style={{
                       cursor: isSolved ? "not-allowed" : "pointer",

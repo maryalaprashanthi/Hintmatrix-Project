@@ -327,9 +327,13 @@ const JournalQuestion = ({
         };
       });
 
+      setOpenAttributeId(null);
+
       if (!isCorrect) {
-        setOpenAttributeId(null);
         setHelpRequest({ item });
+        setShowHint(false);
+      } else {
+        setHelpRequest(null);
         setShowHint(false);
       }
     } catch (error) {
