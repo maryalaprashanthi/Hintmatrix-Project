@@ -52,7 +52,7 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
     if (name === "phoneNumber") {
       setCollege({
         ...college,
-        [name]: value.replace(/\D/g, ""),
+        [name]: value.replace(/\D/g, "").slice(0, 10),
       });
       return;
     }
@@ -162,6 +162,7 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
                       <input
                         type="tel"
                         inputMode="numeric"
+                        maxLength={10}
                         name="phoneNumber"
                         placeholder="Enter Phone Number"
                         value={college.phoneNumber}

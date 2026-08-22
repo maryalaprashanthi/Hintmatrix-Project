@@ -327,9 +327,13 @@ const JournalQuestion = ({
         };
       });
 
+      setOpenAttributeId(null);
+
       if (!isCorrect) {
-        setOpenAttributeId(null);
         setHelpRequest({ item });
+        setShowHint(false);
+      } else {
+        setHelpRequest(null);
         setShowHint(false);
       }
     } catch (error) {
@@ -343,7 +347,7 @@ const JournalQuestion = ({
 
   return (
     <div>
-      <Table bordered hover>
+      <Table className="journal-table" bordered hover>
         <thead>
           <tr>
             <th>Transaction</th>

@@ -3,7 +3,10 @@ import "./DropdownQuestion.css";
 import Select from "react-select";
 import { useRef, useState } from "react";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
-import { getUnansweredDropdownConditions } from "./dropdownAnswerStatus";
+import {
+  getUnansweredDropdownConditions,
+  isDropdownAttributeSolved,
+} from "./dropdownAnswerStatus";
 
 const DropdownQuestion = ({
   data,
@@ -22,6 +25,7 @@ const DropdownQuestion = ({
   const [helpRequest, setHelpRequest] = useState(null);
   const [showHint, setShowHint] = useState(false);
   const [isAutofilling, setIsAutofilling] = useState(false);
+  const [openAttributeId, setOpenAttributeId] = useState(null);
 
   const attributeTargets = useRef({});
 
@@ -396,6 +400,15 @@ const DropdownQuestion = ({
       return;
     }
 
+    const isSolved = isDropdownAttributeSolved(
+      item.ruleConditions || [],
+      answeredData[item.questionAttributeId] || [],
+    );
+
+    if (isSolved) {
+      return;
+    }
+
     const rule = item.rule;
 
     const tableId = selected.value;
@@ -441,6 +454,8 @@ const DropdownQuestion = ({
      */
     if (isCorrect) {
       const condition = matchingCondition.condition;
+
+      setOpenAttributeId(null);
 
       const questionAnswerData = {
         userId: userId,
@@ -617,13 +632,26 @@ const DropdownQuestion = ({
               const creditValue =
                 selections[`${item.questionAttributeId}-Credit`] || null;
 
+              const isSolved = isDropdownAttributeSolved(
+                item.ruleConditions || [],
+                answeredData[item.questionAttributeId] || [],
+              );
+
               return (
                 <OverlayTrigger
                   key={item.questionAttributeId}
-                  trigger="click"
+                  trigger={isSolved ? [] : "click"}
+                  show={
+                    openAttributeId === item.questionAttributeId && !isSolved
+                  }
                   placement="bottom"
                   rootClose
                   container={document.body}
+                  onToggle={(nextShow) => {
+                    if (!nextShow) {
+                      setOpenAttributeId(null);
+                    }
+                  }}
                   overlay={
                     <Popover
                       id={`popover-${item.questionAttributeId}`}
@@ -659,6 +687,7 @@ const DropdownQuestion = ({
                                   onChange={(selected) => {
                                     handleSelection(item, "Debit", selected);
                                   }}
+                                  isDisabled={isSolved}
                                   isSearchable
                                 />
                               </div>
@@ -678,6 +707,7 @@ const DropdownQuestion = ({
                                 onChange={(selected) => {
                                   handleSelection(item, "Credit", selected);
                                 }}
+                                isDisabled={isSolved}
                                 isSearchable
                               />
                             </div>
@@ -688,10 +718,22 @@ const DropdownQuestion = ({
                   }
                 >
                   <tr
-                    key={item.questionAttributeId}
                     ref={(element) => {
                       attributeTargets.current[item.questionAttributeId] =
                         element;
+                    }}
+                    onClick={() => {
+                      if (!isSolved) {
+                        setOpenAttributeId((current) =>
+                          current === item.questionAttributeId
+                            ? null
+                            : item.questionAttributeId,
+                        );
+                      }
+                    }}
+                    style={{
+                      cursor: isSolved ? "not-allowed" : "pointer",
+                      opacity: isSolved ? 0.6 : 1,
                     }}
                   >
                     <td>{item.attributeName}</td>

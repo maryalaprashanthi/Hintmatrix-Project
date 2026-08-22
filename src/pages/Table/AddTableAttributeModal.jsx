@@ -110,13 +110,16 @@ function AddTableAttributeModal({ show, onClose, onSave, initialData }) {
                     placeholder="Enter Attribute Name"
                     value={formData.name}
                     onChange={(e) => {
-                    const value = e.target.value.replace(/[^a-zA-Z ]/g, "");
+                      const value = e.target.value.replace(
+                        /[^a-zA-Z0-9 ]/g,
+                        "",
+                      );
 
-                    setFormData({
-                    ...formData,
-                    name: value
-                  });
-                }}
+                      setFormData({
+                        ...formData,
+                        name: value,
+                      });
+                    }}
                   />
                 </div>
               </div>
@@ -153,57 +156,53 @@ function AddTableAttributeModal({ show, onClose, onSave, initialData }) {
           </div>
         </div>
 
-            <div className="form-grid">
+        <div className="form-grid">
+          {/* Amount 1 */}
+          <div className="form-group">
+            <label>
+              Amount 1 <span>*</span>
+            </label>
 
-    {/* Amount 1 */}
-    <div className="form-group">
-        <label>
-            Amount 1 <span>*</span>
-        </label>
+            <div className="input-box">
+              <FaTag className="input-icon" />
 
-        <div className="input-box">
-            <FaTag className="input-icon" />
-
-            <input
+              <input
                 type="number"
                 placeholder="Enter Amount 1"
                 value={formData.amount1}
                 onChange={(e) =>
-                    setFormData({
-                        ...formData,
-                        amount1: e.target.value
-                    })
+                  setFormData({
+                    ...formData,
+                    amount1: e.target.value,
+                  })
                 }
-            />
-        </div>
-    </div>
+              />
+            </div>
+          </div>
 
+          {/* Amount 2 */}
+          <div className="form-group">
+            <label>
+              Amount 2 <span>*</span>
+            </label>
 
-    {/* Amount 2 */}
-    <div className="form-group">
-        <label>
-            Amount 2 <span>*</span>
-        </label>
+            <div className="input-box">
+              <FaTag className="input-icon" />
 
-        <div className="input-box">
-            <FaTag className="input-icon" />
-
-            <input
+              <input
                 type="number"
                 placeholder="Enter Amount 2"
                 value={formData.amount2}
                 onChange={(e) =>
-                setFormData({
-                ...formData,
-                amount2: e.target.value
-                })
+                  setFormData({
+                    ...formData,
+                    amount2: e.target.value,
+                  })
                 }
-            />
-           </div>
+              />
+            </div>
           </div>
-
-         </div>
-                      
+        </div>
 
         {/* Footer */}
 

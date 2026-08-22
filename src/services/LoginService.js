@@ -1,11 +1,11 @@
-import axios from "axios";
+﻿import apiClient from "./apiClient";
 
-const BASE_URL = "http://localhost:8080/api/auth";
+const BASE_URL = "/api/auth";
 
 class LoginService {
 
     login(loginData) {
-        return axios.post(
+        return apiClient.post(
             `${BASE_URL}/login`,
             loginData
         );

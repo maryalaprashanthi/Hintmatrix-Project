@@ -24,6 +24,7 @@ function AddQuestionModal({
   courseId: initialCourseId,
   chapterId: initialChapterId,
   categoryId: initialCategoryId,
+  initialData,
   onClose,
   onSave,
 }) {
@@ -123,25 +124,31 @@ function AddQuestionModal({
     }
   };
   useEffect(() => {
-    if (initialCourseId && courseOptions.length > 0) {
+    const selectedCourseId = initialData?.courseId ?? initialCourseId;
+    const selectedChapterId = initialData?.chapterId ?? initialChapterId;
+    const selectedCategoryId = initialData?.categoryId ?? initialCategoryId;
+
+    setQuestionText(initialData?.questionText || "");
+
+    if (selectedCourseId && courseOptions.length > 0) {
       const selectedCourse = courseOptions.find(
-        (option) => option.value === Number(initialCourseId),
+        (option) => option.value === Number(selectedCourseId),
       );
       if (selectedCourse) {
         setCourseId(selectedCourse);
       }
     }
-    if (initialChapterId && chapterOptions.length > 0) {
+    if (selectedChapterId && chapterOptions.length > 0) {
       const selectedChapter = chapterOptions.find(
-        (option) => option.value === Number(initialChapterId),
+        (option) => option.value === Number(selectedChapterId),
       );
       if (selectedChapter) {
         setChapterId(selectedChapter);
       }
     }
-    if (initialCategoryId && categoryOptions.length > 0) {
+    if (selectedCategoryId && categoryOptions.length > 0) {
       const selectedCategory = categoryOptions.find(
-        (option) => option.value === Number(initialCategoryId),
+        (option) => option.value === Number(selectedCategoryId),
       );
       if (selectedCategory) {
         setCategoryId(selectedCategory);
@@ -151,10 +158,107 @@ function AddQuestionModal({
     initialCourseId,
     initialChapterId,
     initialCategoryId,
+    initialData,
     courseOptions,
     chapterOptions,
     categoryOptions,
   ]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadQuestionDetails = async () => {
+      if (!initialData?.questionId) {
+        setAttributes([
+          {
+            debitBalance: "",
+            debitAmount: "",
+            creditBalance: "",
+            creditAmount: "",
+          },
+        ]);
+        return;
+      }
+
+      try {
+        const response = await QuestionService.getQuestionById(
+          initialData.questionId,
+        );
+        const question = response.data || initialData;
+        const questionAttributes = question.questionAttributes || [];
+        const isCreditAttribute = (attribute) =>
+          [
+            attribute.transaction,
+            attribute.type,
+            attribute.side,
+            attribute.headerName,
+          ]
+            .filter(Boolean)
+            .some((value) => String(value).toLowerCase().includes("credit")) ||
+          String(attribute.headerId) === "3";
+
+        if (cancelled) return;
+
+        setQuestionText(question.questionText || "");
+        setAttributes(
+          questionAttributes.length > 0
+            ? (() => {
+                const debitAttributes = questionAttributes.filter(
+                  (attribute) => !isCreditAttribute(attribute),
+                );
+                const creditAttributes =
+                  questionAttributes.filter(isCreditAttribute);
+                const rowCount = Math.max(
+                  debitAttributes.length,
+                  creditAttributes.length,
+                );
+
+                return Array.from({ length: rowCount }, (_, index) => {
+                  const debit = debitAttributes[index];
+                  const credit = creditAttributes[index];
+
+                  return {
+                    debitOriginal: debit || null,
+                    debitQuestionAttributeId: debit?.questionAttributeId ?? "",
+                    debitBalance:
+                      debit?.attributeId ?? debit?.attribute_id ?? "",
+                    debitAttributeName: debit?.attributeName || "",
+                    debitAmount:
+                      debit?.amount ?? debit?.amount1 ?? debit?.amount2 ?? "",
+                    creditQuestionAttributeId:
+                      credit?.questionAttributeId ?? "",
+                    creditOriginal: credit || null,
+                    creditBalance:
+                      credit?.attributeId ?? credit?.attribute_id ?? "",
+                    creditAttributeName: credit?.attributeName || "",
+                    creditAmount:
+                      credit?.amount ??
+                      credit?.amount1 ??
+                      credit?.amount2 ??
+                      "",
+                  };
+                });
+              })()
+            : [
+                {
+                  debitBalance: "",
+                  debitAmount: "",
+                  creditBalance: "",
+                  creditAmount: "",
+                },
+              ],
+        );
+      } catch (error) {
+        console.error("Question details load error:", error);
+      }
+    };
+
+    loadQuestionDetails();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [initialData]);
 
   const handleAttributeChange = (index, field, value) => {
     const updated = [...attributes];
@@ -187,21 +291,66 @@ function AddQuestionModal({
       return;
     }
 
-    const newQuestion = {
+    const questionAttributes = attributes.flatMap((row) => {
+      const mappedAttributes = [];
+
+      if (row.debitBalance) {
+        const debitAmount =
+          row.debitAmount === "" ? null : Number(row.debitAmount);
+        mappedAttributes.push({
+          ...(row.debitOriginal || {}),
+          ...(row.debitQuestionAttributeId && {
+            questionAttributeId: row.debitQuestionAttributeId,
+          }),
+          headerId: 1,
+          headerName: "Debit Particulars",
+          attributeId: Number(row.debitBalance),
+          attributeName: row.debitAttributeName || undefined,
+          amount: debitAmount,
+          amount1: debitAmount,
+          amount2: null,
+          transaction: "Debit",
+        });
+      }
+
+      if (row.creditBalance) {
+        const creditAmount =
+          row.creditAmount === "" ? null : Number(row.creditAmount);
+        mappedAttributes.push({
+          ...(row.creditOriginal || {}),
+          ...(row.creditQuestionAttributeId && {
+            questionAttributeId: row.creditQuestionAttributeId,
+          }),
+          headerId: 3,
+          headerName: "Credit Particulars",
+          attributeId: Number(row.creditBalance),
+          attributeName: row.creditAttributeName || undefined,
+          amount: creditAmount,
+          amount1: creditAmount,
+          amount2: null,
+          transaction: "Credit",
+        });
+      }
+
+      return mappedAttributes;
+    });
+
+    const questionData = {
       courseId: Number(courseId.value),
       chapterId: Number(chapterId.value),
       categoryId: Number(categoryId.value),
       questionText: questionText.trim(),
-      questionAttributes: [],
+      questionAttributes,
     };
-    console.log("Creating Question:", newQuestion);
     try {
-      const response = await QuestionService.create(newQuestion);
+      const response = initialData?.questionId
+        ? await QuestionService.update(initialData.questionId, questionData)
+        : await QuestionService.create(questionData);
       await onSave(response.data);
       handleClose();
     } catch (error) {
-      console.error("Create Question Error:", error);
-      alert("Failed to create question.");
+      console.error("Save Question Error:", error);
+      alert(`Failed to ${initialData ? "update" : "create"} question.`);
     }
   };
 
@@ -230,9 +379,13 @@ function AddQuestionModal({
 
         <div className="modal-header">
           <div>
-            <h2>Add New Question</h2>
+            <h2>{initialData ? "Edit Question" : "Add New Question"}</h2>
 
-            <p>Fill in the details below to create a new question.</p>
+            <p>
+              {initialData
+                ? "Update the question details below."
+                : "Fill in the details below to create a new question."}
+            </p>
           </div>
 
           <button className="close-btn" onClick={handleClose}>
@@ -514,7 +667,7 @@ function AddQuestionModal({
             onClick={handleSave}
           >
             <FaSave className="me-2" />
-            Save
+            {initialData ? "Update" : "Save"}
           </button>
         </div>
       </div>

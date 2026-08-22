@@ -50,6 +50,8 @@
 
   border-collapse: collapse;
 
+  table-layout: fixed;
+
   font-size: 15px;
 }
 
@@ -64,6 +66,19 @@
 .journal-table .amount-column {
   width: 25%;
 
+  text-align: center;
+}
+
+.journal-table th:first-child,
+.journal-table td:first-child {
+  width: 50%;
+}
+
+.journal-table th:nth-child(2),
+.journal-table th:nth-child(3),
+.journal-table td:nth-child(2),
+.journal-table td:nth-child(3) {
+  width: 25%;
   text-align: center;
 }
 
@@ -105,6 +120,15 @@
   height: 58px;
 
   vertical-align: middle;
+}
+
+.journal-table tbody td:first-child {
+  text-align: left;
+}
+
+.journal-table tbody td:nth-child(2),
+.journal-table tbody td:nth-child(3) {
+  text-align: center;
 }
 
 /* =========================================================
@@ -157,6 +181,10 @@
 
 .transaction-popup-trigger {
   display: inline-block;
+
+  white-space: nowrap;
+
+  text-align: left;
 
   color: #212529;
 

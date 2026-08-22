@@ -192,9 +192,7 @@ const JournalPage = () => {
     try {
       console.log("Loading current answers:", questionId);
 
-      // 1. Get CURRENT answers
       const userId = 1;
-
       const answerResponse =
         await QuestionAnswerService.getAnswersByUserAndQuestion(
           userId,
@@ -203,108 +201,88 @@ const JournalPage = () => {
 
       console.log("Current Answers:", answerResponse);
 
-      // 2. Get ALL answer events/history
-
-      let eventResponse = [];
-
-      try {
-        eventResponse = await QuestionAnswerService.getAnswerEventsByQuestionId(
-          userId,
-          questionId,
-        );
-      } catch (error) {
-        // Answer events are still created for every attempt. Do not let a
-        // missing event-history endpoint prevent persisted correct answers
-        // from being restored from QuestionAnswer on page reload.
-        console.warn("Unable to load answer-event history:", error);
-      }
-
-      console.log("Answer Events:", eventResponse);
-
-      // Map answerId -> latest AnswerEvent
-      const eventMap = new Map();
-
-      eventResponse.forEach((event) => {
-        if (!event.attributeId) {
-          return;
-        }
-
-        const existing = eventMap.get(event.attributeId);
-
-        if (
-          !existing ||
-          Number(event.answerEventId) > Number(existing.answerEventId)
-        ) {
-          eventMap.set(event.attributeId, event);
-        }
-      });
-
-      console.log("Answer Event Map:", Array.from(eventMap.entries()));
-
       const formattedData = {};
+      const tableLookup = new Map(
+        (loadedQuestion?.questionAttributes || []).flatMap((attribute) =>
+          (attribute.tables || []).map((table) => [String(table.id), table]),
+        ),
+      );
 
-      // 3. Restore ONLY current active QuestionAnswers
-      answerResponse.forEach((answer) => {
-        const questionAttribute = loadedQuestion?.questionAttributes?.find(
-          (item) => String(item.attributeId) === String(answer.attributeId),
-        );
+      (Array.isArray(answerResponse) ? answerResponse : []).forEach(
+        (answer) => {
+          const questionAttribute = loadedQuestion?.questionAttributes?.find(
+            (item) => String(item.attributeId) === String(answer.attributeId),
+          );
 
-        const id = questionAttribute?.questionAttributeId;
+          if (!questionAttribute) {
+            console.warn(
+              "Journal attribute not found for saved answer:",
+              answer,
+            );
+            return;
+          }
 
-        if (!formattedData[id]) {
-          formattedData[id] = [];
-        }
+          const id = questionAttribute.questionAttributeId;
 
-        const event = eventMap.get(answer.attributeId);
+          if (!formattedData[id]) {
+            formattedData[id] = [];
+          }
 
-        const text =
-          answer.headerName === "Debit Particulars"
-            ? `${answer.tableName}..........Dr`
-            : `To ${answer.tableName}`;
+          const table =
+            tableLookup.get(String(answer.tableNameId)) ||
+            (questionAttribute.tables || []).find(
+              (item) => String(item.id) === String(answer.tableNameId),
+            );
 
-        formattedData[id].push({
-          questionAttributeId: questionAttribute?.questionAttributeId,
+          if (!table) {
+            console.warn("Journal table not found for saved answer:", answer);
+            return;
+          }
 
-          date: "",
-          particulars: text,
-          lf: "",
+          const isDebit = String(answer.headerId) === "1";
+          const text = isDebit
+            ? `${table.name}..........Dr`
+            : `To ${table.name}`;
 
-          debit: answer.headerName === "Debit Particulars" ? answer.amount : "",
+          formattedData[id].push({
+            questionAttributeId: id,
+            date: "",
+            particulars: text,
+            lf: "",
+            debit: isDebit ? answer.amount : "",
+            credit: isDebit ? "" : answer.amount,
+            valid: true,
+            answerId: answer.answerId,
+            answerEventId: null,
+            tableNameId: answer.tableNameId,
+            headerId: answer.headerId,
+            attributeId: answer.attributeId,
+            arithmetic: answer.arithmetic,
+          });
+        },
+      );
 
-          credit:
-            answer.headerName === "Credit Particulars" ? answer.amount : "",
-
-          // Get correctness from AnswerEvent
-          valid: true,
-
-          answerId: answer.answerId,
-
-          answerEventId: event?.answerEventId,
-
-          tableNameId: answer.tableNameId,
-          headerId: answer.headerId,
-          attributeId: answer.attributeId,
-          arithmetic: answer.arithmetic,
-        });
-      });
-
-      // 4. Add Being row
       Object.keys(formattedData).forEach((id) => {
         const attribute = loadedQuestion?.questionAttributes?.find(
           (item) => String(item.questionAttributeId) === String(id),
         );
 
-        formattedData[id].push({
-          date: "",
-          particulars: `(Being ${attribute?.attributeName || ""})`,
-          lf: "",
-          debit: "",
-          credit: "",
-        });
+        const hasBeingRow = formattedData[id].some((entry) =>
+          entry.particulars?.startsWith("(Being"),
+        );
+
+        if (!hasBeingRow) {
+          formattedData[id].push({
+            date: "",
+            particulars: `(Being ${attribute?.attributeName || ""})`,
+            lf: "",
+            debit: "",
+            credit: "",
+          });
+        }
       });
 
       console.log("Restored Current Answered Data:", formattedData);
-
       console.log(
         "FINAL RESTORED ANSWERED DATA:",
         JSON.stringify(formattedData, null, 2),
