@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { logoutUser } from "../../interceptors/axiosInterceptor";
 import "./Navbar.css";
 
 import {
@@ -13,8 +15,14 @@ import {
 
 export default function Navbar({ sidebarOpen, setSidebarOpen }) {
   const [showMenu, setShowMenu] = useState(false);
+  const navigate = useNavigate();
 
   const menuRef = useRef(null);
+  const userRole = localStorage.getItem("role") || "GUEST";
+
+  const handleLogout = () => {
+    logoutUser(navigate);
+  };
 
   useEffect(() => {
     function close(e) {
@@ -76,7 +84,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
               </span>
 
               <span className="profile-role">
-                Student
+                {userRole}
               </span>
             </div>
 
@@ -95,7 +103,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
                 Settings
               </button>
 
-              <button className="logout-btn">
+              <button className="logout-btn" onClick={handleLogout} type="button">
                 <FiLogOut />
                 Logout
               </button>

@@ -1,13 +1,13 @@
-import axios from "axios";
+﻿import apiClient from "./apiClient";
 
 // Updated root URL mapping to match the Controller's @RequestMapping("/api/branch")
-const BASE_URL = "http://localhost:8080/api/branch";
+const BASE_URL = "/api/branch";
 
 class BranchService {
 
     // Matches @PostMapping
     saveBranch(branchRequestDTO) {
-        return axios.post(
+        return apiClient.post(
             `${BASE_URL}`,
             branchRequestDTO,
             { withCredentials: true } // Allows backend session cookies
@@ -16,7 +16,7 @@ class BranchService {
 
     // Matches @GetMapping
     getAllBranches() {
-        return axios.get(
+        return apiClient.get(
             `${BASE_URL}`,
             { withCredentials: true } // Passes authorization cookie
         );
@@ -24,7 +24,7 @@ class BranchService {
 
     // Matches @GetMapping("/{id}")
     getBranchById(id) {
-        return axios.get(
+        return apiClient.get(
             `${BASE_URL}/${id}`,
             { withCredentials: true }
         );
@@ -33,7 +33,7 @@ class BranchService {
     // Matches @PutMapping("/{id}")
     // Takes id for the URL path variable and the DTO payload for the request body
     updateBranch(id, branchRequestDTO) {
-        return axios.put(
+        return apiClient.put(
             `${BASE_URL}/${id}`,
             branchRequestDTO,
             { withCredentials: true }
@@ -42,7 +42,7 @@ class BranchService {
 
     // Matches @DeleteMapping("/{id}")
     deleteBranch(id) {
-        return axios.delete(
+        return apiClient.delete(
             `${BASE_URL}/${id}`,
             { withCredentials: true }
         );
@@ -53,7 +53,7 @@ uploadExcel(file) {
     const formData = new FormData();
     formData.append("file", file);
 
-    return axios.post(
+    return apiClient.post(
         `${BASE_URL}/upload`,
         formData,
         {
@@ -67,3 +67,4 @@ uploadExcel(file) {
 }
 
 export default new BranchService();
+

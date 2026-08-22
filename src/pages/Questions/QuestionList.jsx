@@ -26,6 +26,8 @@ const QuestionList = () => {
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
+  const userRole = (localStorage.getItem("role") || "GUEST").toString().trim().toUpperCase();
+  const isStudent = userRole === "STUDENT";
   // edit functionality
   // const [questionData,setQuestionData] = useState(null);
 
@@ -187,42 +189,44 @@ const QuestionList = () => {
           <p className="question-count">{filteredQuestions.length} Questions</p>
         </Col>
 
-        <Col
-          lg={6}
-          className="d-flex justify-content-lg-end gap-2 mt-3 mt-lg-0"
-        >
-          {/* Hidden Upload Input */}
-          {/* Look into this */}
-          <input
-            type="file"
-            ref={fileInputRef}
-            accept=".csv,.xlsx,.xls"
-            style={{ display: "none" }}
-            onChange={handleFileUpload}
-          />
-
-          {/* Upload Button */}
-
-          <button
-            className="btn btn-primary"
-            onClick={() => fileInputRef.current.click()}
+        {!isStudent && (
+          <Col
+            lg={6}
+            className="d-flex justify-content-lg-end gap-2 mt-3 mt-lg-0"
           >
-            ⬆ Upload
-          </button>
+            {/* Hidden Upload Input */}
+            {/* Look into this */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept=".csv,.xlsx,.xls"
+              style={{ display: "none" }}
+              onChange={handleFileUpload}
+            />
 
-          {/* Add Question */}
+            {/* Upload Button */}
 
-          <Button
-            variant="primary"
-            onClick={() => {
-              setSelectedQuestion(null);
-              setShowModal(true);
-            }}
-          >
-            <FaPlus className="me-2" />
-            Add Question
-          </Button>
-        </Col>
+            <button
+              className="btn btn-primary"
+              onClick={() => fileInputRef.current.click()}
+            >
+              ⬆ Upload
+            </button>
+
+            {/* Add Question */}
+
+            <Button
+              variant="primary"
+              onClick={() => {
+                setSelectedQuestion(null);
+                setShowModal(true);
+              }}
+            >
+              <FaPlus className="me-2" />
+              Add Question
+            </Button>
+          </Col>
+        )}
       </Row>
 
       {/* Search */}

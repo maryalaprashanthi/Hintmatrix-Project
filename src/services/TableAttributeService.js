@@ -1,14 +1,14 @@
-import axios from "axios";
+﻿import apiClient from "./apiClient";
 
 // Matches the Spring Boot Controller's @RequestMapping("/api/table-attributes")
-const BASE_URL = "http://localhost:8080/api/table-attributes";
+const BASE_URL = "/api/table-attributes";
 
 class TableAttributeService {
 
     // Matches @PostMapping
     // Takes the TableAttributeRequestDTO payload for the request body
     create(tableAttributeRequestDTO) {
-        return axios.post(
+        return apiClient.post(
             `${BASE_URL}`,
             tableAttributeRequestDTO,
             { withCredentials: true } // Allows backend session cookies/CORS handshakes
@@ -18,7 +18,7 @@ class TableAttributeService {
     // Matches @GetMapping
     // Returns a array of TableAttributeResponseDTO objects
     getAll() {
-        return axios.get(
+        return apiClient.get(
             `${BASE_URL}`,
             { withCredentials: true } // Passes tracking authorization tokens/cookies
         );
@@ -27,7 +27,7 @@ class TableAttributeService {
     // Matches @GetMapping("/{id}")
     // Returns a specific TableAttributeResponseDTO object
     getById(id) {
-        return axios.get(
+        return apiClient.get(
             `${BASE_URL}/${id}`,
             { withCredentials: true }
         );
@@ -36,7 +36,7 @@ class TableAttributeService {
     // Matches @PutMapping("/{id}")
     // Takes id for the URL path variable and the DTO payload for the request body
     update(id, tableAttributeRequestDTO) {
-        return axios.put(
+        return apiClient.put(
             `${BASE_URL}/${id}`,
             tableAttributeRequestDTO,
             { withCredentials: true }
@@ -45,7 +45,7 @@ class TableAttributeService {
 
     // Matches @DeleteMapping("/{id}")
     delete(id) {
-        return axios.delete(
+        return apiClient.delete(
             `${BASE_URL}/${id}`,
             { withCredentials: true }
         );
@@ -55,8 +55,8 @@ class TableAttributeService {
     const formData = new FormData();
     formData.append("file", file);
 
-    return axios.post(
-        "http://localhost:8080/api/table-attributes/upload",
+    return apiClient.post(
+        "/api/table-attributes/upload",
         formData,
         {
             headers: {
@@ -70,3 +70,4 @@ class TableAttributeService {
 
 // Export an instantiated instance of the service architecture directly
 export default new TableAttributeService();
+
