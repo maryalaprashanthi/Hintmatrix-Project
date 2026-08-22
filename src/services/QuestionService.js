@@ -1,6 +1,8 @@
 ﻿import apiClient from "./apiClient";
+import axios from "axios";
 
 const BASE_URL = "/api/questions";
+const BASE_QUESTION_URL = "http://localhost:8080/api/questions";
 
 class QuestionService {
   getAll() {
@@ -25,14 +27,24 @@ class QuestionService {
     });
   }
   getQuestionAnswers(id) {
-    return apiClient.get(`${BASE_URL}/answers/${id}`, { withCredentials: true });
+    return apiClient.get(`${BASE_URL}/answers/${id}`, {
+      withCredentials: true,
+    });
   }
   create(questionRequestDTO) {
-    return apiClient.post(BASE_URL, questionRequestDTO, { withCredentials: true });
+    return apiClient.post(BASE_URL, questionRequestDTO, {
+      withCredentials: true,
+    });
   }
 
   update(questionId, questionRequestDTO) {
     return apiClient.put(`${BASE_URL}/${questionId}`, questionRequestDTO, {
+      withCredentials: true,
+    });
+  }
+
+  uploadExcel(formData) {
+    return axios.post(`${BASE_QUESTION_URL}/upload`, formData, {
       withCredentials: true,
     });
   }
@@ -48,4 +60,3 @@ class QuestionService {
 }
 
 export default new QuestionService();
-
