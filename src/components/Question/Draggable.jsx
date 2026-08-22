@@ -130,6 +130,33 @@ export default function Draggable({ id, children, type, status = "pending" }) {
         description: "empty",
         userAnswer: "empty",
       };
+
+      // call question answer service for all answers that are in actual answers but not in answered with this body
+      const answeredConditionIds = myQuestion.answered.map(
+        (a) => a.conditionId,
+      );
+      const unansweredAnswers = myQuestion.actualAnswers.filter(
+        (a) => !answeredConditionIds.includes(a.conditionId),
+      );
+
+      for (const answer of unansweredAnswers) {
+        const questionBody = {
+          userId: 1,
+          questionId: questionId,
+          tableNameId: answer.tableNameId,
+          headerId: answer.headerId,
+          attributeId: id,
+          arithmetic: answer.answer.split("-").pop(),
+          amount: myQuestion.amount,
+          conditionId: answer.conditionId,
+          pairAttributeId: answer.pairAttributeId,
+          totalAnswers: myQuestion.totalAnswers,
+        };
+
+        console.log("Saving unanswered answer: ", questionBody);
+        await QuestionAnswerService.saveAnswer(questionBody);
+      }
+
       console.log(post_body);
       const response2 =
         await QuestionAnswerService.processAnswerEvent(post_body);
