@@ -11,6 +11,8 @@ import QuestionService from "../../services/QuestionService";
 import RuleEngineService from "../../services/RuleEngineService";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import { isDropdownAttributeSolved } from "./dropdownAnswerStatus";
+import MistakesModal from "../Question/MistakesModal";
+import useQuestionStore from "../Question/questionStore";
 
 const getRuleConditions = (rule) =>
   [1, 2, 3, 4]
@@ -47,11 +49,12 @@ const getRuleConditions = (rule) =>
 
 const DropdownPage = () => {
   const { questionId } = useParams();
-
+  const { showCheckMistakes } = useQuestionStore();
   const [question, setQuestion] = useState(null);
   const [answeredData, setAnsweredData] = useState({});
   const [questionTables, setQuestionTables] = useState([]);
   const [totalScore, setTotalScore] = useState(0);
+  const [checkMistakes, setCheckMistakes] = useState(false);
 
   /*
    * =========================================================
@@ -364,6 +367,17 @@ const DropdownPage = () => {
     .filter((item) => !solvedAttributeIds.has(item.questionAttributeId))
     .reduce((total, item) => total + (Number(item.amount2) || 0), 0);
 
+  if (checkMistakes) {
+    console.log("I got rendered check mistakes");
+    return (
+      <MistakesModal
+        questionId={questionId}
+        setCheckMistakes={setCheckMistakes}
+        checkMistakes={checkMistakes}
+      />
+    );
+  }
+
   return (
     <div>
       <Row>
@@ -371,6 +385,7 @@ const DropdownPage = () => {
           question={question}
           answeredData={answeredData}
           setAnsweredData={setAnsweredData}
+          setCheckMistakes={setCheckMistakes}
         />
       </Row>
 

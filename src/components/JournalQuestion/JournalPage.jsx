@@ -10,6 +10,8 @@ import QuestionService from "../../services/QuestionService";
 import RuleEngineService from "../../services/RuleEngineService";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import { isJournalAttributeSolved } from "./journalAnswerStatus";
+import MistakesModal from "../Question/MistakesModal";
+import useQuestionStore from "../Question/questionStore";
 
 const getRuleConditions = (rule) =>
   [1, 2, 3, 4].map((index) => {
@@ -41,11 +43,10 @@ const getRuleConditions = (rule) =>
 
 const JournalPage = () => {
   const { questionId } = useParams();
-
   const [question, setQuestion] = useState(null);
   const [answeredData, setAnsweredData] = useState({});
   const [totalScore, setTotalScore] = useState(0);
-
+  const [checkMistakes, setCheckMistakes] = useState(false);
   useEffect(() => {
     const loadPage = async () => {
       const loadedQuestion = await loadQuestion();
@@ -352,6 +353,16 @@ const JournalPage = () => {
     .reduce((total, item) => total + (Number(item.amount) || 0), 0);
 
   const solved = solvedAttributeIds.size;
+  if (checkMistakes) {
+    console.log("I got rendered check mistakes");
+    return (
+      <MistakesModal
+        questionId={questionId}
+        setCheckMistakes={setCheckMistakes}
+        checkMistakes={checkMistakes}
+      />
+    );
+  }
 
   return (
     <div>
@@ -359,6 +370,7 @@ const JournalPage = () => {
         question={question}
         answeredData={answeredData}
         setAnsweredData={setAnsweredData}
+        setCheckMistakes={setCheckMistakes}
       />
 
       <Row>

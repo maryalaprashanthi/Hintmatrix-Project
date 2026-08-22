@@ -11,13 +11,16 @@ import QuestionService from "../../services/QuestionService";
 import { data } from "./SampleData";
 import { useParams } from "react-router-dom";
 
-function Header({ question: propQuestion, answeredData, setAnsweredData }) {
+function Header({
+  question: propQuestion,
+  answeredData,
+  setAnsweredData,
+  setCheckMistakes,
+}) {
   const {
     question: storeQuestion,
     setQuestions,
     setTableData,
-    setCheckMistakes,
-    showCheckMistakes,
   } = useQuestionStore();
   const { questionId } = useParams();
 
