@@ -1,343 +1,137 @@
-/* =========================================================
-   DROPDOWN QUESTION WRAPPER
-   ========================================================= */
-
-.dropdown-question-wrap {
-  width: 100% !important;
+/* ---------- Card & table shell ---------- */
+.container .card {
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-/* =========================================================
-   LEFT TABLE
-   ========================================================= */
-
-.dropdown-question-wrap .dropdown-table {
-  width: 100% !important;
-  font-size: 0.95rem !important;
-  margin-top: 12px !important;
-  margin-bottom: 0 !important;
-  border-collapse: collapse !important;
+.table-responsive .table {
+  font-size: 0.95rem;
+  margin-bottom: 0;
 }
 
-/* =========================================================
-   LEFT TABLE HEADER
-   ========================================================= */
-
-.dropdown-question-wrap .dropdown-table thead th {
-  background-color: #2878e8 !important;
-  color: #ffffff !important;
-  border: 1px solid #2878e8 !important;
-  font-weight: 700 !important;
-  padding: 12px 16px !important;
-  vertical-align: middle !important;
-}
-
-/* =========================================================
-   LEFT TABLE BODY
-   ========================================================= */
-
-.dropdown-question-wrap .dropdown-table tbody td {
-  padding: 12px 16px !important;
-  color: #1f2430 !important;
-  background-color: #ffffff !important;
-  border-color: #f1f2f8 !important;
-  cursor: pointer !important;
-  vertical-align: middle !important;
-}
-
-/* =========================================================
-   LEFT TABLE HOVER
-   ========================================================= */
-
-.dropdown-question-wrap .dropdown-table tbody tr:hover td {
-  background-color: #f5f6fd !important;
+/* ---------- Header row (overrides bootstrap's table-dark) ---------- */
+.table-responsive .table thead.table-dark tr,
+.table-responsive .table thead.table-dark th {
+  background-color: #d1fae5 !important;
   color: #047857 !important;
+  border-color: #e0e4f5 !important;
+  font-weight: 700;
+  padding: 12px 16px;
+  vertical-align: middle;
 }
 
-/* =========================================================
-   RIGHT TABLE
-   ========================================================= */
-
-.table-responsive table:not(.dropdown-table) {
-  width: 100% !important;
-  font-size: 0.95rem !important;
-  border-collapse: collapse !important;
+/* ---------- Body rows ---------- */
+.table-responsive .table tbody td {
+  padding: 12px 16px;
+  color: #1f2430;
+  border-color: #f1f2f8;
+  cursor: pointer;
 }
 
-/* =========================================================
-   RIGHT TABLE HEADER
-   ========================================================= */
-
-.table-responsive table:not(.dropdown-table) thead th {
-  background-color: #2878e8 !important;
-  color: #ffffff !important;
-  border: 1px solid #2878e8 !important;
-  font-weight: 700 !important;
-  padding: 12px 16px !important;
-  vertical-align: middle !important;
+/* Neutralize bootstrap's default zebra striping so rows stay white */
+.table-responsive .table.table-striped > tbody > tr:nth-of-type(odd) > * {
+  --bs-table-accent-bg: transparent;
+  background-color: #ffffff;
 }
 
-/* =========================================================
-   RIGHT TABLE BODY
-   ========================================================= */
-
-.table-responsive table:not(.dropdown-table) tbody td {
-  padding: 12px 16px !important;
-  color: #1f2430 !important;
-  background-color: #ffffff !important;
-  border-color: #f1f2f8 !important;
-  vertical-align: middle !important;
+/* Hover state uses a soft lavender tint instead of bootstrap's default grey */
+.table-responsive .table.table-hover > tbody > tr:hover > * {
+  --bs-table-accent-bg: transparent;
+  background-color: #f5f6fd;
+  color: #047857;
 }
 
-/* =========================================================
-   RIGHT TABLE HOVER
-   ========================================================= */
-
-.table-responsive table:not(.dropdown-table) tbody tr:hover td {
-  background-color: #f5f6fd !important;
-  color: #047857 !important;
-}
-
-/* =========================================================
-   GAP ABOVE RIGHT TABLE
-   ========================================================= */
-
-.table-responsive table:not(.dropdown-table) {
-  margin-top: 15px !important;
-}
-
-/* =========================================================
-   MAIN DROPDOWN POPOVER
-   ========================================================= */
-
+/* ---------- Popover ---------- */
 .dropdown-popover {
+  border: 1px solid #e0e4f5;
+  box-shadow: 0 4px 16px rgba(67, 56, 202, 0.12);
+  /* Make popover wider and allow the body to scroll when content overflows */
+  max-width: none !important;
   width: 420px !important;
-  max-width: 420px !important;
-  border: 1px solid #e0e4f5 !important;
-  border-radius: 10px !important;
-  box-shadow: 0 4px 16px rgba(67, 56, 202, 0.12) !important;
-  overflow: hidden !important;
 }
-
-/* =========================================================
-   POPOVER HEADER
-   ========================================================= */
 
 .dropdown-popover .popover-header {
   background-color: #d1fae5 !important;
   color: #047857 !important;
-  font-weight: 700 !important;
-  border-bottom: 1px solid #e0e4f5 !important;
-  padding: 12px 16px !important;
+  font-weight: 700;
+  border-bottom: 1px solid #e0e4f5;
 }
-
-/* =========================================================
-   POPOVER BODY
-   ========================================================= */
 
 .dropdown-popover .popover-body {
-  color: #1f2430 !important;
-  padding: 16px !important;
+  color: #1f2430;
+  max-height: 360px;
+  overflow-y: auto;
+  overflow: hidden;
 }
 
-/* =========================================================
-   REACT SELECT
-   ========================================================= */
+/* .dropdown-popover .popover-body > div > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-weight: 600;
+} */
 
-/* Select control */
-
-.dropdown-popover .popover-body div[class*="control"] {
-  min-height: 44px !important;
-  height: 44px !important;
-  background-color: #d1fae5 !important;
-  border: 1px solid #c7d2fe !important;
-  border-radius: 8px !important;
-  box-shadow: none !important;
-  cursor: pointer !important;
-}
-
-/* Select control hover */
-
-.dropdown-popover .popover-body div[class*="control"]:hover {
-  border-color: #047857 !important;
-}
-
-/* Select control focus */
-
-.dropdown-popover .popover-body div[class*="control"][class*="is-focused"] {
-  background-color: #d1fae5 !important;
-  border-color: #047857 !important;
-  box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.15) !important;
-}
-
-/* =========================================================
-   SELECT PLACEHOLDER
-   ========================================================= */
-
-.dropdown-popover .popover-body div[class*="placeholder"] {
+/* ---------- Debit / Credit buttons inside the popover ---------- */
+.dropdown-popover .btn {
+  background-color: #d1fae5;
+  border: 1px solid #c7d2fe;
   color: #047857 !important;
-  font-weight: 600 !important;
+  font-weight: 600;
+  border-radius: 6px;
 }
 
-/* =========================================================
-   SELECTED VALUE
-   ========================================================= */
-
-.dropdown-popover .popover-body div[class*="singleValue"] {
-  color: #047857 !important;
-  font-weight: 700 !important;
-}
-
-/* =========================================================
-   SELECT INDICATORS
-   ========================================================= */
-
-.dropdown-popover .popover-body div[class*="indicator"] {
-  color: #047857 !important;
-}
-
-.dropdown-popover .popover-body div[class*="indicator"]:hover {
-  color: #047857 !important;
-}
-
-/* =========================================================
-   SELECT VALUE CONTAINER
-   ========================================================= */
-
-.dropdown-popover .popover-body div[class*="ValueContainer"] {
-  padding: 2px 12px !important;
-}
-
-/* =========================================================
-   SELECT SEARCH INPUT
-   ========================================================= */
-
-.dropdown-popover .popover-body input {
-  color: #047857 !important;
-}
-
-/* =========================================================
-   REACT SELECT MENU
-   ========================================================= */
-
-/*
-   menuPortalTarget={document.body}
-   means the menu is rendered under body.
-*/
-
-body div[class*="menu"] {
-  z-index: 99999 !important;
-  border: 1px solid #e0e4f5 !important;
-  border-radius: 8px !important;
-  box-shadow: 0 4px 16px rgba(67, 56, 202, 0.12) !important;
-  overflow: hidden !important;
-}
-
-/* =========================================================
-   SELECT MENU LIST
-   ========================================================= */
-
-body div[class*="menuList"] {
-  padding: 0 !important;
-}
-
-/* =========================================================
-   SELECT OPTIONS
-   ========================================================= */
-
-body div[class*="option"] {
-  color: #1f2430 !important;
-  background-color: #ffffff !important;
-  font-weight: 600 !important;
-  cursor: pointer !important;
-  padding: 10px 12px !important;
-}
-
-/* =========================================================
-   OPTION HOVER
-   ========================================================= */
-
-body div[class*="option"]:hover {
-  background-color: #d1fae5 !important;
-  color: #047857 !important;
-}
-
-/* =========================================================
-   OPTION FOCUS
-   ========================================================= */
-
-body div[class*="option"][class*="is-focused"] {
-  background-color: #d1fae5 !important;
-  color: #047857 !important;
-}
-
-/* =========================================================
-   SELECTED OPTION
-   ========================================================= */
-
-body div[class*="option"][class*="is-selected"] {
+.dropdown-popover .btn:hover,
+.dropdown-popover .btn:focus {
   background-color: #047857 !important;
-  color: #ffffff !important;
+  border-color: #047857 !important;
+  color: white !important;
 }
 
-/* =========================================================
-   HELP POPOVER
-   ========================================================= */
-
-.dropdown-help-popover {
-  border: 1px solid #e0e4f5 !important;
-  border-radius: 10px !important;
-  box-shadow: 0 4px 16px rgba(67, 56, 202, 0.12) !important;
+/* ---------- Autocomplete "Select Debit/Credit A/c" fields ---------- */
+/* .dropdown-select .rbt-input-main {
+  background-color: #d1fae5;
+  border: 1px solid #c7d2fe;
+  border-radius: 8px;
+  color: #047857;
+  font-weight: 700;
+  text-align: center;
+  padding: 10px 14px;
+  box-shadow: none;
 }
 
-/* =========================================================
-   HELP POPOVER BODY
-   ========================================================= */
-
-.dropdown-help-popover .popover-body {
-  padding: 14px !important;
+.dropdown-select .rbt-input-main::placeholder {
+  color: #047857;
+  opacity: 1;
 }
 
-/* =========================================================
-   HINT BUTTON
-   ========================================================= */
-
-.dropdown-help-popover .btn-outline-warning {
-  font-weight: 600 !important;
-  border-radius: 7px !important;
+.dropdown-select .rbt-input-main:focus {
+  background-color: #d1fae5;
+  color: #047857;
+  border-color: #047857;
+  box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.15);
 }
 
-/* =========================================================
-   AUTOFILL BUTTON
-   ========================================================= */
-
-.dropdown-help-popover .btn-outline-primary {
-  font-weight: 600 !important;
-  border-radius: 7px !important;
+.dropdown-select .rbt-input-hint {
+  color: #047857 !important;
 }
 
-/* =========================================================
-   HINT ALERT
-   ========================================================= */
-
-.dropdown-help-popover .alert-warning {
-  border-radius: 7px !important;
-}
-/* TEST - FIND RIGHT TABLE */
-
-table:not(.dropdown-table) {
-  outline: 5px solid red !important;
-}
-.progress-card {
-  width: 100% !important;
-  max-width: 100% !important;
-  margin: 0 0 20px 0 !important;
-  padding: 0 !important;
-  border-radius: 10px !important;
-  box-sizing: border-box !important;
+.dropdown-select .rbt-menu {
+  border: 1px solid #e0e4f5;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(67, 56, 202, 0.12);
+  padding: 4px;
 }
 
-.progress-card .card-body {
-  width: 100% !important;
-  padding: 20px !important;
-  box-sizing: border-box !important;
+.dropdown-select .rbt-menu .dropdown-item {
+  color: #047857;
+  font-weight: 600;
+  border-radius: 6px;
 }
+
+.dropdown-select .rbt-menu .dropdown-item:hover,
+.dropdown-select .rbt-menu .dropdown-item.active,
+.dropdown-select .rbt-menu .dropdown-item:focus {
+  color: #047857;
+} 
+*/

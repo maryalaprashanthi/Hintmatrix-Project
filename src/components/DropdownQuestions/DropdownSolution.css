@@ -1,412 +1,70 @@
-/* =========================================================
-   COMMON TABLE WRAPPER
-   ========================================================= */
-
-.dropdown-question-wrap,
 .dropdown-wrap {
-  width: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-/* =========================================================
-   LEFT + RIGHT TABLE CARD
-   ========================================================= */
-
-.dropdown-question-wrap,
-.dropdown-wrap {
+  width: 100%;
+  margin: 0;
+  padding: 0;
   font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* =========================================================
-   TABLE CONTAINER
-   ========================================================= */
-
-.dropdown-question-wrap .table-responsive,
-.dropdown-wrap .dropdown-card {
-  width: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
+.dropdown-card {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: none;
 }
 
-/* =========================================================
-   BOTH TABLES
-   ========================================================= */
-
-.dropdown-question-wrap .dropdown-table,
-.dropdown-wrap .dropdown-table {
-  width: 100% !important;
-  border-collapse: separate !important;
-  border-spacing: 0 !important;
-  font-size: 0.95rem !important;
-  margin: 0 !important;
+.dropdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  margin: 0;
 }
 
-/* =========================================================
-   LEFT TABLE - TOP GAP
-   ========================================================= */
-
-.dropdown-question-wrap .dropdown-table {
-  margin-top: 12px !important;
-}
-
-/* =========================================================
-   RIGHT TABLE - TOP GAP
-   ========================================================= */
-
-.dropdown-wrap .dropdown-table {
-  margin-top: 12px !important;
-}
-
-/* =========================================================
-   LEFT + RIGHT TABLE HEADER
-   ========================================================= */
-
-.dropdown-question-wrap .dropdown-table thead th,
-.dropdown-wrap .dropdown-table thead th {
-  background-color: #2878e8 !important;
-  color: #ffffff !important;
-  font-weight: 700 !important;
-  padding: 12px 16px !important;
-  border-top: 1px solid #2878e8 !important;
-  border-bottom: 1px solid #2878e8 !important;
-  vertical-align: middle !important;
-  height: 52px !important;
-  box-sizing: border-box !important;
-}
-
-/* =========================================================
-   HEADER LEFT BORDER
-   ========================================================= */
-
-.dropdown-question-wrap .dropdown-table thead th:first-child,
-.dropdown-wrap .dropdown-table thead th:first-child {
-  border-left: 1px solid #2878e8 !important;
-  border-top-left-radius: 12px !important;
-}
-
-/* =========================================================
-   HEADER RIGHT BORDER
-   ========================================================= */
-
-.dropdown-question-wrap .dropdown-table thead th:last-child,
-.dropdown-wrap .dropdown-table thead th:last-child {
-  border-right: 1px solid #2878e8 !important;
-  border-top-right-radius: 12px !important;
-}
-
-/* =========================================================
-   LEFT TABLE BODY
-   ========================================================= */
-
-.dropdown-question-wrap .dropdown-table tbody td,
-.dropdown-wrap .dropdown-table tbody td {
-  padding: 12px 16px !important;
-  color: #1f2430 !important;
+.dropdown-table thead th {
   background-color: #ffffff !important;
-  border-left: 1px solid #f1f2f8 !important;
-  border-right: 1px solid #f1f2f8 !important;
-  border-bottom: 1px solid #f1f2f8 !important;
-  vertical-align: middle !important;
-  box-sizing: border-box !important;
+  color: #000000 !important;
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 12px;
+  border: 1px solid #dee2e6;
+  vertical-align: middle;
 }
 
-/* =========================================================
-   LEFT TABLE ROW HOVER
-   ========================================================= */
-
-.dropdown-question-wrap .dropdown-table tbody tr:hover td {
-  background-color: #f5f6fd !important;
-  color: #047857 !important;
+.dropdown-table thead th.center,
+.dropdown-table td.center {
+  text-align: center;
 }
 
-/* =========================================================
-   RIGHT TABLE ROW HOVER
-   ========================================================= */
-
-.dropdown-wrap .dropdown-table tbody tr:not(.spacer-row):hover td {
-  background-color: #f5f6fd !important;
+.dropdown-table thead th.num,
+.dropdown-table td.num {
+  text-align: right;
 }
 
-/* =========================================================
-   RIGHT TABLE CORRECT ANSWER
-   ========================================================= */
+.dropdown-table tbody td {
+  padding: 10px 12px;
+  color: #1f2430;
+  background-color: #ffffff;
+  border: 1px solid #dee2e6;
+  vertical-align: middle;
+}
 
-.dropdown-wrap .dropdown-table tbody tr.answer-correct > td {
+/* Correct answer */
+.dropdown-table tbody tr.answer-correct > td {
   background-color: #d1fae5 !important;
 }
 
-/* =========================================================
-   RIGHT TABLE WRONG ANSWER
-   ========================================================= */
-
-.dropdown-wrap .dropdown-table tbody tr.answer-wrong > td {
+/* Wrong answer */
+.dropdown-table tbody tr.answer-wrong > td {
   background-color: #fee2e2 !important;
 }
 
-/* =========================================================
-   CENTER COLUMNS
-   ========================================================= */
-
-.dropdown-wrap .dropdown-table thead th.center,
-.dropdown-wrap .dropdown-table td.center {
-  text-align: center !important;
-}
-
-/* =========================================================
-   NUMBER COLUMNS
-   ========================================================= */
-
-.dropdown-wrap .dropdown-table thead th.num,
-.dropdown-wrap .dropdown-table td.num {
-  text-align: right !important;
-}
-
-/* =========================================================
-   SPACER ROW
-   ========================================================= */
-
-.dropdown-wrap .dropdown-table tbody tr.spacer-row td {
+/* Spacer */
+.spacer-row td {
   background-color: #ffffff !important;
   padding: 0 !important;
   height: 8px !important;
   line-height: 8px !important;
   font-size: 0 !important;
   border: none !important;
-}
-
-/* =========================================================
-   MAIN DROPDOWN POPOVER
-   ========================================================= */
-
-.dropdown-popover {
-  width: 420px !important;
-  max-width: 420px !important;
-  border: 1px solid #e0e4f5 !important;
-  border-radius: 10px !important;
-  box-shadow: 0 4px 16px rgba(67, 56, 202, 0.12) !important;
-  overflow: hidden !important;
-}
-
-/* =========================================================
-   POPOVER HEADER
-   ========================================================= */
-
-.dropdown-popover .popover-header {
-  background-color: #d1fae5 !important;
-  color: #047857 !important;
-  font-weight: 700 !important;
-  border-bottom: 1px solid #e0e4f5 !important;
-  padding: 12px 16px !important;
-}
-
-/* =========================================================
-   POPOVER BODY
-   ========================================================= */
-
-.dropdown-popover .popover-body {
-  color: #1f2430 !important;
-  padding: 16px !important;
-}
-
-/* =========================================================
-   REACT SELECT CONTROL
-   ========================================================= */
-
-.dropdown-popover .popover-body div[class*="control"] {
-  min-height: 44px !important;
-  height: 44px !important;
-  background-color: #d1fae5 !important;
-  border: 1px solid #c7d2fe !important;
-  border-radius: 8px !important;
-  box-shadow: none !important;
-  cursor: pointer !important;
-}
-
-/* =========================================================
-   SELECT HOVER
-   ========================================================= */
-
-.dropdown-popover .popover-body div[class*="control"]:hover {
-  border-color: #047857 !important;
-}
-
-/* =========================================================
-   SELECT FOCUS
-   ========================================================= */
-
-.dropdown-popover .popover-body div[class*="control"][class*="is-focused"] {
-  background-color: #d1fae5 !important;
-  border-color: #047857 !important;
-  box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.15) !important;
-}
-
-/* =========================================================
-   PLACEHOLDER
-   ========================================================= */
-
-.dropdown-popover .popover-body div[class*="placeholder"] {
-  color: #047857 !important;
-  font-weight: 600 !important;
-}
-
-/* =========================================================
-   SELECTED VALUE
-   ========================================================= */
-
-.dropdown-popover .popover-body div[class*="singleValue"] {
-  color: #047857 !important;
-  font-weight: 700 !important;
-}
-
-/* =========================================================
-   SELECT INDICATORS
-   ========================================================= */
-
-.dropdown-popover .popover-body div[class*="indicator"] {
-  color: #047857 !important;
-}
-
-.dropdown-popover .popover-body div[class*="indicator"]:hover {
-  color: #047857 !important;
-}
-
-/* =========================================================
-   VALUE CONTAINER
-   ========================================================= */
-
-.dropdown-popover .popover-body div[class*="ValueContainer"] {
-  padding: 2px 12px !important;
-}
-
-/* =========================================================
-   SEARCH INPUT
-   ========================================================= */
-
-.dropdown-popover .popover-body input {
-  color: #047857 !important;
-}
-
-/* =========================================================
-   REACT SELECT MENU
-   ========================================================= */
-
-body div[class*="menu"] {
-  z-index: 99999 !important;
-  border: 1px solid #e0e4f5 !important;
-  border-radius: 8px !important;
-  box-shadow: 0 4px 16px rgba(67, 56, 202, 0.12) !important;
-  overflow: hidden !important;
-}
-
-/* =========================================================
-   MENU LIST
-   ========================================================= */
-
-body div[class*="menuList"] {
-  padding: 0 !important;
-}
-
-/* =========================================================
-   OPTIONS
-   ========================================================= */
-
-body div[class*="option"] {
-  color: #1f2430 !important;
-  background-color: #ffffff !important;
-  font-weight: 600 !important;
-  cursor: pointer !important;
-  padding: 10px 12px !important;
-}
-
-/* =========================================================
-   OPTION HOVER
-   ========================================================= */
-
-body div[class*="option"]:hover {
-  background-color: #d1fae5 !important;
-  color: #047857 !important;
-}
-
-/* =========================================================
-   OPTION FOCUS
-   ========================================================= */
-
-body div[class*="option"][class*="is-focused"] {
-  background-color: #d1fae5 !important;
-  color: #047857 !important;
-}
-
-/* =========================================================
-   SELECTED OPTION
-   ========================================================= */
-
-body div[class*="option"][class*="is-selected"] {
-  background-color: #047857 !important;
-  color: #ffffff !important;
-}
-
-/* =========================================================
-   HELP POPOVER
-   ========================================================= */
-
-.dropdown-help-popover {
-  border: 1px solid #e0e4f5 !important;
-  border-radius: 10px !important;
-  box-shadow: 0 4px 16px rgba(67, 56, 202, 0.12) !important;
-}
-
-/* =========================================================
-   HELP BODY
-   ========================================================= */
-
-.dropdown-help-popover .popover-body {
-  padding: 14px !important;
-}
-
-/* =========================================================
-   HINT BUTTON
-   ========================================================= */
-
-.dropdown-help-popover .btn-outline-warning {
-  font-weight: 600 !important;
-  border-radius: 7px !important;
-}
-
-/* =========================================================
-   AUTOFILL BUTTON
-   ========================================================= */
-
-.dropdown-help-popover .btn-outline-primary {
-  font-weight: 600 !important;
-  border-radius: 7px !important;
-}
-
-/* =========================================================
-   HINT ALERT
-   ========================================================= */
-
-.dropdown-help-popover .alert-warning {
-  border-radius: 7px !important;
-}
-
-/* =========================================================
-   PROGRESS CARD
-   ONLY SIZE CHANGED
-   ========================================================= */
-
-.progress-card {
-  width: 100% !important;
-  max-width: 100% !important;
-  margin: 0 0 20px 0 !important;
-  padding: 0 !important;
-  border-radius: 10px !important;
-  box-sizing: border-box !important;
-}
-
-.progress-card .card-body {
-  width: 100% !important;
-  padding: 20px !important;
-  box-sizing: border-box !important;
 }
