@@ -637,13 +637,13 @@ const DropdownQuestion = ({
                 answeredData[item.questionAttributeId] || [],
               );
 
-              const trigger = isSolved ? [] : "click";
-
               return (
                 <OverlayTrigger
                   key={item.questionAttributeId}
-                  trigger={trigger}
-                  show={openAttributeId === item.questionAttributeId && !isSolved}
+                  trigger={isSolved ? [] : "click"}
+                  show={
+                    openAttributeId === item.questionAttributeId && !isSolved
+                  }
                   placement="bottom"
                   rootClose
                   container={document.body}
@@ -718,7 +718,6 @@ const DropdownQuestion = ({
                   }
                 >
                   <tr
-                    key={item.questionAttributeId}
                     ref={(element) => {
                       attributeTargets.current[item.questionAttributeId] =
                         element;

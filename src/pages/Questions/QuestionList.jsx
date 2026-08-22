@@ -17,6 +17,8 @@ import { FaSearch, FaPlus, FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "./QuestionList.css";
 import AddQuestionModal from "./AddQuestionModal";
+import QuestionType2Modal from "./QuestionType2Modal";
+import { getQuestionTypeByChapter } from "../../utils/questionTypeMapping";
 
 const QuestionList = () => {
   const [search, setSearch] = useState("");
@@ -38,6 +40,9 @@ const QuestionList = () => {
   const courseId = searchParams.get("courseId");
   const chapterId = searchParams.get("chapterId");
   const categoryId = searchParams.get("categoryId");
+  const questionType = getQuestionTypeByChapter(chapterId);
+  const showQuestionType2 =
+    questionType === "JOURNAL" || questionType === "DROPDOWN";
 
   console.log("Course ID:", courseId);
   console.log("Chapter ID:", chapterId);
@@ -320,24 +325,51 @@ const QuestionList = () => {
         )}
       </ListGroup>
 
-      {showModal && (
-        <AddQuestionModal
-          courseId={courseId}
-          chapterId={chapterId}
-          categoryId={categoryId}
-          initialData={selectedQuestion}
-          onClose={() => {
-            setShowModal(false);
-            setSelectedQuestion(null);
-          }}
-          onSave={async () => {
-            await loadQuestions();
-            setShowModal(false);
-            setSelectedQuestion(null);
-            setShowSuccess(true);
-          }}
-        />
-      )}
+      {showModal &&
+        (showQuestionType2 ? (
+          <QuestionType2Modal
+            show={true}
+            questionData={selectedQuestion}
+            initialCourseId={courseId}
+            initialChapterId={chapterId}
+            initialCategoryId={categoryId}
+            onClose={() => {
+              setShowModal(false);
+              setSelectedQuestion(null);
+            }}
+            onSave={async (questionData) => {
+              if (selectedQuestion?.questionId) {
+                await QuestionService.update(
+                  selectedQuestion.questionId,
+                  questionData,
+                );
+              } else {
+                await QuestionService.create(questionData);
+              }
+              await loadQuestions();
+              setShowModal(false);
+              setSelectedQuestion(null);
+              setShowSuccess(true);
+            }}
+          />
+        ) : (
+          <AddQuestionModal
+            courseId={courseId}
+            chapterId={chapterId}
+            categoryId={categoryId}
+            initialData={selectedQuestion}
+            onClose={() => {
+              setShowModal(false);
+              setSelectedQuestion(null);
+            }}
+            onSave={async () => {
+              await loadQuestions();
+              setShowModal(false);
+              setSelectedQuestion(null);
+              setShowSuccess(true);
+            }}
+          />
+        ))}
       {showSuccess && (
         <SuccessModal
           show={showSuccess}

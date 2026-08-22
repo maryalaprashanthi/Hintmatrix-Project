@@ -1,12 +1,15 @@
 import { DragDropProvider } from "@dnd-kit/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import QuestionTable from "./QuestionTable";
 import useQuestionStore from "./questionStore";
 import { useParams } from "react-router-dom";
+import JournalPage from "../JournalQuestion/JournalPage";
+import DropdownPage from "../DropdownQuestions/DropdownPage";
 import RuleEngineService from "../../services/RuleEngineService";
 import QuestionService from "../../services/QuestionService";
 import { data } from "./SampleData";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
+import { getQuestionTypeByChapter } from "../../utils/questionTypeMapping";
 
 const questionMap = {
   credit: "credit particulars",
@@ -26,6 +29,7 @@ const answerMap = {
 };
 
 const QuestionPage = () => {
+  const [questionType, setQuestionType] = useState(null);
   const {
     moveQuestion,
     setQuestions,
@@ -43,8 +47,13 @@ const QuestionPage = () => {
 
   useEffect(() => {
     const init = async () => {
-      await loadQuestions();
-      await loadAnsweredQuestions();
+      const response = await loadQuestions();
+      const type = getQuestionTypeByChapter(response?.data?.chapterId);
+      setQuestionType(type);
+
+      if (type === "DRAG_AND_DROP") {
+        await loadAnsweredQuestions();
+      }
     };
     init();
   }, [questionId]);
@@ -59,8 +68,10 @@ const QuestionPage = () => {
       // console.log("All strings are ", allStrings);
       await setQuestions([response.data]);
       setTableData(allStrings);
+      return response;
     } catch (error) {
       console.error("Failed to load question:", error);
+      return null;
     }
   };
 
@@ -121,6 +132,14 @@ const QuestionPage = () => {
       }
     }
   };
+
+  if (questionType === "JOURNAL") {
+    return <JournalPage />;
+  }
+
+  if (questionType === "DROPDOWN") {
+    return <DropdownPage />;
+  }
 
   return (
     <DragDropProvider
