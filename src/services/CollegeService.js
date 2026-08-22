@@ -1,13 +1,13 @@
-import axios from "axios";
+﻿import apiClient from "./apiClient";
 
 // Updated root URL mapping to match the Controller's @RequestMapping("/api/college")
-const BASE_URL = "http://localhost:8080/api/college";
+const BASE_URL = "/api/college";
 
 class CollegeService {
 
     // Matches @PostMapping
     saveCollege(collegeRequestDTO) {
-        return axios.post(
+        return apiClient.post(
             `${BASE_URL}`,
             collegeRequestDTO,
             { withCredentials: true } // Passes your active login session cookie
@@ -16,7 +16,7 @@ class CollegeService {
 
     // Matches @GetMapping
     getAllColleges() {
-        return axios.get(
+        return apiClient.get(
             `${BASE_URL}`,
             { withCredentials: true } // Passes your active login session cookie
         );
@@ -24,7 +24,7 @@ class CollegeService {
 
     // Matches @GetMapping("/{id}")
     getCollegeById(id) {
-        return axios.get(
+        return apiClient.get(
             `${BASE_URL}/${id}`,
             { withCredentials: true }
         );
@@ -33,7 +33,7 @@ class CollegeService {
     // Matches @PutMapping("/{id}")
     // Takes id for the URL path variable and the DTO payload for the request body
     updateCollege(id, collegeRequestDTO) {
-        return axios.put(
+        return apiClient.put(
             `${BASE_URL}/${id}`,
             collegeRequestDTO,
             { withCredentials: true }
@@ -42,7 +42,7 @@ class CollegeService {
 
     // Matches @DeleteMapping("/{id}")
     deleteCollege(id) {
-        return axios.delete(
+        return apiClient.delete(
             `${BASE_URL}/${id}`,
             { withCredentials: true }
         );
@@ -53,7 +53,7 @@ uploadExcel(file) {
     const formData = new FormData();
     formData.append("file", file);
 
-    return axios.post(
+    return apiClient.post(
         `${BASE_URL}/upload`,
         formData,
         {
@@ -67,3 +67,4 @@ uploadExcel(file) {
 }
 
 export default new CollegeService();
+

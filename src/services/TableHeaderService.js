@@ -1,14 +1,14 @@
-import axios from "axios";
+﻿import apiClient from "./apiClient";
 
 // Matches the Spring Boot Controller's @RequestMapping("/api/table-headers")
-const BASE_URL = "http://localhost:8080/api/table-headers";
+const BASE_URL = "/api/table-headers";
 
 class TableHeaderService {
 
     // Matches @PostMapping
     // Takes the TableHeaderRequestDTO payload for the request body
     create(tableHeaderRequestDTO) {
-        return axios.post(
+        return apiClient.post(
             `${BASE_URL}`,
             tableHeaderRequestDTO,
             { withCredentials: true } // Allows backend session cookies/CORS handshakes
@@ -17,7 +17,7 @@ class TableHeaderService {
 
     // Matches @GetMapping
     getAll() {
-        return axios.get(
+        return apiClient.get(
             `${BASE_URL}`,
             { withCredentials: true } // Passes tracking authorization tokens/cookies
         );
@@ -25,7 +25,7 @@ class TableHeaderService {
 
     // Matches @GetMapping("/{id}")
     getById(id) {
-        return axios.get(
+        return apiClient.get(
             `${BASE_URL}/${id}`,
             { withCredentials: true }
         );
@@ -34,7 +34,7 @@ class TableHeaderService {
     // Matches @PutMapping("/{id}")
     // Takes id for the URL path variable and the DTO payload for the request body
     update(id, tableHeaderRequestDTO) {
-        return axios.put(
+        return apiClient.put(
             `${BASE_URL}/${id}`,
             tableHeaderRequestDTO,
             { withCredentials: true }
@@ -43,7 +43,7 @@ class TableHeaderService {
 
     // Matches @DeleteMapping("/{id}")
     delete(id) {
-        return axios.delete(
+        return apiClient.delete(
             `${BASE_URL}/${id}`,
             { withCredentials: true }
         );
@@ -53,7 +53,7 @@ class TableHeaderService {
     const formData = new FormData();
     formData.append("file", file);
 
-    return axios.post(
+    return apiClient.post(
         `${BASE_URL}/upload`,
         formData,
         {
@@ -68,3 +68,4 @@ class TableHeaderService {
 
 // Export an instantiated instance of the service architecture directly
 export default new TableHeaderService();
+

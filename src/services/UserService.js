@@ -1,7 +1,7 @@
-import axios from "axios";
+﻿import apiClient from "./apiClient";
 
 // Matches the Spring Boot Controller's @RequestMapping("/api/users")
-const BASE_URL = "http://localhost:8080/api/users";
+const BASE_URL = "/api/users";
 
 class UserService {
   // =========================
@@ -9,23 +9,23 @@ class UserService {
   // =========================
 
   createSuperAdmin(superAdminRequestDTO) {
-    return axios.post(`${BASE_URL}/superAdmin`, superAdminRequestDTO, {
+    return apiClient.post(`${BASE_URL}/superAdmin`, superAdminRequestDTO, {
       withCredentials: true,
     });
   }
 
   getAllSuperAdmins() {
-    return axios.get(`${BASE_URL}/superAdmins`, { withCredentials: true });
+    return apiClient.get(`${BASE_URL}/superAdmins`, { withCredentials: true });
   }
 
   updateSuperAdmin(id, superAdminRequestDTO) {
-    return axios.put(`${BASE_URL}/superAdmin/${id}`, superAdminRequestDTO, {
+    return apiClient.put(`${BASE_URL}/superAdmin/${id}`, superAdminRequestDTO, {
       withCredentials: true,
     });
   }
 
   deleteSuperAdmin(id) {
-    return axios.delete(`${BASE_URL}/superAdmin/${id}`, {
+    return apiClient.delete(`${BASE_URL}/superAdmin/${id}`, {
       withCredentials: true,
     });
   }
@@ -35,23 +35,23 @@ class UserService {
   // =========================
 
   createBranchAdmin(branchAdminRequestDTO) {
-    return axios.post(`${BASE_URL}/branchAdmin`, branchAdminRequestDTO, {
+    return apiClient.post(`${BASE_URL}/branchAdmin`, branchAdminRequestDTO, {
       withCredentials: true,
     });
   }
 
   getAllBranchAdmins() {
-    return axios.get(`${BASE_URL}/branchAdmins`, { withCredentials: true });
+    return apiClient.get(`${BASE_URL}/branchAdmins`, { withCredentials: true });
   }
 
   updateBranchAdmin(id, branchAdminRequestDTO) {
-    return axios.put(`${BASE_URL}/branchAdmin/${id}`, branchAdminRequestDTO, {
+    return apiClient.put(`${BASE_URL}/branchAdmin/${id}`, branchAdminRequestDTO, {
       withCredentials: true,
     });
   }
 
   deleteBranchAdmin(id) {
-    return axios.delete(`${BASE_URL}/branchAdmin/${id}`, {
+    return apiClient.delete(`${BASE_URL}/branchAdmin/${id}`, {
       withCredentials: true,
     });
   }
@@ -61,23 +61,23 @@ class UserService {
   // =========================
 
   createStudent(studentRequestDTO) {
-    return axios.post(`${BASE_URL}/student`, studentRequestDTO, {
+    return apiClient.post(`${BASE_URL}/student`, studentRequestDTO, {
       withCredentials: true,
     });
   }
 
   getAllStudents() {
-    return axios.get(`${BASE_URL}/students`, { withCredentials: true });
+    return apiClient.get(`${BASE_URL}/students`, { withCredentials: true });
   }
 
   updateStudent(id, studentRequestDTO) {
-    return axios.put(`${BASE_URL}/student/${id}`, studentRequestDTO, {
+    return apiClient.put(`${BASE_URL}/student/${id}`, studentRequestDTO, {
       withCredentials: true,
     });
   }
 
   deleteStudent(id) {
-    return axios.delete(`${BASE_URL}/student/${id}`, { withCredentials: true });
+    return apiClient.delete(`${BASE_URL}/student/${id}`, { withCredentials: true });
   }
 
   uploadUsersExcel(file) {
@@ -87,7 +87,7 @@ class UserService {
   formData.append("file", file);
 
 
-  return axios.post(
+  return apiClient.post(
     `${BASE_URL}/excel/upload`,
     formData,
     {
@@ -103,3 +103,4 @@ class UserService {
 
 // Export an instantiated instance of the service
 export default new UserService();
+
