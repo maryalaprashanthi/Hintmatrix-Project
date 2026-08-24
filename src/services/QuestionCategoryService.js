@@ -1,14 +1,14 @@
-import axios from "axios";
+﻿import apiClient from "./apiClient";
 
 // Matches the Spring Boot Controller's @RequestMapping("/api/question-categories")
-const BASE_URL = "http://localhost:8080/api/question-categories";
+const BASE_URL = "/api/question-categories";
 
 class QuestionCategoryService {
 
     // Matches @PostMapping
     // Takes the QuestionCategoryRequestDTO payload for the request body
     create(questionCategoryRequestDTO) {
-        return axios.post(
+        return apiClient.post(
             `${BASE_URL}`,
             questionCategoryRequestDTO,
             { withCredentials: true } // Allows backend session cookies/CORS handshakes
@@ -18,7 +18,7 @@ class QuestionCategoryService {
     // Matches @GetMapping
     // Returns an array of QuestionCategoryResponseDTO objects
     getAll() {
-        return axios.get(
+        return apiClient.get(
             `${BASE_URL}`,
             { withCredentials: true } // Passes tracking authorization tokens/cookies
         );
@@ -27,7 +27,7 @@ class QuestionCategoryService {
     // Matches @GetMapping("/{id}")
     // Returns a specific QuestionCategoryResponseDTO object
     getById(id) {
-        return axios.get(
+        return apiClient.get(
             `${BASE_URL}/${id}`,
             { withCredentials: true }
         );
@@ -36,7 +36,7 @@ class QuestionCategoryService {
     // Matches @PutMapping("/{id}")
     // Takes id for the URL path variable and the DTO payload for the request body
     update(id, questionCategoryRequestDTO) {
-        return axios.put(
+        return apiClient.put(
             `${BASE_URL}/${id}`,
             questionCategoryRequestDTO,
             { withCredentials: true }
@@ -45,7 +45,7 @@ class QuestionCategoryService {
 
     // Matches @DeleteMapping("/{id}")
         deleteSection(id) {
-        return axios.delete(
+        return apiClient.delete(
             `${BASE_URL}/${id}`,
             { withCredentials: true }
         );
@@ -59,7 +59,7 @@ class QuestionCategoryService {
 
         formData.append("file", file);
 
-        return axios.post(
+        return apiClient.post(
             `${BASE_URL}/upload`,
             formData,
             {
@@ -74,4 +74,5 @@ class QuestionCategoryService {
 
 // Export an instantiated instance of the service architecture directly
 export default new QuestionCategoryService();
+
 

@@ -28,6 +28,8 @@ import inter from "../../../assets/courses/inter.png.jpeg";
 
 function Courses() {
   const navigate = useNavigate();
+  const userRole = (localStorage.getItem("role") || "GUEST").toString().trim().toUpperCase();
+  const isStudent = userRole === "STUDENT";
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
@@ -179,24 +181,26 @@ function Courses() {
           onChange={handleFileUpload}
         />
 
-        <div className="d-flex gap-2">
-          <button
-            className="btn btn-primary"
-            onClick={() => document.getElementById("courseUpload").click()}
-          >
-            ⬆ Upload
-          </button>
+        {!isStudent && (
+          <div className="d-flex gap-2">
+            <button
+              className="btn btn-primary"
+              onClick={() => document.getElementById("courseUpload").click()}
+            >
+              ⬆ Upload
+            </button>
 
-          <button
-            className="btn btn-primary"
-            onClick={() => {
-              setSelectedCourse(null);
-              setShowModal(true);
-            }}
-          >
-            + Add Course
-          </button>
-        </div>
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                setSelectedCourse(null);
+                setShowModal(true);
+              }}
+            >
+              + Add Course
+            </button>
+          </div>
+        )}
       </div>
       {/* ================= STATISTICS ================= */}
 
@@ -353,23 +357,25 @@ function Courses() {
                   <span>{course.activeRow ? "View Chapters" : "Inactive"}</span>
                 </button>
 
-                <div className="d-flex gap-2 mt-3">
-                  <button
-                    className="btn btn-outline-primary btn-sm"
-                    onClick={() => handleEdit(course)}
-                  >
-                    <FaEdit className="me-1" />
-                    Edit
-                  </button>
+                {!isStudent && (
+                  <div className="d-flex gap-2 mt-3">
+                    <button
+                      className="btn btn-outline-primary btn-sm"
+                      onClick={() => handleEdit(course)}
+                    >
+                      <FaEdit className="me-1" />
+                      Edit
+                    </button>
 
-                  <button
-                    className="btn btn-outline-danger btn-sm"
-                    onClick={() => handleDelete(course.courseId || course.id)}
-                  >
-                    <FaTrash className="me-1" />
-                    Delete
-                  </button>
-                </div>
+                    <button
+                      className="btn btn-outline-danger btn-sm"
+                      onClick={() => handleDelete(course.courseId || course.id)}
+                    >
+                      <FaTrash className="me-1" />
+                      Delete
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

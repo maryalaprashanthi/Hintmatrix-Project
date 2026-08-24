@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form, Table, InputGroup } from "react-bootstrap";
 import { FaSearch } from "react-icons/fa";
-import axios from "axios";
+import apiClient from "../../services/apiClient";
 import "./QuestionSelectionModal.css";
 
 export default function QuestionSelectionModal({
@@ -47,8 +47,8 @@ export default function QuestionSelectionModal({
 
     const fetchAvailableQuestions = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:8080/api/exams/${examId}/available-questions`,
+        const response = await apiClient.get(
+          `/api/exams/${examId}/available-questions`,
         );
 
         setQuestions(response.data);

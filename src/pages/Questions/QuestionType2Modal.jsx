@@ -5,6 +5,7 @@ import Select from "react-select";
 import CourseService from "../../services/CourseService";
 import ChapterService from "../../services/ChapterService";
 import CategoryService from "../../services/QuestionCategoryService";
+import QuestionService from "../../services/QuestionService";
 import TableHeaderService from "../../services/TableHeaderService";
 import TableAttributeService from "../../services/TableAttributeService";
 
@@ -21,15 +22,33 @@ import {
 
 import "./QuestionType2Modal.css";
 
-function QuestionType2Modal({ show, onClose, onSave, questionData }) {
-  const [courseId, setCourseId] = useState(null);
-  const [chapterId, setChapterId] = useState(null);
-  const [categoryId, setCategoryId] = useState(null);
+const normalizeQuestionAttributes = (attributes) =>
+  attributes.map((attribute) => ({
+    ...attribute,
+    transaction: attribute.transaction ?? attribute.attributeId ?? "",
+    amount1: attribute.amount1 ?? attribute.amount ?? "",
+    amount2: attribute.amount2 ?? attribute.amount2Value ?? "",
+  }));
+
+function QuestionType2Modal({
+  show,
+  onClose,
+  onSave,
+  questionData,
+  initialCourseId,
+  initialChapterId,
+  initialCategoryId,
+}) {
+  const [courseId, setCourseId] = useState(initialCourseId || null);
+  const [chapterId, setChapterId] = useState(initialChapterId || null);
+  const [categoryId, setCategoryId] = useState(initialCategoryId || null);
   const [questionText, setQuestionText] = useState("");
 
   const [courseOptions, setCourseOptions] = useState([]);
   const [chapterOptions, setChapterOptions] = useState([]);
   const [categoryOptions, setCategoryOptions] = useState([]);
+  const [allChapterOptions, setAllChapterOptions] = useState([]);
+  const [allCategoryOptions, setAllCategoryOptions] = useState([]);
 
   const [headerOptions, setHeaderOptions] = useState([]);
   const [attributeOptions, setAttributeOptions] = useState([]);
@@ -62,17 +81,35 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
 
   useEffect(() => {
     if (courseId) {
-      loadChapters(courseId);
+      setChapterOptions(
+        allChapterOptions.filter(
+          (option) => String(option.courseId) === String(courseId),
+        ),
+      );
     } else {
       setChapterOptions([]);
     }
-  }, [courseId]);
+  }, [courseId, allChapterOptions]);
+
+  useEffect(() => {
+    if (chapterId) {
+      setCategoryOptions(
+        allCategoryOptions.filter(
+          (option) => String(option.chapterId) === String(chapterId),
+        ),
+      );
+    } else {
+      setCategoryOptions([]);
+    }
+  }, [chapterId, allCategoryOptions]);
 
   /* =========================================================
      EDIT / RESET FORM
   ========================================================= */
 
   useEffect(() => {
+    let cancelled = false;
+
     if (questionData) {
       setQuestionText(questionData.questionText || "");
 
@@ -88,18 +125,53 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
         questionData.categoryId ?? questionData.category_id ?? null,
       );
 
-      if (
-        questionData.questionAttributes &&
-        questionData.questionAttributes.length > 0
-      ) {
-        setQuestionAttributes(questionData.questionAttributes);
+      const loadQuestionAttributes = async () => {
+        try {
+          const response = await QuestionService.getQuestionById(
+            questionData.questionId,
+          );
+          const loadedQuestion = response.data || questionData;
+          if (cancelled) return;
+
+          setQuestionText(loadedQuestion.questionText || "");
+          setQuestionAttributes(
+            loadedQuestion.questionAttributes?.length > 0
+              ? normalizeQuestionAttributes(loadedQuestion.questionAttributes)
+              : [emptyRow()],
+          );
+        } catch (error) {
+          console.error("Failed to load question attributes:", error);
+          if (!cancelled) {
+            setQuestionAttributes(
+              questionData.questionAttributes?.length > 0
+                ? normalizeQuestionAttributes(questionData.questionAttributes)
+                : [emptyRow()],
+            );
+          }
+        }
+      };
+
+      if (questionData.questionId) {
+        loadQuestionAttributes();
       } else {
-        setQuestionAttributes([emptyRow()]);
+        setQuestionAttributes(
+          questionData.questionAttributes?.length > 0
+            ? normalizeQuestionAttributes(questionData.questionAttributes)
+            : [emptyRow()],
+        );
       }
     } else {
-      resetForm();
+      setCourseId(initialCourseId || null);
+      setChapterId(initialChapterId || null);
+      setCategoryId(initialCategoryId || null);
+      setQuestionText("");
+      setQuestionAttributes([emptyRow()]);
     }
-  }, [questionData]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [questionData, initialCourseId, initialChapterId, initialCategoryId]);
 
   /* =========================================================
      COURSES
@@ -144,11 +216,12 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
       const options = data.map((item) => ({
         value: item.category_id ?? item.categoryId ?? item.id,
         label: item.category_name ?? item.categoryName ?? item.name ?? "",
+        chapterId: item.chapter_id ?? item.chapterId,
       }));
 
       console.log("CATEGORY OPTIONS:", options);
 
-      setCategoryOptions(options);
+      setAllCategoryOptions(options);
     } catch (error) {
       console.error("Error loading categories:", error);
       setCategoryOptions([]);
@@ -179,11 +252,12 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
       const options = data.map((item) => ({
         value: item.chapter_id ?? item.chapterId ?? item.id,
         label: item.chapter_name ?? item.chapterName ?? item.name ?? "",
+        courseId: item.course_id ?? item.courseId,
       }));
 
       console.log("CHAPTER OPTIONS:", options);
 
-      setChapterOptions(options);
+      setAllChapterOptions(options);
     } catch (error) {
       console.error("Error loading chapters:", error);
       setChapterOptions([]);
@@ -311,15 +385,24 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
       return;
     }
 
+    if (
+      questionAttributes.some(
+        (row) => row.transaction === "" || row.transaction == null,
+      )
+    ) {
+      alert("Please select a transaction for every attribute row.");
+      return;
+    }
+
     const payload = {
-      courseId: courseId,
-      chapterId: chapterId,
-      categoryId: categoryId,
+      courseId: Number(courseId),
+      chapterId: Number(chapterId),
+      categoryId: Number(categoryId),
       questionText: questionText.trim(),
 
       questionAttributes: questionAttributes.map((row) => ({
-        headerId: row.headerId ?? null,
-        attributeId: row.attributeId ?? null,
+        headerId: row.headerId || 1,
+        attributeId: row.attributeId || Number(row.transaction),
 
         transaction: row.transaction || null,
 
@@ -421,9 +504,8 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
                     }
                     onChange={(selected) => {
                       setCourseId(selected ? selected.value : null);
-
                       setChapterId(null);
-                      setChapterOptions([]);
+                      setCategoryId(null);
                     }}
                     placeholder="Select Course"
                     isSearchable
@@ -461,8 +543,10 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
                     }
                     onChange={(selected) => {
                       setChapterId(selected ? selected.value : null);
+                      setCategoryId(null);
                     }}
                     placeholder="Select Chapter"
+                    isDisabled={!courseId}
                     isSearchable
                     isClearable
                     menuPortalTarget={document.body}
@@ -500,6 +584,7 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
                       setCategoryId(selected ? selected.value : null);
                     }}
                     placeholder="Select Category"
+                    isDisabled={!chapterId}
                     isSearchable
                     isClearable
                     menuPortalTarget={document.body}
@@ -565,7 +650,9 @@ function QuestionType2Modal({ show, onClose, onSave, questionData }) {
                             options={transactionOptions}
                             value={
                               transactionOptions.find(
-                                (option) => option.value === row.transaction,
+                                (option) =>
+                                  String(option.value) ===
+                                  String(row.transaction ?? row.attributeId),
                               ) || null
                             }
                             onChange={(selected) =>

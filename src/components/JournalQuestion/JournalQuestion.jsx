@@ -347,7 +347,7 @@ const JournalQuestion = ({
 
   return (
     <div>
-      <Table bordered hover>
+      <Table className="journal-table" bordered hover>
         <thead>
           <tr>
             <th>Transaction</th>

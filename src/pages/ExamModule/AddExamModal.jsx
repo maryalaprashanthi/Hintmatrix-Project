@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Select, { components } from "react-select";
-import axios from "axios";
+import apiClient from "../../services/apiClient";
 import { FaTimes, FaBook, FaCalendarAlt } from "react-icons/fa";
 
 import "./AddExamModal.css";
@@ -49,7 +49,7 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
 
     const fetchColleges = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/college");
+        const response = await apiClient.get("/api/college");
 
         setCollegeOptions(
           response.data.map((college) => ({
@@ -86,7 +86,7 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
 
     const fetchBranches = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/branch");
+        const response = await apiClient.get("/api/branch");
 
         const filtered = response.data
           .filter((branch) => branch.collegeId === college.value)
@@ -112,7 +112,7 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
 
     const fetchCourses = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/course");
+        const response = await apiClient.get("/api/course");
 
         const filtered = response.data
           .filter(
@@ -153,7 +153,7 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
 
     const fetchSections = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/section");
+        const response = await apiClient.get("/api/section");
 
         const filtered = response.data
           .filter((section) => section.courseId === course.value)
@@ -188,7 +188,7 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
 
     const fetchChapters = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/chapter");
+        const response = await apiClient.get("/api/chapter");
 
         const filtered = response.data
           .filter((chapter) => chapter.courseId === course.value)
@@ -577,3 +577,4 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
     document.body,
   );
 }
+

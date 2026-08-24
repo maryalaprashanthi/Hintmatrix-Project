@@ -1,11 +1,11 @@
-import axios from "axios";
+﻿import apiClient from "./apiClient";
 
-const BASE_URL = "http://localhost:8080/api/section";
+const BASE_URL = "/api/section";
 
 class SectionService {
     // Matches @PostMapping
     saveSection(sectionRequestDTO) {
-        return axios.post(
+        return apiClient.post(
             `${BASE_URL}`,
             sectionRequestDTO,
             { withCredentials: true }
@@ -14,7 +14,7 @@ class SectionService {
 
     // Matches @GetMapping
     getAllSections() {
-        return axios.get(
+        return apiClient.get(
             `${BASE_URL}`,
             { withCredentials: true }
         );
@@ -22,7 +22,7 @@ class SectionService {
 
     // Matches @GetMapping("/{id}")
     getSectionById(id) {
-        return axios.get(
+        return apiClient.get(
             `${BASE_URL}/${id}`,
             { withCredentials: true }
         );
@@ -30,7 +30,7 @@ class SectionService {
 
     // Matches @PutMapping("/{id}")
     updateSection(id, sectionRequestDTO) {
-        return axios.put(
+        return apiClient.put(
             `${BASE_URL}/${id}`,
             sectionRequestDTO,
             { withCredentials: true }
@@ -39,7 +39,7 @@ class SectionService {
 
     // Matches @DeleteMapping("/{id}")
     deleteSection(id) {
-        return axios.delete(
+        return apiClient.delete(
             `${BASE_URL}/${id}`,
             { withCredentials: true }
         );
@@ -50,7 +50,7 @@ uploadExcel(file) {
     const formData = new FormData();
     formData.append("file", file);
 
-    return axios.post(
+    return apiClient.post(
         `${BASE_URL}/upload`,
         formData,
         {
@@ -64,3 +64,4 @@ uploadExcel(file) {
 }
 
 export default new SectionService();
+

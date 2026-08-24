@@ -27,7 +27,8 @@
    TABLE
    ========================================================= */
 
-.journal-table {
+.journal-table,
+.journal-solution-table {
   width: 100% !important;
 
   margin: 0 !important;
@@ -43,7 +44,8 @@
    HEADER
    ========================================================= */
 
-.journal-table thead th {
+.journal-table thead th,
+.journal-solution-table thead th {
   background-color: #eef2ff !important;
 
   color: #4338ca !important;
@@ -63,11 +65,25 @@
   text-align: center;
 }
 
+.journal-solution-table thead th {
+  height: 52px;
+  padding: 13px 6px !important;
+  font-size: 14px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.journal-solution-table th:nth-child(3),
+.journal-solution-table td:nth-child(3) {
+  width: 8%;
+}
+
 /* =========================================================
    BODY
    ========================================================= */
 
-.journal-table tbody td {
+.journal-table tbody td,
+.journal-solution-table tbody td {
   background-color: #ffffff !important;
 
   color: #1f2937 !important;
@@ -85,10 +101,8 @@
    REMOVE BOOTSTRAP STRIPING
    ========================================================= */
 
-.journal-table.table-striped
-  > tbody
-  > tr:nth-of-type(odd)
-  > * {
+.journal-table.table-striped > tbody > tr:nth-of-type(odd) > *,
+.journal-solution-table.table-striped > tbody > tr:nth-of-type(odd) > * {
   background-color: #ffffff !important;
 
   --bs-table-accent-bg: #ffffff !important;
@@ -118,10 +132,8 @@
    HOVER
    ========================================================= */
 
-.journal-table.table-hover
-  > tbody
-  > tr:hover
-  > * {
+.journal-table.table-hover > tbody > tr:hover > *,
+.journal-solution-table.table-hover > tbody > tr:hover > * {
   background-color: #f7f8ff !important;
 
   color: #1f2937 !important;

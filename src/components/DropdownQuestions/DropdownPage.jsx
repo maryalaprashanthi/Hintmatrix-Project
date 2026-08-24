@@ -125,7 +125,9 @@ const DropdownPage = () => {
           "";
 
         const isDebit = String(answer.headerId) === "1";
-        const particulars = isDebit ? `${tableName}..........Dr` : `To ${tableName}`;
+        const particulars = isDebit
+          ? `${tableName}..........Dr`
+          : `To ${tableName}`;
 
         if (!formattedData[questionAttributeId]) {
           formattedData[questionAttributeId] = [];

@@ -207,52 +207,59 @@ const JournalPage = () => {
         ),
       );
 
-      (Array.isArray(answerResponse) ? answerResponse : []).forEach((answer) => {
-        const questionAttribute = loadedQuestion?.questionAttributes?.find(
-          (item) => String(item.attributeId) === String(answer.attributeId),
-        );
-
-        if (!questionAttribute) {
-          console.warn("Journal attribute not found for saved answer:", answer);
-          return;
-        }
-
-        const id = questionAttribute.questionAttributeId;
-
-        if (!formattedData[id]) {
-          formattedData[id] = [];
-        }
-
-        const table =
-          tableLookup.get(String(answer.tableNameId)) ||
-          (questionAttribute.tables || []).find(
-            (item) => String(item.id) === String(answer.tableNameId),
+      (Array.isArray(answerResponse) ? answerResponse : []).forEach(
+        (answer) => {
+          const questionAttribute = loadedQuestion?.questionAttributes?.find(
+            (item) => String(item.attributeId) === String(answer.attributeId),
           );
 
-        if (!table) {
-          console.warn("Journal table not found for saved answer:", answer);
-          return;
-        }
+          if (!questionAttribute) {
+            console.warn(
+              "Journal attribute not found for saved answer:",
+              answer,
+            );
+            return;
+          }
 
-        const isDebit = String(answer.headerId) === "1";
-        const text = isDebit ? `${table.name}..........Dr` : `To ${table.name}`;
+          const id = questionAttribute.questionAttributeId;
 
-        formattedData[id].push({
-          questionAttributeId: id,
-          date: "",
-          particulars: text,
-          lf: "",
-          debit: isDebit ? answer.amount : "",
-          credit: isDebit ? "" : answer.amount,
-          valid: true,
-          answerId: answer.answerId,
-          answerEventId: null,
-          tableNameId: answer.tableNameId,
-          headerId: answer.headerId,
-          attributeId: answer.attributeId,
-          arithmetic: answer.arithmetic,
-        });
-      });
+          if (!formattedData[id]) {
+            formattedData[id] = [];
+          }
+
+          const table =
+            tableLookup.get(String(answer.tableNameId)) ||
+            (questionAttribute.tables || []).find(
+              (item) => String(item.id) === String(answer.tableNameId),
+            );
+
+          if (!table) {
+            console.warn("Journal table not found for saved answer:", answer);
+            return;
+          }
+
+          const isDebit = String(answer.headerId) === "1";
+          const text = isDebit
+            ? `${table.name}..........Dr`
+            : `To ${table.name}`;
+
+          formattedData[id].push({
+            questionAttributeId: id,
+            date: "",
+            particulars: text,
+            lf: "",
+            debit: isDebit ? answer.amount : "",
+            credit: isDebit ? "" : answer.amount,
+            valid: true,
+            answerId: answer.answerId,
+            answerEventId: null,
+            tableNameId: answer.tableNameId,
+            headerId: answer.headerId,
+            attributeId: answer.attributeId,
+            arithmetic: answer.arithmetic,
+          });
+        },
+      );
 
       Object.keys(formattedData).forEach((id) => {
         const attribute = loadedQuestion?.questionAttributes?.find(

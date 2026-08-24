@@ -17,6 +17,8 @@ import { FaSearch, FaPlus, FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "./QuestionList.css";
 import AddQuestionModal from "./AddQuestionModal";
+import QuestionType2Modal from "./QuestionType2Modal";
+import { getQuestionTypeByChapter } from "../../utils/questionTypeMapping";
 
 const QuestionList = () => {
   const [search, setSearch] = useState("");
@@ -24,6 +26,8 @@ const QuestionList = () => {
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
+  const userRole = (localStorage.getItem("role") || "GUEST").toString().trim().toUpperCase();
+  const isStudent = userRole === "STUDENT";
   // edit functionality
   // const [questionData,setQuestionData] = useState(null);
 
@@ -38,6 +42,9 @@ const QuestionList = () => {
   const courseId = searchParams.get("courseId");
   const chapterId = searchParams.get("chapterId");
   const categoryId = searchParams.get("categoryId");
+  const questionType = getQuestionTypeByChapter(chapterId);
+  const showQuestionType2 =
+    questionType === "JOURNAL" || questionType === "DROPDOWN";
 
   console.log("Course ID:", courseId);
   console.log("Chapter ID:", chapterId);
@@ -182,42 +189,44 @@ const QuestionList = () => {
           <p className="question-count">{filteredQuestions.length} Questions</p>
         </Col>
 
-        <Col
-          lg={6}
-          className="d-flex justify-content-lg-end gap-2 mt-3 mt-lg-0"
-        >
-          {/* Hidden Upload Input */}
-          {/* Look into this */}
-          <input
-            type="file"
-            ref={fileInputRef}
-            accept=".csv,.xlsx,.xls"
-            style={{ display: "none" }}
-            onChange={handleFileUpload}
-          />
-
-          {/* Upload Button */}
-
-          <button
-            className="btn btn-primary"
-            onClick={() => fileInputRef.current.click()}
+        {!isStudent && (
+          <Col
+            lg={6}
+            className="d-flex justify-content-lg-end gap-2 mt-3 mt-lg-0"
           >
-            ⬆ Upload
-          </button>
+            {/* Hidden Upload Input */}
+            {/* Look into this */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept=".csv,.xlsx,.xls"
+              style={{ display: "none" }}
+              onChange={handleFileUpload}
+            />
 
-          {/* Add Question */}
+            {/* Upload Button */}
 
-          <Button
-            variant="primary"
-            onClick={() => {
-              setSelectedQuestion(null);
-              setShowModal(true);
-            }}
-          >
-            <FaPlus className="me-2" />
-            Add Question
-          </Button>
-        </Col>
+            <button
+              className="btn btn-primary"
+              onClick={() => fileInputRef.current.click()}
+            >
+              ⬆ Upload
+            </button>
+
+            {/* Add Question */}
+
+            <Button
+              variant="primary"
+              onClick={() => {
+                setSelectedQuestion(null);
+                setShowModal(true);
+              }}
+            >
+              <FaPlus className="me-2" />
+              Add Question
+            </Button>
+          </Col>
+        )}
       </Row>
 
       {/* Search */}
@@ -320,24 +329,51 @@ const QuestionList = () => {
         )}
       </ListGroup>
 
-      {showModal && (
-        <AddQuestionModal
-          courseId={courseId}
-          chapterId={chapterId}
-          categoryId={categoryId}
-          initialData={selectedQuestion}
-          onClose={() => {
-            setShowModal(false);
-            setSelectedQuestion(null);
-          }}
-          onSave={async () => {
-            await loadQuestions();
-            setShowModal(false);
-            setSelectedQuestion(null);
-            setShowSuccess(true);
-          }}
-        />
-      )}
+      {showModal &&
+        (showQuestionType2 ? (
+          <QuestionType2Modal
+            show={true}
+            questionData={selectedQuestion}
+            initialCourseId={courseId}
+            initialChapterId={chapterId}
+            initialCategoryId={categoryId}
+            onClose={() => {
+              setShowModal(false);
+              setSelectedQuestion(null);
+            }}
+            onSave={async (questionData) => {
+              if (selectedQuestion?.questionId) {
+                await QuestionService.update(
+                  selectedQuestion.questionId,
+                  questionData,
+                );
+              } else {
+                await QuestionService.create(questionData);
+              }
+              await loadQuestions();
+              setShowModal(false);
+              setSelectedQuestion(null);
+              setShowSuccess(true);
+            }}
+          />
+        ) : (
+          <AddQuestionModal
+            courseId={courseId}
+            chapterId={chapterId}
+            categoryId={categoryId}
+            initialData={selectedQuestion}
+            onClose={() => {
+              setShowModal(false);
+              setSelectedQuestion(null);
+            }}
+            onSave={async () => {
+              await loadQuestions();
+              setShowModal(false);
+              setSelectedQuestion(null);
+              setShowSuccess(true);
+            }}
+          />
+        ))}
       {showSuccess && (
         <SuccessModal
           show={showSuccess}
