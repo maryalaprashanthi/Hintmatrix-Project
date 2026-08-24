@@ -29,6 +29,8 @@ import RuleEngine from "./pages/RuleEngine/RuleEngine";
 import StudentAttendance from "./pages/StudentAttendance/StudentAttendance";
 
 import Login from "./pages/Auth/Login";
+import Signup from "./pages/Auth/Signup";
+import OAuthSuccess from "./pages/Auth/OAuthSuccess";
 // Other Pages
 import Practice from "./pages/Practice";
 import ExamList from "./pages/ExamModule/ExamList";
@@ -147,6 +149,8 @@ function App() {
       <Route path="/" element={<Landing />} />
 
       <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/oauth2/success" element={<OAuthSuccess />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
       <Route
         element={
@@ -202,7 +206,9 @@ function App() {
         <Route
           path="/admin/student"
           element={
-            <ProtectedRoute allowedRoles={["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"]}>
+            <ProtectedRoute
+              allowedRoles={["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"]}
+            >
               <Student />
             </ProtectedRoute>
           }
