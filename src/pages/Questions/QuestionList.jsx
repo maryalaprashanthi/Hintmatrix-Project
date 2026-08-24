@@ -26,7 +26,10 @@ const QuestionList = () => {
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
-  const userRole = (localStorage.getItem("role") || "GUEST").toString().trim().toUpperCase();
+  const userRole = (localStorage.getItem("role") || "GUEST")
+    .toString()
+    .trim()
+    .toUpperCase();
   const isStudent = userRole === "STUDENT";
   // edit functionality
   // const [questionData,setQuestionData] = useState(null);
@@ -104,7 +107,7 @@ const QuestionList = () => {
     question.activeRow !== false && question.activeRow !== "false";
 
   // Upload
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const file = e.target.files[0];
 
     if (!file) return;
@@ -113,8 +116,17 @@ const QuestionList = () => {
 
     alert(`Selected File: ${file.name}`);
 
-    // Backend upload API later
-
+    const formData = new FormData();
+    try {
+      formData.append("file", file);
+      formData.append("courseId", courseId);
+      formData.append("categoryId", categoryId);
+      formData.append("chapterId", chapterId);
+      const response = await QuestionService.uploadExcel(formData);
+      console.log("Excel response is ", response);
+    } catch (error) {
+      console.error("Error is: ", error);
+    }
     e.target.value = "";
   };
 

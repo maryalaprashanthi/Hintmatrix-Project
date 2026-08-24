@@ -7,28 +7,20 @@ import "./QuestionTable.css";
 import Header from "./Header";
 import SummaryCards from "./SummaryCards";
 import { data } from "./SampleData";
-import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
-import CheckMistakes from "./CheckMistakes";
 import { useParams } from "react-router-dom";
+import MistakesModal from "./MistakesModal";
+import { useState } from "react";
 
 // Ensure you import Bootstrap CSS somewhere in your app (like index.js or App.js)
 // import 'bootstrap/dist/css/bootstrap.min.css';
 const QuestionTable = () => {
-  const {
-    questions,
-    score,
-    resetFrontend,
-    showCheckMistakes,
-    setCheckMistakes,
-  } = useQuestionStore();
+  const [checkMistakes, setCheckMistakes] = useState(false);
+
+  const { questions, score, resetFrontend } = useQuestionStore();
 
   const { questionId } = useParams();
 
   // Functions to handle opening and closing the modal
-  const handleClose = () => {
-    setCheckMistakes(false); // Reset the showCheckMistakes state when closing the modal
-  };
 
   console.log("Questions from Store:", questions);
 
@@ -60,41 +52,23 @@ const QuestionTable = () => {
   let pendingQ = questions.filter((q) => q.status === "solved");
   let solvedQ = pendingQ.length;
   // onCheck={handleCheckValidation}
-  if (showCheckMistakes) {
+  if (checkMistakes) {
     console.log("I got rendered check mistakes");
     return (
-      <div className="row g-4 align-items-start">
-        <Modal
-          show={showCheckMistakes}
-          onHide={handleClose}
-          centered
-          backdrop={true}
-          size="xl"
-          contentClassName="check-mistakes-modal"
-        >
-          <Modal.Header closeButton className="check-mistakes-header">
-            <Modal.Title className="check-mistakes-title">
-              Check Mistakes
-            </Modal.Title>
-          </Modal.Header>
-
-          <Modal.Body>
-            <CheckMistakes userId={1} questionId={questionId} />
-          </Modal.Body>
-
-          <Modal.Footer className="check-mistakes-footer">
-            <Button className="close-fix-btn" onClick={handleClose}>
-              Close
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      </div>
+      <MistakesModal
+        questionId={questionId}
+        setCheckMistakes={setCheckMistakes}
+        checkMistakes={checkMistakes}
+      />
     );
   }
   return (
     <div className="row g-4 align-items-start">
       <div>
-        <Header handleReset={resetFrontend} />
+        <Header
+          handleReset={resetFrontend}
+          setCheckMistakes={setCheckMistakes}
+        />
 
         <SummaryCards
           debit={debitTotal}
