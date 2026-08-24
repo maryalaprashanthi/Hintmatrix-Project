@@ -644,9 +644,10 @@ const DropdownQuestion = ({
                   show={
                     openAttributeId === item.questionAttributeId && !isSolved
                   }
-                  placement="bottom"
+                  placement="right"
                   rootClose
                   container={document.body}
+                  popperConfig={{ strategy: "fixed" }}
                   onToggle={(nextShow) => {
                     if (!nextShow) {
                       setOpenAttributeId(null);

@@ -18,14 +18,15 @@ function Student() {
   const fileInputRef = useRef(null);
 
   // Fetch all Students
-  const fetchStudents = () => {
-    StudentService.getAllStudents()
-      .then((response) => {
-        setStudents(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching Students:", error);
-      });
+  const fetchStudents = async () => {
+    try {
+      const response = await StudentService.getAllStudents();
+      setStudents(response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching Students:", error);
+      return [];
+    }
   };
   const fetchColleges = async () => {
     try {
@@ -111,10 +112,36 @@ function Student() {
     setShowModal(true);
   };
 
+  const handleStudentDeleted = async (studentId) => {
+    const refreshedStudents = await fetchStudents();
+
+    setStudents((currentStudents) => {
+      const serverStillHasStudent = refreshedStudents.some(
+        (student) =>
+          String(student.userId || student.user_id) === String(studentId),
+      );
+
+      return serverStillHasStudent
+        ? currentStudents.filter(
+            (student) =>
+              String(student.userId || student.user_id) !== String(studentId),
+          )
+        : refreshedStudents;
+    });
+  };
+
   // Save / Update Student
   const handleSave = (studentData) => {
     if (selectedStudent) {
-      StudentService.updateStudent(selectedStudent.studentId, studentData)
+      const studentId = selectedStudent.userId || selectedStudent.studentId;
+
+      if (!studentId) {
+        console.error("Cannot update student without an ID:", selectedStudent);
+        alert("Unable to update Student: student ID is missing.");
+        return;
+      }
+
+      StudentService.updateStudent(studentId, studentData)
         .then(() => {
           fetchStudents();
           setSelectedStudent(null);
@@ -170,6 +197,7 @@ function Student() {
           <StudentTable
             data={students}
             onEdit={handleEditStudent}
+            onDeleted={handleStudentDeleted}
             refreshData={fetchStudents}
           />
         </div>

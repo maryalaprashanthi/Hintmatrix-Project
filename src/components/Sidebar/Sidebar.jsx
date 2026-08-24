@@ -42,26 +42,46 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const navigate = useNavigate();
 
   const normalizeRole = (value = "") =>
-    value
-      .toString()
-      .trim()
-      .toUpperCase()
-      .replace(/\s+/g, "_");
+    value.toString().trim().toUpperCase().replace(/\s+/g, "_");
 
   const userRole = normalizeRole(localStorage.getItem("role") || "GUEST");
   const isStudent = userRole === "STUDENT";
   const canAccessAdminMenu = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(userRole);
-  const canAccessCollegeMenu = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(userRole);
-  const canAccessCourseMenu = ["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"].includes(userRole);
-  const canAccessQuestionMenu = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(userRole);
+  const canAccessCollegeMenu = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(
+    userRole,
+  );
+  const canAccessCourseMenu = [
+    "SUPER_ADMIN",
+    "BRANCH_ADMIN",
+    "STUDENT",
+  ].includes(userRole);
+  const canAccessQuestionMenu = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(
+    userRole,
+  );
   const canAccessTableMenu = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(userRole);
-  const canAccessRuleEngine = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(userRole);
-  const canAccessStudentAttendance = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(userRole);
-  const canAccessPractice = ["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"].includes(userRole);
-  const canAccessExam = ["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"].includes(userRole);
-  const canAccessSessions = ["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"].includes(userRole);
-  const canAccessResults = ["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"].includes(userRole);
-  const canAccessCertificates = ["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"].includes(userRole);
+  const canAccessRuleEngine = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(
+    userRole,
+  );
+  const canAccessStudentAttendance = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(
+    userRole,
+  );
+  const canAccessPractice = ["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"].includes(
+    userRole,
+  );
+  const canAccessExam = ["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"].includes(
+    userRole,
+  );
+  const canAccessSessions = ["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"].includes(
+    userRole,
+  );
+  const canAccessResults = ["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"].includes(
+    userRole,
+  );
+  const canAccessCertificates = [
+    "SUPER_ADMIN",
+    "BRANCH_ADMIN",
+    "STUDENT",
+  ].includes(userRole);
   const canAccessSettings = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(userRole);
 
   const handleLogout = () => {
@@ -131,7 +151,11 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
                     <span>College</span>
                   </div>
 
-                  {collegeOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
+                  {collegeOpen ? (
+                    <MdKeyboardArrowUp />
+                  ) : (
+                    <MdKeyboardArrowDown />
+                  )}
                 </div>
               </NavLink>
 
@@ -260,15 +284,6 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
                     <MdCategory />
                     <span>Question Categories</span>
                   </NavLink>
-
-                  <NavLink
-                    to="/questions/questiontype2"
-                    className={subMenuClass}
-                    onClick={closeSidebar}
-                  >
-                    <MdQuiz />
-                    <span>Question Type 2</span>
-                  </NavLink>
                 </div>
               )}
             </>
@@ -350,7 +365,11 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
           )}
 
           {canAccessPractice && (
-            <NavLink to="/practice" className={menuClass} onClick={closeSidebar}>
+            <NavLink
+              to="/practice"
+              className={menuClass}
+              onClick={closeSidebar}
+            >
               <div className="menu-left">
                 <MdOutlineEdit />
                 <span>Practice</span>
@@ -368,7 +387,11 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
           )}
 
           {canAccessSessions && (
-            <NavLink to="/sessions" className={menuClass} onClick={closeSidebar}>
+            <NavLink
+              to="/sessions"
+              className={menuClass}
+              onClick={closeSidebar}
+            >
               <div className="menu-left">
                 <MdVideoLibrary />
                 <span>Sessions</span>
@@ -399,7 +422,11 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
           )}
 
           {canAccessSettings && (
-            <NavLink to="/settings" className={menuClass} onClick={closeSidebar}>
+            <NavLink
+              to="/settings"
+              className={menuClass}
+              onClick={closeSidebar}
+            >
               <div className="menu-left">
                 <MdSettings />
                 <span>Settings</span>
