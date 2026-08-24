@@ -1,6 +1,8 @@
 .stat-card {
   display: flex;
   align-items: center;
+  height: 100px;
+  box-sizing: border-box;
   padding: 18px 20px;
   border: 0.5px solid #c5c6d0;
   background-color: white; /* Soft yellow/amber border */

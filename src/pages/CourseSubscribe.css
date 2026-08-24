@@ -1,0 +1,497 @@
+.course-page {
+  width: 100%;
+  min-height: 100%;
+  padding: 20px;
+  background: #f6f8fc;
+  box-sizing: border-box;
+  font-family: "Poppins", "Segoe UI", sans-serif;
+}
+
+/* Full available dashboard width */
+.course-main-container {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 14px !important;
+  background: #1257df;
+  border-radius: 14px;
+  box-sizing: border-box;
+}
+
+/* Header */
+.course-header {
+  height: 45px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 8px;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.header-bookmark {
+  font-size: 22px;
+}
+
+/* White inner area */
+.course-content {
+  width: 100%;
+  padding: 13px;
+  background: #fff;
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+/* Course cards */
+.course-card {
+  width: 100%;
+  margin-bottom: 9px;
+  border: 0 !important;
+  border-radius: 13px !important;
+  box-shadow: 0 4px 15px rgba(40, 50, 90, 0.08);
+  overflow: hidden;
+}
+
+.course-card .card-body {
+  padding: 14px 20px;
+}
+
+.course-card .row {
+  min-height: 72px;
+}
+
+/* Colors */
+.course-purple {
+  --color: #5030c7;
+  --bg: #f0ecff;
+}
+
+.course-green {
+  --color: #08a869;
+  --bg: #e8f9f2;
+}
+
+.course-orange {
+  --color: #f38b00;
+  --bg: #fff5e6;
+}
+
+.course-blue {
+  --color: #1459dc;
+  --bg: #edf3ff;
+}
+
+.course-pink {
+  --color: #e52b63;
+  --bg: #fff0f5;
+}
+
+/* Icon */
+.course-icon-column {
+  display: flex;
+  align-items: center;
+}
+
+.course-icon-box {
+  width: 74px;
+  height: 74px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--color);
+  font-size: 38px;
+}
+
+/* Course details */
+.course-info {
+  padding-left: 10px !important;
+}
+
+.course-info h5 {
+  margin: 0 0 7px;
+  color: #11194d;
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.course-info p {
+  margin: 0;
+  color: #29325b;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+/* Price */
+.course-price-column,
+.course-validity-column {
+  position: relative;
+  min-height: 55px;
+  display: flex;
+  align-items: center;
+}
+
+.course-divider {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 55px;
+  background: #e5e8f1;
+}
+
+.course-price {
+  width: 100%;
+  text-align: center;
+  color: var(--color);
+  font-size: 23px;
+  font-weight: 700;
+}
+
+/* Validity */
+.validity-wrapper {
+  display: flex;
+  align-items: center;
+  padding-left: 22px;
+}
+
+.calendar-circle {
+  width: 35px;
+  height: 35px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 9px;
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--color);
+  font-size: 17px;
+}
+
+.validity-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.4;
+}
+
+.validity-text span {
+  color: #252b4b;
+  font-size: 12px;
+}
+
+.validity-text strong {
+  color: var(--color);
+  font-size: 13px;
+}
+
+/* Buy button */
+.buy-column {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.buy-btn {
+  min-width: 105px;
+  height: 40px;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: #31960e !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+.buy-btn:hover {
+  background: #278509 !important;
+}
+
+/* Free trial */
+.free-trial-card {
+  width: 100%;
+  margin-top: 19px;
+  border: 1px solid #e3defb !important;
+  border-radius: 12px !important;
+  background: #faf9ff;
+  box-shadow: 0 3px 12px rgba(50, 60, 100, 0.06);
+}
+
+.free-trial-card .card-body {
+  padding: 20px 25px;
+}
+
+.trial-left-image,
+.trial-right-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trophy-circle {
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f2edff;
+}
+
+.trophy-icon {
+  color: #f5ad00;
+  font-size: 62px;
+}
+
+.trial-content h4 {
+  margin: 0 0 14px;
+  color: #5633bd;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.trial-point {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 9px;
+  color: #20254c;
+  font-size: 12px;
+}
+
+.trial-point svg {
+  color: #5d31c5;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+.free-trial-btn {
+  margin-top: 8px;
+  padding: 8px 17px !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+  background: #5930c4 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+/* Trial illustration */
+.clipboard-illustration {
+  position: relative;
+  width: 85px;
+  height: 105px;
+  border: 7px solid #5935bd;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.clipboard-top {
+  position: absolute;
+  top: -17px;
+  left: 22px;
+  width: 28px;
+  height: 18px;
+  border-radius: 6px;
+  background: #7659d1;
+}
+
+.clipboard-body {
+  padding-top: 10px;
+}
+
+.clip-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 13px 7px -7px;
+}
+
+.clip-line svg {
+  color: #6550c9;
+  font-size: 9px;
+}
+
+.clip-line span {
+  flex: 1;
+  height: 3px;
+  background: #dddff0;
+}
+
+.clock-icon {
+  position: absolute;
+  right: -21px;
+  bottom: -16px;
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 5px solid #eeeaff;
+  border-radius: 50%;
+  background: #6b4dcc;
+  color: #fff;
+}
+
+/* Core facilities */
+.facilities-card {
+  width: 100%;
+  margin-top: 20px;
+  border: 1px solid #d9eeee !important;
+  border-radius: 12px !important;
+  background: #fcffff;
+  box-shadow: 0 3px 12px rgba(50, 60, 100, 0.05);
+}
+
+.facilities-card .card-body {
+  padding: 20px 25px;
+}
+
+.facilities-title {
+  margin: 0 0 15px;
+  color: #087c55;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.facility-list {
+  width: 100%;
+}
+
+.facility-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 35px;
+  padding: 6px 0;
+  border-bottom: 1px dashed #dce4e3;
+  color: #20284d;
+  font-size: 12px;
+}
+
+.facility-item:last-child {
+  border-bottom: 0;
+}
+
+.facility-item svg {
+  flex-shrink: 0;
+  color: #00a964;
+  font-size: 17px;
+}
+
+/* Facilities illustration */
+.facility-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.facility-illustration {
+  position: relative;
+  width: 80px;
+  height: 105px;
+  margin: auto;
+}
+
+.facility-clipboard {
+  position: absolute;
+  width: 76px;
+  height: 100px;
+  border: 6px solid #198c71;
+  border-radius: 7px;
+  background: #fff;
+}
+
+.facility-clip-top {
+  position: absolute;
+  top: -14px;
+  left: 22px;
+  width: 26px;
+  height: 17px;
+  border-radius: 5px;
+  background: #55a995;
+}
+
+.facility-check {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 17px 7px -10px;
+}
+
+.facility-check svg {
+  color: #32a882;
+  font-size: 10px;
+}
+
+.facility-check span {
+  flex: 1;
+  height: 3px;
+  background: #dcebe7;
+}
+
+.facility-pencil {
+  position: absolute;
+  right: -22px;
+  bottom: 2px;
+  color: #258c73;
+  font-size: 32px;
+  transform: rotate(-20deg);
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+  .course-page {
+    padding: 15px;
+  }
+
+  .course-divider {
+    display: none;
+  }
+
+  .course-price-column,
+  .course-validity-column {
+    margin-top: 10px;
+  }
+
+  .validity-wrapper {
+    padding-left: 0;
+  }
+
+  .buy-column {
+    justify-content: flex-start;
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 767px) {
+  .course-page {
+    padding: 10px;
+  }
+
+  .course-content {
+    padding: 8px;
+  }
+
+  .course-card .card-body {
+    padding: 15px;
+  }
+
+  .course-icon-column {
+    margin-bottom: 10px;
+  }
+
+  .course-price {
+    text-align: left;
+  }
+
+  .trial-left-image,
+  .trial-right-image {
+    margin: 15px 0;
+  }
+}

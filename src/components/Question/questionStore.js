@@ -6,10 +6,6 @@ const useQuestionStore = create((set) => ({
   question: {},
   droppableData: {},
   score: 0,
-  showCheckMistakes: false,
-  setCheckMistakes: (val) => {
-    set({ showCheckMistakes: val });
-  },
   setCurrentScore: async (id) => {
     const score = await QuestionAnswerService.getOverallMarks(id);
     set({ score });

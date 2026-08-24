@@ -1,11 +1,11 @@
-import axios from "axios";
+﻿import apiClient from "./apiClient";
 
-const BASE_URL = "http://localhost:8080/api/attendance";
+const BASE_URL = "/api/attendance";
 
 const AttendanceService = {
   // Get all attendance
   getAllAttendance: async () => {
-    const response = await axios.get(BASE_URL, {
+    const response = await apiClient.get(BASE_URL, {
       withCredentials: true,
     });
 
@@ -14,7 +14,7 @@ const AttendanceService = {
 
   // Get attendance by ID
   getAttendanceById: async (attendanceId) => {
-    const response = await axios.get(`${BASE_URL}/${attendanceId}`, {
+    const response = await apiClient.get(`${BASE_URL}/${attendanceId}`, {
       withCredentials: true,
     });
 
@@ -27,7 +27,7 @@ const AttendanceService = {
 
     formData.append("file", file);
 
-    const response = await axios.post(`${BASE_URL}/upload`, formData, {
+    const response = await apiClient.post(`${BASE_URL}/upload`, formData, {
       withCredentials: true,
       headers: {
         "Content-Type": "multipart/form-data",
@@ -39,7 +39,7 @@ const AttendanceService = {
 
   // Create attendance
   createAttendance: async (data) => {
-    const response = await axios.post(BASE_URL, data, {
+    const response = await apiClient.post(BASE_URL, data, {
       withCredentials: true,
     });
 
@@ -48,7 +48,7 @@ const AttendanceService = {
 
   // Update attendance
   updateAttendance: async (attendanceId, data) => {
-    const response = await axios.put(`${BASE_URL}/${attendanceId}`, data, {
+    const response = await apiClient.put(`${BASE_URL}/${attendanceId}`, data, {
       withCredentials: true,
     });
 
@@ -57,7 +57,7 @@ const AttendanceService = {
 
   // Delete attendance
   deleteAttendance: async (attendanceId) => {
-    const response = await axios.delete(`${BASE_URL}/${attendanceId}`, {
+    const response = await apiClient.delete(`${BASE_URL}/${attendanceId}`, {
       withCredentials: true,
     });
 
@@ -66,3 +66,4 @@ const AttendanceService = {
 };
 
 export default AttendanceService;
+

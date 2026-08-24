@@ -17,12 +17,20 @@ import { FaSearch, FaPlus, FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "./QuestionList.css";
 import AddQuestionModal from "./AddQuestionModal";
+import QuestionType2Modal from "./QuestionType2Modal";
+import { getQuestionTypeByChapter } from "../../utils/questionTypeMapping";
 
 const QuestionList = () => {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
+  const userRole = (localStorage.getItem("role") || "GUEST")
+    .toString()
+    .trim()
+    .toUpperCase();
+  const isStudent = userRole === "STUDENT";
   // edit functionality
   // const [questionData,setQuestionData] = useState(null);
 
@@ -37,6 +45,9 @@ const QuestionList = () => {
   const courseId = searchParams.get("courseId");
   const chapterId = searchParams.get("chapterId");
   const categoryId = searchParams.get("categoryId");
+  const questionType = getQuestionTypeByChapter(chapterId);
+  const showQuestionType2 =
+    questionType === "JOURNAL" || questionType === "DROPDOWN";
 
   console.log("Course ID:", courseId);
   console.log("Chapter ID:", chapterId);
@@ -66,7 +77,22 @@ const QuestionList = () => {
         console.log("Admin question response:", response);
         console.log("Admin question data:", response.data);
       }
-      setQuestions(response.data);
+
+      const loadedQuestions = Array.isArray(response.data) ? response.data : [];
+
+      if (courseId && chapterId && categoryId) {
+        const matchesMapping = (question) =>
+          String(question.courseId ?? question.course_id) ===
+            String(courseId) &&
+          String(question.chapterId ?? question.chapter_id) ===
+            String(chapterId) &&
+          String(question.categoryId ?? question.category_id) ===
+            String(categoryId);
+
+        setQuestions(loadedQuestions.filter(matchesMapping));
+      } else {
+        setQuestions(loadedQuestions);
+      }
     } catch (error) {
       console.error("Error loading questions:", error);
     }
@@ -74,14 +100,14 @@ const QuestionList = () => {
 
   // used to show questions matching searched keywords
   const filteredQuestions = questions.filter((question) =>
-    question.questionText.toLowerCase().includes(search.toLowerCase()),
+    (question.questionText || "").toLowerCase().includes(search.toLowerCase()),
   );
 
   const isQuestionActive = (question) =>
     question.activeRow !== false && question.activeRow !== "false";
 
   // Upload
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const file = e.target.files[0];
 
     if (!file) return;
@@ -90,8 +116,17 @@ const QuestionList = () => {
 
     alert(`Selected File: ${file.name}`);
 
-    // Backend upload API later
-
+    const formData = new FormData();
+    try {
+      formData.append("file", file);
+      formData.append("courseId", courseId);
+      formData.append("categoryId", categoryId);
+      formData.append("chapterId", chapterId);
+      const response = await QuestionService.uploadExcel(formData);
+      console.log("Excel response is ", response);
+    } catch (error) {
+      console.error("Error is: ", error);
+    }
     e.target.value = "";
   };
 
@@ -108,7 +143,8 @@ const QuestionList = () => {
   const handleEdit = (question) => {
     if (!isQuestionActive(question)) return;
 
-    alert(`Editing: ${question.questionText}`);
+    setSelectedQuestion(question);
+    setShowModal(true);
   };
 
   // Enable / Disable
@@ -165,36 +201,44 @@ const QuestionList = () => {
           <p className="question-count">{filteredQuestions.length} Questions</p>
         </Col>
 
-        <Col
-          lg={6}
-          className="d-flex justify-content-lg-end gap-2 mt-3 mt-lg-0"
-        >
-          {/* Hidden Upload Input */}
-          {/* Look into this */}
-          <input
-            type="file"
-            ref={fileInputRef}
-            accept=".csv,.xlsx,.xls"
-            style={{ display: "none" }}
-            onChange={handleFileUpload}
-          />
-
-          {/* Upload Button */}
-
-          <button
-            className="btn btn-primary"
-            onClick={() => fileInputRef.current.click()}
+        {!isStudent && (
+          <Col
+            lg={6}
+            className="d-flex justify-content-lg-end gap-2 mt-3 mt-lg-0"
           >
-            ⬆ Upload
-          </button>
+            {/* Hidden Upload Input */}
+            {/* Look into this */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept=".csv,.xlsx,.xls"
+              style={{ display: "none" }}
+              onChange={handleFileUpload}
+            />
 
-          {/* Add Question */}
+            {/* Upload Button */}
 
-          <Button variant="primary" onClick={() => setShowModal(true)}>
-            <FaPlus className="me-2" />
-            Add Question
-          </Button>
-        </Col>
+            <button
+              className="btn btn-primary"
+              onClick={() => fileInputRef.current.click()}
+            >
+              ⬆ Upload
+            </button>
+
+            {/* Add Question */}
+
+            <Button
+              variant="primary"
+              onClick={() => {
+                setSelectedQuestion(null);
+                setShowModal(true);
+              }}
+            >
+              <FaPlus className="me-2" />
+              Add Question
+            </Button>
+          </Col>
+        )}
       </Row>
 
       {/* Search */}
@@ -297,22 +341,51 @@ const QuestionList = () => {
         )}
       </ListGroup>
 
-      {showModal && (
-        <AddQuestionModal
-          courseId={courseId}
-          chapterId={chapterId}
-          categoryId={categoryId}
-          onClose={() => setShowModal(false)}
-          onSave={async (newQuestion) => {
-            console.log("New Question:", newQuestion);
-            await loadQuestions();
-            setShowModal(false);
-            setShowSuccess(true);
-
-            await loadQuestions();
-          }}
-        />
-      )}
+      {showModal &&
+        (showQuestionType2 ? (
+          <QuestionType2Modal
+            show={true}
+            questionData={selectedQuestion}
+            initialCourseId={courseId}
+            initialChapterId={chapterId}
+            initialCategoryId={categoryId}
+            onClose={() => {
+              setShowModal(false);
+              setSelectedQuestion(null);
+            }}
+            onSave={async (questionData) => {
+              if (selectedQuestion?.questionId) {
+                await QuestionService.update(
+                  selectedQuestion.questionId,
+                  questionData,
+                );
+              } else {
+                await QuestionService.create(questionData);
+              }
+              await loadQuestions();
+              setShowModal(false);
+              setSelectedQuestion(null);
+              setShowSuccess(true);
+            }}
+          />
+        ) : (
+          <AddQuestionModal
+            courseId={courseId}
+            chapterId={chapterId}
+            categoryId={categoryId}
+            initialData={selectedQuestion}
+            onClose={() => {
+              setShowModal(false);
+              setSelectedQuestion(null);
+            }}
+            onSave={async () => {
+              await loadQuestions();
+              setShowModal(false);
+              setSelectedQuestion(null);
+              setShowSuccess(true);
+            }}
+          />
+        ))}
       {showSuccess && (
         <SuccessModal
           show={showSuccess}

@@ -11,6 +11,8 @@ import QuestionService from "../../services/QuestionService";
 import RuleEngineService from "../../services/RuleEngineService";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import { isDropdownAttributeSolved } from "./dropdownAnswerStatus";
+import MistakesModal from "../Question/MistakesModal";
+import useQuestionStore from "../Question/questionStore";
 
 const getRuleConditions = (rule) =>
   [1, 2, 3, 4]
@@ -47,11 +49,12 @@ const getRuleConditions = (rule) =>
 
 const DropdownPage = () => {
   const { questionId } = useParams();
-
+  const { showCheckMistakes } = useQuestionStore();
   const [question, setQuestion] = useState(null);
   const [answeredData, setAnsweredData] = useState({});
   const [questionTables, setQuestionTables] = useState([]);
   const [totalScore, setTotalScore] = useState(0);
+  const [checkMistakes, setCheckMistakes] = useState(false);
 
   /*
    * =========================================================
@@ -83,46 +86,22 @@ const DropdownPage = () => {
       console.log("User ID:", userId);
       console.log("Question ID:", qId);
 
-      // 1. Get saved correct answers
       const savedAnswers =
         await QuestionAnswerService.getAnswersByUserAndQuestion(userId, qId);
 
       console.log("DROPDOWN SAVED QUESTION ANSWERS:", savedAnswers);
 
-      // 2. Get answer events
-      let answerEvents = [];
-
-      try {
-        answerEvents = await QuestionAnswerService.getAnswerEventsByQuestionId(
-          userId,
-          qId,
-        );
-
-        console.log("DROPDOWN SAVED ANSWER EVENTS:", answerEvents);
-      } catch (eventError) {
-        console.warn("Could not load Dropdown answer events:", eventError);
-      }
-
-      // 3. Latest event for each attribute
-      const eventMap = new Map();
-
-      (answerEvents || []).forEach((event) => {
-        const attributeId = String(event.attributeId);
-
-        const existing = eventMap.get(attributeId);
-
-        if (
-          !existing ||
-          Number(event.answerEventId || 0) > Number(existing.answerEventId || 0)
-        ) {
-          eventMap.set(attributeId, event);
-        }
-      });
-
-      // 4. Rebuild answeredData
       const formattedData = {};
+      const tableLookup = new Map(
+        (loadedQuestion.questionAttributes || []).flatMap((attribute) =>
+          (attribute.ruleConditions || []).map((condition) => [
+            `${condition.tableId}:${condition.headerId}`,
+            condition.tableName,
+          ]),
+        ),
+      );
 
-      (savedAnswers || []).forEach((answer) => {
+      (Array.isArray(savedAnswers) ? savedAnswers : []).forEach((answer) => {
         const attribute = (loadedQuestion.questionAttributes || []).find(
           (item) => String(item.attributeId) === String(answer.attributeId),
         );
@@ -137,16 +116,18 @@ const DropdownPage = () => {
 
         const questionAttributeId = attribute.questionAttributeId;
 
-        const isDebit = String(answer.headerId) === "1";
-
         const matchingCondition = (attribute.ruleConditions || []).find(
           (condition) =>
             String(condition.tableId) === String(answer.tableNameId) &&
             String(condition.headerId) === String(answer.headerId),
         );
 
-        const tableName = matchingCondition?.tableName || "";
+        const tableName =
+          matchingCondition?.tableName ||
+          tableLookup.get(`${answer.tableNameId}:${answer.headerId}`) ||
+          "";
 
+        const isDebit = String(answer.headerId) === "1";
         const particulars = isDebit
           ? `${tableName}..........Dr`
           : `To ${tableName}`;
@@ -157,34 +138,21 @@ const DropdownPage = () => {
 
         formattedData[questionAttributeId].push({
           questionAttributeId,
-
           date: "",
           particulars,
-
           lf: "",
-
           debit: isDebit ? (answer.amount ?? attribute.amount ?? 0) : "",
-
           credit: isDebit ? "" : (answer.amount ?? attribute.amount ?? 0),
-
           valid: true,
-
           answerId: answer.answerId || null,
-
-          answerEventId:
-            eventMap.get(String(answer.attributeId))?.answerEventId || null,
-
+          answerEventId: null,
           tableNameId: answer.tableNameId,
-
           headerId: answer.headerId,
-
           attributeId: answer.attributeId,
-
           arithmetic: answer.arithmetic,
         });
       });
 
-      // 5. Add Being row for restored attributes
       Object.keys(formattedData).forEach((questionAttributeId) => {
         const attribute = (loadedQuestion.questionAttributes || []).find(
           (item) =>
@@ -195,13 +163,20 @@ const DropdownPage = () => {
           return;
         }
 
-        formattedData[questionAttributeId].push({
-          date: "",
-          particulars: `(Being ${attribute.attributeName})`,
-          lf: "",
-          debit: "",
-          credit: "",
-        });
+        const existing = formattedData[questionAttributeId];
+        const hasBeingRow = existing.some((entry) =>
+          entry.particulars?.startsWith("(Being"),
+        );
+
+        if (!hasBeingRow) {
+          existing.push({
+            date: "",
+            particulars: `(Being ${attribute.attributeName})`,
+            lf: "",
+            debit: "",
+            credit: "",
+          });
+        }
       });
 
       console.log("DROPDOWN RESTORED ANSWERED DATA:", formattedData);
@@ -209,7 +184,6 @@ const DropdownPage = () => {
       setAnsweredData(formattedData);
     } catch (error) {
       console.error("Failed to load Dropdown saved answers:", error);
-
       setAnsweredData({});
     }
   };
@@ -364,6 +338,17 @@ const DropdownPage = () => {
     .filter((item) => !solvedAttributeIds.has(item.questionAttributeId))
     .reduce((total, item) => total + (Number(item.amount2) || 0), 0);
 
+  if (checkMistakes) {
+    console.log("I got rendered check mistakes");
+    return (
+      <MistakesModal
+        questionId={questionId}
+        setCheckMistakes={setCheckMistakes}
+        checkMistakes={checkMistakes}
+      />
+    );
+  }
+
   return (
     <div>
       <Row>
@@ -371,6 +356,7 @@ const DropdownPage = () => {
           question={question}
           answeredData={answeredData}
           setAnsweredData={setAnsweredData}
+          setCheckMistakes={setCheckMistakes}
         />
       </Row>
 

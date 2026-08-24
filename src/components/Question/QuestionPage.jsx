@@ -1,12 +1,15 @@
 import { DragDropProvider } from "@dnd-kit/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import QuestionTable from "./QuestionTable";
 import useQuestionStore from "./questionStore";
 import { useParams } from "react-router-dom";
+import JournalPage from "../JournalQuestion/JournalPage";
+import DropdownPage from "../DropdownQuestions/DropdownPage";
 import RuleEngineService from "../../services/RuleEngineService";
 import QuestionService from "../../services/QuestionService";
 import { data } from "./SampleData";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
+import { getQuestionTypeByChapter } from "../../utils/questionTypeMapping";
 
 const questionMap = {
   credit: "credit particulars",
@@ -26,6 +29,7 @@ const answerMap = {
 };
 
 const QuestionPage = () => {
+  const [questionType, setQuestionType] = useState(null);
   const {
     moveQuestion,
     setQuestions,
@@ -42,7 +46,16 @@ const QuestionPage = () => {
   // console.log("Question Id:", questionId);
 
   useEffect(() => {
-    loadQuestions();
+    const init = async () => {
+      const response = await loadQuestions();
+      const type = getQuestionTypeByChapter(response?.data?.chapterId);
+      setQuestionType(type);
+
+      if (type === "DRAG_AND_DROP") {
+        await loadAnsweredQuestions();
+      }
+    };
+    init();
   }, [questionId]);
 
   const loadQuestions = async () => {
@@ -53,12 +66,81 @@ const QuestionPage = () => {
         obj.headers.map((header) => `${obj.name}-${header}`),
       );
       // console.log("All strings are ", allStrings);
-      setQuestions([response.data]);
+      await setQuestions([response.data]);
       setTableData(allStrings);
+      return response;
     } catch (error) {
       console.error("Failed to load question:", error);
+      return null;
     }
   };
+
+  const loadAnsweredQuestions = async () => {
+    const correctAnswers =
+      await QuestionAnswerService.getAnswersByQuestionId(questionId);
+    console.log("Completed data ", correctAnswers);
+
+    // Guard against a null/undefined/non-array response.
+    const savedAnswers = Array.isArray(correctAnswers) ? correctAnswers : [];
+    if (savedAnswers.length === 0) {
+      console.warn("No saved answers to restore:", correctAnswers);
+      return;
+    }
+
+    // Group by attributeId so we can move each attribute into its solved slot.
+    // Each key maps to an ARRAY of saved answers, since an attribute may have
+    // been placed into more than one target (table/header/arithmetic combo).
+    const answerMap = savedAnswers.reduce((map, answer) => {
+      if (!answer) return map;
+      const entries = (map[answer.attributeId] = map[answer.attributeId] || []);
+      entries.push({
+        totalAnswers: answer.totalAnswers,
+        targetId: `${answer.tableName}-${answer.headerName}-${answer.arithmetic}`,
+        conditionId: answer.conditionId,
+        pairAttributeId: answer.pairAttributeId,
+      });
+      return map;
+    }, {});
+
+    console.log("I have data in answerMap: ", answerMap);
+
+    // Restore each earlier answer. conditionId/pairAttributeId are often NOT
+    // returned by the question_answers endpoint, so rebuild them from the same
+    // RuleEngine source that the onDragEnd flow uses.
+    for (const [sourceId, answers] of Object.entries(answerMap)) {
+      const attributeId = Number(sourceId);
+      await setTotalAnswers(attributeId, answers[0].totalAnswers);
+      console.log(
+        "I am setting total answers for attributeId: ",
+        attributeId,
+        " as ",
+        answers[0].totalAnswers,
+      );
+      console.log(
+        `Total answers for sourceId ${sourceId}: `,
+        answers[0].totalAnswers,
+      );
+
+      for (const obj of answers) {
+        console.log("This is data fjf", obj);
+        await moveQuestion(
+          attributeId,
+          obj.targetId,
+          obj.conditionId,
+          obj.pairAttributeId,
+        );
+      }
+    }
+  };
+
+  if (questionType === "JOURNAL") {
+    return <JournalPage />;
+  }
+
+  if (questionType === "DROPDOWN") {
+    return <DropdownPage />;
+  }
+
   return (
     <DragDropProvider
       onDragEnd={async (Event) => {
@@ -80,13 +162,15 @@ const QuestionPage = () => {
             }
           }
           const [first, second, third] = targetId.split("-");
+          let count = 0;
           try {
             let actualAnswers = myQuestion.actualAnswers;
+            console.log("I am about to enter");
             if (myQuestion.actualAnswers.length == 0) {
+              console.log("I entered");
               const data =
                 await RuleEngineService.getAttributeAnswers(sourceId);
               const apiData = data[0];
-              let count = 0;
               let allHints = [];
               for (let i = 1; i <= 4; i++) {
                 const pairId = apiData.pairAttributeId;
@@ -116,6 +200,7 @@ const QuestionPage = () => {
               setTotalAnswers(sourceId, count);
               setHints(sourceId, allHints);
             }
+            if (count == 0) count = myQuestion.totalAnswers;
             let matched = false;
             let answerId = null;
 
@@ -146,10 +231,11 @@ const QuestionPage = () => {
               // present in answered to attemptingId. if there's no such id return
 
               console.log("I have already answered ", myQuestion.answered);
-
+              if (myQuestion.status != "wrong") setError(sourceId);
               const answeredIds = myQuestion.answered.map((a) => a.conditionId);
               let enter = false;
               let newValue = null;
+              console.log("My question si ", myQuestion);
               if (answeredIds.includes(myQuestion.attemptingId)) {
                 enter = true;
                 const nextAttempt = myQuestion.actualAnswers.find(
@@ -176,6 +262,7 @@ const QuestionPage = () => {
 
               console.log(body);
               console.log("I did wrong answer ");
+              console.log("My status is gggg", myQuestion.status);
               if (myQuestion.status != "wrong") setError(sourceId);
               // call answer events with post and body
               const response =
@@ -213,6 +300,9 @@ const QuestionPage = () => {
                 attributeId: sourceId,
                 arithmetic: third,
                 amount: myQuestion.amount,
+                conditionId: correctAnswer.conditionId,
+                pairAttributeId: correctAnswer.pairAttributeId,
+                totalAnswers: count,
               };
 
               // call score api

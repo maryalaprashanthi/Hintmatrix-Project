@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import LoginService from "../../services/LoginService";
@@ -7,6 +7,12 @@ import "./Login.css";
 function Login() {
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
 
   const [loginData, setLoginData] = useState({
     email: "",

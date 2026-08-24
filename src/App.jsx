@@ -53,6 +53,9 @@ import Landing from "./pages/Landing/Landing";
 import QuestionPage from "./components/Question/QuestionPage";
 import JournalPage from "./components/JournalQuestion/JournalPage";
 import DropdownPage from "./components/DropdownQuestions/DropdownPage";
+import CourseSubscribe from "./pages/CourseSubscribe";
+import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
+import Unauthorized from "./pages/Unauthorized/Unauthorized";
 
 function App() {
   const navigate = useNavigate();
@@ -144,7 +147,14 @@ function App() {
       <Route path="/" element={<Landing />} />
 
       <Route path="/login" element={<Login />} />
-      <Route element={<Layout />}>
+      <Route path="/unauthorized" element={<Unauthorized />} />
+      <Route
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
         {/* Dashboard */}
 
         <Route path="/dashboard" element={<Dashboard />} />
@@ -161,14 +171,42 @@ function App() {
         <Route path="/section" element={<Section />} />
 
         {/* Branch Admin */}
-        <Route path="/branch-admin" element={<BranchAdmin />} />
-        <Route path="/admin/branch-admin" element={<BranchAdmin />} />
+        <Route
+          path="/branch-admin"
+          element={
+            <ProtectedRoute allowedRoles={["SUPER_ADMIN", "BRANCH_ADMIN"]}>
+              <BranchAdmin />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/branch-admin"
+          element={
+            <ProtectedRoute allowedRoles={["SUPER_ADMIN", "BRANCH_ADMIN"]}>
+              <BranchAdmin />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Super Admin */}
-        <Route path="/admin/super-admin" element={<SuperAdmin />} />
+        <Route
+          path="/admin/super-admin"
+          element={
+            <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
+              <SuperAdmin />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Student */}
-        <Route path="/admin/student" element={<Student />} />
+        <Route
+          path="/admin/student"
+          element={
+            <ProtectedRoute allowedRoles={["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"]}>
+              <Student />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Courses */}
         <Route
@@ -246,6 +284,7 @@ function App() {
 
         <Route path="/journal/:questionId" element={<JournalPage />} />
         <Route path="/dropdown/:questionId" element={<DropdownPage />} />
+        <Route path="/course-subscribe" element={<CourseSubscribe />} />
       </Route>
     </Routes>
   );

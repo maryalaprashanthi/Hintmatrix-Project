@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
-import { Overlay, OverlayTrigger, Popover } from "react-bootstrap";
+import { Overlay, Popover } from "react-bootstrap";
 import "./JournalQuestion.css";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import {
@@ -64,6 +64,7 @@ const JournalQuestion = ({
 
   const handleAutofill = async () => {
     const item = helpRequest.item;
+
     const remainingConditions = getUnansweredRuleConditions(
       item.tables,
       answeredData[item.questionAttributeId] || [],
@@ -80,9 +81,7 @@ const JournalQuestion = ({
       const savedEntries = await Promise.all(
         remainingConditions.map(async ({ table, type, condition }) => {
           const particulars =
-            type === "Debit"
-              ? `${table.name}..........Dr`
-              : `To ${table.name}`;
+            type === "Debit" ? `${table.name}..........Dr` : `To ${table.name}`;
 
           const [answerResult, eventResult] = await Promise.all([
             QuestionAnswerService.saveAnswer({
@@ -94,6 +93,7 @@ const JournalQuestion = ({
               arithmetic: condition.arithmetic,
               amount: item.amount,
             }),
+
             QuestionAnswerService.processAnswerEvent({
               userId: 1,
               questionId: item.questionId,
@@ -129,18 +129,22 @@ const JournalQuestion = ({
       setAnsweredData((prev) => {
         const id = item.questionAttributeId;
         const existing = prev[id] || [];
+
         const beingRow = existing.find((entry) =>
           entry.particulars?.startsWith("(Being"),
         );
+
         const answerRows = existing.filter(
           (entry) =>
             !entry.particulars?.startsWith("(Being") && entry.valid === true,
         );
+
         const newEntries = savedEntries.filter(
           (entry) =>
             !answerRows.some(
               (existingEntry) =>
-                String(existingEntry.tableNameId) === String(entry.tableNameId) &&
+                String(existingEntry.tableNameId) ===
+                  String(entry.tableNameId) &&
                 String(existingEntry.headerId) === String(entry.headerId),
             ),
         );
@@ -197,10 +201,6 @@ const JournalQuestion = ({
 
       console.log("Selected Condition:", selectedCondition);
 
-      // Rule Engine tells us the correct option.
-      // It does NOT control whether the user can see/select
-      // Debit or Credit.
-
       const selectedHeaderId =
         selectedCondition?.headerId ?? (type === "Debit" ? 1 : 3);
 
@@ -213,8 +213,6 @@ const JournalQuestion = ({
       console.log("Selected Arithmetic:", selectedArithmetic);
       console.log("User Answer:", text);
 
-      // The configured table side is the answer key. The question attribute
-      // header may be "Transaction", so it cannot determine Debit/Credit.
       const isCorrect = Boolean(selectedCondition);
 
       const existingAnswers = answeredData[id] || [];
@@ -231,9 +229,6 @@ const JournalQuestion = ({
         return;
       }
 
-      // ===============================
-      // 1. ANSWER EVENT REQUEST
-      // ===============================
       const answerEventRequest = {
         userId: 1,
         questionId: item.questionId,
@@ -248,18 +243,11 @@ const JournalQuestion = ({
 
       console.log("ANSWER EVENT REQUEST:", answerEventRequest);
 
-      // ===============================
-      // 2. ALWAYS CALL ANSWER EVENT API
-      // ===============================
       const eventResult =
         await QuestionAnswerService.processAnswerEvent(answerEventRequest);
 
       console.log("ANSWER EVENT RESPONSE:", eventResult);
 
-      // ===============================
-      // 3. ONLY IF CORRECT
-      //    CALL QUESTION ANSWER API
-      // ===============================
       let questionAnswerResult = null;
 
       if (isCorrect) {
@@ -282,9 +270,6 @@ const JournalQuestion = ({
         console.log("QUESTION ANSWER RESPONSE:", questionAnswerResult);
       }
 
-      // ===============================
-      // 4. UPDATE SCORE
-      // ===============================
       if (loadTotalScore) {
         await loadTotalScore();
       }
@@ -342,9 +327,13 @@ const JournalQuestion = ({
         };
       });
 
+      setOpenAttributeId(null);
+
       if (!isCorrect) {
-        setOpenAttributeId(null);
         setHelpRequest({ item });
+        setShowHint(false);
+      } else {
+        setHelpRequest(null);
         setShowHint(false);
       }
     } catch (error) {
@@ -358,7 +347,7 @@ const JournalQuestion = ({
 
   return (
     <div>
-      <Table bordered hover>
+      <Table className="journal-table" bordered hover>
         <thead>
           <tr>
             <th>Transaction</th>
@@ -383,100 +372,120 @@ const JournalQuestion = ({
             return (
               <tr key={item.questionAttributeId}>
                 <td>
-                  <OverlayTrigger
-                    trigger={isSolved ? [] : "click"}
-                    placement="bottom"
-                    rootClose
-                    container={document.body}
-                    show={openAttributeId === item.questionAttributeId}
-                    onToggle={(nextShow) =>
-                      setOpenAttributeId(
-                        nextShow ? item.questionAttributeId : null,
-                      )
-                    }
-                    overlay={
-                      <Popover
-                        id={`popover-${item.questionAttributeId}`}
-                        className="journal-popover"
-                      >
-                        <Popover.Header as="h3" className="popover-header">
-                          Transaction
-                        </Popover.Header>
-
-                        <Popover.Body>
-                          <div
-                            style={{ width: "400px" }}
-                            className="popover-body"
-                          >
-                            <div>
-                              <strong>{item.attributeName}</strong>
-                            </div>
-
-                            <div style={{ marginTop: "10px" }}>
-                              Amount: ₹{item.amount || "-"}
-                            </div>
-
-                            <div style={{ marginTop: "10px" }}>
-                              {item.tables?.map((table) => (
-                                <div
-                                  key={table.id}
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "space-between",
-                                    marginBottom: "10px",
-                                  }}
-                                >
-                                  <strong>{table.name}</strong>
-
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      flexDirection: "row",
-                                      gap: "8px",
-                                    }}
-                                  >
-                                    <Button
-                                      onClick={() => handleAdd(item, "Debit", table)}
-                                      className="def"
-                                      style={{
-                                        width: "80px",
-                                      }}
-                                    >
-                                      Debit
-                                    </Button>
-
-                                    <Button
-                                      onClick={() => handleAdd(item, "Credit", table)}
-                                      className="def"
-                                      style={{
-                                        width: "80px",
-                                      }}
-                                    >
-                                      Credit
-                                    </Button>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </Popover.Body>
-                      </Popover>
-                    }
+                  <span
+                    ref={(element) => {
+                      attributeTargets.current[item.questionAttributeId] =
+                        element;
+                    }}
+                    className="transaction-popup-trigger"
+                    onClick={() => {
+                      if (!isSolved) {
+                        setOpenAttributeId((current) =>
+                          current === item.questionAttributeId
+                            ? null
+                            : item.questionAttributeId,
+                        );
+                      }
+                    }}
+                    style={{
+                      cursor: isSolved ? "not-allowed" : "pointer",
+                      opacity: isSolved ? 0.6 : 1,
+                    }}
                   >
-                    <span
-                      ref={(element) => {
-                        attributeTargets.current[item.questionAttributeId] =
-                          element;
-                      }}
-                      style={{
-                        cursor: isSolved ? "not-allowed" : "pointer",
-                        opacity: isSolved ? 0.6 : 1,
-                      }}
+                    {item.attributeName}
+                  </span>
+
+                  <Overlay
+                    show={openAttributeId === item.questionAttributeId}
+                    target={attributeTargets.current[item.questionAttributeId]}
+                    placement="right-start"
+                    container={document.body}
+                    rootClose
+                    onHide={() => setOpenAttributeId(null)}
+                    popperConfig={{
+                      strategy: "fixed",
+                      modifiers: [
+                        {
+                          name: "offset",
+                          options: {
+                            offset: [12, -8],
+                          },
+                        },
+                        {
+                          name: "preventOverflow",
+                          options: {
+                            boundary: "viewport",
+                            padding: 10,
+                          },
+                        },
+                        {
+                          name: "flip",
+                          options: {
+                            fallbackPlacements: [
+                              "left-start",
+                              "bottom-start",
+                              "top-start",
+                            ],
+                          },
+                        },
+                      ],
+                    }}
+                  >
+                    <Popover
+                      id={`popover-${item.questionAttributeId}`}
+                      className="journal-popover"
                     >
-                      {item.attributeName}
-                    </span>
-                  </OverlayTrigger>
+                      <Popover.Header
+                        as="div"
+                        className="journal-popover-header"
+                      >
+                        <span className="popover-title">Transaction</span>
+
+                        <button
+                          type="button"
+                          className="popover-close"
+                          onClick={() => setOpenAttributeId(null)}
+                          aria-label="Close"
+                        >
+                          ×
+                        </button>
+                      </Popover.Header>
+
+                      <Popover.Body className="journal-popover-body">
+                        <div className="popover-attribute-name">
+                          <strong>{item.attributeName}</strong>
+                        </div>
+
+                        <div className="popover-amount">
+                          Amount: ₹{item.amount || "-"}
+                        </div>
+
+                        <div className="popover-account-list">
+                          {item.tables?.map((table) => (
+                            <div key={table.id} className="account-row">
+                              <strong className="account-name">
+                                {table.name}
+                              </strong>
+
+                              <Button
+                                onClick={() => handleAdd(item, "Debit", table)}
+                                className="def transaction-btn"
+                              >
+                                Debit
+                              </Button>
+
+                              <Button
+                                onClick={() => handleAdd(item, "Credit", table)}
+                                className="def transaction-btn"
+                              >
+                                Credit
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </Popover.Body>
+                    </Popover>
+                  </Overlay>
                 </td>
 
                 <td>{item.amount || "-"}</td>
@@ -506,10 +515,16 @@ const JournalQuestion = ({
               <div className="text-danger small fw-semibold mb-2">
                 Incorrect answer
               </div>
+
               <div className="d-grid gap-2">
-                <Button variant="outline-warning" size="sm" onClick={handleHint}>
+                <Button
+                  variant="outline-warning"
+                  size="sm"
+                  onClick={handleHint}
+                >
                   💡 Hint
                 </Button>
+
                 <Button
                   variant="outline-primary"
                   size="sm"
@@ -519,11 +534,14 @@ const JournalQuestion = ({
                   ✦ {isAutofilling ? "Filling..." : "Autofill"}
                 </Button>
               </div>
+
               {showHint && (
                 <div className="alert alert-warning small mt-2 mb-0 p-2">
                   <strong>💡 Hint: </strong>
+
                   <span>
-                    {getNextCondition(helpRequest?.item)?.condition.information ||
+                    {getNextCondition(helpRequest?.item)?.condition
+                      .information ||
                       "Review the remaining Debit and Credit entries for this transaction."}
                   </span>
                 </div>

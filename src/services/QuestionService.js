@@ -1,21 +1,23 @@
+﻿import apiClient from "./apiClient";
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8080/api/questions";
+const BASE_URL = "/api/questions";
+const BASE_QUESTION_URL = "http://localhost:8080/api/questions";
 
 class QuestionService {
   getAll() {
-    return axios.get(BASE_URL, {
+    return apiClient.get(BASE_URL, {
       withCredentials: true,
     });
   }
 
   getQuestionText() {
-    return axios.get(`${BASE_URL}/QuestionText`, {
+    return apiClient.get(`${BASE_URL}/QuestionText`, {
       withCredentials: true,
     });
   }
   getQuestionsByMapping(courseId, chapterId, categoryId) {
-    return axios.get(`${BASE_URL}/filter`, {
+    return apiClient.get(`${BASE_URL}/filter`, {
       params: {
         courseId,
         chapterId,
@@ -25,19 +27,35 @@ class QuestionService {
     });
   }
   getQuestionAnswers(id) {
-    return axios.get(`${BASE_URL}/answers/${id}`, { withCredentials: true });
+    return apiClient.get(`${BASE_URL}/answers/${id}`, {
+      withCredentials: true,
+    });
   }
   create(questionRequestDTO) {
-    return axios.post(BASE_URL, questionRequestDTO, { withCredentials: true });
+    return apiClient.post(BASE_URL, questionRequestDTO, {
+      withCredentials: true,
+    });
+  }
+
+  update(questionId, questionRequestDTO) {
+    return apiClient.put(`${BASE_URL}/${questionId}`, questionRequestDTO, {
+      withCredentials: true,
+    });
+  }
+
+  uploadExcel(formData) {
+    return axios.post(`${BASE_QUESTION_URL}/upload`, formData, {
+      withCredentials: true,
+    });
   }
 
   getQuestionById(questionId) {
-    return axios.get(`${BASE_URL}/${questionId}`, {
+    return apiClient.get(`${BASE_URL}/${questionId}`, {
       withCredentials: true,
     });
   }
   deleteQuestion(id) {
-    return axios.delete(`${BASE_URL}/${id}`, { withCredentials: true });
+    return apiClient.delete(`${BASE_URL}/${id}`, { withCredentials: true });
   }
 }
 

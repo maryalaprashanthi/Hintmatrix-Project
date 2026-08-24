@@ -38,7 +38,7 @@ function SummaryCards({ debit, credit, total, solved, totalScore }) {
   ];
 
   return (
-    <div className="mt-2">
+    <div className="mt-2 mb-4">
       <Row>
         {summary.map((item) => (
           <Col md={3} key={item.title}>

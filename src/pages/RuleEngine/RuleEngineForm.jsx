@@ -70,8 +70,8 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
 
   const [formData, setFormData] = useState({
     chapterName: "",
-    pairAttributeName: "",
     tableAttributeName: "",
+    pairAttributeName: "",
     relationshipName: "",
     pairOrder: "",
 
@@ -111,12 +111,12 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
       setFormData({
         chapterName: selectedRuleData.chapterName || "",
 
-        pairAttributeName: selectedRuleData.pairAttributeName || "",
-
         tableAttributeName:
           selectedRuleData.tableAttributeName ||
           selectedRuleData.attributeName ||
           "",
+
+        pairAttributeName: selectedRuleData.pairAttributeName || "",
 
         relationshipName: selectedRuleData.relationshipName || "",
 
@@ -131,8 +131,8 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
     } else {
       setFormData({
         chapterName: "",
-        pairAttributeName: "",
         tableAttributeName: "",
+        pairAttributeName: "",
         relationshipName: "",
         pairOrder: "",
 
@@ -193,8 +193,8 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
   const handleSave = async () => {
     if (
       !formData.chapterName ||
-      !formData.pairAttributeName ||
       !formData.tableAttributeName ||
+      !formData.pairAttributeName ||
       !formData.relationshipName ||
       !formData.pairOrder
     ) {
@@ -204,8 +204,8 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
 
     const payload = {
       chapterName: formData.chapterName,
-      pairAttributeName: formData.pairAttributeName,
       attributeName: formData.tableAttributeName,
+      pairAttributeName: formData.pairAttributeName,
       relationshipName: formData.relationshipName,
       pairOrder: formData.pairOrder,
 
@@ -288,6 +288,35 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                   />
                 </div>
               </div>
+              {/* Table Attribute Name */}{" "}
+              <div className="form-group">
+                {" "}
+                <label>
+                  Table Attribute Name
+                  <span className="required">*</span>
+                </label>{" "}
+                <div className="input-box">
+                  {" "}
+                  <FaTag className="input-icon" />{" "}
+                  <Typeahead
+                    id="tableAttributeName"
+                    labelKey="name"
+                    options={tableAttributes}
+                    placeholder="Select Table Attribute"
+                    selected={tableAttributes.filter(
+                      (item) => item.name === formData.tableAttributeName,
+                    )}
+                    onChange={(selected) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        tableAttributeName: selected.length
+                          ? selected[0].name
+                          : "",
+                      }))
+                    }
+                  />{" "}
+                </div>{" "}
+              </div>
               {/* Pair Attribute */}
               <div className="form-group">
                 <label>
@@ -317,35 +346,6 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                     }
                   />
                 </div>
-              </div>
-              {/* Table Attribute Name */}{" "}
-              <div className="form-group">
-                {" "}
-                <label>
-                  Table Attribute Name
-                  <span className="required">*</span>
-                </label>{" "}
-                <div className="input-box">
-                  {" "}
-                  <FaTag className="input-icon" />{" "}
-                  <Typeahead
-                    id="tableAttributeName"
-                    labelKey="name"
-                    options={tableAttributes}
-                    placeholder="Select Table Attribute"
-                    selected={tableAttributes.filter(
-                      (item) => item.name === formData.tableAttributeName,
-                    )}
-                    onChange={(selected) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        tableAttributeName: selected.length
-                          ? selected[0].name
-                          : "",
-                      }))
-                    }
-                  />{" "}
-                </div>{" "}
               </div>
               {/* Relationship */}
               <div className="form-group">

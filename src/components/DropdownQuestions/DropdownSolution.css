@@ -19,16 +19,47 @@
   border-collapse: collapse;
   font-size: 0.95rem;
   margin: 0;
+  table-layout: fixed;
 }
 
 .dropdown-table thead th {
-  background-color: #ffffff !important;
-  color: #000000 !important;
-  font-weight: 600;
-  text-align: left;
-  padding: 10px 12px;
-  border: 1px solid #dee2e6;
+  background-color: #eef2ff !important;
+  color: #4338ca !important;
+  font-weight: 700;
+  text-align: center;
+  padding: 8px 6px;
+  border: 1px solid #e0e4f5;
+  height: 52px;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  white-space: normal;
   vertical-align: middle;
+}
+
+.dropdown-table thead th:first-child,
+.dropdown-table tbody td:first-child {
+  width: 12%;
+  text-align: center;
+}
+
+.dropdown-table thead th:nth-child(2),
+.dropdown-table tbody td:nth-child(2) {
+  width: 28%;
+  text-align: left;
+}
+
+.dropdown-table thead th:nth-child(3),
+.dropdown-table tbody td:nth-child(3) {
+  width: 8%;
+  text-align: center;
+}
+
+.dropdown-table thead th:nth-child(4),
+.dropdown-table tbody td:nth-child(4),
+.dropdown-table thead th:nth-child(5),
+.dropdown-table tbody td:nth-child(5) {
+  width: 26%;
+  text-align: center;
 }
 
 .dropdown-table thead th.center,
@@ -42,10 +73,11 @@
 }
 
 .dropdown-table tbody td {
-  padding: 10px 12px;
+  padding: 13px 16px;
   color: #1f2430;
   background-color: #ffffff;
-  border: 1px solid #dee2e6;
+  border: 1px solid #edf0f7;
+  height: 58px;
   vertical-align: middle;
 }
 

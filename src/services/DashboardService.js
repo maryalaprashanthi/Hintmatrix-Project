@@ -1,10 +1,10 @@
-import axios from "axios";
+﻿import apiClient from "./apiClient";
 
-const BASE_URL = "http://localhost:8080/api/dashboard";
+const BASE_URL = "/api/dashboard";
 
 class DashboardService {
   getDashboardData() {
-    return axios.get(
+    return apiClient.get(
       `${BASE_URL}`,
       { withCredentials: true }, // Passes authorization cookie
     );
@@ -12,3 +12,4 @@ class DashboardService {
 }
 
 export default new DashboardService();
+

@@ -4,24 +4,43 @@ import StudentService from "../../services/UserService";
 import DataGrid from "../../components/DataGrid";
 import ActionIconButton from "../../components/Common/ActionIconButton";
 
-function StudentTable({ data, onEdit, refreshData }) {
+function StudentTable({ data, onEdit, onDeleted, refreshData }) {
   const defaultColDef = {
     sortable: true,
     filter: true,
     resizable: true,
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (student) => {
+    const userId = student.userId || student.user_id;
+
+    if (!userId) {
+      console.error("Cannot delete student without an ID:", student);
+      alert("Unable to delete Student: student ID is missing.");
+      return;
+    }
+
     if (!window.confirm("Delete this Student?")) return;
 
-    StudentService.deleteStudent(id)
-      .then(() => {
+    StudentService.deleteStudent(userId)
+      .then(async () => {
+        if (onDeleted) {
+          await onDeleted(userId);
+        } else {
+          await refreshData();
+        }
+
         alert("Student deleted successfully!");
-        refreshData();
       })
       .catch((error) => {
-        console.error("Delete Error:", error);
-        alert("Failed to delete Student.");
+        const message =
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "Failed to delete Student.";
+
+        console.error("Delete Error:", error.response?.data || error);
+        alert(`Failed to delete Student: ${message}`);
       });
   };
 
@@ -71,7 +90,7 @@ function StudentTable({ data, onEdit, refreshData }) {
 
           <ActionIconButton
             type="delete"
-            onClick={() => handleDelete(params.data.studentId)}
+            onClick={() => handleDelete(params.data)}
             title="Delete student"
           />
         </div>
