@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import SuccessModal from "../../components/Common/SuccessModal";
+import { validateSuperAdminForm } from "./superAdminValidation";
 
 import {
   FaTimes,
@@ -54,16 +55,18 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
   if (!show) return null;
 
   const handleSave = () => {
-    if (
-      !name.trim() ||
-      !employeeId ||
-      !designation.trim() ||
-      !email.trim() ||
-      phoneNumber.length !== 10 ||
-      !password.trim() ||
-      !address.trim()
-    ) {
-      alert("Please fill all the fields. Phone Number must be 10 characters.");
+    const validation = validateSuperAdminForm({
+      name,
+      employeeId,
+      designation,
+      email,
+      phoneNumber,
+      password,
+      address,
+    });
+
+    if (!validation.isValid) {
+      alert(validation.message);
       return;
     }
 
@@ -72,13 +75,13 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
         userId: selectedSuperAdminData.userId,
       }),
 
-      name,
+      name: name.trim(),
       employeeId: Number(employeeId),
-      designation,
-      email,
-      phoneNumber,
-      password,
-      address,
+      designation: designation.trim(),
+      email: email.trim(),
+      phoneNumber: String(phoneNumber).replace(/\D/g, ""),
+      password: password.trim(),
+      address: address.trim(),
     };
 
     onSave(superAdminData);
@@ -126,7 +129,9 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
                     type="text"
                     placeholder="Enter Name"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) =>
+                      setName(e.target.value.replace(/[^A-Za-z\s]/g, ""))
+                    }
                   />
                 </div>
               </div>
@@ -141,10 +146,12 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
                   <FaIdBadge className="input-icon" />
 
                   <input
-                    type="number"
+                    type="text"
                     placeholder="Enter Employee ID"
                     value={employeeId}
-                    onChange={(e) => setEmployeeId(e.target.value)}
+                    onChange={(e) =>
+                      setEmployeeId(e.target.value.replace(/\D/g, ""))
+                    }
                   />
                 </div>
               </div>

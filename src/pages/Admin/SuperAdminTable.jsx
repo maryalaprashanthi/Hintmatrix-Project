@@ -11,7 +11,16 @@ function SuperAdminTable({ data, onEdit, refreshData }) {
     resizable: true,
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (superAdmin) => {
+    const id =
+      superAdmin?.userId ?? superAdmin?.user_id ?? superAdmin?.superAdminId;
+
+    if (!id) {
+      console.error("Cannot delete super admin without an ID:", superAdmin);
+      alert("Unable to delete Super Admin: ID is missing.");
+      return;
+    }
+
     if (!window.confirm("Delete this Super Admin?")) return;
 
     SuperAdminService.deleteSuperAdmin(id)
@@ -20,8 +29,14 @@ function SuperAdminTable({ data, onEdit, refreshData }) {
         refreshData();
       })
       .catch((error) => {
-        console.error("Delete Error:", error);
-        alert("Failed to delete Super Admin.");
+        const message =
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "Failed to delete Super Admin.";
+
+        console.error("Delete Error:", error.response?.data || error);
+        alert(`Failed to delete Super Admin: ${message}`);
       });
   };
 
@@ -81,7 +96,7 @@ function SuperAdminTable({ data, onEdit, refreshData }) {
 
           <ActionIconButton
             type="delete"
-            onClick={() => handleDelete(params.data.superAdminId)}
+            onClick={() => handleDelete(params.data)}
             title="Delete super admin"
           />
         </div>
