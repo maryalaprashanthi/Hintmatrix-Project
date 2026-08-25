@@ -200,7 +200,9 @@ function AddCourseModal({ show, onClose, onSave, selectedCourseData }) {
               {/* College */}
 
               <div className="form-group">
-                <label>College Name</label>
+                <label>
+                  College Name <span>*</span>
+                </label>
 
                 <div className="input-box">
                   <FaLayerGroup className="input-icon" />
@@ -230,7 +232,9 @@ function AddCourseModal({ show, onClose, onSave, selectedCourseData }) {
               {/* Branch */}
 
               <div className="form-group">
-                <label>Branch Name</label>
+                <label>
+                  Branch Name <span>*</span>
+                </label>
 
                 <div className="input-box">
                   <FaLayerGroup className="input-icon" />
@@ -254,7 +258,9 @@ function AddCourseModal({ show, onClose, onSave, selectedCourseData }) {
               {/* Course Name */}
 
               <div className="form-group">
-                <label>Course Name</label>
+                <label>
+                  Course Name <span>*</span>
+                </label>
 
                 <div className="input-box">
                   <FaBook className="input-icon" />

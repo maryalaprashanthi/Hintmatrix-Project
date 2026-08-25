@@ -575,15 +575,15 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
 
             <div className="form-grid">
               <div className="form-group">
-                <label>Active Row</label>
-
-                <div className="checkbox-box">
+                <div className="form-check form-switch">
                   <input
+                    className="form-check-input"
                     type="checkbox"
                     name="activeRow"
                     checked={formData.activeRow}
                     onChange={handleChange}
                   />
+                  <label className="form-check-label">Active</label>
                 </div>
               </div>
 

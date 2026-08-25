@@ -192,7 +192,9 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
               </div>
 
               <div className="form-card">
-                <h3 className="section-title">Address</h3>
+                <h3 className="section-title">
+                  Address <span>*</span>
+                </h3>
 
                 <div className="textarea-box">
                   <FaMapMarkerAlt className="input-icon" />
@@ -237,7 +239,7 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
               >
                 <FaSave className="me-2" />
 
-                {selectedCollegeData ? "Update College" : "Save"}
+                {selectedCollegeData ? "Update " : "Save"}
               </button>
             </div>
           </div>

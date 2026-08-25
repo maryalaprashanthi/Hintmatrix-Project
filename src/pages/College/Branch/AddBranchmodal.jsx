@@ -240,7 +240,9 @@ function AddBranchModal({ show, onClose, onSave, selectedBranchData }) {
           {/* Address */}
 
           <div className="form-card">
-            <h3 className="section-title">Address</h3>
+            <h3 className="section-title">
+              Address <span>*</span>
+            </h3>
 
             <div className="textarea-box">
               <FaMapMarkerAlt className="input-icon" />
