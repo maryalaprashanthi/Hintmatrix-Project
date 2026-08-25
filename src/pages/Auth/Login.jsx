@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import LoginService from "../../services/LoginService";
 import "./Login.css";
 
 function Login() {
-
   const navigate = useNavigate();
+
+  const googleLogin = () => {
+    window.location.href = "http://localhost:8080/oauth2/authorization/google";
+  };
 
   useEffect(() => {
     if (localStorage.getItem("token")) {
@@ -32,7 +35,6 @@ function Login() {
     e.preventDefault();
 
     try {
-
       setError("");
 
       const response = await LoginService.login(loginData);
@@ -50,9 +52,7 @@ function Login() {
 
       // Go to your existing dashboard
       navigate("/dashboard");
-
     } catch (error) {
-
       console.error("Login failed:", error);
 
       setError("Invalid email or password.");
@@ -61,16 +61,11 @@ function Login() {
 
   return (
     <div className="login-page">
-
       <div className="login-container">
-
         {/* LEFT SIDE */}
 
         <div className="login-left">
-
-          <h1>
-            Welcome to HINTMATRIX
-          </h1>
+          <h1>Welcome to HINTMATRIX</h1>
 
           <p>
             Learn • Practice • Excel
@@ -78,26 +73,18 @@ function Login() {
             <br />
             An AI Powered Learning Platform for Accounting Students.
           </p>
-
         </div>
-
 
         {/* RIGHT SIDE */}
 
         <div className="login-right">
-
           <div className="login-box">
-
             <h2>Login</h2>
 
-            <p>
-              Sign in to continue learning
-            </p>
+            <p>Sign in to continue learning</p>
 
             <form onSubmit={handleLogin}>
-
               <div className="login-input-group">
-
                 <label>Email</label>
 
                 <input
@@ -108,12 +95,9 @@ function Login() {
                   onChange={handleChange}
                   required
                 />
-
               </div>
 
-
               <div className="login-input-group">
-
                 <label>Password</label>
 
                 <input
@@ -124,57 +108,38 @@ function Login() {
                   onChange={handleChange}
                   required
                 />
-
               </div>
-
 
               <div className="login-options">
-
                 <label>
-                  <input type="checkbox" />
-                  {" "}Remember Me
+                  <input type="checkbox" /> Remember Me
                 </label>
 
-                <a href="#">
-                  Forgot Password?
-                </a>
-
+                <a href="#">Forgot Password?</a>
               </div>
 
+              {error && <div className="login-error">{error}</div>}
 
-              {error && (
-                <div className="login-error">
-                  {error}
-                </div>
-              )}
-
-
-              <button
-                type="submit"
-                className="login-btn"
-              >
+              <button type="submit" className="login-btn">
                 Login
               </button>
-
             </form>
 
+            <div className="login-or">OR</div>
+            <button
+              type="button"
+              className="google-login-btn"
+              onClick={googleLogin}
+            >
+              Continue with Google
+            </button>
 
             <div className="login-register">
-
-              New User?{" "}
-
-              <a href="#">
-                Register Here
-              </a>
-
+              New User? <Link to="/signup">Register Here</Link>
             </div>
-
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 }
