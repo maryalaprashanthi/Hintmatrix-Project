@@ -116,8 +116,13 @@ function AddBranchModal({ show, onClose, onSave, selectedBranchData }) {
         {/* Header */}
         <div className="modal-header">
           <div>
-            <h2>Edit Branch</h2>
-            <p>Create a new college branch.</p>
+            <h2>{selectedBranchData ? "Edit Branch" : "Add Branch"}</h2>
+
+            <p>
+              {selectedBranchData
+                ? "Update the branch information."
+                : "Create a new college branch."}
+            </p>
           </div>
 
           <button className="close-btn" onClick={onClose}>
@@ -235,7 +240,9 @@ function AddBranchModal({ show, onClose, onSave, selectedBranchData }) {
           {/* Address */}
 
           <div className="form-card">
-            <h3 className="section-title">Address</h3>
+            <h3 className="section-title">
+              Address <span>*</span>
+            </h3>
 
             <div className="textarea-box">
               <FaMapMarkerAlt className="input-icon" />
@@ -277,7 +284,7 @@ function AddBranchModal({ show, onClose, onSave, selectedBranchData }) {
             onClick={handleSave}
           >
             <FaSave className="me-2" />
-            Save
+            {selectedBranchData ? "Update" : "Save"}
           </button>
         </div>
       </div>
