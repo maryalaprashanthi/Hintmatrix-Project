@@ -8,7 +8,6 @@ import {
   Col,
   Button,
   Form,
-  InputGroup,
   ListGroup,
   Badge,
 } from "react-bootstrap";
@@ -243,21 +242,23 @@ const QuestionList = () => {
 
       {/* Search */}
 
-      <Row className="mb-4">
-        <Col lg={6}>
-          <InputGroup>
-            <InputGroup.Text>
+      <div className="question-filters mb-3">
+        <div className="question-search">
+          <div className="input-group shadow-sm rounded-3 overflow-hidden">
+            <span className="input-group-text bg-white border-0">
               <FaSearch />
-            </InputGroup.Text>
+            </span>
 
-            <Form.Control
+            <input
+              type="text"
+              className="form-control border-0"
               placeholder="Search Questions..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-          </InputGroup>
-        </Col>
-      </Row>
+          </div>
+        </div>
+      </div>
 
       {/* Question List */}
 

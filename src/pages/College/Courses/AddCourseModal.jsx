@@ -269,7 +269,10 @@ function AddCourseModal({ show, onClose, onSave, selectedCourseData }) {
                     placeholder="Enter Course Name"
                     value={courseName}
                     onChange={(e) => {
-                      const value = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                      const value = e.target.value.replace(
+                        /[^a-zA-Z0-9\s.\-()]/g,
+                        "",
+                      );
                       setCourseName(value);
                     }}
                   />
