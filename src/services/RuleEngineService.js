@@ -24,7 +24,9 @@ const RuleEngineService = {
 
   // Get Rule Engine by Attribute Id
   getRuleEngineByAttributeId: async (attributeId) => {
-    const response = await apiClient.get(`${BASE_URL}/attribute/${attributeId}`);
+    const response = await apiClient.get(
+      `${BASE_URL}/attribute/${attributeId}`,
+    );
 
     return response.data;
   },
@@ -88,4 +90,3 @@ const RuleEngineService = {
 };
 
 export default RuleEngineService;
-
