@@ -58,6 +58,8 @@ import DropdownPage from "./components/DropdownQuestions/DropdownPage";
 import CourseSubscribe from "./pages/CourseSubscribe";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import Unauthorized from "./pages/Unauthorized/Unauthorized";
+import ExamHub from "./pages/ExamHub/ExamHub";
+import ExamPaper from "./pages/ExamPaper/ExamPaper";
 
 function App() {
   const navigate = useNavigate();
@@ -291,6 +293,8 @@ function App() {
         <Route path="/journal/:questionId" element={<JournalPage />} />
         <Route path="/dropdown/:questionId" element={<DropdownPage />} />
         <Route path="/course-subscribe" element={<CourseSubscribe />} />
+        <Route path="/exam-hub" element={<ExamHub />} />
+        <Route path="/exam-paper" element={<ExamPaper />} />
       </Route>
     </Routes>
   );
