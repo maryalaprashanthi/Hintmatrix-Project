@@ -41,7 +41,7 @@ const getRuleConditions = (rule) =>
     };
   });
 
-const JournalPage = ({ id, variant }) => {
+const JournalPage = ({ id, variant = "practice" }) => {
   let { questionId } = useParams();
   if (id) {
     questionId = id;

@@ -4,6 +4,7 @@ import Select from "react-select";
 import CourseService from "../../services/CourseService";
 import ChapterService from "../../services/ChapterService";
 import QuestionCategoryService from "../../services/QuestionCategoryService";
+import QuestionTypeService from "../../services/QuestionTypeService";
 import TableAttributeService from "../../services/TableAttributeService";
 import QuestionService from "../../services/QuestionService";
 
@@ -31,12 +32,14 @@ function AddQuestionModal({
   const [courseId, setCourseId] = useState(null);
   const [chapterId, setChapterId] = useState(null);
   const [categoryId, setCategoryId] = useState(null);
+  const [questionTypeId, setQuestionTypeId] = useState(null);
   const [questionText, setQuestionText] = useState("");
 
   // Empty options (Backend team will populate)
   const [courseOptions, setCourseOptions] = useState([]);
   const [chapterOptions, setChapterOptions] = useState([]);
   const [categoryOptions, setCategoryOptions] = useState([]);
+  const [questionTypeOptions, setQuestionTypeOptions] = useState([]);
   const [balanceOptions, setBalanceOptions] = useState([]);
 
   const [attributes, setAttributes] = useState([
@@ -50,6 +53,7 @@ function AddQuestionModal({
 
   useEffect(() => {
     getData();
+    loadQuestionTypes();
     loadTableAttributes();
   }, []);
 
@@ -102,6 +106,19 @@ function AddQuestionModal({
     }
   };
 
+  const loadQuestionTypes = async () => {
+    try {
+      const response = await QuestionTypeService.getAll();
+      const options = (response.data || []).map((item) => ({
+        value: item.questionTypeId ?? item.id,
+        label: item.name ?? item.type ?? item.questionType,
+      }));
+      setQuestionTypeOptions(options);
+    } catch (error) {
+      console.error("Failed to load question types:", error);
+    }
+  };
+
   const loadTableAttributes = async () => {
     try {
       const response = await TableAttributeService.getRuleAttributes();
@@ -128,8 +145,19 @@ function AddQuestionModal({
     const selectedCourseId = initialData?.courseId ?? initialCourseId;
     const selectedChapterId = initialData?.chapterId ?? initialChapterId;
     const selectedCategoryId = initialData?.categoryId ?? initialCategoryId;
+    const selectedQuestionTypeId =
+      initialData?.questionTypeId ?? initialData?.question_type_id;
 
     setQuestionText(initialData?.questionText || "");
+
+    if (selectedQuestionTypeId && questionTypeOptions.length > 0) {
+      const selectedQuestionType = questionTypeOptions.find(
+        (option) => option.value === Number(selectedQuestionTypeId),
+      );
+      if (selectedQuestionType) {
+        setQuestionTypeId(selectedQuestionType);
+      }
+    }
 
     if (selectedCourseId && courseOptions.length > 0) {
       const selectedCourse = courseOptions.find(
@@ -163,6 +191,7 @@ function AddQuestionModal({
     courseOptions,
     chapterOptions,
     categoryOptions,
+    questionTypeOptions,
   ]);
 
   useEffect(() => {
@@ -201,6 +230,16 @@ function AddQuestionModal({
         if (cancelled) return;
 
         setQuestionText(question.questionText || "");
+        const loadedQuestionTypeId =
+          question.questionTypeId ?? question.question_type_id;
+        if (loadedQuestionTypeId && questionTypeOptions.length > 0) {
+          const selectedQuestionType = questionTypeOptions.find(
+            (option) => option.value === Number(loadedQuestionTypeId),
+          );
+          if (selectedQuestionType) {
+            setQuestionTypeId(selectedQuestionType);
+          }
+        }
         setAttributes(
           questionAttributes.length > 0
             ? (() => {
@@ -259,7 +298,7 @@ function AddQuestionModal({
     return () => {
       cancelled = true;
     };
-  }, [initialData]);
+  }, [initialData, questionTypeOptions]);
 
   const handleAttributeChange = (index, field, value) => {
     const updated = [...attributes];
@@ -287,7 +326,13 @@ function AddQuestionModal({
   };
 
   const handleSave = async () => {
-    if (!courseId || !chapterId || !categoryId || !questionText.trim()) {
+    if (
+      !courseId ||
+      !chapterId ||
+      !categoryId ||
+      !questionTypeId ||
+      !questionText.trim()
+    ) {
       alert("Please fill all required fields.");
       return;
     }
@@ -340,6 +385,7 @@ function AddQuestionModal({
       courseId: Number(courseId.value),
       chapterId: Number(chapterId.value),
       categoryId: Number(categoryId.value),
+      questionTypeId: Number(questionTypeId.value),
       questionText: questionText.trim(),
       questionAttributes,
     };
@@ -359,6 +405,7 @@ function AddQuestionModal({
     setCourseId(null);
     setChapterId(null);
     setCategoryId(null);
+    setQuestionTypeId(null);
     setQuestionText("");
 
     setAttributes([
@@ -477,6 +524,33 @@ function AddQuestionModal({
                     placeholder="Select Category"
                     isSearchable={true}
                     isDisabled={!!initialCategoryId}
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+                    styles={{
+                      menuPortal: (base) => ({
+                        ...base,
+                        zIndex: 9999,
+                      }),
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>
+                  Question Type <span>*</span>
+                </label>
+
+                <div className="input-box">
+                  <FaList className="input-icon" />
+                  <Select
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    options={questionTypeOptions}
+                    value={questionTypeId}
+                    onChange={setQuestionTypeId}
+                    placeholder="Select Question Type"
+                    isSearchable={true}
                     menuPortalTarget={document.body}
                     menuPosition="fixed"
                     styles={{

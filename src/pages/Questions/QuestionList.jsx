@@ -14,19 +14,24 @@ import {
   Badge,
 } from "react-bootstrap";
 
-import {
-  FaSearch,
-  FaPlus,
-  FaEye,
-  FaEdit,
-  FaTrash,
-} from "react-icons/fa";
+import { FaSearch, FaPlus, FaEye, FaEdit, FaTrash } from "react-icons/fa";
 
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "./QuestionList.css";
 import AddQuestionModal from "./AddQuestionModal";
 import QuestionType2Modal from "./QuestionType2Modal";
-import { getQuestionTypeByChapter } from "../../utils/questionTypeMapping";
+
+const getQuestionType = (question) => {
+  const type =
+    question?.questionType?.name ??
+    question?.questionType ??
+    question?.questionTypeName ??
+    question?.question_type_name;
+
+  return typeof type === "string"
+    ? type.trim().toUpperCase().replace(/\s+/g, "_")
+    : undefined;
+};
 
 const QuestionList = () => {
   const [search, setSearch] = useState("");
@@ -79,11 +84,10 @@ const QuestionList = () => {
   // QUESTION TYPE
   // =========================================================
 
-  const questionType = getQuestionTypeByChapter(chapterId);
+  const questionType = getQuestionType(selectedQuestion || questions[0]);
 
   const showQuestionType2 =
-    questionType === "JOURNAL" ||
-    questionType === "DROPDOWN";
+    questionType === "JOURNAL" || questionType === "DROPDOWN";
 
   console.log("Course ID:", courseId);
   console.log("Chapter ID:", chapterId);
@@ -109,17 +113,12 @@ const QuestionList = () => {
 
   useEffect(() => {
     try {
-      const savedErrors = localStorage.getItem(
-        QUESTION_UPLOAD_ERRORS_KEY,
-      );
+      const savedErrors = localStorage.getItem(QUESTION_UPLOAD_ERRORS_KEY);
 
       if (savedErrors) {
         const parsedErrors = JSON.parse(savedErrors);
 
-        if (
-          Array.isArray(parsedErrors) &&
-          parsedErrors.length > 0
-        ) {
+        if (Array.isArray(parsedErrors) && parsedErrors.length > 0) {
           setUploadErrors(parsedErrors);
         } else {
           setUploadErrors([]);
@@ -128,10 +127,7 @@ const QuestionList = () => {
         setUploadErrors([]);
       }
     } catch (error) {
-      console.error(
-        "Error loading saved question upload errors:",
-        error,
-      );
+      console.error("Error loading saved question upload errors:", error);
 
       setUploadErrors([]);
     }
@@ -151,75 +147,41 @@ const QuestionList = () => {
 
       if (courseId && chapterId && categoryId) {
         // Student flow
-        response =
-          await QuestionService.getQuestionsByMapping(
-            courseId,
-            chapterId,
-            categoryId,
-          );
-
-        console.log(
-          "Question API response:",
-          response,
+        response = await QuestionService.getQuestionsByMapping(
+          courseId,
+          chapterId,
+          categoryId,
         );
 
-        console.log(
-          "Question API data:",
-          response.data,
-        );
+        console.log("Question API response:", response);
+
+        console.log("Question API data:", response.data);
       } else {
         // Admin flow
-        response =
-          await QuestionService.getQuestionText();
+        response = await QuestionService.getQuestionText();
 
-        console.log(
-          "Admin question response:",
-          response,
-        );
+        console.log("Admin question response:", response);
 
-        console.log(
-          "Admin question data:",
-          response.data,
-        );
+        console.log("Admin question data:", response.data);
       }
 
-      const loadedQuestions =
-        Array.isArray(response.data)
-          ? response.data
-          : [];
+      const loadedQuestions = Array.isArray(response.data) ? response.data : [];
 
-      if (
-        courseId &&
-        chapterId &&
-        categoryId
-      ) {
+      if (courseId && chapterId && categoryId) {
         const matchesMapping = (question) =>
-          String(
-            question.courseId ??
-              question.course_id,
-          ) === String(courseId) &&
-          String(
-            question.chapterId ??
-              question.chapter_id,
-          ) === String(chapterId) &&
-          String(
-            question.categoryId ??
-              question.category_id,
-          ) === String(categoryId);
+          String(question.courseId ?? question.course_id) ===
+            String(courseId) &&
+          String(question.chapterId ?? question.chapter_id) ===
+            String(chapterId) &&
+          String(question.categoryId ?? question.category_id) ===
+            String(categoryId);
 
-        setQuestions(
-          loadedQuestions.filter(
-            matchesMapping,
-          ),
-        );
+        setQuestions(loadedQuestions.filter(matchesMapping));
       } else {
         setQuestions(loadedQuestions);
       }
     } catch (error) {
-      console.error(
-        "Error loading questions:",
-        error,
-      );
+      console.error("Error loading questions:", error);
     }
   };
 
@@ -227,11 +189,8 @@ const QuestionList = () => {
   // SEARCH
   // =========================================================
 
-  const filteredQuestions = questions.filter(
-    (question) =>
-      (question.questionText || "")
-        .toLowerCase()
-        .includes(search.toLowerCase()),
+  const filteredQuestions = questions.filter((question) =>
+    (question.questionText || "").toLowerCase().includes(search.toLowerCase()),
   );
 
   // =========================================================
@@ -239,8 +198,7 @@ const QuestionList = () => {
   // =========================================================
 
   const isQuestionActive = (question) =>
-    question.activeRow !== false &&
-    question.activeRow !== "false";
+    question.activeRow !== false && question.activeRow !== "false";
 
   // =========================================================
   // QUESTION EXCEL UPLOAD
@@ -251,10 +209,7 @@ const QuestionList = () => {
 
     if (!file) return;
 
-    console.log(
-      "Selected File:",
-      file,
-    );
+    console.log("Selected File:", file);
 
     // =====================================================
     // CLOSE OLD ERROR POPUP
@@ -269,10 +224,7 @@ const QuestionList = () => {
       // FILE
       // =====================================================
 
-      formData.append(
-        "file",
-        file,
-      );
+      formData.append("file", file);
 
       // =====================================================
       // REQUEST DTO
@@ -286,37 +238,22 @@ const QuestionList = () => {
 
       formData.append(
         "request",
-        new Blob(
-          [JSON.stringify(request)],
-          {
-            type: "application/json",
-          },
-        ),
+        new Blob([JSON.stringify(request)], {
+          type: "application/json",
+        }),
       );
 
-      console.log(
-        "Question upload request:",
-        request,
-      );
+      console.log("Question upload request:", request);
 
       // =====================================================
       // UPLOAD
       // =====================================================
 
-      const response =
-        await QuestionService.uploadExcel(
-          formData,
-        );
+      const response = await QuestionService.uploadExcel(formData);
 
-      console.log(
-        "Excel upload response:",
-        response,
-      );
+      console.log("Excel upload response:", response);
 
-      console.log(
-        "Excel upload response data:",
-        response.data,
-      );
+      console.log("Excel upload response data:", response.data);
 
       const result = response.data;
 
@@ -324,15 +261,9 @@ const QuestionList = () => {
       // GET BACKEND ERRORS
       // =====================================================
 
-      const errors =
-        Array.isArray(result?.errors)
-          ? result.errors
-          : [];
+      const errors = Array.isArray(result?.errors) ? result.errors : [];
 
-      console.log(
-        "Upload Errors:",
-        errors,
-      );
+      console.log("Upload Errors:", errors);
 
       // =====================================================
       // IMPORTANT:
@@ -365,17 +296,12 @@ const QuestionList = () => {
       //
       // Remove them from localStorage.
       // =====================================================
-
       else {
-        console.log(
-          "All questions uploaded successfully.",
-        );
+        console.log("All questions uploaded successfully.");
 
         setUploadErrors([]);
 
-        localStorage.removeItem(
-          QUESTION_UPLOAD_ERRORS_KEY,
-        );
+        localStorage.removeItem(QUESTION_UPLOAD_ERRORS_KEY);
 
         setShowUploadErrors(false);
       }
@@ -385,27 +311,17 @@ const QuestionList = () => {
       // =====================================================
 
       await loadQuestions();
-
     } catch (error) {
-      console.error(
-        "Question Excel upload error:",
-        error,
-      );
+      console.error("Question Excel upload error:", error);
 
       // =====================================================
       // BACKEND ERROR RESPONSE
       // =====================================================
 
-      const errorData =
-        error.response?.data;
+      const errorData = error.response?.data;
 
       if (errorData) {
-        const errors =
-          Array.isArray(
-            errorData.errors,
-          )
-            ? errorData.errors
-            : [];
+        const errors = Array.isArray(errorData.errors) ? errorData.errors : [];
 
         // ===================================================
         // SAVE ERRORS
@@ -424,14 +340,11 @@ const QuestionList = () => {
           alert(
             typeof errorData === "string"
               ? errorData
-              : errorData.message ||
-                  "Question upload failed.",
+              : errorData.message || "Question upload failed.",
           );
         }
       } else {
-        alert(
-          "Question upload failed. Please try again.",
-        );
+        alert("Question upload failed. Please try again.");
       }
     } finally {
       // =====================================================
@@ -447,8 +360,7 @@ const QuestionList = () => {
   // =========================================================
 
   const handleView = (question) => {
-    if (!isQuestionActive(question))
-      return;
+    if (!isQuestionActive(question)) return;
 
     navigate(
       `/questions/question-list/${question.questionId}?courseId=${courseId}&chapterId=${chapterId}&categoryId=${categoryId}`,
@@ -460,8 +372,7 @@ const QuestionList = () => {
   // =========================================================
 
   const handleEdit = (question) => {
-    if (!isQuestionActive(question))
-      return;
+    if (!isQuestionActive(question)) return;
 
     setSelectedQuestion(question);
     setShowModal(true);
@@ -472,20 +383,15 @@ const QuestionList = () => {
   // =========================================================
 
   const handleToggle = (id) => {
-    setQuestions(
-      (prevQuestions) =>
-        prevQuestions.map(
-          (question) =>
-            question.questionId === id
-              ? {
-                  ...question,
-                  activeRow:
-                    !isQuestionActive(
-                      question,
-                    ),
-                }
-              : question,
-        ),
+    setQuestions((prevQuestions) =>
+      prevQuestions.map((question) =>
+        question.questionId === id
+          ? {
+              ...question,
+              activeRow: !isQuestionActive(question),
+            }
+          : question,
+      ),
     );
   };
 
@@ -493,48 +399,29 @@ const QuestionList = () => {
   // DELETE
   // =========================================================
 
-  const handleDeleteClick = async (
-    question,
-  ) => {
-    if (!isQuestionActive(question))
-      return;
+  const handleDeleteClick = async (question) => {
+    if (!isQuestionActive(question)) return;
 
-    const {
-      questionId: id,
-    } = question;
+    const { questionId: id } = question;
 
-    const confirmDelete =
-      window.confirm(
-        "Are you sure you want to permanently delete this question?",
-      );
+    const confirmDelete = window.confirm(
+      "Are you sure you want to permanently delete this question?",
+    );
 
-    if (!confirmDelete)
-      return;
+    if (!confirmDelete) return;
 
     try {
-      await QuestionService.deleteQuestion(
-        id,
-      );
+      await QuestionService.deleteQuestion(id);
 
-      setQuestions(
-        (prevQuestions) =>
-          prevQuestions.filter(
-            (question) =>
-              question.questionId !==
-              id,
-          ),
+      setQuestions((prevQuestions) =>
+        prevQuestions.filter((question) => question.questionId !== id),
       );
 
       setShowDelete(true);
     } catch (error) {
-      console.error(
-        "Error deleting question:",
-        error,
-      );
+      console.error("Error deleting question:", error);
 
-      alert(
-        "Failed to delete question. Please try again.",
-      );
+      alert("Failed to delete question. Please try again.");
     }
   };
 
@@ -543,27 +430,16 @@ const QuestionList = () => {
   // =========================================================
 
   return (
-    <Container
-      fluid
-      className="question-page"
-    >
-
+    <Container fluid className="question-page">
       {/* =====================================================
           HEADER
       ====================================================== */}
 
       <Row className="align-items-center mb-4">
-
         <Col lg={6}>
+          <h2 className="page-title">Easy Model Questions</h2>
 
-          <h2 className="page-title">
-            Easy Model Questions
-          </h2>
-
-          <p className="question-count">
-            {filteredQuestions.length} Questions
-          </p>
-
+          <p className="question-count">{filteredQuestions.length} Questions</p>
         </Col>
 
         {!isStudent && (
@@ -571,7 +447,6 @@ const QuestionList = () => {
             lg={6}
             className="d-flex justify-content-lg-end align-items-center gap-2 mt-3 mt-lg-0"
           >
-
             {/* =================================================
                 HIDDEN FILE INPUT
             ================================================== */}
@@ -583,9 +458,7 @@ const QuestionList = () => {
               style={{
                 display: "none",
               }}
-              onChange={
-                handleFileUpload
-              }
+              onChange={handleFileUpload}
             />
 
             {/* =================================================
@@ -599,14 +472,9 @@ const QuestionList = () => {
               <Button
                 variant="outline-danger"
                 size="sm"
-                onClick={() =>
-                  setShowUploadErrors(
-                    true,
-                  )
-                }
+                onClick={() => setShowUploadErrors(true)}
               >
-                ⚠ Upload Errors (
-                {uploadErrors.length})
+                ⚠ Upload Errors ({uploadErrors.length})
               </Button>
             )}
 
@@ -616,9 +484,7 @@ const QuestionList = () => {
 
             <button
               className="btn btn-primary"
-              onClick={() =>
-                fileInputRef.current?.click()
-              }
+              onClick={() => fileInputRef.current?.click()}
             >
               ⬆ Upload
             </button>
@@ -630,9 +496,7 @@ const QuestionList = () => {
             <Button
               variant="primary"
               onClick={() => {
-                setSelectedQuestion(
-                  null,
-                );
+                setSelectedQuestion(null);
 
                 setShowModal(true);
               }}
@@ -640,10 +504,8 @@ const QuestionList = () => {
               <FaPlus className="me-2" />
               Add Question
             </Button>
-
           </Col>
         )}
-
       </Row>
 
       {/* =====================================================
@@ -662,11 +524,7 @@ const QuestionList = () => {
               className="form-control border-0"
               placeholder="Search Questions..."
               value={search}
-              onChange={(e) =>
-                setSearch(
-                  e.target.value,
-                )
-              }
+              onChange={(e) => setSearch(e.target.value)}
             />
           </div>
         </div>
@@ -677,172 +535,91 @@ const QuestionList = () => {
       ====================================================== */}
 
       <ListGroup className="question-list">
+        {filteredQuestions.length > 0 ? (
+          filteredQuestions.map((question, index) => (
+            <ListGroup.Item
+              key={question.questionId}
+              className={`question-item ${
+                !question.activeRow ? "disabled-question" : ""
+              }`}
+            >
+              <Row className="align-items-center">
+                <Col lg={8}>
+                  <h5 className="question-title">
+                    {index + 1}. {question.questionText}
+                  </h5>
 
-        {filteredQuestions.length >
-        0 ? (
+                  <div className="question-meta">
+                    <Badge bg="success">{question.courseName}</Badge>
 
-          filteredQuestions.map(
-            (
-              question,
-              index,
-            ) => (
+                    <Badge bg="warning">{question.chapterName}</Badge>
 
-              <ListGroup.Item
-                key={
-                  question.questionId
-                }
-                className={`question-item ${
-                  !question.activeRow
-                    ? "disabled-question"
-                    : ""
-                }`}
-              >
+                    <Badge bg="info">{question.categoryName}</Badge>
+                  </div>
+                </Col>
 
-                <Row className="align-items-center">
+                <Col
+                  lg={4}
+                  className="d-flex justify-content-lg-end align-items-center flex-wrap gap-2 mt-3 mt-lg-0"
+                >
+                  {/* VIEW */}
 
-                  <Col lg={8}>
-
-                    <h5 className="question-title">
-
-                      {index + 1}.{" "}
-
-                      {
-                        question.questionText
-                      }
-
-                    </h5>
-
-                    <div className="question-meta">
-
-                      <Badge bg="success">
-                        {
-                          question.courseName
-                        }
-                      </Badge>
-
-                      <Badge bg="warning">
-                        {
-                          question.chapterName
-                        }
-                      </Badge>
-
-                      <Badge bg="info">
-                        {
-                          question.categoryName
-                        }
-                      </Badge>
-
-                    </div>
-
-                  </Col>
-
-                  <Col
-                    lg={4}
-                    className="d-flex justify-content-lg-end align-items-center flex-wrap gap-2 mt-3 mt-lg-0"
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    disabled={!isQuestionActive(question)}
+                    onClick={() => handleView(question)}
                   >
+                    <FaEye className="me-1" />
+                    View
+                  </Button>
 
-                    {/* VIEW */}
+                  {/* EDIT */}
 
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      disabled={
-                        !isQuestionActive(
-                          question,
-                        )
-                      }
-                      onClick={() =>
-                        handleView(
-                          question,
-                        )
-                      }
-                    >
-                      <FaEye className="me-1" />
-                      View
-                    </Button>
+                  <Button
+                    variant="outline-warning"
+                    size="sm"
+                    disabled={!isQuestionActive(question)}
+                    onClick={() => handleEdit(question)}
+                  >
+                    <FaEdit className="me-1" />
+                    Edit
+                  </Button>
 
-                    {/* EDIT */}
+                  {/* ENABLE / DISABLE */}
 
-                    <Button
-                      variant="outline-warning"
-                      size="sm"
-                      disabled={
-                        !isQuestionActive(
-                          question,
-                        )
-                      }
-                      onClick={() =>
-                        handleEdit(
-                          question,
-                        )
-                      }
-                    >
-                      <FaEdit className="me-1" />
-                      Edit
-                    </Button>
+                  <Form.Check
+                    type="switch"
+                    id={`switch-${question.questionId}`}
+                    checked={isQuestionActive(question)}
+                    onChange={() => handleToggle(question.questionId)}
+                    label="Disable"
+                  />
 
-                    {/* ENABLE / DISABLE */}
+                  {/* DELETE */}
 
-                    <Form.Check
-                      type="switch"
-                      id={`switch-${question.questionId}`}
-                      checked={isQuestionActive(
-                        question,
-                      )}
-                      onChange={() =>
-                        handleToggle(
-                          question.questionId,
-                        )
-                      }
-                      label="Disable"
-                    />
-
-                    {/* DELETE */}
-
-                    <Button
-                      variant="outline-danger"
-                      size="sm"
-                      disabled={
-                        !isQuestionActive(
-                          question,
-                        )
-                      }
-                      onClick={() =>
-                        handleDeleteClick(
-                          question,
-                        )
-                      }
-                    >
-                      <FaTrash className="me-1" />
-                      Delete
-                    </Button>
-
-                  </Col>
-
-                </Row>
-
-              </ListGroup.Item>
-
-            ),
-          )
-
+                  <Button
+                    variant="outline-danger"
+                    size="sm"
+                    disabled={!isQuestionActive(question)}
+                    onClick={() => handleDeleteClick(question)}
+                  >
+                    <FaTrash className="me-1" />
+                    Delete
+                  </Button>
+                </Col>
+              </Row>
+            </ListGroup.Item>
+          ))
         ) : (
-
           <ListGroup.Item className="text-center py-5">
-
-            <h5>
-              No Questions Found
-            </h5>
+            <h5>No Questions Found</h5>
 
             <p className="text-muted mb-0">
-              Try searching with a
-              different keyword.
+              Try searching with a different keyword.
             </p>
-
           </ListGroup.Item>
-
         )}
-
       </ListGroup>
 
       {/* =====================================================
@@ -851,95 +628,55 @@ const QuestionList = () => {
 
       {showModal &&
         (showQuestionType2 ? (
-
           <QuestionType2Modal
             show={true}
-            questionData={
-              selectedQuestion
-            }
-            initialCourseId={
-              courseId
-            }
-            initialChapterId={
-              chapterId
-            }
-            initialCategoryId={
-              categoryId
-            }
+            questionData={selectedQuestion}
+            initialCourseId={courseId}
+            initialChapterId={chapterId}
+            initialCategoryId={categoryId}
             onClose={() => {
               setShowModal(false);
-              setSelectedQuestion(
-                null,
-              );
+              setSelectedQuestion(null);
             }}
-            onSave={async (
-              questionData,
-            ) => {
-
-              if (
-                selectedQuestion?.questionId
-              ) {
-
+            onSave={async (questionData) => {
+              if (selectedQuestion?.questionId) {
                 await QuestionService.update(
                   selectedQuestion.questionId,
                   questionData,
                 );
-
               } else {
-
-                await QuestionService.create(
-                  questionData,
-                );
-
+                await QuestionService.create(questionData);
               }
 
               await loadQuestions();
 
               setShowModal(false);
 
-              setSelectedQuestion(
-                null,
-              );
+              setSelectedQuestion(null);
 
               setShowSuccess(true);
             }}
           />
-
         ) : (
-
           <AddQuestionModal
-            courseId={
-              courseId
-            }
-            chapterId={
-              chapterId
-            }
-            categoryId={
-              categoryId
-            }
-            initialData={
-              selectedQuestion
-            }
+            courseId={courseId}
+            chapterId={chapterId}
+            categoryId={categoryId}
+            initialData={selectedQuestion}
             onClose={() => {
               setShowModal(false);
-              setSelectedQuestion(
-                null,
-              );
+              setSelectedQuestion(null);
             }}
             onSave={async () => {
-
               await loadQuestions();
 
               setShowModal(false);
 
-              setSelectedQuestion(
-                null,
-              );
+              setSelectedQuestion(null);
 
               setShowSuccess(true);
             }}
           />
-
         ))}
 
       {/* =====================================================
@@ -947,17 +684,9 @@ const QuestionList = () => {
       ====================================================== */}
 
       <QuestionUploadErrorsModal
-        show={
-          showUploadErrors
-        }
-        errors={
-          uploadErrors
-        }
-        onClose={() =>
-          setShowUploadErrors(
-            false,
-          )
-        }
+        show={showUploadErrors}
+        errors={uploadErrors}
+        onClose={() => setShowUploadErrors(false)}
       />
 
       {/* =====================================================
@@ -966,14 +695,8 @@ const QuestionList = () => {
 
       {showSuccess && (
         <SuccessModal
-          show={
-            showSuccess
-          }
-          onClose={() =>
-            setShowSuccess(
-              false,
-            )
-          }
+          show={showSuccess}
+          onClose={() => setShowSuccess(false)}
           message="Question added successfully!"
         />
       )}
@@ -984,18 +707,11 @@ const QuestionList = () => {
 
       {showDelete && (
         <DeleteModal
-          show={
-            showDelete
-          }
-          onClose={() =>
-            setShowDelete(
-              false,
-            )
-          }
+          show={showDelete}
+          onClose={() => setShowDelete(false)}
           message="Question deleted successfully!"
         />
       )}
-
     </Container>
   );
 };
