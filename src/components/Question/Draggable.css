@@ -11,8 +11,9 @@
   background-color: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 0.9rem;
+  min-height: 44px;
+  padding: clamp(8px, 1.5vw, 10px) clamp(10px, 2vw, 14px);
+  font-size: clamp(0.78rem, 1.4vw, 0.9rem);
   color: #1f2937;
   cursor: grab;
   transition:
@@ -33,10 +34,24 @@
   cursor: grabbing;
 }
 
+.drag-btn:focus-visible {
+  outline: 3px solid rgba(79, 70, 229, 0.3);
+  outline-offset: 2px;
+}
+
 .drag-btn-content {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: 8px;
   flex: 1;
+  min-width: 0;
+}
+
+.drag-btn-content > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 }
 
 .drag-status-icon {
@@ -76,9 +91,31 @@
 }
 
 @media (max-width: 575.98px) {
+  .drag-item {
+    margin-bottom: 10px;
+  }
+
   .drag-btn {
-    font-size: 0.85rem;
-    padding: 8px 10px;
+    min-height: 48px;
+    gap: 8px;
+    font-size: 0.82rem;
+  }
+
+  .drag-btn-content {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .drag-status-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 991.98px) {
+  .drag-btn {
+    min-height: 46px;
   }
 }
 
@@ -92,7 +129,7 @@
 ================================ */
 
 .question-actions-popover {
-  width: 240px;
+  width: min(240px, calc(100vw - 24px));
   padding: 0;
   border: 1px solid #e7e9ee;
   border-radius: 14px;
@@ -203,7 +240,7 @@
 ================================ */
 
 .hint-popover {
-  width: 220px;
+  width: min(220px, calc(100vw - 24px));
   border: 1px solid #e7e9ee;
   border-radius: 12px;
 
