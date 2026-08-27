@@ -109,9 +109,11 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
           <div className="branch-modal">
             <div className="modal-header">
               <div>
-                <h2>{selectedCollegeData ? "Edit College" : "Add College"}</h2>
+                <h2 className="fw-bold">
+                  {selectedCollegeData ? "Edit College" : "Add College"}
+                </h2>
 
-                <p>Register a new college.</p>
+                <p className="fw-bold">Register a new college.</p>
               </div>
 
               <button className="close-btn" onClick={onClose}>

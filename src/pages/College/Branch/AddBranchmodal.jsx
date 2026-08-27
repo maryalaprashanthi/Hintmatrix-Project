@@ -116,9 +116,11 @@ function AddBranchModal({ show, onClose, onSave, selectedBranchData }) {
         {/* Header */}
         <div className="modal-header">
           <div>
-            <h2>{selectedBranchData ? "Edit Branch" : "Add Branch"}</h2>
+            <h2 className="fw-bold">
+              {selectedBranchData ? "Edit Branch" : "Add Branch"}
+            </h2>
 
-            <p>
+            <p className="fw-bold">
               {selectedBranchData
                 ? "Update the branch information."
                 : "Create a new college branch."}
