@@ -141,7 +141,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
           {/* Courses */}
           {canAccessCourseMenu && !isStudent && (
             <>
-              <NavLink to="/college">
+              <NavLink to="/college" className="college-menu-link">
                 <div
                   className={`menu-item ${collegeOpen ? "active" : ""}`}
                   onClick={() => setCollegeOpen(!collegeOpen)}
