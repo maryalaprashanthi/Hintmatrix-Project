@@ -58,6 +58,7 @@ import DropdownPage from "./components/DropdownQuestions/DropdownPage";
 import CourseSubscribe from "./pages/CourseSubscribe";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import Unauthorized from "./pages/Unauthorized/Unauthorized";
+import ExamPage from "./components/Exam/ExamPage";
 
 function App() {
   const navigate = useNavigate();
@@ -292,6 +293,7 @@ function App() {
         <Route path="/dropdown/:questionId" element={<DropdownPage />} />
         <Route path="/course-subscribe" element={<CourseSubscribe />} />
       </Route>
+      <Route path="/exam-mine" element={<ExamPage />} />
     </Routes>
   );
 }

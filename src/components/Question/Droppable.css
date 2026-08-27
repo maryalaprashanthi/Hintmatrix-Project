@@ -2,7 +2,8 @@
   border-radius: 10px;
   overflow: visible;
   border: 1px solid #e5e7eb;
-  min-height: 160px;
+  min-height: clamp(130px, 20vw, 160px);
+  width: 100%;
 }
 
 .dropzone {
@@ -12,24 +13,27 @@
 }
 
 .dropzone-table {
-  font-size: 0.85rem;
+  width: 100%;
+  table-layout: fixed;
+  font-size: clamp(0.72rem, 1.4vw, 0.85rem);
   margin-bottom: 0;
 }
 
 .dropzone-table thead th {
   font-weight: 600;
-  padding: 10px 12px;
+  padding: clamp(8px, 1.7vw, 10px) clamp(8px, 2vw, 12px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .dropzone-table tbody td {
-  padding: 8px 12px;
+  padding: clamp(7px, 1.5vw, 8px) clamp(8px, 2vw, 12px);
   vertical-align: middle;
   border-bottom: 1px solid #f3f4f6;
+  overflow-wrap: anywhere;
 }
 
 .dropzone-table tfoot td {
-  padding: 10px 12px;
+  padding: clamp(8px, 1.7vw, 10px) clamp(8px, 2vw, 12px);
 }
 
 /* Debit / left side theme (blue-purple), matches Dr. columns in screenshot */
@@ -87,6 +91,42 @@
   .add-zone,
   .sub-zone {
     width: 100%;
+  }
+
+  .sub-zone {
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .droppable-group {
+    min-height: 0;
+    border-radius: 8px;
+  }
+
+  .dropzone-table {
+    font-size: 0.78rem;
+  }
+
+  .dropzone-table thead th,
+  .dropzone-table tbody td,
+  .dropzone-table tfoot td {
+    padding: 8px;
+  }
+
+  .dropzone-table th:first-child,
+  .dropzone-table td:first-child {
+    width: 68% !important;
+  }
+
+  .dropzone-table th:last-child,
+  .dropzone-table td:last-child {
+    width: 32% !important;
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 991.98px) {
+  .droppable-group {
+    min-height: 145px;
   }
 }
 
