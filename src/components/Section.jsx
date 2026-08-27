@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
+import { FaSave, FaTimes } from "react-icons/fa";
 import "./Section.css";
 
 import SectionForm from "./SectionForm";
@@ -163,7 +164,7 @@ function Section() {
                   className="close-btn"
                   onClick={handleClose}
                 >
-                  ✕
+                  <FaTimes />
                 </button>
               </div>
 
@@ -173,6 +174,24 @@ function Section() {
                   onSave={handleSaveSection}
                   onCancel={handleClose}
                 />
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleClose}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  form="section-form"
+                  className="btn btn-primary"
+                >
+                  <FaSave className="me-2" />
+                  {selectedSection ? "Update" : "Save"}
+                </button>
               </div>
             </div>
           </div>,

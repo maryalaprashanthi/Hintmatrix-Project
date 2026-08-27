@@ -98,7 +98,13 @@ function BranchAdminTable({ data, onEdit, refreshData }) {
 
             <ActionIconButton
               type="delete"
-              onClick={() => handleDelete(params.data.userId || params.data.studentId)}
+              onClick={() =>
+                handleDelete(
+                  params.data.userId ||
+                    params.data.branchAdminId ||
+                    params.data.studentId,
+                )
+              }
               title="Delete branch admin"
             />
           </div>

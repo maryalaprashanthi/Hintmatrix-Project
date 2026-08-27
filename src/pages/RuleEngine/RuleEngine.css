@@ -128,6 +128,13 @@
   font-weight: 600;
 }
 
+.field-error {
+  color: red;
+  font-size: 13px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
 .delete-btn:hover {
   background: #b91c1c;
 }

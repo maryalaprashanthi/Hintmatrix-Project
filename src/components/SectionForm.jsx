@@ -138,12 +138,14 @@ function SectionForm({ selectedSectionData, onSave, onCancel }) {
       return;
     }
 
+    const trimmedDescription = section.description?.trim() || "";
+
     const requestDTO = {
       collegeId: section.collegeId,
       branchId: section.branchId,
       courseId: section.courseId,
       sectionName: section.sectionName,
-      description: section.description,
+      description: trimmedDescription,
       activeRow: section.activeRow,
     };
 
@@ -152,7 +154,7 @@ function SectionForm({ selectedSectionData, onSave, onCancel }) {
   };
 
   return (
-    <form onSubmit={saveSection}>
+    <form id="section-form" onSubmit={saveSection}>
       <div className="form-card">
         <h3 className="section-title">Section Information</h3>
 
@@ -265,20 +267,20 @@ function SectionForm({ selectedSectionData, onSave, onCancel }) {
             <div className="input-box">
               <FaLayerGroup className="input-icon" />
               <input
-              type="text"
-              name="sectionName"
-              placeholder="Enter Section Name"
-              value={section.sectionName}
-              onChange={(e) => {
-              const value = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                type="text"
+                name="sectionName"
+                placeholder="Enter Section Name"
+                value={section.sectionName}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^a-zA-Z\s]/g, "");
 
-              setSection({
-              ...section,
-              sectionName: value,
-              });
-              }}
-              required
-             />
+                  setSection({
+                    ...section,
+                    sectionName: value,
+                  });
+                }}
+                required
+              />
             </div>
           </div>
         </div>
@@ -315,17 +317,6 @@ function SectionForm({ selectedSectionData, onSave, onCancel }) {
           />
           <label className="form-check-label">Active</label>
         </div>
-      </div>
-
-      {/* Footer Buttons Section */}
-      <div className="modal-footer">
-        <button type="button" className="btn btn-secondary" onClick={onCancel}>
-          Cancel
-        </button>
-        <button type="submit" className="btn btn-primary">
-          <FaSave className="me-2" />
-          Save
-        </button>
       </div>
     </form>
   );

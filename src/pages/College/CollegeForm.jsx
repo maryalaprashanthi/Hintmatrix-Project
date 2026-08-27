@@ -109,9 +109,11 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
           <div className="branch-modal">
             <div className="modal-header">
               <div>
-                <h2>{selectedCollegeData ? "Edit College" : "Add College"}</h2>
+                <h2 className="fw-bold">
+                  {selectedCollegeData ? "Edit College" : "Add College"}
+                </h2>
 
-                <p>Register a new college.</p>
+                <p className="fw-bold">Register a new college.</p>
               </div>
 
               <button className="close-btn" onClick={onClose}>
@@ -192,7 +194,9 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
               </div>
 
               <div className="form-card">
-                <h3 className="section-title">Address</h3>
+                <h3 className="section-title">
+                  Address <span>*</span>
+                </h3>
 
                 <div className="textarea-box">
                   <FaMapMarkerAlt className="input-icon" />
@@ -237,7 +241,7 @@ function CollegeForm({ show, onClose, onSave, selectedCollegeData }) {
               >
                 <FaSave className="me-2" />
 
-                {selectedCollegeData ? "Update College" : "Save"}
+                {selectedCollegeData ? "Update " : "Save"}
               </button>
             </div>
           </div>

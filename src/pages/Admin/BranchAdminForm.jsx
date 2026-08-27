@@ -4,6 +4,7 @@ import Select from "react-select";
 import CollegeService from "../../services/CollegeService";
 import BranchService from "../../services/BranchService";
 import SuccessModal from "../../components/Common/SuccessModal";
+import { validateBranchAdminForm } from "./superAdminValidation";
 
 import {
   FaTimes,
@@ -132,18 +133,20 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
   // Save
   // ==============================
   const handleSave = () => {
-    if (
-      !name.trim() ||
-      !employeeId ||
-      !designation.trim() ||
-      !collegeId ||
-      !branchId ||
-      !email.trim() ||
-      phoneNumber.length !== 10 ||
-      !password.trim() ||
-      !address.trim()
-    ) {
-      alert("Please fill all the fields. Phone Number must be 10 digits.");
+    const validation = validateBranchAdminForm({
+      name,
+      employeeId,
+      designation,
+      collegeId,
+      branchId,
+      email,
+      phoneNumber,
+      password,
+      address,
+    });
+
+    if (!validation.isValid) {
+      alert(validation.message);
       return;
     }
 
@@ -152,15 +155,15 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
         userId: selectedBranchAdminData.userId,
       }),
 
-      name,
+      name: name.trim(),
       employeeId: Number(employeeId),
-      designation,
+      designation: designation.trim(),
       collegeId: Number(collegeId),
       branchId: Number(branchId),
-      email,
-      phoneNumber,
-      password,
-      address,
+      email: email.trim(),
+      phoneNumber: String(phoneNumber).replace(/\D/g, ""),
+      password: password.trim(),
+      address: address.trim(),
     };
 
     onSave(branchAdminData);
@@ -213,7 +216,9 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
                     type="text"
                     placeholder="Enter Name"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) =>
+                      setName(e.target.value.replace(/[^A-Za-z\s]/g, ""))
+                    }
                   />
                 </div>
               </div>
@@ -229,10 +234,12 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
                   <FaIdBadge className="input-icon" />
 
                   <input
-                    type="number"
+                    type="text"
                     placeholder="Enter Employee ID"
                     value={employeeId}
-                    onChange={(e) => setEmployeeId(e.target.value)}
+                    onChange={(e) =>
+                      setEmployeeId(e.target.value.replace(/\D/g, ""))
+                    }
                   />
                 </div>
               </div>
