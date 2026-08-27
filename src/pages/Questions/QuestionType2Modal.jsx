@@ -288,7 +288,7 @@ function QuestionType2Modal({
 
   const loadAttributes = async () => {
     try {
-      const response = await TableAttributeService.getAll();
+      const response = await TableAttributeService.getRuleAttributes();
 
       console.log("TABLE ATTRIBUTE RESPONSE:", response);
       console.log("TABLE ATTRIBUTE DATA:", response.data);
@@ -304,6 +304,8 @@ function QuestionType2Modal({
       const options = data.map((item) => ({
         value: item.attributeId ?? item.attribute_id ?? item.id,
         label: item.name ?? item.attributeName ?? item.attribute_name ?? "",
+        amount1: item.amount1 ?? item.amount ?? "",
+        amount2: item.amount2 ?? item.amount2Value ?? item.amount ?? "",
       }));
 
       console.log("TABLE ATTRIBUTE OPTIONS:", options);
@@ -323,6 +325,20 @@ function QuestionType2Modal({
     updated[index] = {
       ...updated[index],
       [field]: value,
+    };
+
+    setQuestionAttributes(updated);
+  };
+
+  const handleAttributeSelection = (index, selected) => {
+    const updated = [...questionAttributes];
+
+    updated[index] = {
+      ...updated[index],
+      transaction: selected ? selected.value : "",
+      attributeId: selected ? selected.value : "",
+      amount1: selected ? selected.amount1 : "",
+      amount2: selected ? selected.amount2 : "",
     };
 
     setQuestionAttributes(updated);
@@ -656,11 +672,7 @@ function QuestionType2Modal({
                               ) || null
                             }
                             onChange={(selected) =>
-                              handleAttributeChange(
-                                index,
-                                "transaction",
-                                selected ? selected.value : "",
-                              )
+                              handleAttributeSelection(index, selected)
                             }
                             placeholder="Search Transaction..."
                             isSearchable={true}
