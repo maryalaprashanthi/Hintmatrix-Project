@@ -28,7 +28,7 @@ const answerMap = {
   less: "SUBTRACT",
 };
 
-const QuestionPage = () => {
+const QuestionPage = ({ id, variant = "practice" }) => {
   const [questionType, setQuestionType] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const {
@@ -43,14 +43,17 @@ const QuestionPage = () => {
     setCurrentScore,
     setAttributeId,
   } = useQuestionStore();
-  const { questionId } = useParams();
+  let { questionId } = useParams();
+  if (id) {
+    questionId = id;
+  }
   // console.log("Question Id:", questionId);
 
   useEffect(() => {
     const init = async () => {
       setIsLoading(true);
       try {
-        const response = await loadQuestions();
+        const response = await loadQuestions(id);
         const type = getQuestionTypeByChapter(response?.data?.chapterId);
         setQuestionType(type);
 
@@ -64,9 +67,9 @@ const QuestionPage = () => {
     init();
   }, [questionId]);
 
-  const loadQuestions = async () => {
+  const loadQuestions = async (qId) => {
     try {
-      const response = await QuestionService.getQuestionById(questionId);
+      const response = await QuestionService.getQuestionById(qId || questionId);
 
       let allStrings = data.flatMap((obj) =>
         obj.headers.map((header) => `${obj.name}-${header}`),
@@ -340,7 +343,7 @@ const QuestionPage = () => {
         // console.log("drag start source ", event.operation.source);
       }}
     >
-      <QuestionTable />
+      <QuestionTable variant={variant} />
     </DragDropProvider>
   );
 };

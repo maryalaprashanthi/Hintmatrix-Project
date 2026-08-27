@@ -394,7 +394,6 @@ const JournalQuestion = ({
                   >
                     {item.attributeName}
                   </span>
-
                   <Overlay
                     show={openAttributeId === item.questionAttributeId}
                     target={attributeTargets.current[item.questionAttributeId]}

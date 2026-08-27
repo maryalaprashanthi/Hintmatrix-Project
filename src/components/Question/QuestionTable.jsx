@@ -13,7 +13,7 @@ import { useState } from "react";
 
 // Ensure you import Bootstrap CSS somewhere in your app (like index.js or App.js)
 // import 'bootstrap/dist/css/bootstrap.min.css';
-const QuestionTable = () => {
+const QuestionTable = ({ variant }) => {
   const [checkMistakes, setCheckMistakes] = useState(false);
 
   const { questions, score, resetFrontend } = useQuestionStore();
@@ -65,18 +65,22 @@ const QuestionTable = () => {
   return (
     <div className="row g-4 align-items-start">
       <div>
-        <Header
-          handleReset={resetFrontend}
-          setCheckMistakes={setCheckMistakes}
-        />
+        {variant === "practice" && (
+          <Header
+            handleReset={resetFrontend}
+            setCheckMistakes={setCheckMistakes}
+          />
+        )}
 
-        <SummaryCards
-          debit={debitTotal}
-          credit={creditTotal}
-          total={totalQ}
-          solved={solvedQ}
-          totalScore={score}
-        />
+        {variant === "practice" && (
+          <SummaryCards
+            debit={debitTotal}
+            credit={creditTotal}
+            total={totalQ}
+            solved={solvedQ}
+            totalScore={score}
+          />
+        )}
       </div>
       {/* LEFT: Trial Balance accordion */}
       <div className="col-12 col-lg-3">
