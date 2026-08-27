@@ -30,6 +30,13 @@ const normalizeQuestionAttributes = (attributes) =>
     amount2: attribute.amount2 ?? attribute.amount2Value ?? "",
   }));
 
+const getResponseArray = (response) => {
+  if (Array.isArray(response?.data)) return response.data;
+  if (Array.isArray(response?.data?.data)) return response.data.data;
+  if (Array.isArray(response?.data?.results)) return response.data.results;
+  return [];
+};
+
 function QuestionType2Modal({
   show,
   onClose,
@@ -180,11 +187,12 @@ function QuestionType2Modal({
   const loadCourses = async () => {
     try {
       const response = await CourseService.getAllCourses();
+      const data = getResponseArray(response);
 
       setCourseOptions(
-        response.data.map((item) => ({
+        data.map((item) => ({
           value: item.course_id ?? item.courseId ?? item.id,
-          label: item.course_name ?? item.name,
+          label: item.course_name ?? item.courseName ?? item.name ?? "",
         })),
       );
     } catch (error) {
@@ -203,13 +211,7 @@ function QuestionType2Modal({
       console.log("CATEGORY API RESPONSE:", response);
       console.log("CATEGORY DATA:", response?.data);
 
-      const data = Array.isArray(response?.data)
-        ? response.data
-        : Array.isArray(response?.data?.data)
-          ? response.data.data
-          : Array.isArray(response?.data?.results)
-            ? response.data.results
-            : [];
+      const data = getResponseArray(response);
 
       console.log("CATEGORY ARRAY:", data);
 
@@ -239,20 +241,19 @@ function QuestionType2Modal({
       console.log("CHAPTER API RESPONSE:", response);
       console.log("CHAPTER DATA:", response?.data);
 
-      const data = Array.isArray(response?.data)
-        ? response.data
-        : Array.isArray(response?.data?.data)
-          ? response.data.data
-          : Array.isArray(response?.data?.results)
-            ? response.data.results
-            : [];
+      const data = getResponseArray(response);
 
       console.log("CHAPTER ARRAY:", data);
 
       const options = data.map((item) => ({
         value: item.chapter_id ?? item.chapterId ?? item.id,
         label: item.chapter_name ?? item.chapterName ?? item.name ?? "",
-        courseId: item.course_id ?? item.courseId,
+        courseId:
+          item.course_id ??
+          item.courseId ??
+          item.course?.course_id ??
+          item.course?.courseId ??
+          item.course?.id,
       }));
 
       console.log("CHAPTER OPTIONS:", options);
@@ -515,17 +516,11 @@ function QuestionType2Modal({
                     options={courseOptions}
                     value={
                       courseOptions.find(
-                        (option) => option.value === courseId,
+                        (option) => String(option.value) === String(courseId),
                       ) || null
                     }
-                    onChange={(selected) => {
-                      setCourseId(selected ? selected.value : null);
-                      setChapterId(null);
-                      setCategoryId(null);
-                    }}
                     placeholder="Select Course"
-                    isSearchable
-                    isClearable
+                    isDisabled
                     menuPortalTarget={document.body}
                     menuPosition="fixed"
                     styles={{
@@ -554,17 +549,11 @@ function QuestionType2Modal({
                     options={chapterOptions}
                     value={
                       chapterOptions.find(
-                        (option) => option.value === chapterId,
+                        (option) => String(option.value) === String(chapterId),
                       ) || null
                     }
-                    onChange={(selected) => {
-                      setChapterId(selected ? selected.value : null);
-                      setCategoryId(null);
-                    }}
                     placeholder="Select Chapter"
-                    isDisabled={!courseId}
-                    isSearchable
-                    isClearable
+                    isDisabled
                     menuPortalTarget={document.body}
                     menuPosition="fixed"
                     styles={{

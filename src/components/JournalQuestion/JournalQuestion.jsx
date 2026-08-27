@@ -399,11 +399,9 @@ const JournalQuestion = ({
                     show={openAttributeId === item.questionAttributeId}
                     target={attributeTargets.current[item.questionAttributeId]}
                     placement="right-start"
-                    container={document.body}
                     rootClose
                     onHide={() => setOpenAttributeId(null)}
                     popperConfig={{
-                      strategy: "fixed",
                       modifiers: [
                         {
                           name: "offset",
