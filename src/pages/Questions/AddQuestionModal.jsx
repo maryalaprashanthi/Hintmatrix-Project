@@ -104,7 +104,7 @@ function AddQuestionModal({
 
   const loadTableAttributes = async () => {
     try {
-      const response = await TableAttributeService.getAll();
+      const response = await TableAttributeService.getRuleAttributes();
 
       console.log("TABLE ATTRIBUTE API RESPONSE:", response);
       console.log("TABLE ATTRIBUTE DATA:", response.data);
@@ -112,6 +112,7 @@ function AddQuestionModal({
       const data = response.data.map((item) => ({
         value: item.attributeId,
         label: item.name,
+        amount: item.amount ?? item.amount1 ?? item.amount2 ?? "",
       }));
 
       console.log("DROPDOWN OPTIONS:", data);
@@ -539,14 +540,20 @@ function AddQuestionModal({
                             (option) => option.value == row.debitBalance,
                           )}
                           onChange={(selected) =>
-                            handleAttributeChange(
-                              index,
-                              "debitBalance",
-                              selected ? selected.value : "",
-                            )
+                            (() => {
+                              const updated = [...attributes];
+                              updated[index] = {
+                                ...updated[index],
+                                debitBalance: selected ? selected.value : "",
+                                debitAttributeName: selected?.label || "",
+                                debitAmount: selected ? selected.amount : "",
+                              };
+                              setAttributes(updated);
+                            })()
                           }
                           placeholder="Enter Debit Balance"
                           isSearchable
+                          isClearable
                           menuPortalTarget={document.body}
                           menuPosition="fixed"
                           styles={{
@@ -586,14 +593,20 @@ function AddQuestionModal({
                             (option) => option.value === row.creditBalance,
                           )}
                           onChange={(selected) =>
-                            handleAttributeChange(
-                              index,
-                              "creditBalance",
-                              selected ? selected.value : "",
-                            )
+                            (() => {
+                              const updated = [...attributes];
+                              updated[index] = {
+                                ...updated[index],
+                                creditBalance: selected ? selected.value : "",
+                                creditAttributeName: selected?.label || "",
+                                creditAmount: selected ? selected.amount : "",
+                              };
+                              setAttributes(updated);
+                            })()
                           }
                           placeholder="Enter Credit Balance"
                           isSearchable
+                          isClearable
                           menuPortalTarget={document.body}
                           menuPosition="fixed"
                           styles={{
