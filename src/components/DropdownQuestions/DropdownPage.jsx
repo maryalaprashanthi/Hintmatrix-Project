@@ -47,7 +47,7 @@ const getRuleConditions = (rule) =>
     })
     .filter(Boolean);
 
-const DropdownPage = ({ id, variant }) => {
+const DropdownPage = ({ id, variant = "practice" }) => {
   let { questionId } = useParams();
   if (id) {
     questionId = id;
