@@ -10,6 +10,7 @@ function College() {
   const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [selectedCollege, setSelectedCollege] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [showDelete, setShowDelete] = useState(false);
 
   // Open Add College
@@ -26,8 +27,10 @@ function College() {
 
   // Save / Update College
   const handleSave = async (collegeData) => {
+    const isEditing = Boolean(selectedCollege);
+
     try {
-      if (selectedCollege) {
+      if (isEditing) {
         await CollegeService.updateCollege(
           selectedCollege.collegeId,
           collegeData,
@@ -41,6 +44,11 @@ function College() {
       setSelectedCollege(null);
       setShowModal(false);
 
+      setSuccessMessage(
+        isEditing
+          ? "College updated successfully!"
+          : "College saved successfully!",
+      );
       setShowSuccess(true);
     } catch (error) {
       console.error(error);
@@ -160,7 +168,7 @@ function College() {
 
       <SuccessModal
         show={showSuccess}
-        message="College saved successfully!"
+        message={successMessage}
         onClose={() => setShowSuccess(false)}
       />
       <DeleteModal

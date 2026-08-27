@@ -159,9 +159,7 @@ function AddTableAttributeModal({ show, onClose, onSave, initialData }) {
         <div className="form-grid">
           {/* Amount 1 */}
           <div className="form-group">
-            <label>
-              Amount 1 <span>*</span>
-            </label>
+            <label>Amount 1</label>
 
             <div className="input-box">
               <FaTag className="input-icon" />
@@ -182,9 +180,7 @@ function AddTableAttributeModal({ show, onClose, onSave, initialData }) {
 
           {/* Amount 2 */}
           <div className="form-group">
-            <label>
-              Amount 2 <span>*</span>
-            </label>
+            <label>Amount 2</label>
 
             <div className="input-box">
               <FaTag className="input-icon" />

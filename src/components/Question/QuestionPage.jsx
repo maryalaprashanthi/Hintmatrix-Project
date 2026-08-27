@@ -30,6 +30,7 @@ const answerMap = {
 
 const QuestionPage = () => {
   const [questionType, setQuestionType] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const {
     moveQuestion,
     setQuestions,
@@ -47,12 +48,17 @@ const QuestionPage = () => {
 
   useEffect(() => {
     const init = async () => {
-      const response = await loadQuestions();
-      const type = getQuestionTypeByChapter(response?.data?.chapterId);
-      setQuestionType(type);
+      setIsLoading(true);
+      try {
+        const response = await loadQuestions();
+        const type = getQuestionTypeByChapter(response?.data?.chapterId);
+        setQuestionType(type);
 
-      if (type === "DRAG_AND_DROP") {
-        await loadAnsweredQuestions();
+        if (type === "DRAG_AND_DROP") {
+          await loadAnsweredQuestions();
+        }
+      } finally {
+        setIsLoading(false);
       }
     };
     init();
@@ -132,6 +138,10 @@ const QuestionPage = () => {
       }
     }
   };
+
+  if (isLoading) {
+    return <div className="question-page-loading">Loading question...</div>;
+  }
 
   if (questionType === "JOURNAL") {
     return <JournalPage />;

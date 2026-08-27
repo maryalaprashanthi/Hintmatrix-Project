@@ -29,6 +29,8 @@ import RuleEngine from "./pages/RuleEngine/RuleEngine";
 import StudentAttendance from "./pages/StudentAttendance/StudentAttendance";
 
 import Login from "./pages/Auth/Login";
+import Signup from "./pages/Auth/Signup";
+import OAuthSuccess from "./pages/Auth/OAuthSuccess";
 // Other Pages
 import Practice from "./pages/Practice";
 import ExamList from "./pages/ExamModule/ExamList";
@@ -56,6 +58,8 @@ import DropdownPage from "./components/DropdownQuestions/DropdownPage";
 import CourseSubscribe from "./pages/CourseSubscribe";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import Unauthorized from "./pages/Unauthorized/Unauthorized";
+import ExamHub from "./pages/ExamHub/ExamHub";
+import ExamPaper from "./pages/ExamPaper/ExamPaper";
 
 function App() {
   const navigate = useNavigate();
@@ -147,6 +151,8 @@ function App() {
       <Route path="/" element={<Landing />} />
 
       <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/oauth2/success" element={<OAuthSuccess />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
       <Route
         element={
@@ -202,7 +208,9 @@ function App() {
         <Route
           path="/admin/student"
           element={
-            <ProtectedRoute allowedRoles={["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"]}>
+            <ProtectedRoute
+              allowedRoles={["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"]}
+            >
               <Student />
             </ProtectedRoute>
           }
@@ -285,6 +293,8 @@ function App() {
         <Route path="/journal/:questionId" element={<JournalPage />} />
         <Route path="/dropdown/:questionId" element={<DropdownPage />} />
         <Route path="/course-subscribe" element={<CourseSubscribe />} />
+        <Route path="/exam-hub" element={<ExamHub />} />
+        <Route path="/exam-paper" element={<ExamPaper />} />
       </Route>
     </Routes>
   );

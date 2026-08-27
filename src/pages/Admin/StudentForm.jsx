@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Select from "react-select";
 import SuccessModal from "../../components/Common/SuccessModal";
+import { validateStudentForm } from "./superAdminValidation";
 
 import {
   FaTimes,
@@ -102,30 +103,7 @@ function StudentForm({
   if (!show) return null;
 
   const handleSave = () => {
-    if (
-      !name.trim() ||
-      !studentCode ||
-      !collegeId ||
-      !branchId ||
-      !sectionId ||
-      !guardianName.trim() ||
-      guardianPhoneNumber.length !== 10 ||
-      !email.trim() ||
-      phoneNumber.length !== 10 ||
-      !password.trim() ||
-      !address.trim()
-    ) {
-      alert(
-        "Please fill all the fields. Phone numbers must be exactly 10 digits.",
-      );
-      return;
-    }
-
-    const studentData = {
-      ...(selectedStudentData && {
-        userId: selectedStudentData.userId,
-      }),
-
+    const validation = validateStudentForm({
       name,
       studentCode,
       collegeId,
@@ -137,6 +115,29 @@ function StudentForm({
       phoneNumber,
       password,
       address,
+    });
+
+    if (!validation.isValid) {
+      alert(validation.message);
+      return;
+    }
+
+    const studentData = {
+      ...(selectedStudentData && {
+        userId: selectedStudentData.userId,
+      }),
+
+      name: name.trim(),
+      studentCode: Number(studentCode),
+      collegeId: Number(collegeId),
+      branchId: Number(branchId),
+      sectionId: Number(sectionId),
+      guardianName: guardianName.trim(),
+      guardianPhoneNumber: String(guardianPhoneNumber).replace(/\D/g, ""),
+      email: email.trim(),
+      phoneNumber: String(phoneNumber).replace(/\D/g, ""),
+      password: password.trim(),
+      address: address.trim(),
     };
 
     onSave(studentData);
@@ -182,7 +183,9 @@ function StudentForm({
                     type="text"
                     placeholder="Enter Name"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) =>
+                      setName(e.target.value.replace(/[^A-Za-z\s]/g, ""))
+                    }
                   />
                 </div>
               </div>
@@ -197,10 +200,12 @@ function StudentForm({
                   <FaIdCard className="input-icon" />
 
                   <input
-                    type="number"
+                    type="text"
                     placeholder="Enter Student Code"
                     value={studentCode}
-                    onChange={(e) => setStudentCode(e.target.value)}
+                    onChange={(e) =>
+                      setStudentCode(e.target.value.replace(/\D/g, ""))
+                    }
                   />
                 </div>
               </div>
@@ -320,7 +325,11 @@ function StudentForm({
                     type="text"
                     placeholder="Enter Guardian Name"
                     value={guardianName}
-                    onChange={(e) => setGuardianName(e.target.value)}
+                    onChange={(e) =>
+                      setGuardianName(
+                        e.target.value.replace(/[^A-Za-z\s]/g, ""),
+                      )
+                    }
                   />
                 </div>
               </div>

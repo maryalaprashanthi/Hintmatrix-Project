@@ -558,6 +558,7 @@
 .question-table .credit-select__value-container {
   height: 48px !important;
   box-sizing: border-box !important;
+  text-align: left !important;
 }
 
 /* -----------------------------------------

@@ -36,6 +36,7 @@ function Chapters() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [showDelete, setShowDelete] = useState(false);
 
   const filteredChapters = chapters.filter((chapter) => {
@@ -86,6 +87,7 @@ function Chapters() {
 
       await ChapterService.create(newChapter);
 
+      setSuccessMessage("Chapter saved successfully!");
       setShowSuccess(true);
 
       setShowAddChapter(false);
@@ -115,6 +117,7 @@ function Chapters() {
 
       await ChapterService.update(id, updatedChapter);
 
+      setSuccessMessage("Chapter updated successfully!");
       setShowSuccess(true);
       setShowEditChapter(false);
 
@@ -362,7 +365,7 @@ function Chapters() {
       )}
       <SuccessModal
         show={showSuccess}
-        message="Chapter saved successfully!"
+        message={successMessage}
         onClose={() => setShowSuccess(false)}
       />
       <DeleteModal
