@@ -22,34 +22,46 @@ import {
 
 import "./RuleEngineForm.css";
 
-function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
+function RuleEngineForm({
+  show,
+  onClose,
+  onSave,
+  selectedRuleData,
+}) {
   const relationships = [
     { name: "1to1" },
     { name: "1to2" },
     { name: "1to3" },
     { name: "1to4" },
   ];
-  const arithmeticOptions = [{ name: "add" }, { name: "less" }];
-  // Mock Data States
+
+  const arithmeticOptions = [
+    { name: "add" },
+    { name: "less" },
+  ];
+  // Dropdown States
   const [chapters, setChapters] = useState([]);
   const [tableNames, setTableNames] = useState([]);
   const [tableAttributes, setTableAttributes] = useState([]);
   const [tableHeaders, setTableHeaders] = useState([]);
-
+  // Load Dropdowns
   useEffect(() => {
     loadDropdowns();
   }, []);
 
   const loadDropdowns = async () => {
     try {
-      const [chapterRes, tableRes, attributeRes, headerRes] = await Promise.all(
-        [
-          RuleEngineService.getChapters(),
-          RuleEngineService.getTableNames(),
-          RuleEngineService.getTableAttributes(),
-          RuleEngineService.getTableHeaders(),
-        ],
-      );
+      const [
+        chapterRes,
+        tableRes,
+        attributeRes,
+        headerRes,
+      ] = await Promise.all([
+        RuleEngineService.getChapters(),
+        RuleEngineService.getTableNames(),
+        RuleEngineService.getTableAttributes(),
+        RuleEngineService.getTableHeaders(),
+      ]);
 
       setChapters(chapterRes);
       setTableNames(tableRes);
@@ -59,7 +71,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
       console.error("Error loading dropdowns", error);
     }
   };
-
+  // Empty Rule
   const emptyRule = () => ({
     arithmetic: "",
     tableName: "",
@@ -67,7 +79,26 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
     amountPosition: "",
     information: "",
   });
+  const getFieldIssue = (field) => {
+    if (!selectedRuleData?.uploadIssues) {
+      return null;
+    }
 
+    return selectedRuleData.uploadIssues.find(
+      (issue) => issue.field === field
+    );
+  };
+
+  const getRuleFieldIssue = (index, field) => {
+    if (!selectedRuleData?.uploadIssues) {
+      return null;
+    }
+
+    return selectedRuleData.uploadIssues.find(
+      (issue) => issue.field === `${field}${index + 1}`
+    );
+  };
+  // Form Data
   const [formData, setFormData] = useState({
     chapterName: "",
     tableAttributeName: "",
@@ -80,7 +111,6 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
     activeRow: false,
     rowStatus: "",
   });
-
   // Edit / Reset Form Data
   useEffect(() => {
     if (selectedRuleData) {
@@ -95,38 +125,52 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
           selectedRuleData[`information${i}`]
         ) {
           rules.push({
-            arithmetic: selectedRuleData[`arithmetic${i}`] || "",
+            arithmetic:
+              selectedRuleData[`arithmetic${i}`] || "",
 
-            tableName: selectedRuleData[`table${i}Name`] || "",
+            tableName:
+              selectedRuleData[`table${i}Name`] || "",
 
-            headerName: selectedRuleData[`header${i}Name`] || "",
+            headerName:
+              selectedRuleData[`header${i}Name`] || "",
 
-            amountPosition: selectedRuleData[`amountPosition${i}`] || "",
+            amountPosition:
+              selectedRuleData[`amountPosition${i}`] || "",
 
-            information: selectedRuleData[`information${i}`] || "",
+            information:
+              selectedRuleData[`information${i}`] || "",
           });
         }
       }
 
       setFormData({
-        chapterName: selectedRuleData.chapterName || "",
+        chapterName:
+          selectedRuleData.chapterName || "",
 
         tableAttributeName:
           selectedRuleData.tableAttributeName ||
           selectedRuleData.attributeName ||
           "",
 
-        pairAttributeName: selectedRuleData.pairAttributeName || "",
+        pairAttributeName:
+          selectedRuleData.pairAttributeName || "",
 
-        relationshipName: selectedRuleData.relationshipName || "",
+        relationshipName:
+          selectedRuleData.relationshipName || "",
 
-        pairOrder: selectedRuleData.pairOrder || "",
+        pairOrder:
+          selectedRuleData.pairOrder || "",
 
-        rules: rules.length > 0 ? rules : [emptyRule()],
+        rules:
+          rules.length > 0
+            ? rules
+            : [emptyRule()],
 
-        activeRow: selectedRuleData.activeRow || false,
+        activeRow:
+          selectedRuleData.activeRow || false,
 
-        rowStatus: selectedRuleData.rowStatus || "",
+        rowStatus:
+          selectedRuleData.rowStatus || "",
       });
     } else {
       setFormData({
@@ -137,12 +181,13 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
         pairOrder: "",
 
         rules: [emptyRule()],
+
         activeRow: false,
         rowStatus: "",
       });
     }
   }, [selectedRuleData, show]);
-
+  // Add Rule
   const addRule = () => {
     setFormData((prev) => ({
       ...prev,
@@ -159,17 +204,25 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
       ],
     }));
   };
-
+  // Delete Rule
   const deleteRule = (index) => {
     setFormData((prev) => ({
       ...prev,
 
-      rules: prev.rules.filter((_, i) => i !== index),
+      rules: prev.rules.filter(
+        (_, i) => i !== index
+      ),
     }));
   };
-
-  const handleRuleChange = (index, field, value) => {
-    const updatedRules = [...formData.rules];
+  // Rule Change
+  const handleRuleChange = (
+    index,
+    field,
+    value
+  ) => {
+    const updatedRules = [
+      ...formData.rules,
+    ];
 
     updatedRules[index][field] = value;
 
@@ -179,17 +232,25 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
       rules: updatedRules,
     }));
   };
-
+  // Normal Field Change
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const {
+      name,
+      value,
+      type,
+      checked,
+    } = e.target;
 
     setFormData((prev) => ({
       ...prev,
 
-      [name]: type === "checkbox" ? checked : value,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : value,
     }));
   };
-
+  // Save
   const handleSave = async () => {
     if (
       !formData.chapterName ||
@@ -198,39 +259,63 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
       !formData.relationshipName ||
       !formData.pairOrder
     ) {
-      alert("Please fill the mandatory fields.");
+      alert(
+        "Please fill the mandatory fields."
+      );
       return;
     }
 
     const payload = {
-      chapterName: formData.chapterName,
-      attributeName: formData.tableAttributeName,
-      pairAttributeName: formData.pairAttributeName,
-      relationshipName: formData.relationshipName,
-      pairOrder: formData.pairOrder,
+      chapterName:
+        formData.chapterName,
 
-      activeRow: formData.activeRow,
-      rowStatus: formData.rowStatus,
+      attributeName:
+        formData.tableAttributeName,
+
+      pairAttributeName:
+        formData.pairAttributeName,
+
+      relationshipName:
+        formData.relationshipName,
+
+      pairOrder:
+        formData.pairOrder,
+
+      activeRow:
+        formData.activeRow,
+
+      rowStatus:
+        formData.rowStatus,
     };
 
-    formData.rules.forEach((rule, index) => {
-      const i = index + 1;
+    formData.rules.forEach(
+      (rule, index) => {
+        const i = index + 1;
 
-      payload[`arithmetic${i}`] = rule.arithmetic;
+        payload[`arithmetic${i}`] =
+          rule.arithmetic;
 
-      payload[`table${i}Name`] = rule.tableName;
+        payload[`table${i}Name`] =
+          rule.tableName;
 
-      payload[`header${i}Name`] = rule.headerName;
+        payload[`header${i}Name`] =
+          rule.headerName;
 
-      payload[`amountPosition${i}`] = rule.amountPosition;
+        payload[`amountPosition${i}`] =
+          rule.amountPosition;
 
-      payload[`information${i}`] = rule.information;
-    });
+        payload[`information${i}`] =
+          rule.information;
+      }
+    );
 
     try {
       await onSave(payload);
     } catch (error) {
-      console.error("Error saving rule:", error);
+      console.error(
+        "Error saving rule:",
+        error
+      );
     }
   };
 
@@ -239,35 +324,65 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
   return createPortal(
     <div className="modal-overlay">
       <div className="rule-modal">
-        {/* Header */}
+
+        {/* =========================
+            Header
+        ========================== */}
 
         <div className="modal-header">
           <div>
-            <h2>{selectedRuleData ? "Edit Rule Engine" : "Add Rule Engine"}</h2>
+            <h2>
+              {selectedRuleData
+                ? "Edit Rule Engine"
+                : "Add Rule Engine"}
+            </h2>
 
-            <p>Configure Rule Engine Details.</p>
+            <p>
+              Configure Rule Engine Details.
+            </p>
           </div>
 
-          <button className="close-btn" onClick={onClose}>
+          <button
+            className="close-btn"
+            onClick={onClose}
+          >
             <FaTimes />
           </button>
         </div>
 
-        {/* Body */}
+        {/*
+            Body
+       */}
 
         <div className="modal-body">
+
+          {/*
+              Rule Engine Information
+         */}
+
           <div className="form-card">
-            <h3 className="section-title">Rule Engine Information</h3>
+
+            <h3 className="section-title">
+              Rule Engine Information
+            </h3>
 
             <div className="form-grid">
-              {/* Chapter */}
+
+              {/* 
+                  Chapter
+               */}
+
               <div className="form-group">
+
                 <label>
                   Chapter Name
-                  <span className="required">*</span>
+                  <span className="required">
+                    *
+                  </span>
                 </label>
 
                 <div className="input-box">
+
                   <FaBook className="input-icon" />
 
                   <Typeahead
@@ -276,343 +391,640 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                     options={chapters}
                     placeholder="Select Chapter"
                     selected={chapters.filter(
-                      (item) => item.name === formData.chapterName,
+                      (item) =>
+                        item.name ===
+                        formData.chapterName
                     )}
                     onChange={(selected) =>
-                      setFormData((prev) => ({
-                        ...prev,
+                      setFormData(
+                        (prev) => ({
+                          ...prev,
 
-                        chapterName: selected.length ? selected[0].name : "",
-                      }))
+                          chapterName:
+                            selected.length
+                              ? selected[0].name
+                              : "",
+                        })
+                      )
                     }
                   />
+
                 </div>
+
+                {/* REQUIRED FIELD ISSUE */}
+
+                {getFieldIssue(
+                  "chapter"
+                ) && (
+                  <div className="field-error">
+                    {
+                      getFieldIssue(
+                        "chapter"
+                      ).message
+                    }
+                  </div>
+                )}
+
               </div>
-              {/* Table Attribute Name */}{" "}
+
+              {/*
+                  Table Attribute
+              */}
+
               <div className="form-group">
-                {" "}
+
                 <label>
                   Table Attribute Name
-                  <span className="required">*</span>
-                </label>{" "}
-                <div className="input-box">
-                  {" "}
-                  <FaTag className="input-icon" />{" "}
-                  <Typeahead
-                    id="tableAttributeName"
-                    labelKey="name"
-                    options={tableAttributes}
-                    placeholder="Select Table Attribute"
-                    selected={tableAttributes.filter(
-                      (item) => item.name === formData.tableAttributeName,
-                    )}
-                    onChange={(selected) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        tableAttributeName: selected.length
-                          ? selected[0].name
-                          : "",
-                      }))
-                    }
-                  />{" "}
-                </div>{" "}
-              </div>
-              {/* Pair Attribute */}
-              <div className="form-group">
-                <label>
-                  Pair Attribute Name
-                  <span className="required">*</span>
+                  <span className="required">
+                    *
+                  </span>
                 </label>
 
                 <div className="input-box">
+
+                  <FaTag className="input-icon" />
+
+                  <Typeahead
+                    id="tableAttributeName"
+                    labelKey="name"
+                    options={
+                      tableAttributes
+                    }
+                    placeholder="Select Table Attribute"
+                    selected={tableAttributes.filter(
+                      (item) =>
+                        item.name ===
+                        formData.tableAttributeName
+                    )}
+                    onChange={(selected) =>
+                      setFormData(
+                        (prev) => ({
+                          ...prev,
+
+                          tableAttributeName:
+                            selected.length
+                              ? selected[0].name
+                              : "",
+                        })
+                      )
+                    }
+                  />
+
+                </div>
+
+                {/* REQUIRED FIELD ISSUE */}
+
+                {getFieldIssue(
+                  "attribute"
+                ) && (
+                  <div className="field-error">
+                    {
+                      getFieldIssue(
+                        "attribute"
+                      ).message
+                    }
+                  </div>
+                )}
+
+              </div>
+
+              {/*
+                  Pair Attribute
+             */}
+
+              <div className="form-group">
+
+                <label>
+                  Pair Attribute Name
+                  <span className="required">
+                    *
+                  </span>
+                </label>
+
+                <div className="input-box">
+
                   <FaTag className="input-icon" />
 
                   <Typeahead
                     id="pairAttributeName"
                     labelKey="name"
-                    options={tableAttributes}
+                    options={
+                      tableAttributes
+                    }
                     placeholder="Select Pair Attribute"
                     selected={tableAttributes.filter(
-                      (item) => item.name === formData.pairAttributeName,
+                      (item) =>
+                        item.name ===
+                        formData.pairAttributeName
                     )}
                     onChange={(selected) =>
-                      setFormData((prev) => ({
-                        ...prev,
+                      setFormData(
+                        (prev) => ({
+                          ...prev,
 
-                        pairAttributeName: selected.length
-                          ? selected[0].name
-                          : "",
-                      }))
+                          pairAttributeName:
+                            selected.length
+                              ? selected[0].name
+                              : "",
+                        })
+                      )
                     }
                   />
+
                 </div>
+
+                {/* REQUIRED FIELD ISSUE */}
+
+                {getFieldIssue(
+                  "pair_attribute"
+                ) && (
+                  <div className="field-error">
+                    {
+                      getFieldIssue(
+                        "pair_attribute"
+                      ).message
+                    }
+                  </div>
+                )}
+
               </div>
-              {/* Relationship */}
+
+              {/*
+                  Relationship
+              */}
+
               <div className="form-group">
+
                 <label>
                   Relationship Name
-                  <span className="required">*</span>
+                  <span className="required">
+                    *
+                  </span>
                 </label>
 
                 <div className="input-box">
+
                   <FaProjectDiagram className="input-icon" />
 
                   <Typeahead
                     id="relationshipName"
                     labelKey="name"
-                    options={relationships}
+                    options={
+                      relationships
+                    }
                     placeholder="Select Relationship"
                     selected={relationships.filter(
-                      (item) => item.name === formData.relationshipName,
+                      (item) =>
+                        item.name ===
+                        formData.relationshipName
                     )}
                     onChange={(selected) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        relationshipName: selected.length
-                          ? selected[0].name
-                          : "",
-                      }))
+                      setFormData(
+                        (prev) => ({
+                          ...prev,
+
+                          relationshipName:
+                            selected.length
+                              ? selected[0].name
+                              : "",
+                        })
+                      )
                     }
                   />
+
                 </div>
+
               </div>
-              {/* Pair Order */}
+
+              {/*
+                  Pair Order
+             */}
+
               <div className="form-group">
+
                 <label>
                   Pair Order
-                  <span className="required">*</span>
+                  <span className="required">
+                    *
+                  </span>
                 </label>
 
                 <div className="input-box">
+
                   <FaSortNumericDown className="input-icon" />
 
                   <input
                     type="number"
                     name="pairOrder"
                     placeholder="Enter Pair Order"
-                    value={formData.pairOrder}
-                    onChange={handleChange}
+                    value={
+                      formData.pairOrder
+                    }
+                    onChange={
+                      handleChange
+                    }
                   />
+
                 </div>
+
+                {/* REQUIRED FIELD ISSUE */}
+
+                {getFieldIssue(
+                  "pair_order"
+                ) && (
+                  <div className="field-error">
+                    {
+                      getFieldIssue(
+                        "pair_order"
+                      ).message
+                    }
+                  </div>
+                )}
+
               </div>
+
             </div>
           </div>
 
-          {/* Rule Parameters */}
+          {/*
+              Rule Parameters
+          */}
 
-          {formData.rules.map((rule, index) => (
-            <div className="form-card" key={index}>
-              <h3 className="section-title mb-3">Rule {index + 1}</h3>
+          {formData.rules.map(
+            (rule, index) => (
 
-              <div className="form-grid">
-                {/* Arithmetic */}
+              <div
+                className="form-card"
+                key={index}
+              >
 
-                <div className="form-group">
-                  <label>
-                    Arithmetic
-                    <span className="required">*</span>
-                  </label>
+                <h3 className="section-title mb-3">
+                  Rule {index + 1}
+                </h3>
 
-                  <div className="input-box">
-                    <FaCalculator className="input-icon" />
+                <div className="form-grid">
 
-                    <Typeahead
-                      id={`arithmetic-${index}`}
-                      labelKey="name"
-                      options={arithmeticOptions}
-                      placeholder="Select Arithmetic"
-                      selected={arithmeticOptions.filter(
-                        (item) => item.name === rule.arithmetic,
-                      )}
-                      onChange={(selected) =>
-                        handleRuleChange(
-                          index,
-                          "arithmetic",
-                          selected.length ? selected[0].name : "",
-                        )
-                      }
-                    />
+                  {/*
+                      Arithmetic
+                 */}
+
+                  <div className="form-group">
+
+                    <label>
+                      Arithmetic
+                      <span className="required">
+                        *
+                      </span>
+                    </label>
+
+                    <div className="input-box">
+
+                      <FaCalculator className="input-icon" />
+
+                      <Typeahead
+                        id={`arithmetic-${index}`}
+                        labelKey="name"
+                        options={
+                          arithmeticOptions
+                        }
+                        placeholder="Select Arithmetic"
+                        selected={arithmeticOptions.filter(
+                          (item) =>
+                            item.name ===
+                            rule.arithmetic
+                        )}
+                        onChange={(
+                          selected
+                        ) =>
+                          handleRuleChange(
+                            index,
+                            "arithmetic",
+                            selected.length
+                              ? selected[0].name
+                              : ""
+                          )
+                        }
+                      />
+
+                    </div>
+
                   </div>
+
+                  {/*
+                      Table Name
+                  */}
+
+                  <div className="form-group">
+
+                    <label>
+                      Table Name
+                      <span className="required">
+                        *
+                      </span>
+                    </label>
+
+                    <div className="input-box">
+
+                      <FaTable className="input-icon" />
+
+                      <Typeahead
+                        id={`tableName-${index}`}
+                        labelKey="name"
+                        options={
+                          tableNames
+                        }
+                        placeholder="Select Table Name"
+                        selected={tableNames.filter(
+                          (item) =>
+                            item.name ===
+                            rule.tableName
+                        )}
+                        onChange={(
+                          selected
+                        ) =>
+                          handleRuleChange(
+                            index,
+                            "tableName",
+                            selected.length
+                              ? selected[0].name
+                              : ""
+                          )
+                        }
+                      />
+
+                    </div>
+
+                    {/* REQUIRED FIELD ISSUE */}
+
+                    {getRuleFieldIssue(
+                      index,
+                      "table"
+                    ) && (
+                      <div className="field-error">
+                        {
+                          getRuleFieldIssue(
+                            index,
+                            "table"
+                          ).message
+                        }
+                      </div>
+                    )}
+
+                  </div>
+
+                  {/*
+                      Header Name
+                 */}
+
+                  <div className="form-group">
+
+                    <label>
+                      Header Name
+                      <span className="required">
+                        *
+                      </span>
+                    </label>
+
+                    <div className="input-box">
+
+                      <FaHeading className="input-icon" />
+
+                      <Typeahead
+                        id={`headerName-${index}`}
+                        labelKey="name"
+                        options={
+                          tableHeaders
+                        }
+                        placeholder="Select Header Name"
+                        selected={tableHeaders.filter(
+                          (item) =>
+                            item.name ===
+                            rule.headerName
+                        )}
+                        onChange={(
+                          selected
+                        ) =>
+                          handleRuleChange(
+                            index,
+                            "headerName",
+                            selected.length
+                              ? selected[0].name
+                              : ""
+                          )
+                        }
+                      />
+
+                    </div>
+
+                    {/* REQUIRED FIELD ISSUE */}
+
+                    {getRuleFieldIssue(
+                      index,
+                      "header"
+                    ) && (
+                      <div className="field-error">
+                        {
+                          getRuleFieldIssue(
+                            index,
+                            "header"
+                          ).message
+                        }
+                      </div>
+                    )}
+
+                  </div>
+
+                  {/*
+                      Amount Position
+                 */}
+
+                  <div className="form-group">
+
+                    <label>
+                      Amount Position
+                      <span className="required">
+                        *
+                      </span>
+                    </label>
+
+                    <div className="input-box">
+
+                      <FaMapMarkerAlt className="input-icon" />
+
+                      <input
+                        type="text"
+                        placeholder="Enter Amount Position"
+                        value={
+                          rule.amountPosition
+                        }
+                        onChange={(e) =>
+                          handleRuleChange(
+                            index,
+                            "amountPosition",
+                            e.target.value
+                          )
+                        }
+                      />
+
+                    </div>
+
+                  </div>
+
+                  {/*
+                      Information
+                 */}
+
+                  <div className="form-group">
+
+                    <label>
+                      Information
+                      <span className="required">
+                        *
+                      </span>
+                    </label>
+
+                    <div className="input-box">
+
+                      <FaInfoCircle className="input-icon" />
+
+                      <input
+                        type="text"
+                        placeholder="Enter Information"
+                        value={
+                          rule.information
+                        }
+                        onChange={(e) =>
+                          handleRuleChange(
+                            index,
+                            "information",
+                            e.target.value
+                          )
+                        }
+                      />
+
+                    </div>
+
+                  </div>
+
                 </div>
 
-                {/* Table Name */}
+                {/* Add / Delete Rule */}
 
-                <div className="form-group">
-                  <label>
-                    Table Name
-                    <span className="required">*</span>
-                  </label>
+                <div className="mt-3 d-flex gap-2">
 
-                  <div className="input-box">
-                    <FaTable className="input-icon" />
-
-                    <Typeahead
-                      id={`tableName-${index}`}
-                      labelKey="name"
-                      options={tableNames}
-                      placeholder="Select Table Name"
-                      selected={tableNames.filter(
-                        (item) => item.name === rule.tableName,
-                      )}
-                      onChange={(selected) =>
-                        handleRuleChange(
-                          index,
-                          "tableName",
-                          selected.length ? selected[0].name : "",
-                        )
-                      }
-                    />
-                  </div>
-                </div>
-
-                {/* Header Name */}
-
-                <div className="form-group">
-                  <label>
-                    Header Name
-                    <span className="required">*</span>
-                  </label>
-
-                  <div className="input-box">
-                    <FaHeading className="input-icon" />
-
-                    <Typeahead
-                      id={`headerName-${index}`}
-                      labelKey="name"
-                      options={tableHeaders}
-                      placeholder="Select Header Name"
-                      selected={tableHeaders.filter(
-                        (item) => item.name === rule.headerName,
-                      )}
-                      onChange={(selected) =>
-                        handleRuleChange(
-                          index,
-                          "headerName",
-                          selected.length ? selected[0].name : "",
-                        )
-                      }
-                    />
-                  </div>
-                </div>
-
-                {/* Amount Position */}
-
-                <div className="form-group">
-                  <label>
-                    Amount Position
-                    <span className="required">*</span>
-                  </label>
-
-                  <div className="input-box">
-                    <FaMapMarkerAlt className="input-icon" />
-
-                    <input
-                      type="text"
-                      placeholder="Enter Amount Position"
-                      value={rule.amountPosition}
-                      onChange={(e) =>
-                        handleRuleChange(
-                          index,
-                          "amountPosition",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </div>
-                </div>
-
-                {/* Information */}
-
-                <div className="form-group">
-                  <label>
-                    Information
-                    <span className="required">*</span>
-                  </label>
-
-                  <div className="input-box">
-                    <FaInfoCircle className="input-icon" />
-
-                    <input
-                      type="text"
-                      placeholder="Enter Information"
-                      value={rule.information}
-                      onChange={(e) =>
-                        handleRuleChange(index, "information", e.target.value)
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-3 d-flex gap-2">
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={addRule}
-                >
-                  <FaPlus className="me-1" />
-                  Add Rule
-                </button>
-
-                {formData.rules.length > 1 && (
                   <button
                     type="button"
-                    className="btn btn-danger"
-                    onClick={() => deleteRule(index)}
+                    className="btn btn-primary"
+                    onClick={
+                      addRule
+                    }
                   >
-                    <FaTimes className="me-1" />
-                    Delete Rule
+                    <FaPlus className="me-1" />
+                    Add Rule
                   </button>
-                )}
-              </div>
-            </div>
-          ))}
 
-          {/* Status */}
+                  {formData.rules.length >
+                    1 && (
+                    <button
+                      type="button"
+                      className="btn btn-danger"
+                      onClick={() =>
+                        deleteRule(
+                          index
+                        )
+                      }
+                    >
+                      <FaTimes className="me-1" />
+                      Delete Rule
+                    </button>
+                  )}
+
+                </div>
+
+              </div>
+            )
+          )}
+
+          {/*
+              Status
+         */}
 
           <div className="form-card">
-            <h3 className="section-title">Status</h3>
+
+            <h3 className="section-title">
+              Status
+            </h3>
 
             <div className="form-grid">
+
+              {/* Active Row */}
+
               <div className="form-group">
                 <div className="form-check form-switch">
                   <input
                     className="form-check-input"
                     type="checkbox"
                     name="activeRow"
-                    checked={formData.activeRow}
-                    onChange={handleChange}
+                    checked={
+                      formData.activeRow
+                    }
+                    onChange={
+                      handleChange
+                    }
                   />
                   <label className="form-check-label">Active</label>
                 </div>
+
               </div>
 
+              {/* Row Status */}
+
               <div className="form-group">
+
                 <label>
                   Row Status
-                  <span className="required">*</span>
+                  <span className="required">
+                    *
+                  </span>
                 </label>
 
                 <div className="input-box">
+
                   <FaSortNumericDown className="input-icon" />
 
                   <input
                     type="number"
                     name="rowStatus"
                     placeholder="Enter Row Status"
-                    value={formData.rowStatus}
-                    onChange={handleChange}
+                    value={
+                      formData.rowStatus
+                    }
+                    onChange={
+                      handleChange
+                    }
                   />
+
                 </div>
+
               </div>
+
             </div>
+
           </div>
+
         </div>
 
-        {/* Footer */}
+        {/*
+            Footer
+       */}
 
         <div className="modal-footer">
-          <button type="button" className="btn btn-secondary" onClick={onClose}>
+
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onClose}
+          >
             Cancel
           </button>
 
@@ -624,11 +1036,13 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
             <FaSave className="me-2" />
             Save
           </button>
+
         </div>
+
       </div>
     </div>,
 
-    document.body,
+    document.body
   );
 }
 
