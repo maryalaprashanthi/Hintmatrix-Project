@@ -1,33 +1,16 @@
-import { useEffect, useState } from "react";
-import { FiClock } from "react-icons/fi";
-import styles from "./ExamPage.module.css";
+/* eslint-disable react/prop-types */
+import { formatTime } from "./ExamShell/formatTime";
+import styles from "./Timer.module.css";
 
-const formatTime = (totalSeconds) =>
-  [
-    Math.floor(totalSeconds / 3600),
-    Math.floor((totalSeconds % 3600) / 60),
-    totalSeconds % 60,
-  ]
-    .map((value) => String(value).padStart(2, "0"))
-    .join(":");
-
-const Timer = ({ initialSeconds = 45 * 60 }) => {
-  const [seconds, setSeconds] = useState(initialSeconds);
-
-  useEffect(() => {
-    const timer = window.setInterval(
-      () => setSeconds((value) => Math.max(0, value - 1)),
-      1000,
-    );
-    return () => window.clearInterval(timer);
-  }, []);
-
-  return (
-    <span className={styles["exam-status-item"]}>
-      <FiClock />
-      Time left <strong>{formatTime(seconds)}</strong>
-    </span>
-  );
-};
+// Presentational only. The countdown itself lives in ExamPage, because the
+// remaining time is also what the submit dialog quotes back to the user and
+// what triggers the time-up screen at zero - two things a self-contained
+// timer could not reach.
+const Timer = ({ secondsLeft }) => (
+  <div className={styles.timer}>
+    <span className={styles.label}>Time left</span>
+    <span className={styles.value}>{formatTime(secondsLeft)}</span>
+  </div>
+);
 
 export default Timer;

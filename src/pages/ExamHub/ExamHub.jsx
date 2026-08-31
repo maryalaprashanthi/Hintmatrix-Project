@@ -17,7 +17,7 @@ import {
   FaCheck,
   FaBookmark,
 } from "react-icons/fa";
-
+import { useNavigate } from "react-router-dom";
 import "./ExamHub.css";
 
 /* ================= STATS ================= */
@@ -237,6 +237,7 @@ const subjects = [
 /* ================= COMPONENT ================= */
 
 function ExamHub() {
+  const navigate = useNavigate();
   return (
     <div className="exam-hub-page" data-page="exam-hub">
       {/* ================= HEADER ================= */}
@@ -306,7 +307,11 @@ function ExamHub() {
                   </div>
                 </div>
 
-                <button type="button" className="exam-action">
+                <button
+                  type="button"
+                  className="exam-action"
+                  onClick={() => navigate(`/exam-mine`)}
+                >
                   <span>{exam.button}</span>
                   <FaArrowRight />
                 </button>

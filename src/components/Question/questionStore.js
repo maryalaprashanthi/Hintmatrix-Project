@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 
-const useQuestionStore = create((set) => ({
+const useQuestionStore = create((set, get) => ({
   questions: [],
   question: {},
   droppableData: {},
@@ -177,7 +177,7 @@ const useQuestionStore = create((set) => ({
       const myId = targetId.split("-").slice(0, 2).join("-");
 
       // if an object exists in droppableData[myId] with id as sourceId then return
-      const alreadyPlaced = (state.droppableData[myId] ?? []).some(
+      const alreadyPlaced = (get().droppableData[myId] ?? []).some(
         (obj) => obj.id === sourceId,
       );
       if (alreadyPlaced) {
@@ -187,17 +187,18 @@ const useQuestionStore = create((set) => ({
       const ops = targetId.split("-").pop();
       let updatedData = null;
       // write this logic
-      let found = [...state.droppableData[myId]].filter(
-        (obj) => obj.id === pairId,
-      );
+      let found = get().droppableData[myId].filter((obj) => obj.id === pairId);
+      if (found.length === 0) {
+        found = get().droppableData[myId].filter(
+          (obj) => obj.pairId === sourceId,
+        );
+      }
       if (found.length > 0) {
-        console.log("This is data in droppable ", [
-          ...state.droppableData[myId],
-        ]);
-        updatedData = [...state.droppableData[myId]].filter((obj) => {
-          return obj.id != pairId;
+        console.log("This is data in droppable ", get().droppableData[myId]);
+        updatedData = get().droppableData[myId].filter((obj) => {
+          return obj.id !== found[0].id;
         });
-        console.log("This is data in updated ", updatedData);
+        console.log("This is data in updated ", [...updatedData]);
         // console.log("This is previous data ", updatedData);
         // what is wrong with this code
         found = found[0];
@@ -229,7 +230,7 @@ const useQuestionStore = create((set) => ({
         // how do I do this in js when I have a isPaired is true and operation is add
       } else {
         updatedData = [
-          ...state.droppableData[myId],
+          ...get().droppableData[myId],
           {
             id: question.id,
             name: question.name,

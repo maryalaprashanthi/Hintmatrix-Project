@@ -1,0 +1,137 @@
+/* 1d - pre-exam start. Sets the rules before the clock starts. */
+
+.screen {
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+  padding: 40px 24px;
+  background: var(--surface-app);
+}
+
+.card {
+  width: 560px;
+  max-width: 100%;
+  padding: 26px 28px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.eyebrow {
+  font: 600 10px var(--font-ui);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+
+.title {
+  margin-top: 6px;
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink-900);
+}
+
+/* The design has four tiles; we render three, because the question API has no
+   marks field to fill the fourth honestly. Same tile spec, three columns. */
+.meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.metaTile {
+  padding: 12px;
+  background: var(--paper-100);
+  border-radius: var(--radius-md);
+}
+
+.metaValue {
+  font: 600 20px/1 var(--font-mono);
+  color: var(--navy-800);
+}
+
+.metaLabel {
+  margin-top: 5px;
+  font: 500 10.5px var(--font-ui);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+.rules {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid var(--ink-200);
+  border-radius: var(--radius-md);
+}
+
+.rulesTitle {
+  margin-bottom: 10px;
+  font: 600 11.5px var(--font-ui);
+  color: var(--ink-900);
+}
+
+.rulesList {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.rule {
+  display: flex;
+  gap: 9px;
+  font: 400 12.5px/1.45 var(--font-ui);
+  color: var(--ink-600);
+}
+
+.ruleIndex {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: var(--navy-100);
+  color: var(--navy-700);
+  font: 600 9.5px var(--font-mono);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.start.start {
+  height: 50px;
+  padding: 0 26px;
+  background: var(--action-primary);
+  border: 0;
+  border-radius: var(--radius-md);
+  color: #fff;
+  font: 600 15px var(--font-ui);
+  cursor: pointer;
+  transition: var(--transition-control);
+}
+
+.start.start:hover:not(:disabled) {
+  background: var(--action-primary-hover);
+}
+
+.start.start:disabled {
+  background: var(--action-disabled);
+  color: var(--ink-500);
+  cursor: not-allowed;
+}
+
+.loadNote {
+  font: 400 12.5px var(--font-ui);
+  color: var(--ink-500);
+}
