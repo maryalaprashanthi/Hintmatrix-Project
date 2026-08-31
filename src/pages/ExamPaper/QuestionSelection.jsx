@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   FiSearch,
   FiBookOpen,
@@ -8,140 +8,286 @@ import {
   FiInfo,
   FiArrowRight,
 } from "react-icons/fi";
+
+import QuestionService from "../../services/QuestionService";
+
+import ChapterService from "../../services/ChapterService";
+
 import "./QuestionSelection.css";
 
-const QuestionSelection = ({ onNext, onBack }) => {
+const QuestionSelection = ({ courseId, chapterIds = [], onNext, onBack }) => {
+  // STATE
+
   const [activeTab, setActiveTab] = useState("all");
+
   const [search, setSearch] = useState("");
-  const [chapter, setChapter] = useState("All Chapters");
-  const [type, setType] = useState("All Types");
+
+  const [selectedChapter, setSelectedChapter] = useState("");
+
+  const [selectedCategory, setSelectedCategory] = useState("");
+
+  const [selectedType, setSelectedType] = useState("");
+
+  const [questions, setQuestions] = useState([]);
+
+  const [chapters, setChapters] = useState([]);
+
   const [selectedQuestions, setSelectedQuestions] = useState([]);
 
-  const questions = [
-    {
-      id: 1,
-      question: "Rectification Entries: State Board Model",
-      chapter: "Rectification of Errors For JrInter",
-      type: "Theory",
-      marks: 5,
-    },
-    {
-      id: 2,
-      question: "Transactions involves only Real Accounts",
-      chapter: "Journal Basic Practice",
-      type: "Theory",
-      marks: 5,
-    },
-    {
-      id: 3,
-      question: "Prepare Trading Account from the following information",
-      chapter: "Final Accounts Without Adjustments",
-      type: "Practical",
-      marks: 10,
-    },
-    {
-      id: 4,
-      question: "Prepare Trading Account two from the following information",
-      chapter: "Final Accounts Without Adjustments",
-      type: "Practical",
-      marks: 10,
-    },
-    {
-      id: 5,
-      question: "Transactions involves only Real Accounts two",
-      chapter: "Journal Basic Practice",
-      type: "Theory",
-      marks: 5,
-    },
-    {
-      id: 6,
-      question: "Prepare Profit and Loss Account from the given details",
-      chapter: "Final Accounts Without Adjustments",
-      type: "Practical",
-      marks: 10,
-    },
-    {
-      id: 7,
-      question: "Pass journal entries for the following transactions",
-      chapter: "Journal Basic Practice",
-      type: "Practical",
-      marks: 5,
-    },
-    {
-      id: 8,
-      question: "Correct the following accounting errors",
-      chapter: "Rectification of Errors For JrInter",
-      type: "Practical",
-      marks: 5,
-    },
-  ];
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
 
-  const chapters = [
-    "All Chapters",
-    ...new Set(questions.map((q) => q.chapter)),
-  ];
+  const [loadingChapters, setLoadingChapters] = useState(false);
 
-  const types = ["All Types", "Theory", "Practical"];
+  // LOAD QUESTIONS
+
+  useEffect(() => {
+    loadQuestions();
+  }, []);
+
+  const loadQuestions = async () => {
+    try {
+      setLoadingQuestions(true);
+
+      const response = await QuestionService.getAll();
+
+      const data = Array.isArray(response.data) ? response.data : [];
+
+      setQuestions(data);
+    } catch (error) {
+      console.error("Failed to load questions:", error);
+
+      setQuestions([]);
+    } finally {
+      setLoadingQuestions(false);
+    }
+  };
+
+  // LOAD CHAPTERS
+
+  useEffect(() => {
+    loadChapters();
+  }, []);
+
+  const loadChapters = async () => {
+    try {
+      setLoadingChapters(true);
+
+      const response = await ChapterService.getAll();
+
+      const data = Array.isArray(response.data) ? response.data : [];
+
+      setChapters(data);
+    } catch (error) {
+      console.error("Failed to load chapters:", error);
+
+      setChapters([]);
+    } finally {
+      setLoadingChapters(false);
+    }
+  };
+
+  // CHAPTER OPTIONS
+
+  // Only chapters selected in Step 1 are shown.
+
+  const availableChapters = useMemo(() => {
+    // If no chapter IDs were supplied, use all chapters.
+    if (!chapterIds || chapterIds.length === 0) {
+      return chapters;
+    }
+
+    return chapters.filter((chapter) =>
+      chapterIds.some((id) => String(id) === String(chapter.chapterId)),
+    );
+  }, [chapters, chapterIds]);
+
+  // QUESTION TYPES
+
+  // questionTypeId,questionType
+
+  const questionTypes = useMemo(() => {
+    const typeMap = new Map();
+
+    questions.forEach((question) => {
+      if (
+        question.questionTypeId !== null &&
+        question.questionTypeId !== undefined &&
+        question.questionType
+      ) {
+        typeMap.set(String(question.questionTypeId), {
+          id: question.questionTypeId,
+          name: question.questionType,
+        });
+      }
+    });
+
+    return Array.from(typeMap.values());
+  }, [questions]);
+
+  // FILTER QUESTIONS
 
   const filteredQuestions = useMemo(() => {
-    const searchText = search.toLowerCase();
+    const searchText = search.trim().toLowerCase();
 
-    return questions.filter((q) => {
-      const matchesSearch =
-        q.question.toLowerCase().includes(searchText) ||
-        q.chapter.toLowerCase().includes(searchText);
+    return questions.filter((question) => {
+      // Active question
 
-      const matchesChapter =
-        chapter === "All Chapters" || q.chapter === chapter;
+      if (question.activeRow === false) {
+        return false;
+      }
 
-      const matchesType = type === "All Types" || q.type === type;
+      // COURSE FILTER
 
-      return matchesSearch && matchesChapter && matchesType;
+      if (courseId !== undefined && courseId !== null && courseId !== "") {
+        if (String(question.courseId) !== String(courseId)) {
+          return false;
+        }
+      }
+
+      // CHAPTER FILTER
+
+      if (chapterIds && chapterIds.length > 0) {
+        const belongsToSelectedChapter = chapterIds.some(
+          (id) => String(id) === String(question.chapterId),
+        );
+
+        if (!belongsToSelectedChapter) {
+          return false;
+        }
+      }
+
+      // SEARCH
+
+      if (searchText) {
+        const questionText = question.questionText?.toLowerCase() || "";
+
+        const chapterName = question.chapterName?.toLowerCase() || "";
+
+        const typeName = question.questionType?.toLowerCase() || "";
+
+        const matchesSearch =
+          questionText.includes(searchText) ||
+          chapterName.includes(searchText) ||
+          typeName.includes(searchText);
+
+        if (!matchesSearch) {
+          return false;
+        }
+      }
+
+      // CHAPTER DROPDOWN FILTER
+
+      if (selectedChapter) {
+        if (String(question.chapterId) !== String(selectedChapter)) {
+          return false;
+        }
+      }
+
+      // QUESTION TYPE FILTER
+
+      if (selectedType) {
+        if (String(question.questionTypeId) !== String(selectedType)) {
+          return false;
+        }
+      }
+
+      return true;
     });
-  }, [search, chapter, type]);
+  }, [questions, courseId, chapterIds, search, selectedChapter, selectedType]);
+
+  // VISIBLE QUESTIONS
+
+  // "All Questions" -> filtered questions
+
+  // "Selected Questions" -> only selected questions
 
   const visibleQuestions =
     activeTab === "all"
       ? filteredQuestions
-      : filteredQuestions.filter((q) => selectedQuestions.includes(q.id));
+      : filteredQuestions.filter((question) =>
+          selectedQuestions.includes(question.questionId),
+        );
 
-  const toggleQuestion = (id) => {
-    setSelectedQuestions((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
+  // SELECT / UNSELECT QUESTION
+
+  const toggleQuestion = (questionId) => {
+    setSelectedQuestions((previous) => {
+      if (previous.includes(questionId)) {
+        return previous.filter((id) => id !== questionId);
+      }
+
+      return [...previous, questionId];
+    });
   };
 
-  const toggleSelectAll = () => {
-    const visibleIds = filteredQuestions.map((q) => q.id);
+  // SELECT ALL
 
-    const allSelected =
-      visibleIds.length > 0 &&
-      visibleIds.every((id) => selectedQuestions.includes(id));
+  // Selects all currently visible filtered questions.
+
+  const toggleSelectAll = () => {
+    const visibleIds = filteredQuestions.map((question) => question.questionId);
+
+    if (visibleIds.length === 0) {
+      return;
+    }
+
+    const allSelected = visibleIds.every((id) =>
+      selectedQuestions.includes(id),
+    );
 
     if (allSelected) {
-      setSelectedQuestions((prev) =>
-        prev.filter((id) => !visibleIds.includes(id)),
+      // Remove visible questions from selection
+      setSelectedQuestions((previous) =>
+        previous.filter((id) => !visibleIds.includes(id)),
       );
     } else {
-      setSelectedQuestions((prev) => [...new Set([...prev, ...visibleIds])]);
+      // Add visible questions
+      setSelectedQuestions((previous) => [
+        ...new Set([...previous, ...visibleIds]),
+      ]);
     }
   };
 
+  // CHECK SELECT ALL STATUS
+
   const isAllSelected =
     filteredQuestions.length > 0 &&
-    filteredQuestions.every((q) => selectedQuestions.includes(q.id));
+    filteredQuestions.every((question) =>
+      selectedQuestions.includes(question.questionId),
+    );
+
+  // NEXT / ADD TO EXAM
 
   const handleNext = () => {
-    const selected = questions.filter((q) => selectedQuestions.includes(q.id));
+    if (selectedQuestions.length === 0) {
+      alert("Please select at least one question.");
+      return;
+    }
+
+    const selected = questions.filter((question) =>
+      selectedQuestions.includes(question.questionId),
+    );
 
     if (onNext) {
       onNext(selected);
     }
   };
 
+  // CLEAR FILTERS
+
+  const clearFilters = () => {
+    setSearch("");
+    setSelectedChapter("");
+
+    setSelectedType("");
+  };
+
+  // RENDER
+
   return (
     <div className="question-selection-page">
-      {/* HEADER */}
+      {/*  HEADER */}
+
       <div className="question-selection-header">
         <div>
           <h2>Select Questions</h2>
@@ -158,10 +304,14 @@ const QuestionSelection = ({ onNext, onBack }) => {
         </div>
       </div>
 
-      {/* CARD */}
+      {/*     CARD */}
+
       <div className="question-selection-card">
-        {/* FILTERS */}
+        {/*  FILTERS  */}
+
         <div className="qs-filter-row">
+          {/* SEARCH */}
+
           <div className="qs-search">
             <FiSearch />
 
@@ -173,33 +323,81 @@ const QuestionSelection = ({ onNext, onBack }) => {
             />
           </div>
 
+          {/* CHAPTER */}
+
           <div className="qs-select-wrapper">
             <FiBookOpen />
 
             <select
-              value={chapter}
-              onChange={(e) => setChapter(e.target.value)}
+              value={selectedChapter}
+              onChange={(e) => setSelectedChapter(e.target.value)}
+              disabled={loadingChapters}
             >
-              {chapters.map((item) => (
-                <option key={item}>{item}</option>
+              <option value="">
+                {loadingChapters ? "Loading Chapters..." : "All Chapters"}
+              </option>
+
+              {availableChapters.map((chapter) => (
+                <option key={chapter.chapterId} value={chapter.chapterId}>
+                  {chapter.name || chapter.chapterName}
+                </option>
               ))}
             </select>
           </div>
 
+          {/* QUESTION TYPE */}
+
           <div className="qs-select-wrapper">
             <FiTag />
 
-            <select value={type} onChange={(e) => setType(e.target.value)}>
-              {types.map((item) => (
-                <option key={item}>{item}</option>
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+            >
+              <option value="">All Types</option>
+
+              {questionTypes.map((type) => (
+                <option key={type.id} value={type.id}>
+                  {type.name}
+                </option>
               ))}
             </select>
           </div>
         </div>
 
-        {/* TABS */}
+        {/*     CLEAR FILTER  */}
+
+        {(search || selectedChapter || selectedType) && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginTop: "10px",
+            }}
+          >
+            <button
+              type="button"
+              onClick={clearFilters}
+              style={{
+                border: "none",
+                background: "transparent",
+                cursor: "pointer",
+                fontSize: "13px",
+              }}
+            >
+              Clear Filters
+            </button>
+          </div>
+        )}
+
+        {/* 
+            TABS
+        */}
+
         <div className="qs-tabs-row">
           <div className="qs-tabs">
+            {/* ALL QUESTIONS */}
+
             <button
               type="button"
               className={`qs-tab ${activeTab === "all" ? "active" : ""}`}
@@ -207,8 +405,10 @@ const QuestionSelection = ({ onNext, onBack }) => {
             >
               <FiList />
               All Questions
-              <span className="qs-count blue">{questions.length}</span>
+              <span className="qs-count blue">{filteredQuestions.length}</span>
             </button>
+
+            {/* SELECTED QUESTIONS */}
 
             <button
               type="button"
@@ -227,6 +427,8 @@ const QuestionSelection = ({ onNext, onBack }) => {
             </button>
           </div>
 
+          {/* SELECT ALL */}
+
           <label className="qs-select-all">
             <input
               type="checkbox"
@@ -238,7 +440,10 @@ const QuestionSelection = ({ onNext, onBack }) => {
           </label>
         </div>
 
-        {/* TABLE */}
+        {/* 
+            TABLE
+       */}
+
         <div className="qs-table-wrapper">
           <table className="qs-table">
             <thead>
@@ -254,54 +459,78 @@ const QuestionSelection = ({ onNext, onBack }) => {
                 </th>
 
                 <th>Question</th>
+
                 <th>Chapter</th>
+
                 <th>Type</th>
-                <th>Marks</th>
               </tr>
             </thead>
 
             <tbody>
-              {visibleQuestions.length > 0 ? (
-                visibleQuestions.map((q) => {
-                  const selected = selectedQuestions.includes(q.id);
+              {/* LOADING */}
+
+              {loadingQuestions ? (
+                <tr>
+                  <td colSpan="5" className="qs-empty">
+                    Loading questions...
+                  </td>
+                </tr>
+              ) : visibleQuestions.length > 0 ? (
+                visibleQuestions.map((question) => {
+                  const selected = selectedQuestions.includes(
+                    question.questionId,
+                  );
 
                   return (
                     <tr
-                      key={q.id}
+                      key={question.questionId}
                       className={selected ? "selected-row" : ""}
-                      onClick={() => toggleQuestion(q.id)}
+                      onClick={() => toggleQuestion(question.questionId)}
                     >
+                      {/* CHECKBOX */}
+
                       <td className="check-column">
                         <input
                           type="checkbox"
                           checked={selected}
-                          onChange={() => toggleQuestion(q.id)}
-                          onClick={(e) => e.stopPropagation()}
+                          onChange={() => toggleQuestion(question.questionId)}
+                          onClick={(event) => event.stopPropagation()}
                         />
 
                         <span className="custom-checkbox"></span>
                       </td>
 
-                      <td className="question-name">{q.question}</td>
+                      {/* QUESTION */}
+
+                      <td className="question-name">
+                        {question.questionText || "No question text"}
+                      </td>
+
+                      {/* CHAPTER */}
 
                       <td>
                         <span className="chapter-badge">
                           <FiBookOpen />
-                          {q.chapter}
+
+                          {question.chapterName || "N/A"}
                         </span>
                       </td>
+
+                      {/* TYPE */}
 
                       <td>
                         <span
                           className={`type-badge ${
-                            q.type === "Practical" ? "practical" : "theory"
+                            String(question.questionType)
+                              .toLowerCase()
+                              .includes("practical")
+                              ? "practical"
+                              : "theory"
                           }`}
                         >
-                          {q.type}
+                          {question.questionType || "N/A"}
                         </span>
                       </td>
-
-                      <td className="marks">{q.marks}</td>
                     </tr>
                   );
                 })
@@ -316,7 +545,10 @@ const QuestionSelection = ({ onNext, onBack }) => {
           </table>
         </div>
 
-        {/* FOOTER */}
+        {/* 
+            FOOTER
+        */}
+
         <div className="qs-footer">
           <div className="qs-info-box">
             <div className="qs-info-icon">
@@ -331,9 +563,13 @@ const QuestionSelection = ({ onNext, onBack }) => {
           </div>
 
           <div className="qs-footer-actions">
+            {/* BACK */}
+
             <button type="button" className="qs-back-btn" onClick={onBack}>
               Back
             </button>
+
+            {/* NEXT */}
 
             <button
               type="button"
@@ -341,7 +577,8 @@ const QuestionSelection = ({ onNext, onBack }) => {
               onClick={handleNext}
               disabled={selectedQuestions.length === 0}
             >
-              Add To Exam ({selectedQuestions.length})
+              Add To Exam ({selectedQuestions.length}
+              )
               <FiArrowRight />
             </button>
           </div>
