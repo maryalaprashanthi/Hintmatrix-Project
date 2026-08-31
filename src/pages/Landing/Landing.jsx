@@ -11,7 +11,17 @@ function Landing() {
         <nav className="navbar">
           <div className="logo">
             <a href="/">
-              <img src="/images/logo.png" alt="HintMatrix Logo" />
+              <img
+                src="/images/logo.png"
+                alt="HintMatrix Logo"
+                className="logo-symbol"
+              />
+              <span className="logo-text">
+                {" "}
+                <span>H</span> <span>I</span> <span>N</span> <span>T</span>{" "}
+                <span>M</span> <span>A</span> <span>T</span> <span>R</span>{" "}
+                <span>I</span> <span>X</span>{" "}
+              </span>{" "}
             </a>
           </div>
 
@@ -37,11 +47,11 @@ function Landing() {
             </ul>
 
             <div className="nav-buttons">
-              <Link to="/login" className="login-btn">
+              <Link to="/login" className="nav-links">
                 Login
               </Link>
 
-              <Link to="/signup" className="signup-btn">
+              <Link to="/signup" className="nav-links">
                 Sign Up
               </Link>
             </div>
@@ -202,21 +212,15 @@ function Landing() {
 
       {/* ================= PRACTICE ================= */}
 
-      <section id="practice" className="practice">
-        <div className="section-title">
-          <h2>How to Practice questions in HintMatrix?</h2>
+      <div className="practice-images">
+        <img src="/images/step1.png" alt="Step 1" />
+        <img src="/images/step2.png" alt="Step 2" />
+        <img src="/images/step3.png" alt="Step 3" />
 
-          <p>Practice accounting in an interactive and engaging way.</p>
-        </div>
-
-        <div className="practice-images">
-          <img src="/images/step1.png" alt="Practice Step 1" />
-
-          <img src="/images/step2.png" alt="Practice Step 2" />
-
-          <img src="/images/step3.png" alt="Practice Step 3" />
-        </div>
-      </section>
+        <img src="/images/step1.png" alt="Step 1" />
+        <img src="/images/step2.png" alt="Step 2" />
+        <img src="/images/step3.png" alt="Step 3" />
+      </div>
 
       {/* ================= BANNERS ================= */}
 
