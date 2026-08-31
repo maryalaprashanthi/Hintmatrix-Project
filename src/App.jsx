@@ -61,6 +61,9 @@ import Unauthorized from "./pages/Unauthorized/Unauthorized";
 import ExamPage from "./components/Exam/ExamPage";
 import ExamHub from "./pages/ExamHub/ExamHub";
 import ExamPaper from "./pages/ExamPaper/ExamPaper";
+import CreateMcq from "./components/Mcq_Questions/CreateMcq";
+import McqPractice from "./components/Mcq_Questions/McqPractice";
+import McqList from "./components/Mcq_Questions/McqList";
 
 function App() {
   const navigate = useNavigate();
@@ -296,6 +299,9 @@ function App() {
         <Route path="/course-subscribe" element={<CourseSubscribe />} />
         <Route path="/exam-hub" element={<ExamHub />} />
         <Route path="/exam-paper" element={<ExamPaper />} />
+        <Route path="/mcq-questions/create" element={<CreateMcq />} />
+        <Route path="/mcq-questions/practice" element={<McqPractice />} />
+        <Route path="/mcq-questions/list" element={<McqList />} />
       </Route>
       <Route path="/exam-mine" element={<ExamPage />} />
     </Routes>

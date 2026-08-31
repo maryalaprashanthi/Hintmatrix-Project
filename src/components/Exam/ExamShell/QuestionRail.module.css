@@ -1,0 +1,147 @@
+/* 1a - the progress rail. Fixed 236px so the ledger beside it never reflows
+   as questions change state. */
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 236px;
+  flex: none;
+  padding: 18px 16px;
+  background: var(--paper-100);
+  border-right: 1px solid var(--ink-200);
+  overflow-y: auto;
+}
+
+.eyebrow {
+  font: 600 10px var(--font-ui);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+/* --- progress --- */
+.progressHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.progressCount {
+  font: 600 12px var(--font-mono);
+  color: var(--ink-900);
+}
+
+.progressTrack {
+  height: 6px;
+  border-radius: 99px;
+  background: var(--ink-200);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--green-500);
+  transition: width 0.3s var(--ease-out);
+}
+
+.remaining {
+  margin-top: 7px;
+  font: 400 11.5px var(--font-ui);
+  color: var(--ink-500);
+}
+
+.divider {
+  height: 1px;
+  background: var(--ink-200);
+}
+
+/* --- jump grid --- */
+.gridLabel {
+  margin-bottom: 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+}
+
+.cell.cell {
+  position: relative;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--paper-000);
+  border: 1px solid var(--ink-300);
+  color: var(--ink-600);
+  font: 600 13px var(--font-mono);
+  cursor: pointer;
+  transition:
+    transform 0.12s var(--ease-out),
+    var(--transition-control);
+}
+
+.cell.cell:hover {
+  transform: translateY(-1px);
+}
+
+.cellAnswered.cellAnswered {
+  background: var(--green-100);
+  border-color: #86efac;
+  color: var(--green-700);
+}
+
+.cellMarked.cellMarked {
+  background: var(--gold-100);
+  border-color: var(--gold-200);
+  color: var(--gold-700);
+}
+
+.cellCurrent.cellCurrent {
+  background: var(--navy-600);
+  border-color: var(--navy-700);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.32);
+}
+
+.cellDot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--gold-500);
+}
+
+/* --- legend --- */
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.legendRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 400 11.5px var(--font-ui);
+  color: var(--ink-600);
+}
+
+.legendSwatch {
+  width: 11px;
+  height: 11px;
+  flex: none;
+  border-radius: 3px;
+}
+
+.legendCount {
+  margin-left: auto;
+  font: 500 11.5px var(--font-mono);
+  color: var(--ink-500);
+}

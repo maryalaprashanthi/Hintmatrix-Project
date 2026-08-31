@@ -27,9 +27,39 @@ const normalizeQuestionAttributes = (attributes) =>
   attributes.map((attribute) => ({
     ...attribute,
     transaction: attribute.transaction ?? attribute.attributeId ?? "",
+    amount: attribute.amount ?? attribute.amount1 ?? attribute.amount2 ?? "",
     amount1: attribute.amount1 ?? attribute.amount ?? "",
     amount2: attribute.amount2 ?? attribute.amount2Value ?? "",
   }));
+
+const parseOptionalNumber = (value) => {
+  if (
+    value === "" ||
+    value === null ||
+    value === undefined ||
+    value === "null"
+  ) {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
+const getEffectiveAmount = (...values) => {
+  for (const value of values) {
+    if (
+      value !== "" &&
+      value !== null &&
+      value !== undefined &&
+      value !== "null"
+    ) {
+      return value;
+    }
+  }
+
+  return null;
+};
 
 const getResponseArray = (response) => {
   if (Array.isArray(response?.data)) return response.data;
@@ -66,6 +96,7 @@ function QuestionType2Modal({
 
   const emptyRow = () => ({
     transaction: "",
+    amount: "",
     amount1: "",
     amount2: "",
   });
@@ -371,8 +402,11 @@ function QuestionType2Modal({
       ...updated[index],
       transaction: selected ? selected.value : "",
       attributeId: selected ? selected.value : "",
-      amount1: selected ? selected.amount1 : "",
-      amount2: selected ? selected.amount2 : "",
+      amount: selected ? (selected.amount ?? selected.amount1 ?? "") : "",
+      amount1: selected ? (selected.amount1 ?? selected.amount ?? "") : "",
+      amount2: selected
+        ? (selected.amount2 ?? selected.amount2Value ?? selected.amount ?? "")
+        : "",
     };
 
     setQuestionAttributes(updated);
@@ -458,28 +492,21 @@ function QuestionType2Modal({
       questionTypeId: Number(questionTypeId),
       questionText: questionText.trim(),
 
-      questionAttributes: questionAttributes.map((row) => ({
-        headerId: row.headerId || 1,
-        attributeId: row.attributeId || Number(row.transaction),
+      questionAttributes: questionAttributes.map((row) => {
+        const amountValue = getEffectiveAmount(row.amount, row.amount1);
+        const amount2Value = getEffectiveAmount(row.amount2);
 
-        transaction: row.transaction || null,
+        return {
+          headerId: row.headerId || 1,
+          attributeId: row.attributeId || Number(row.transaction),
 
-        amount1:
-          row.amount1 === "" ||
-          row.amount1 === null ||
-          row.amount1 === undefined
-            ? null
-            : Number(row.amount1),
+          transaction: row.transaction || null,
+          amount: parseOptionalNumber(amountValue),
+          amount2: parseOptionalNumber(amount2Value),
 
-        amount2:
-          row.amount2 === "" ||
-          row.amount2 === null ||
-          row.amount2 === undefined
-            ? null
-            : Number(row.amount2),
-
-        note: row.note ?? null,
-      })),
+          note: row.note ?? null,
+        };
+      }),
     };
 
     console.log("Question Type 2 Payload:", payload);
@@ -758,7 +785,7 @@ function QuestionType2Modal({
                           <input
                             type="number"
                             placeholder="0"
-                            value={row.amount1 || ""}
+                            value={row.amount1 ?? ""}
                             onChange={(e) =>
                               handleAttributeChange(
                                 index,
@@ -777,7 +804,7 @@ function QuestionType2Modal({
                           <input
                             type="number"
                             placeholder="0"
-                            value={row.amount2 || ""}
+                            value={row.amount2 ?? ""}
                             onChange={(e) =>
                               handleAttributeChange(
                                 index,

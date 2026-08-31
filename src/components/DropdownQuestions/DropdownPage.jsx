@@ -47,11 +47,8 @@ const getRuleConditions = (rule) =>
     })
     .filter(Boolean);
 
-const DropdownPage = ({ id, variant = "practice" }) => {
+const DropdownPage = () => {
   let { questionId } = useParams();
-  if (id) {
-    questionId = id;
-  }
   const { showCheckMistakes } = useQuestionStore();
   const [question, setQuestion] = useState(null);
   const [answeredData, setAnsweredData] = useState({});
@@ -355,26 +352,22 @@ const DropdownPage = ({ id, variant = "practice" }) => {
   return (
     <div>
       <Row>
-        {variant === "practice" && (
-          <Header
-            question={question}
-            answeredData={answeredData}
-            setAnsweredData={setAnsweredData}
-            setCheckMistakes={setCheckMistakes}
-          />
-        )}
+        <Header
+          question={question}
+          answeredData={answeredData}
+          setAnsweredData={setAnsweredData}
+          setCheckMistakes={setCheckMistakes}
+        />
       </Row>
 
       <Row>
-        {variant === "practice" && (
-          <SummaryCards
-            debit={0}
-            credit={0}
-            total={question.questionAttributes?.length || 0}
-            solved={solved}
-            totalScore={totalScore}
-          />
-        )}
+        <SummaryCards
+          debit={0}
+          credit={0}
+          total={question.questionAttributes?.length || 0}
+          solved={solved}
+          totalScore={totalScore}
+        />
       </Row>
 
       <Row className="align-items-start">

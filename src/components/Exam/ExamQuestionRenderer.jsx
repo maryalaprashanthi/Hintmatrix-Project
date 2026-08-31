@@ -1,15 +1,15 @@
-import DropdownPage from "../DropdownQuestions/DropdownPage";
-import JournalPage from "../JournalQuestion/JournalPage";
-import QuestionPage from "../Question/QuestionPage";
+import ExamDropdownPage from "./ExamComponents/ExamDropdownPage";
+import ExamJournalPage from "./ExamComponents/ExamJournalPage";
+import ExamQuestionPage from "./ExamComponents/ExamQuestionPage";
 
 const ExamQuestionRenderer = ({ questionId }) => {
   switch (questionId) {
     case 2:
-      return <DropdownPage id={questionId} variant="exam" />;
+      return <ExamDropdownPage id={questionId} />;
     case 3:
-      return <JournalPage id={questionId} variant="exam" />;
+      return <ExamJournalPage id={questionId} />;
     case 4:
-      return <QuestionPage id={questionId} variant="exam" />;
+      return <ExamQuestionPage id={questionId} />;
     default:
       return <p role="alert">Unsupported exam question.</p>;
   }

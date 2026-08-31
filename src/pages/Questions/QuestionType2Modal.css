@@ -474,6 +474,10 @@ Transaction Select
   padding: 0 !important;
 
   color: #9ca3af !important;
+
+  text-align: left !important;
+
+  width: 100% !important;
 }
 
 .qt2-transaction-select__single-value {

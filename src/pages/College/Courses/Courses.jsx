@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CourseService from "../../../services/CourseService";
+import ChapterService from "../../../services/ChapterService";
 import SuccessModal from "../../../components/Common/SuccessModal";
 import DeleteModal from "../../../components/Common/DeleteModal";
 
@@ -28,13 +29,17 @@ import inter from "../../../assets/courses/inter.png.jpeg";
 
 function Courses() {
   const navigate = useNavigate();
-  const userRole = (localStorage.getItem("role") || "GUEST").toString().trim().toUpperCase();
+  const userRole = (localStorage.getItem("role") || "GUEST")
+    .toString()
+    .trim()
+    .toUpperCase();
   const isStudent = userRole === "STUDENT";
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [showModal, setShowModal] = useState(false);
   const [courses, setCourses] = useState([]);
+  const [chapters, setChapters] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -50,8 +55,19 @@ function Courses() {
       });
   };
 
+  const loadChapters = () => {
+    ChapterService.getAll()
+      .then((response) => {
+        setChapters(Array.isArray(response.data) ? response.data : []);
+      })
+      .catch((error) => {
+        console.error("Failed to load backend chapters:", error);
+      });
+  };
+
   useEffect(() => {
     loadCourses();
+    loadChapters();
   }, []);
 
   const handleEdit = (courseData) => {
@@ -140,6 +156,30 @@ function Courses() {
     e.target.value = "";
   };
 
+  const totals = React.useMemo(() => {
+    const totalChapters = courses.reduce((sum, course) => {
+      const courseId = course.courseId ?? course.id;
+      const valueFromCourse = Number(
+        course.chapters ?? course.chapterCount ?? course.totalChapters ?? 0,
+      );
+      const valueFromChapterTable = chapters.filter(
+        (chapter) =>
+          String(chapter.courseId ?? chapter.course_id) === String(courseId),
+      ).length;
+      const value =
+        Number.isFinite(valueFromCourse) && valueFromCourse > 0
+          ? valueFromCourse
+          : valueFromChapterTable;
+
+      return sum + (Number.isFinite(value) ? value : 0);
+    }, 0);
+
+    return {
+      totalChapters,
+      activeCourses: courses.filter((course) => course.activeRow).length,
+    };
+  }, [courses, chapters]);
+
   const filteredCourses = courses.filter((course) => {
     const courseTitle = course.name || course.title || "";
 
@@ -227,7 +267,7 @@ function Courses() {
 
             <div>
               <small>Active Courses</small>
-              <h3>{courses.filter((course) => course.activeRow).length}</h3>
+              <h3>{totals.activeCourses}</h3>
               <span>Currently Running</span>
             </div>
           </div>
@@ -255,7 +295,7 @@ function Courses() {
 
             <div>
               <small>Total Chapters</small>
-              <h3>221</h3>
+              <h3>{totals.totalChapters}</h3>
               <span>Learning Modules</span>
             </div>
           </div>
@@ -297,89 +337,112 @@ function Courses() {
       {/* ================= COURSE GRID ================= */}
 
       <div className="row">
-        {filteredCourses.map((course) => (
-          <div
-            className="col-12 col-md-6 col-lg-4 mb-4"
-            key={course.courseId || course.id}
-          >
-            <div className="course-card h-100">
-              <div className="course-banner">
-                <img
-                  src={course.image || bcom}
-                  alt={course.name || course.title}
-                />
-              </div>
-              <div className="course-content">
-                <div className="d-flex justify-content-between align-items-center">
-                  <h4>{course.name || course.title}</h4>
+        {filteredCourses.map((course) => {
+          const courseId = course.courseId || course.id;
+          const courseChapterCount =
+            Number(
+              course.chapters ??
+                course.chapterCount ??
+                course.totalChapters ??
+                0,
+            ) > 0
+              ? Number(
+                  course.chapters ??
+                    course.chapterCount ??
+                    course.totalChapters ??
+                    0,
+                )
+              : chapters.filter(
+                  (chapter) =>
+                    String(chapter.courseId ?? chapter.course_id) ===
+                    String(courseId),
+                ).length;
 
-                  <span
-                    className={
-                      course.activeRow
-                        ? "status-badge active"
-                        : "status-badge inactive"
-                    }
+          return (
+            <div className="col-12 col-md-6 col-lg-4 mb-4" key={courseId}>
+              <div className="course-card h-100">
+                <div className="course-banner">
+                  <img
+                    src={course.image || bcom}
+                    alt={course.name || course.title}
+                  />
+                </div>
+                <div className="course-content">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <h4>{course.name || course.title}</h4>
+
+                    <span
+                      className={
+                        course.activeRow
+                          ? "status-badge active"
+                          : "status-badge inactive"
+                      }
+                    >
+                      {course.activeRow ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+
+                  <p className="course-level">{course.level || "Beginner"}</p>
+
+                  <div className="course-details">
+                    <div>
+                      <FaUsers />
+                      <span>{course.students} Students</span>
+                    </div>
+
+                    <div>
+                      <FaLayerGroup />
+                      <span>{courseChapterCount} Chapters</span>
+                    </div>
+
+                    <div>
+                      <FaClock />
+                      <span>{course.duration}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    className="course-btn mt-auto"
+                    disabled={!course.activeRow}
+                    onClick={() => {
+                      if (course.activeRow) {
+                        navigate(`/chapters/${course.courseId}`);
+                      }
+                    }}
                   >
-                    {course.activeRow ? "Active" : "Inactive"}
-                  </span>
+                    <FaBookOpen />
+
+                    <span>
+                      {course.activeRow ? "View Chapters" : "Inactive"}
+                    </span>
+                  </button>
+
+                  {!isStudent && (
+                    <div className="d-flex gap-2 mt-3">
+                      <button
+                        className="btn btn-outline-primary btn-sm"
+                        onClick={() => handleEdit(course)}
+                      >
+                        <FaEdit className="me-1" />
+                        Edit
+                      </button>
+
+                      <button
+                        className="btn btn-outline-danger btn-sm"
+                        onClick={() =>
+                          handleDelete(course.courseId || course.id)
+                        }
+                      >
+                        <FaTrash className="me-1" />
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </div>
-
-                <p className="course-level">{course.level || "Beginner"}</p>
-
-                <div className="course-details">
-                  <div>
-                    <FaUsers />
-                    <span>{course.students} Students</span>
-                  </div>
-
-                  <div>
-                    <FaLayerGroup />
-                    <span>{course.chapters} Chapters</span>
-                  </div>
-
-                  <div>
-                    <FaClock />
-                    <span>{course.duration}</span>
-                  </div>
-                </div>
-
-                <button
-                  className="course-btn mt-auto"
-                  disabled={!course.activeRow}
-                  onClick={() => {
-                    if (course.activeRow) {
-                      navigate(`/chapters/${course.courseId}`);
-                    }
-                  }}
-                >
-                  <FaBookOpen />
-
-                  <span>{course.activeRow ? "View Chapters" : "Inactive"}</span>
-                </button>
-
-                {!isStudent && (
-                  <div className="d-flex gap-2 mt-3">
-                    <button
-                      className="btn btn-outline-primary btn-sm"
-                      onClick={() => handleEdit(course)}
-                    >
-                      <FaEdit className="me-1" />
-                      Edit
-                    </button>
-
-                    <button
-                      className="btn btn-outline-danger btn-sm"
-                      onClick={() => handleDelete(course.courseId || course.id)}
-                    >
-                      <FaTrash className="me-1" />
-                      Delete
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* ================= EMPTY ================= */}
