@@ -1,0 +1,185 @@
+.droppable-group {
+  border-radius: 10px;
+  overflow: visible;
+  border: 1px solid #e5e7eb;
+  min-height: clamp(130px, 20vw, 160px);
+  width: 100%;
+}
+
+.dropzone {
+  background-color: #ffffff;
+  padding: 0;
+  transition: background-color 0.2s ease;
+}
+
+.dropzone-table {
+  width: 100%;
+  table-layout: fixed;
+  font-size: clamp(0.72rem, 1.4vw, 0.85rem);
+  margin-bottom: 0;
+}
+
+.dropzone-table thead th {
+  font-weight: 600;
+  padding: clamp(8px, 1.7vw, 10px) clamp(8px, 2vw, 12px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.dropzone-table tbody tr {
+  position: relative;
+}
+
+.placed-row td:last-child {
+  position: relative;
+  padding-right: 22px;
+}
+
+.dropzone-table tbody td {
+  padding: clamp(7px, 1.5vw, 8px) clamp(8px, 2vw, 12px);
+  vertical-align: middle;
+  border-bottom: 1px solid #f3f4f6;
+  overflow-wrap: anywhere;
+}
+
+.dropzone-table tfoot td {
+  padding: clamp(8px, 1.7vw, 10px) clamp(8px, 2vw, 12px);
+}
+
+.theme-debit .add-zone thead th,
+.theme-debit .sub-zone thead th,
+.theme-debit .total-row td {
+  background-color: #eef2ff;
+  color: #4338ca;
+}
+
+.theme-credit .add-zone thead th,
+.theme-credit .sub-zone thead th,
+.theme-credit .total-row td {
+  background-color: #ecfdf5;
+  color: #047857;
+}
+
+.active-dropzone-add,
+.active-dropzone-add table,
+.active-dropzone-add th,
+.active-dropzone-add td,
+.active-dropzone-add tr {
+  background-color: #10b981 !important;
+  color: #ffffff !important;
+}
+
+.active-dropzone-sub,
+.active-dropzone-sub table,
+.active-dropzone-sub th,
+.active-dropzone-sub td,
+.active-dropzone-sub tr {
+  background-color: #f87171 !important;
+  color: #ffffff !important;
+}
+
+/* Exam-only: a placed row carries a remove control instead of a
+   correct/wrong state. */
+.placed-row {
+  position: relative;
+}
+
+.remove-row-btn {
+  display: none;
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: auto;
+  height: auto;
+  line-height: 1;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #ef4444;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.placed-row:hover .remove-row-btn {
+  display: block;
+}
+
+.remove-row-btn:hover {
+  color: #b91c1c;
+}
+
+@media (max-width: 575.98px) {
+  .droppable-group .row {
+    flex-direction: column;
+  }
+  .add-zone,
+  .sub-zone {
+    width: 100%;
+  }
+  .sub-zone {
+    border-top: 1px solid #e5e7eb;
+  }
+  .droppable-group {
+    min-height: 0;
+    border-radius: 8px;
+  }
+  .dropzone-table {
+    font-size: 0.78rem;
+  }
+  .dropzone-table thead th,
+  .dropzone-table tbody td,
+  .dropzone-table tfoot td {
+    padding: 8px;
+  }
+  .dropzone-table th:first-child,
+  .dropzone-table td:first-child {
+    width: 68% !important;
+  }
+  .dropzone-table th:last-child,
+  .dropzone-table td:last-child {
+    width: 32% !important;
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 991.98px) {
+  .droppable-group {
+    min-height: 145px;
+  }
+}
+
+.tooltip.add-tooltip .tooltip-inner {
+  background-color: #10b981;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+}
+
+.tooltip.add-tooltip .tooltip-arrow::before {
+  border-top-color: #10b981 !important;
+  border-bottom-color: #10b981 !important;
+}
+
+.tooltip.sub-tooltip .tooltip-inner {
+  background-color: #f87171;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(248, 113, 113, 0.25);
+}
+
+.tooltip.sub-tooltip .tooltip-arrow::before {
+  border-top-color: #f87171 !important;
+  border-bottom-color: #f87171 !important;
+}
+
+.tooltip {
+  transition: opacity 0.1s ease;
+}

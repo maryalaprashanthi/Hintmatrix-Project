@@ -1,0 +1,180 @@
+/* Shared overlay for 1e (submit confirmation) and 1g (time up). */
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 34px 30px;
+  background: var(--overlay-scrim);
+}
+
+/* --- 1e: submit confirmation --- */
+.submitCard {
+  width: 410px;
+  max-width: 100%;
+  padding: 24px;
+  background: var(--paper-000);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-overlay);
+}
+
+.submitTitle {
+  font-family: var(--font-display);
+  font-size: 23px;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+.submitSub {
+  margin-top: 5px;
+  font: 400 12.5px var(--font-ui);
+  color: var(--ink-500);
+}
+
+.summary {
+  display: flex;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.summaryTile {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius-md);
+}
+
+.summaryValue {
+  font: 600 22px/1 var(--font-mono);
+}
+
+.summaryLabel {
+  margin-top: 5px;
+  font: 500 10.5px var(--font-ui);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+
+.tileAnswered {
+  background: var(--green-100);
+  border: 1px solid #86efac;
+}
+
+.tileAnswered .summaryValue {
+  color: var(--green-700);
+}
+
+.tileMarked {
+  background: var(--gold-100);
+  border: 1px solid var(--gold-200);
+}
+
+.tileMarked .summaryValue {
+  color: var(--gold-700);
+}
+
+.tileUnattempted {
+  background: var(--paper-100);
+  border: 1px solid var(--ink-200);
+}
+
+.tileUnattempted .summaryValue {
+  color: var(--ink-600);
+}
+
+.submitActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+/* Shared by 1e's two actions and 1g's single one. */
+.secondary.secondary,
+.primary.primary,
+.onDark.onDark {
+  flex: 1;
+  height: 44px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-control);
+}
+
+.secondary.secondary {
+  background: var(--paper-000);
+  border: 1px solid var(--ink-300);
+  color: var(--ink-700);
+  font: 500 13.5px var(--font-ui);
+}
+
+.secondary.secondary:hover {
+  background: var(--surface-hover);
+}
+
+.primary.primary {
+  background: var(--action-primary);
+  border: 0;
+  color: #fff;
+  font: 600 13.5px var(--font-ui);
+}
+
+.primary.primary:hover {
+  background: var(--action-primary-hover);
+}
+
+/* --- 1g: time up --- */
+.timeUpCard {
+  width: 360px;
+  max-width: 100%;
+  padding: 26px;
+  background: var(--navy-900);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-overlay);
+  text-align: center;
+}
+
+.timeUpIcon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.timeUpTitle {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.timeUpBody {
+  margin-top: 7px;
+  font: 400 13px/1.5 var(--font-ui);
+  color: var(--navy-200);
+}
+
+.timeUpBody b {
+  color: #fff;
+  font-weight: 600;
+}
+
+.timeUpActions {
+  display: flex;
+  gap: 9px;
+  margin-top: 20px;
+}
+
+.onDark.onDark {
+  background: rgba(255, 255, 255, 0.12);
+  border: 0;
+  color: #fff;
+  font: 500 13px var(--font-ui);
+}
+
+.onDark.onDark:hover {
+  background: rgba(255, 255, 255, 0.2);
+}

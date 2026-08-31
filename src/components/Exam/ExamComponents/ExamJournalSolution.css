@@ -1,0 +1,83 @@
+.journal-solution-table {
+  width: 100% !important;
+  margin: 0 !important;
+  border-collapse: collapse;
+  font-size: 15px;
+  table-layout: fixed;
+}
+
+.journal-solution-table thead th {
+  background-color: #eef2ff !important;
+  color: #4338ca !important;
+  border: 1px solid #e0e4f5 !important;
+  height: 52px;
+  padding: 13px 6px !important;
+  font-size: 14px;
+  line-height: 1.2;
+  white-space: nowrap;
+  vertical-align: middle;
+  text-align: center;
+}
+
+.journal-solution-table th:nth-child(3),
+.journal-solution-table td:nth-child(3) {
+  width: 8%;
+}
+
+.journal-solution-table tbody td {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  border: 1px solid #edf0f7 !important;
+  padding: 13px 16px !important;
+  height: 58px;
+  vertical-align: middle;
+}
+
+.journal-solution-table.table-striped > tbody > tr:nth-of-type(odd) > * {
+  background-color: #ffffff !important;
+  --bs-table-accent-bg: #ffffff !important;
+}
+
+.journal-solution-table.table-hover > tbody > tr:hover > * {
+  background-color: #f7f8ff !important;
+  color: #1f2937 !important;
+}
+
+.date-cell {
+  text-align: center;
+}
+
+.amount-cell {
+  text-align: center;
+}
+
+.amount-cell-with-remove {
+  position: relative;
+}
+
+.remove-row-btn {
+  display: none;
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: auto;
+  height: auto;
+  line-height: 1;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #ef4444;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.placed-row:hover .remove-row-btn {
+  display: block;
+}
+
+.remove-row-btn:hover {
+  color: #b91c1c;
+}
