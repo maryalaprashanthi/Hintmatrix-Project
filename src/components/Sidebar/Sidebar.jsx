@@ -284,6 +284,33 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
                     <MdCategory />
                     <span>Question Categories</span>
                   </NavLink>
+
+                  <NavLink
+                    to="/mcq-questions/create"
+                    className={subMenuClass}
+                    onClick={closeSidebar}
+                  >
+                    <MdQuiz />
+                    <span>MCQ Create</span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/mcq-questions/list"
+                    className={subMenuClass}
+                    onClick={closeSidebar}
+                  >
+                    <MdListAlt />
+                    <span>MCQ List</span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/mcq-questions/practice"
+                    className={subMenuClass}
+                    onClick={closeSidebar}
+                  >
+                    <MdOutlineEdit />
+                    <span>MCQ Practice</span>
+                  </NavLink>
                 </div>
               )}
             </>
