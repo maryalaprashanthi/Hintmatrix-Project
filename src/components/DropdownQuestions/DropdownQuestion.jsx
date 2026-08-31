@@ -679,10 +679,17 @@ const DropdownQuestion = ({
                                   value={debitValue}
                                   closeMenuOnSelect={false}
                                   menuPortalTarget={document.body}
+                                  menuPosition="fixed"
+                                  menuPlacement="auto"
+                                  maxMenuHeight={240}
                                   styles={{
                                     menuPortal: (base) => ({
                                       ...base,
                                       zIndex: 9999,
+                                    }),
+                                    menu: (base) => ({
+                                      ...base,
+                                      maxHeight: 240,
                                     }),
                                   }}
                                   onChange={(selected) => {
@@ -699,10 +706,17 @@ const DropdownQuestion = ({
                                 value={creditValue}
                                 closeMenuOnSelect={false}
                                 menuPortalTarget={document.body}
+                                menuPosition="fixed"
+                                menuPlacement="auto"
+                                maxMenuHeight={240}
                                 styles={{
                                   menuPortal: (base) => ({
                                     ...base,
                                     zIndex: 9999,
+                                  }),
+                                  menu: (base) => ({
+                                    ...base,
+                                    maxHeight: 240,
                                   }),
                                 }}
                                 onChange={(selected) => {

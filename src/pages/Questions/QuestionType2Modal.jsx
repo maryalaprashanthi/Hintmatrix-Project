@@ -5,6 +5,7 @@ import Select from "react-select";
 import CourseService from "../../services/CourseService";
 import ChapterService from "../../services/ChapterService";
 import CategoryService from "../../services/QuestionCategoryService";
+import QuestionTypeService from "../../services/QuestionTypeService";
 import QuestionService from "../../services/QuestionService";
 import TableHeaderService from "../../services/TableHeaderService";
 import TableAttributeService from "../../services/TableAttributeService";
@@ -30,6 +31,13 @@ const normalizeQuestionAttributes = (attributes) =>
     amount2: attribute.amount2 ?? attribute.amount2Value ?? "",
   }));
 
+const getResponseArray = (response) => {
+  if (Array.isArray(response?.data)) return response.data;
+  if (Array.isArray(response?.data?.data)) return response.data.data;
+  if (Array.isArray(response?.data?.results)) return response.data.results;
+  return [];
+};
+
 function QuestionType2Modal({
   show,
   onClose,
@@ -42,11 +50,13 @@ function QuestionType2Modal({
   const [courseId, setCourseId] = useState(initialCourseId || null);
   const [chapterId, setChapterId] = useState(initialChapterId || null);
   const [categoryId, setCategoryId] = useState(initialCategoryId || null);
+  const [questionTypeId, setQuestionTypeId] = useState(null);
   const [questionText, setQuestionText] = useState("");
 
   const [courseOptions, setCourseOptions] = useState([]);
   const [chapterOptions, setChapterOptions] = useState([]);
   const [categoryOptions, setCategoryOptions] = useState([]);
+  const [questionTypeOptions, setQuestionTypeOptions] = useState([]);
   const [allChapterOptions, setAllChapterOptions] = useState([]);
   const [allCategoryOptions, setAllCategoryOptions] = useState([]);
 
@@ -71,6 +81,7 @@ function QuestionType2Modal({
     loadCourses();
     loadCategories();
     loadChapters();
+    loadQuestionTypes();
     loadHeaders();
     loadAttributes();
   }, []);
@@ -124,6 +135,9 @@ function QuestionType2Modal({
       setCategoryId(
         questionData.categoryId ?? questionData.category_id ?? null,
       );
+      setQuestionTypeId(
+        questionData.questionTypeId ?? questionData.question_type_id ?? null,
+      );
 
       const loadQuestionAttributes = async () => {
         try {
@@ -134,6 +148,11 @@ function QuestionType2Modal({
           if (cancelled) return;
 
           setQuestionText(loadedQuestion.questionText || "");
+          setQuestionTypeId(
+            loadedQuestion.questionTypeId ??
+              loadedQuestion.question_type_id ??
+              null,
+          );
           setQuestionAttributes(
             loadedQuestion.questionAttributes?.length > 0
               ? normalizeQuestionAttributes(loadedQuestion.questionAttributes)
@@ -164,6 +183,7 @@ function QuestionType2Modal({
       setCourseId(initialCourseId || null);
       setChapterId(initialChapterId || null);
       setCategoryId(initialCategoryId || null);
+      setQuestionTypeId(null);
       setQuestionText("");
       setQuestionAttributes([emptyRow()]);
     }
@@ -180,11 +200,12 @@ function QuestionType2Modal({
   const loadCourses = async () => {
     try {
       const response = await CourseService.getAllCourses();
+      const data = getResponseArray(response);
 
       setCourseOptions(
-        response.data.map((item) => ({
+        data.map((item) => ({
           value: item.course_id ?? item.courseId ?? item.id,
-          label: item.course_name ?? item.name,
+          label: item.course_name ?? item.courseName ?? item.name ?? "",
         })),
       );
     } catch (error) {
@@ -203,13 +224,7 @@ function QuestionType2Modal({
       console.log("CATEGORY API RESPONSE:", response);
       console.log("CATEGORY DATA:", response?.data);
 
-      const data = Array.isArray(response?.data)
-        ? response.data
-        : Array.isArray(response?.data?.data)
-          ? response.data.data
-          : Array.isArray(response?.data?.results)
-            ? response.data.results
-            : [];
+      const data = getResponseArray(response);
 
       console.log("CATEGORY ARRAY:", data);
 
@@ -239,20 +254,19 @@ function QuestionType2Modal({
       console.log("CHAPTER API RESPONSE:", response);
       console.log("CHAPTER DATA:", response?.data);
 
-      const data = Array.isArray(response?.data)
-        ? response.data
-        : Array.isArray(response?.data?.data)
-          ? response.data.data
-          : Array.isArray(response?.data?.results)
-            ? response.data.results
-            : [];
+      const data = getResponseArray(response);
 
       console.log("CHAPTER ARRAY:", data);
 
       const options = data.map((item) => ({
         value: item.chapter_id ?? item.chapterId ?? item.id,
         label: item.chapter_name ?? item.chapterName ?? item.name ?? "",
-        courseId: item.course_id ?? item.courseId,
+        courseId:
+          item.course_id ??
+          item.courseId ??
+          item.course?.course_id ??
+          item.course?.courseId ??
+          item.course?.id,
       }));
 
       console.log("CHAPTER OPTIONS:", options);
@@ -261,6 +275,26 @@ function QuestionType2Modal({
     } catch (error) {
       console.error("Error loading chapters:", error);
       setChapterOptions([]);
+    }
+  };
+
+  const loadQuestionTypes = async () => {
+    try {
+      const response = await QuestionTypeService.getAll();
+      const data = Array.isArray(response?.data)
+        ? response.data
+        : Array.isArray(response?.data?.data)
+          ? response.data.data
+          : [];
+
+      setQuestionTypeOptions(
+        data.map((item) => ({
+          value: item.questionTypeId ?? item.question_type_id ?? item.id,
+          label: item.name ?? item.type ?? item.questionType ?? "",
+        })),
+      );
+    } catch (error) {
+      console.error("Error loading question types:", error);
     }
   };
   /* =========================================================
@@ -374,6 +408,7 @@ function QuestionType2Modal({
     setCourseId(null);
     setChapterId(null);
     setCategoryId(null);
+    setQuestionTypeId(null);
     setQuestionText("");
 
     setQuestionAttributes([emptyRow()]);
@@ -396,7 +431,13 @@ function QuestionType2Modal({
   ========================================================= */
 
   const handleSave = async () => {
-    if (!courseId || !chapterId || !categoryId || !questionText.trim()) {
+    if (
+      !courseId ||
+      !chapterId ||
+      !categoryId ||
+      !questionTypeId ||
+      !questionText.trim()
+    ) {
       alert("Please fill all required fields.");
       return;
     }
@@ -414,6 +455,7 @@ function QuestionType2Modal({
       courseId: Number(courseId),
       chapterId: Number(chapterId),
       categoryId: Number(categoryId),
+      questionTypeId: Number(questionTypeId),
       questionText: questionText.trim(),
 
       questionAttributes: questionAttributes.map((row) => ({
@@ -515,17 +557,11 @@ function QuestionType2Modal({
                     options={courseOptions}
                     value={
                       courseOptions.find(
-                        (option) => option.value === courseId,
+                        (option) => String(option.value) === String(courseId),
                       ) || null
                     }
-                    onChange={(selected) => {
-                      setCourseId(selected ? selected.value : null);
-                      setChapterId(null);
-                      setCategoryId(null);
-                    }}
                     placeholder="Select Course"
-                    isSearchable
-                    isClearable
+                    isDisabled
                     menuPortalTarget={document.body}
                     menuPosition="fixed"
                     styles={{
@@ -554,17 +590,11 @@ function QuestionType2Modal({
                     options={chapterOptions}
                     value={
                       chapterOptions.find(
-                        (option) => option.value === chapterId,
+                        (option) => String(option.value) === String(chapterId),
                       ) || null
                     }
-                    onChange={(selected) => {
-                      setChapterId(selected ? selected.value : null);
-                      setCategoryId(null);
-                    }}
                     placeholder="Select Chapter"
-                    isDisabled={!courseId}
-                    isSearchable
-                    isClearable
+                    isDisabled
                     menuPortalTarget={document.body}
                     menuPosition="fixed"
                     styles={{
@@ -601,6 +631,44 @@ function QuestionType2Modal({
                     }}
                     placeholder="Select Category"
                     isDisabled={!chapterId}
+                    isSearchable
+                    isClearable
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+                    styles={{
+                      menuPortal: (base) => ({
+                        ...base,
+                        zIndex: 99999,
+                      }),
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* QUESTION TYPE */}
+
+              <div className="qt2-form-group">
+                <label>
+                  Question Type <span>*</span>
+                </label>
+
+                <div className="qt2-input-box">
+                  <FaList className="qt2-input-icon" />
+
+                  <Select
+                    className="qt2-react-select-container"
+                    classNamePrefix="qt2-react-select"
+                    options={questionTypeOptions}
+                    value={
+                      questionTypeOptions.find(
+                        (option) =>
+                          String(option.value) === String(questionTypeId),
+                      ) || null
+                    }
+                    onChange={(selected) => {
+                      setQuestionTypeId(selected ? selected.value : null);
+                    }}
+                    placeholder="Select Question Type"
                     isSearchable
                     isClearable
                     menuPortalTarget={document.body}

@@ -9,7 +9,26 @@ import RuleEngineService from "../../services/RuleEngineService";
 import QuestionService from "../../services/QuestionService";
 import { data } from "./SampleData";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
-import { getQuestionTypeByChapter } from "../../utils/questionTypeMapping";
+import QuestionTypeService from "../../services/QuestionTypeService";
+
+const getQuestionType = (question) => {
+  const type =
+    question?.questionType?.name ??
+    question?.questionType ??
+    question?.type?.name ??
+    question?.name ??
+    question?.questionTypeName ??
+    question?.question_type_name ??
+    question?.typeName;
+
+  if (typeof type === "string") {
+    const normalizedType = type.trim().toUpperCase().replace(/\s+/g, "_");
+
+    return normalizedType === "DRAGANDDROP" ? "DRAG_AND_DROP" : normalizedType;
+  }
+
+  return null;
+};
 
 const questionMap = {
   credit: "credit particulars",
@@ -51,7 +70,16 @@ const QuestionPage = () => {
       setIsLoading(true);
       try {
         const response = await loadQuestions(questionId);
-        const type = getQuestionTypeByChapter(response?.data?.chapterId);
+        let type = getQuestionType(response?.data);
+        const questionTypeId =
+          response?.data?.questionTypeId ?? response?.data?.question_type_id;
+
+        if (!type && questionTypeId) {
+          const typeResponse =
+            await QuestionTypeService.getById(questionTypeId);
+          type = getQuestionType(typeResponse?.data);
+        }
+
         setQuestionType(type);
 
         if (type === "DRAG_AND_DROP") {
@@ -149,6 +177,10 @@ const QuestionPage = () => {
 
   if (questionType === "DROPDOWN") {
     return <DropdownPage />;
+  }
+
+  if (questionType !== "DRAG_AND_DROP") {
+    return <div>Unsupported question type.</div>;
   }
 
   return (
