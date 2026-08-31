@@ -8,7 +8,6 @@ import ExamJournalPage from "./ExamJournalPage";
 import ExamDropdownPage from "./ExamDropdownPage";
 import QuestionService from "../../../services/QuestionService";
 import { data } from "./SampleData";
-import { getQuestionTypeByChapter } from "../../../utils/questionTypeMapping";
 
 // Exam version of QuestionPage: renders the question but never reveals
 // whether a placement is correct - drops are always accepted silently and
@@ -25,14 +24,17 @@ const ExamQuestionPage = ({ id }) => {
   const [questionType, setQuestionType] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const { moveQuestion, setQuestions, setTableData } = useExamQuestionStore();
-  const cacheQuestionType = useExamSessionStore((state) => state.setQuestionType);
+  const cacheQuestionType = useExamSessionStore(
+    (state) => state.setQuestionType,
+  );
   const cachedType = useExamSessionStore(
     (state) => state.byQuestionId[questionId]?.questionType,
   );
 
   const loadQuestion = async () => {
     const response = await QuestionService.getQuestionById(questionId);
-    const type = getQuestionTypeByChapter(response?.data?.chapterId);
+    const type = response.data.questionType;
+    console.log("I am being called");
 
     cacheQuestionType(questionId, type);
 
