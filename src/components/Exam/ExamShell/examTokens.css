@@ -1,0 +1,74 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap");
+
+/* Design tokens for the exam, scoped to .examRoot so the rest of the app
+ * (Inter + Bootstrap, its own palette) is untouched.
+ *
+ * These are the EFFECTIVE values the mockup renders with, not the ones in
+ * ds/tokens/colors.css. "Exam Navigation.dc.html" overrides that base twice:
+ * in its <helmet> <style> block ("App theme override - matches the live
+ * dashboard: lavender canvas, white cards, indigo/violet accents, Poppins"),
+ * and again at runtime from its logic class, which applies the default tweaks
+ * (Indigo accent, amber warning tone, "Soft app" shape). Read back off the
+ * rendered mockup. Note the accent is named "navy" but is indigo, so
+ * --navy-900 is #4f46e5.
+ *
+ * Only tokens the exam actually references are kept; grouped per family the
+ * way the design system's own token files are written.
+ *
+ * Component classes double their name (.next.next) because the app's index.css
+ * resets buttons via `button:not([class*="btn"])`, whose specificity (0,1,1)
+ * would otherwise beat a single module class and drop the design's type. */
+.examRoot {
+  --font-ui: "Poppins", system-ui, sans-serif;
+  --font-display: "Poppins", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "IBM Plex Mono", monospace;
+
+  /* Surfaces - lavender canvas, white cards */
+  --paper-000: #ffffff; --paper-050: #fbfbfe; --paper-100: #f4f5fb;
+  --surface-app: #f4f5fb; --surface-card: #ffffff; --surface-hover: #f5f4ff;
+
+  /* Ink */
+  --ink-100: #f3f4f6; --ink-200: #e8eaf3; --ink-300: #d5d8e6; --ink-400: #a1a6bb;
+  --ink-500: #767c95; --ink-600: #565d78; --ink-700: #3d4460; --ink-900: #141a33;
+  --text-body: #3d4460; --border-subtle: #e8eaf3;
+
+  /* Accent (indigo) */
+  --navy-100: #eef2ff; --navy-200: #e0e7ff; --navy-300: #c7d2fe; --navy-500: #6366f1;
+  --navy-600: #5b52e8; --navy-700: #4f46e5; --navy-800: #6d28d9; --navy-900: #4f46e5;
+  --action-primary: #4f46e5; --action-primary-hover: #4338ca; --action-disabled: #e8eaf3;
+
+  /* Warnings (amber) and status */
+  --gold-100: #fff7ed; --gold-200: #fed7aa; --gold-400: #fbbf24;
+  --gold-500: #f59e0b; --gold-600: #f97316; --gold-700: #b45309;
+  --amber-100: #fff7ed; --amber-600: #f97316;
+  --green-100: #dcfce7; --green-500: #22c55e; --green-700: #15803d;
+
+  /* Shape, depth, type detail */
+  --radius-sm: 10px; --radius-md: 12px; --radius-lg: 16px; --radius-pill: 999px;
+  --tracking-tight: -0.015em; --tracking-label: 0.05em; --tracking-caps: 0.08em;
+  --shadow-card: 0 1px 2px rgba(20, 26, 51, 0.04), 0 8px 20px -12px rgba(20, 26, 51, 0.1);
+  --shadow-overlay: 0 10px 28px -8px rgba(20, 26, 51, 0.22);
+  --overlay-scrim: rgba(20, 26, 51, 0.42);
+  --focus-ring: 0 0 0 3px color-mix(in oklab, #6366f1 32%, transparent);
+
+  /* Motion */
+  --dur-fast: 140ms; --dur-base: 200ms;
+  --ease-standard: cubic-bezier(0.2, 0.6, 0.25, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-control:
+    background-color var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard),
+    box-shadow var(--dur-fast) var(--ease-standard);
+
+  background: var(--paper-100);
+  color: var(--text-body);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  text-wrap: pretty;
+}
+
+.examRoot :focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}

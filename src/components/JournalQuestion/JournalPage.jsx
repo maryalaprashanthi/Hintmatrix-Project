@@ -41,11 +41,8 @@ const getRuleConditions = (rule) =>
     };
   });
 
-const JournalPage = ({ id, variant = "practice" }) => {
+const JournalPage = () => {
   let { questionId } = useParams();
-  if (id) {
-    questionId = id;
-  }
   const [question, setQuestion] = useState(null);
   const [answeredData, setAnsweredData] = useState({});
   const [totalScore, setTotalScore] = useState(0);
@@ -347,25 +344,21 @@ const JournalPage = ({ id, variant = "practice" }) => {
 
   return (
     <div>
-      {variant === "practice" && (
-        <Header
-          question={question}
-          answeredData={answeredData}
-          setAnsweredData={setAnsweredData}
-          setCheckMistakes={setCheckMistakes}
-        />
-      )}
+      <Header
+        question={question}
+        answeredData={answeredData}
+        setAnsweredData={setAnsweredData}
+        setCheckMistakes={setCheckMistakes}
+      />
 
       <Row>
-        {variant === "practice" && (
-          <SummaryCards
-            debit={0}
-            credit={0}
-            total={question.questionAttributes?.length || 0}
-            solved={solved}
-            totalScore={totalScore}
-          />
-        )}
+        <SummaryCards
+          debit={0}
+          credit={0}
+          total={question.questionAttributes?.length || 0}
+          solved={solved}
+          totalScore={totalScore}
+        />
       </Row>
 
       <Row>

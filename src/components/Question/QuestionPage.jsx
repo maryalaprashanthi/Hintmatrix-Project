@@ -47,7 +47,7 @@ const answerMap = {
   less: "SUBTRACT",
 };
 
-const QuestionPage = ({ id, variant = "practice" }) => {
+const QuestionPage = () => {
   const [questionType, setQuestionType] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const {
@@ -63,16 +63,13 @@ const QuestionPage = ({ id, variant = "practice" }) => {
     setAttributeId,
   } = useQuestionStore();
   let { questionId } = useParams();
-  if (id) {
-    questionId = id;
-  }
   // console.log("Question Id:", questionId);
 
   useEffect(() => {
     const init = async () => {
       setIsLoading(true);
       try {
-        const response = await loadQuestions(id);
+        const response = await loadQuestions(questionId);
         let type = getQuestionType(response?.data);
         const questionTypeId =
           response?.data?.questionTypeId ?? response?.data?.question_type_id;
@@ -375,7 +372,7 @@ const QuestionPage = ({ id, variant = "practice" }) => {
         // console.log("drag start source ", event.operation.source);
       }}
     >
-      <QuestionTable variant={variant} />
+      <QuestionTable />
     </DragDropProvider>
   );
 };

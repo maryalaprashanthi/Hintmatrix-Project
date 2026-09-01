@@ -1,0 +1,14 @@
+.mcq-module { min-height: 100vh; background: #f8fafc; }
+.mcq-module-tabs { display: flex; gap: 8px; padding: 18px 30px 0; background: #fff; border-bottom: 1px solid #e2e8f0; }
+.mcq-module-tabs button { padding: 11px 18px; border: 0; border-bottom: 3px solid transparent; background: transparent; color: #64748b; font-weight: 600; cursor: pointer; }
+.mcq-module-tabs button.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+
+.mcq-module-tabs {
+  padding-left: max(30px, calc((100% - 1240px) / 2));
+  padding-right: max(30px, calc((100% - 1240px) / 2));
+}
+
+.mcq-module-tabs button {
+  min-height: 48px;
+  font-size: 14px;
+}
