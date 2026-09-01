@@ -405,7 +405,11 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
           )}
 
           {canAccessExam && (
-            <NavLink to="/Exam" className={menuClass} onClick={closeSidebar}>
+            <NavLink
+              to="/exam-hub"
+              className={menuClass}
+              onClick={closeSidebar}
+            >
               <div className="menu-left">
                 <MdAssignment />
                 <span>Exam</span>
