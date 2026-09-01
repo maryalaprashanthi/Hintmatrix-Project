@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #eaf4ff, #d8f3ff, #ffffff);
+  background: linear-gradient(135deg, #d9e3ee, #d8f3ff, #ffffff);
   font-family: "Poppins", sans-serif;
 }
 
@@ -14,8 +14,8 @@
 }
 
 .signup-container {
-  width: min(1080px, 100%);
-  min-height: 610px;
+  width: min(900px, 100%);
+  height: 750px;
   display: flex;
   overflow: hidden;
   background: #fff;
@@ -28,50 +28,51 @@
   width: 45%;
   padding: 40px 45px;
   overflow: hidden;
-  background: linear-gradient(135deg, #5d89cf, #06b6d4);
+  background: linear-gradient(135deg, #dde1e7, #1ca9c2);
   color: #fff;
 }
 
 .signup-logo {
-  width: 170px;
-  background: #fff;
+  width: 250px;
+
   border-radius: 8px;
 }
 .signup-left h1 {
   margin-top: 35px;
-  color: #fff;
+  color: #3b0f0f;
   font-size: 42px;
   line-height: 1.15;
 }
 .signup-left h1 span,
 .signup-box h2 span {
-  color: #6548ff;
+  color: #281394;
 }
 .signup-left p {
   max-width: 390px;
   margin-top: 18px;
-  color: #f4fbff;
+  color: #afc4d0;
   font-size: 15px;
   line-height: 26px;
 }
 .signup-secondary-illustration,
 .signup-illustration {
   position: absolute;
-  left: 25px;
-  width: min(360px, calc(100% - 50px));
+  left: 1px;
+  width: 500px;
+  height: 350px;
 }
 .signup-secondary-illustration {
-  bottom: 450px;
+  bottom: 300px;
   opacity: 0.9;
 }
 .signup-illustration {
-  bottom: 125px;
+  bottom: 85px;
 }
 .signup-security {
   position: absolute;
-  bottom: 20px;
+  bottom: 30px;
   left: 45px;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .signup-right {
@@ -160,7 +161,7 @@
   transition: 0.3s;
 }
 .signup-btn:hover {
-  background: #5377dd;
+  background: #1347d4;
 }
 .signup-error {
   margin-bottom: 15px;
