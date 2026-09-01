@@ -1,57 +1,287 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Card, Form, Button } from "react-bootstrap";
 import { FiHelpCircle, FiSave } from "react-icons/fi";
 import Select from "react-select";
+
+import CollegeService from "../../services/CollegeService";
+import BranchService from "../../services/BranchService";
+import CourseService from "../../services/CourseService";
+import SectionService from "../../services/SectionService";
+import ChapterService from "../../services/ChapterService";
+
 import "./ExamPaper.css";
 import QuestionSelection from "./QuestionSelection";
 
 const ExamPaper = () => {
   const [currentStep, setCurrentStep] = useState(1);
 
+  // EXAM DETAILS
+
   const [passPercentage, setPassPercentage] = useState(35);
   const [examName, setExamName] = useState("");
+
+  // SELECTED VALUES
+
   const [college, setCollege] = useState(null);
   const [branch, setBranch] = useState(null);
   const [course, setCourse] = useState(null);
   const [section, setSection] = useState(null);
   const [chapters, setChapters] = useState([]);
 
+  // DATE / TIME
+
   const [startDate, setStartDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endDate, setEndDate] = useState("");
   const [endTime, setEndTime] = useState("");
 
-  const collegeOptions = [
-    { value: "college-1", label: "ABC College" },
-    { value: "college-2", label: "XYZ College" },
-  ];
+  // API DATA
 
-  const branchOptions = [
-    { value: "branch-1", label: "Commerce" },
-    { value: "branch-2", label: "Science" },
-    { value: "branch-3", label: "Arts" },
-  ];
+  const [colleges, setColleges] = useState([]);
+  const [branches, setBranches] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [chapterData, setChapterData] = useState([]);
 
-  const courseOptions = [
-    { value: "bcom", label: "B.Com" },
-    { value: "ca-foundation", label: "CA Foundation" },
-    { value: "cbse", label: "CBSE Class 11" },
-    { value: "junior-accountancy", label: "Junior Accountancy" },
-  ];
+  // LOADING STATES
 
-  const sectionOptions = [
-    { value: "section-a", label: "Section A" },
-    { value: "section-b", label: "Section B" },
-    { value: "section-c", label: "Section C" },
-  ];
+  const [loadingColleges, setLoadingColleges] = useState(false);
+  const [loadingBranches, setLoadingBranches] = useState(false);
+  const [loadingCourses, setLoadingCourses] = useState(false);
+  const [loadingSections, setLoadingSections] = useState(false);
+  const [loadingChapters, setLoadingChapters] = useState(false);
 
-  const chapterOptions = [
-    { value: "trial-balance", label: "Trial Balance" },
-    { value: "final-accounts", label: "Prepare Final Accounts" },
-    { value: "depreciation", label: "Depreciation" },
-    { value: "partnership", label: "Partnership Accounts" },
-    { value: "bills", label: "Bills of Exchange" },
-  ];
+  // LOAD COLLEGES
+  // GET /api/college
+
+  const loadColleges = async () => {
+    try {
+      setLoadingColleges(true);
+
+      const response = await CollegeService.getAllColleges();
+
+      const data = Array.isArray(response.data) ? response.data : [];
+
+      setColleges(data);
+    } catch (error) {
+      console.error("Failed to load colleges:", error);
+      setColleges([]);
+    } finally {
+      setLoadingColleges(false);
+    }
+  };
+
+  // LOAD BRANCHES
+  // GET /api/branch
+
+  const loadBranches = async () => {
+    try {
+      setLoadingBranches(true);
+
+      const response = await BranchService.getAllBranches();
+
+      const data = Array.isArray(response.data) ? response.data : [];
+
+      setBranches(data);
+    } catch (error) {
+      console.error("Failed to load branches:", error);
+      setBranches([]);
+    } finally {
+      setLoadingBranches(false);
+    }
+  };
+
+  // LOAD COURSES
+  // GET /api/course
+
+  const loadCourses = async () => {
+    try {
+      setLoadingCourses(true);
+
+      const response = await CourseService.getAllCourses();
+
+      const data = Array.isArray(response.data) ? response.data : [];
+
+      setCourses(data);
+    } catch (error) {
+      console.error("Failed to load courses:", error);
+      setCourses([]);
+    } finally {
+      setLoadingCourses(false);
+    }
+  };
+
+  // LOAD SECTIONS
+  // GET /api/section
+
+  const loadSections = async () => {
+    try {
+      setLoadingSections(true);
+
+      const response = await SectionService.getAllSections();
+
+      const data = Array.isArray(response.data) ? response.data : [];
+
+      setSections(data);
+    } catch (error) {
+      console.error("Failed to load sections:", error);
+      setSections([]);
+    } finally {
+      setLoadingSections(false);
+    }
+  };
+
+  // LOAD CHAPTERS
+  // GET /api/chapter
+
+  const loadChapters = async () => {
+    try {
+      setLoadingChapters(true);
+
+      const response = await ChapterService.getAll();
+
+      const data = Array.isArray(response.data) ? response.data : [];
+
+      setChapterData(data);
+    } catch (error) {
+      console.error("Failed to load chapters:", error);
+      setChapterData([]);
+    } finally {
+      setLoadingChapters(false);
+    }
+  };
+
+  // LOAD ALL MASTER DATA
+
+  useEffect(() => {
+    loadColleges();
+    loadBranches();
+    loadCourses();
+    loadSections();
+    loadChapters();
+  }, []);
+
+  // COLLEGE OPTIONS
+
+  const collegeOptions = useMemo(() => {
+    return colleges
+      .filter((item) => item.activeRow !== false)
+      .map((item) => ({
+        value: item.collegeId,
+        label: item.instituteName,
+      }));
+  }, [colleges]);
+
+  // BRANCH OPTIONS
+
+  // Filter branches according to selected college
+
+  const branchOptions = useMemo(() => {
+    if (!college) {
+      return [];
+    }
+
+    return branches
+      .filter((item) => String(item.collegeId) === String(college.value))
+      .filter((item) => item.activeRow !== false)
+      .map((item) => ({
+        value: item.branchId,
+        label: item.branchName,
+      }));
+  }, [branches, college]);
+
+  // COURSE OPTIONS
+
+  // Filter courses according to selected branch
+
+  const courseOptions = useMemo(() => {
+    if (!branch) {
+      return [];
+    }
+
+    return courses
+      .filter((item) => String(item.branchId) === String(branch.value))
+      .filter((item) => item.activeRow !== false)
+      .map((item) => ({
+        value: item.courseId,
+        label: item.name,
+      }));
+  }, [courses, branch]);
+
+  // SECTION OPTIONS
+
+  // Filter sections according to selected course
+
+  const sectionOptions = useMemo(() => {
+    if (!course) {
+      return [];
+    }
+
+    return sections
+      .filter((item) => String(item.courseId) === String(course.value))
+      .filter((item) => item.activeRow !== false)
+      .map((item) => ({
+        value: item.sectionId,
+        label: item.sectionName,
+      }));
+  }, [sections, course]);
+
+  // CHAPTER OPTIONS
+
+  // Filter chapters according to selected course
+
+  const chapterOptions = useMemo(() => {
+    if (!course) {
+      return [];
+    }
+
+    return chapterData
+      .filter((item) => String(item.courseId) === String(course.value))
+      .filter((item) => item.activeRow !== false)
+      .map((item) => ({
+        value: item.chapterId,
+        label: item.name,
+      }));
+  }, [chapterData, course]);
+
+  // COLLEGE CHANGE ,When college changes:
+  // Branch must reset,Chapters must reset, Section must reset,Course must reset
+
+  const handleCollegeChange = (selectedCollege) => {
+    setCollege(selectedCollege);
+
+    setBranch(null);
+    setCourse(null);
+    setSection(null);
+    setChapters([]);
+  };
+
+  // BRANCH CHANGE
+
+  // When branch changes:
+  // Course must reset,Section must reset,Chapters must reset
+
+  const handleBranchChange = (selectedBranch) => {
+    setBranch(selectedBranch);
+
+    setCourse(null);
+    setSection(null);
+    setChapters([]);
+  };
+
+  // COURSE CHANGE
+
+  // When course changes:
+  // Section must reset,Chapters must reset
+
+  const handleCourseChange = (selectedCourse) => {
+    setCourse(selectedCourse);
+
+    setSection(null);
+    setChapters([]);
+  };
+
+  // NEXT BUTTON
 
   const handleNext = () => {
     if (!examName.trim()) {
@@ -77,39 +307,64 @@ const ExamPaper = () => {
     setCurrentStep(2);
   };
 
+  // BACK BUTTON
+
   const handleBack = () => {
     setCurrentStep(1);
   };
 
+  // SAVE AND FINISH
+
   const handleSave = () => {
     const payload = {
       examName,
+
       college: college?.value || null,
+
       branch: branch?.value || null,
+
       course: course?.value || null,
+
       section: section?.value || null,
+
       chapters: chapters.map((item) => item.value),
+
       startDate,
       startTime,
+
       endDate,
       endTime,
+
       passPercentage,
     };
 
     console.log("Exam Paper:", payload);
+
     alert("Exam Paper saved successfully.");
   };
 
+  // QUESTIONS ADDED
+
   const handleQuestionsAdded = (questions) => {
     console.log("Selected Questions:", questions);
+
     alert(`${questions.length} questions added to the exam.`);
   };
 
+  // STEP 2
+
   if (currentStep === 2) {
     return (
-      <QuestionSelection onNext={handleQuestionsAdded} onBack={handleBack} />
+      <QuestionSelection
+        courseId={course?.value}
+        chapterIds={chapters.map((item) => item.value)}
+        onNext={handleQuestionsAdded}
+        onBack={handleBack}
+      />
     );
   }
+
+  //  UI
 
   return (
     <div className="exam-paper-page">
@@ -127,9 +382,12 @@ const ExamPaper = () => {
         </Card.Header>
 
         <Card.Body className="exam-paper-card-body">
+          {/*   STEPPER */}
+
           <div className="exam-paper-stepper">
             <div className="exam-paper-step exam-paper-step-active">
               <div className="exam-paper-step-circle">1</div>
+
               <div className="exam-paper-step-label">Create Exam Paper</div>
             </div>
 
@@ -139,9 +397,12 @@ const ExamPaper = () => {
 
             <div className="exam-paper-step">
               <div className="exam-paper-step-circle">2</div>
+
               <div className="exam-paper-step-label">Select Questions</div>
             </div>
           </div>
+
+          {/*   FORM CARD */}
 
           <Card className="exam-paper-form-card">
             <Card.Body>
@@ -150,152 +411,193 @@ const ExamPaper = () => {
               </h3>
 
               <div className="exam-paper-form-grid">
-                <div className="exam-paper-form-column">
-                  <Form.Group className="exam-paper-form-group">
-                    <Form.Label>
-                      Exam Name <span className="exam-paper-required">*</span>
-                    </Form.Label>
+                {/* EXAM NAME */}
+                <Form.Group className="exam-paper-form-group exam-name-group">
+                  <Form.Label>
+                    Exam Name <span className="exam-paper-required">*</span>
+                  </Form.Label>
 
-                    <Form.Control
-                      type="text"
-                      placeholder="Enter exam name"
-                      value={examName}
-                      onChange={(e) => setExamName(e.target.value)}
-                      className="exam-paper-input"
-                    />
-                  </Form.Group>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter exam name"
+                    value={examName}
+                    onChange={(e) => setExamName(e.target.value)}
+                    className="exam-paper-input"
+                  />
+                </Form.Group>
 
-                  <Form.Group className="exam-paper-form-group">
-                    <Form.Label>
-                      College <span className="exam-paper-required">*</span>
-                    </Form.Label>
+                {/* COLLEGE */}
+                <Form.Group className="exam-paper-form-group">
+                  <Form.Label>
+                    College <span className="exam-paper-required">*</span>
+                  </Form.Label>
 
-                    <Select
-                      options={collegeOptions}
-                      value={college}
-                      onChange={setCollege}
-                      placeholder="Search and select college"
-                      isSearchable
-                      isClearable
-                      classNamePrefix="exam-paper-select"
-                    />
-                  </Form.Group>
+                  <Select
+                    options={collegeOptions}
+                    value={college}
+                    onChange={handleCollegeChange}
+                    placeholder={
+                      loadingColleges
+                        ? "Loading colleges..."
+                        : "Search and select college"
+                    }
+                    isSearchable
+                    isClearable
+                    isLoading={loadingColleges}
+                    classNamePrefix="exam-paper-select"
+                  />
+                </Form.Group>
 
-                  <Form.Group className="exam-paper-form-group">
-                    <Form.Label>Branch</Form.Label>
+                {/* BRANCH */}
+                <Form.Group className="exam-paper-form-group">
+                  <Form.Label>Branch</Form.Label>
 
-                    <Select
-                      options={branchOptions}
-                      value={branch}
-                      onChange={setBranch}
-                      placeholder="Search and select branch"
-                      isSearchable
-                      isClearable
-                      classNamePrefix="exam-paper-select"
-                    />
-                  </Form.Group>
+                  <Select
+                    options={branchOptions}
+                    value={branch}
+                    onChange={handleBranchChange}
+                    placeholder={
+                      !college
+                        ? "Select college first"
+                        : loadingBranches
+                          ? "Loading branches..."
+                          : "Search and select branch"
+                    }
+                    isSearchable
+                    isClearable
+                    isLoading={loadingBranches}
+                    isDisabled={!college}
+                    classNamePrefix="exam-paper-select"
+                  />
+                </Form.Group>
 
-                  <Form.Group className="exam-paper-form-group">
-                    <Form.Label>
-                      Course <span className="exam-paper-required">*</span>
-                    </Form.Label>
+                {/* COURSE */}
+                <Form.Group className="exam-paper-form-group">
+                  <Form.Label>
+                    Course <span className="exam-paper-required">*</span>
+                  </Form.Label>
 
-                    <Select
-                      options={courseOptions}
-                      value={course}
-                      onChange={setCourse}
-                      placeholder="Search and select course"
-                      isSearchable
-                      isClearable
-                      classNamePrefix="exam-paper-select"
-                    />
-                  </Form.Group>
-                </div>
+                  <Select
+                    options={courseOptions}
+                    value={course}
+                    onChange={handleCourseChange}
+                    placeholder={
+                      !branch
+                        ? "Select branch first"
+                        : loadingCourses
+                          ? "Loading courses..."
+                          : "Search and select course"
+                    }
+                    isSearchable
+                    isClearable
+                    isLoading={loadingCourses}
+                    isDisabled={!branch}
+                    classNamePrefix="exam-paper-select"
+                  />
+                </Form.Group>
 
-                <div className="exam-paper-form-column">
-                  <Form.Group className="exam-paper-form-group">
-                    <Form.Label>Section</Form.Label>
+                {/* SECTION */}
+                <Form.Group className="exam-paper-form-group">
+                  <Form.Label>Section</Form.Label>
 
-                    <Select
-                      options={sectionOptions}
-                      value={section}
-                      onChange={setSection}
-                      placeholder="Search and select section"
-                      isSearchable
-                      isClearable
-                      classNamePrefix="exam-paper-select"
-                    />
-                  </Form.Group>
+                  <Select
+                    options={sectionOptions}
+                    value={section}
+                    onChange={setSection}
+                    placeholder={
+                      !course
+                        ? "Select course first"
+                        : loadingSections
+                          ? "Loading sections..."
+                          : "Search and select section"
+                    }
+                    isSearchable
+                    isClearable
+                    isLoading={loadingSections}
+                    isDisabled={!course}
+                    classNamePrefix="exam-paper-select"
+                  />
+                </Form.Group>
 
-                  <Form.Group className="exam-paper-form-group">
-                    <Form.Label>
-                      Select Chapters{" "}
-                      <span className="exam-paper-required">*</span>
-                    </Form.Label>
+                {/* CHAPTERS */}
+                <Form.Group className="exam-paper-form-group">
+                  <Form.Label>
+                    Select Chapters{" "}
+                    <span className="exam-paper-required">*</span>
+                  </Form.Label>
 
-                    <Select
-                      options={chapterOptions}
-                      value={chapters}
-                      onChange={(selected) => setChapters(selected || [])}
-                      placeholder="Search & select chapters..."
-                      isSearchable
-                      isMulti
-                      closeMenuOnSelect={false}
-                      hideSelectedOptions={false}
-                      classNamePrefix="exam-paper-select"
-                    />
-                  </Form.Group>
+                  <Select
+                    options={chapterOptions}
+                    value={chapters}
+                    onChange={(selected) => setChapters(selected || [])}
+                    placeholder={
+                      !course
+                        ? "Select course first"
+                        : loadingChapters
+                          ? "Loading chapters..."
+                          : "Search & select chapters..."
+                    }
+                    isSearchable
+                    isMulti
+                    closeMenuOnSelect={false}
+                    hideSelectedOptions={false}
+                    isLoading={loadingChapters}
+                    isDisabled={!course}
+                    classNamePrefix="exam-paper-select"
+                  />
+                </Form.Group>
 
-                  <div className="exam-paper-date-time-row">
-                    <Form.Group className="exam-paper-form-group">
-                      <Form.Label>Start Date</Form.Label>
+                {/* START DATE */}
+                <Form.Group className="exam-paper-form-group">
+                  <Form.Label>Start Date</Form.Label>
 
-                      <Form.Control
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="exam-paper-input"
-                      />
-                    </Form.Group>
+                  <Form.Control
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="exam-paper-input"
+                  />
+                </Form.Group>
 
-                    <Form.Group className="exam-paper-form-group">
-                      <Form.Label>Start Time</Form.Label>
+                {/* START TIME */}
+                <Form.Group className="exam-paper-form-group">
+                  <Form.Label>Start Time</Form.Label>
 
-                      <Form.Control
-                        type="time"
-                        value={startTime}
-                        onChange={(e) => setStartTime(e.target.value)}
-                        className="exam-paper-input"
-                      />
-                    </Form.Group>
-                  </div>
+                  <Form.Control
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    className="exam-paper-input"
+                  />
+                </Form.Group>
 
-                  <div className="exam-paper-date-time-row">
-                    <Form.Group className="exam-paper-form-group">
-                      <Form.Label>End Date</Form.Label>
+                {/* END DATE */}
+                <Form.Group className="exam-paper-form-group">
+                  <Form.Label>End Date</Form.Label>
 
-                      <Form.Control
-                        type="date"
-                        min={startDate || undefined}
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="exam-paper-input"
-                      />
-                    </Form.Group>
+                  <Form.Control
+                    type="date"
+                    min={startDate || undefined}
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="exam-paper-input"
+                  />
+                </Form.Group>
 
-                    <Form.Group className="exam-paper-form-group">
-                      <Form.Label>End Time</Form.Label>
+                {/* END TIME */}
+                <Form.Group className="exam-paper-form-group">
+                  <Form.Label>End Time</Form.Label>
 
-                      <Form.Control
-                        type="time"
-                        value={endTime}
-                        onChange={(e) => setEndTime(e.target.value)}
-                        className="exam-paper-input"
-                      />
-                    </Form.Group>
-                  </div>
-                </div>
+                  <Form.Control
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    className="exam-paper-input"
+                  />
+                </Form.Group>
               </div>
+
+              {/*  PASS PERCENTAGE */}
 
               <Form.Group className="exam-paper-form-group exam-paper-pass-group">
                 <Form.Label>Select Pass Percentage</Form.Label>
@@ -303,7 +605,9 @@ const ExamPaper = () => {
                 <div className="exam-paper-slider-container">
                   <div
                     className="exam-paper-percentage-bubble"
-                    style={{ left: `${passPercentage}%` }}
+                    style={{
+                      left: `${passPercentage}%`,
+                    }}
                   >
                     {passPercentage}%
                   </div>
@@ -326,6 +630,8 @@ const ExamPaper = () => {
                   </div>
                 </div>
               </Form.Group>
+
+              {/*   BUTTONS */}
 
               <div className="exam-paper-actions">
                 <Button
