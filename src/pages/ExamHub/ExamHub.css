@@ -30,7 +30,15 @@
    ========================================================= */
 
 .exam-hub-page[data-page="exam-hub"] .examhub-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   margin-bottom: 17px;
+}
+
+.exam-hub-page[data-page="exam-hub"] .welcome {
+  flex: 1;
 }
 
 .exam-hub-page[data-page="exam-hub"] .welcome h1 {
@@ -51,6 +59,34 @@
   font-size: 11px;
   line-height: 1.45;
   color: #69748c;
+}
+
+.exam-hub-page[data-page="exam-hub"] .create-exam-btn {
+  flex-shrink: 0;
+  min-width: 128px;
+  padding: 10px 18px;
+  border: 1px solid #2c76e6;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #2d73d6, #4a7ef0);
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(45, 115, 214, 0.22);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.exam-hub-page[data-page="exam-hub"] .create-exam-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(45, 115, 214, 0.26);
+}
+
+.exam-hub-page[data-page="exam-hub"] .create-exam-btn:active {
+  transform: translateY(0);
 }
 
 /* =========================================================

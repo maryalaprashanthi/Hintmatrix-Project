@@ -250,6 +250,14 @@ function ExamHub() {
 
           <p>Every exam you take brings you closer to your dreams.</p>
         </div>
+
+        <button
+          type="button"
+          className="create-exam-btn"
+          onClick={() => navigate("/exam-paper")}
+        >
+          Create Exam
+        </button>
       </div>
 
       {/* ================= STATS ================= */}
