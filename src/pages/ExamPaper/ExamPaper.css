@@ -149,9 +149,9 @@
   background: #4d24c5;
 }
 
-/* ============================================================
+
    FORM CARD
-   ============================================================ */
+  
 
 .exam-paper-page .exam-paper-form-card {
   margin: 0;
@@ -173,25 +173,113 @@
   line-height: 1.3;
 }
 
-/* ============================================================
-   TWO COLUMN FORM
-   ============================================================ */
+
+   FORM GRID
+
+
+
 
 .exam-paper-page .exam-paper-form-grid {
   width: 100%;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  column-gap: 42px;
+
+  
+
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+
+  column-gap: 24px;
+  row-gap: 0;
   align-items: start;
 }
 
-.exam-paper-page .exam-paper-form-column {
-  width: 100%;
-  min-width: 0;
+/* ============================================================
+   EXAM NAME
+   FULL WIDTH
+   ============================================================ */
+
+.exam-paper-page .exam-name-group {
+  grid-column: 1 / -1;
 }
+
+/* ============================================================
+   COLLEGE
+   ============================================================ */
+
+.exam-paper-page .exam-paper-form-grid .exam-paper-form-group:nth-child(2) {
+  grid-column: span 2;
+}
+
+/* ============================================================
+   BRANCH
+   ============================================================ */
+
+.exam-paper-page .exam-paper-form-grid .exam-paper-form-group:nth-child(3) {
+  grid-column: span 2;
+}
+
+/* ============================================================
+   COURSE
+   ============================================================ */
+
+.exam-paper-page .exam-paper-form-grid .exam-paper-form-group:nth-child(4) {
+  grid-column: span 2;
+}
+
+/* ============================================================
+   SECTION
+   ============================================================ */
+
+.exam-paper-page .exam-paper-form-grid .exam-paper-form-group:nth-child(5) {
+  grid-column: span 2;
+}
+
+/* ============================================================
+   SELECT CHAPTERS
+   ============================================================ */
+
+.exam-paper-page .exam-paper-form-grid .exam-paper-form-group:nth-child(6) {
+  grid-column: span 4;
+}
+
+/* ============================================================
+   START DATE
+   ============================================================ */
+
+.exam-paper-page .exam-paper-form-grid .exam-paper-form-group:nth-child(7) {
+  grid-column: span 3;
+}
+
+/* ============================================================
+   START TIME
+   ============================================================ */
+
+.exam-paper-page .exam-paper-form-grid .exam-paper-form-group:nth-child(8) {
+  grid-column: span 3;
+}
+
+/* ============================================================
+   END DATE
+   ============================================================ */
+
+.exam-paper-page .exam-paper-form-grid .exam-paper-form-group:nth-child(9) {
+  grid-column: span 3;
+}
+
+/* ============================================================
+   END TIME
+   ============================================================ */
+
+.exam-paper-page .exam-paper-form-grid .exam-paper-form-group:nth-child(10) {
+  grid-column: span 3;
+}
+
+/* ============================================================
+   FORM GROUP
+   ============================================================ */
 
 .exam-paper-page .exam-paper-form-group {
   width: 100%;
+  min-width: 0;
   margin-bottom: 25px;
 }
 
@@ -222,14 +310,19 @@
   height: 43px !important;
   min-height: 43px !important;
   padding: 9px 17px !important;
+
   border: 1px solid #d9dce5 !important;
   border-radius: 7px !important;
+
   background: #fff !important;
   color: #293149 !important;
+
   font-size: 13px !important;
   font-family: inherit;
+
   box-shadow: none !important;
   outline: none !important;
+
   box-sizing: border-box !important;
 }
 
@@ -248,19 +341,8 @@
 }
 
 /* ============================================================
-   DATE + TIME ROW
+   DATE + TIME
    ============================================================ */
-
-.exam-paper-page .exam-paper-date-time-row {
-  width: 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 14px;
-}
-
-.exam-paper-page .exam-paper-date-time-row .exam-paper-form-group {
-  min-width: 0;
-}
 
 .exam-paper-page input.exam-paper-input[type="date"],
 .exam-paper-page input.exam-paper-input[type="time"] {
@@ -286,11 +368,15 @@
   width: 100% !important;
   height: 43px !important;
   min-height: 43px !important;
+
   margin: 0 !important;
   padding: 0 !important;
+
   border: 1px solid #d9dce5 !important;
   border-radius: 7px !important;
+
   background: #fff !important;
+
   box-shadow: none !important;
   box-sizing: border-box !important;
 }
@@ -303,9 +389,12 @@
 .exam-paper-page .exam-paper-select__value-container {
   height: 41px !important;
   min-height: 41px !important;
+
   padding: 0 12px !important;
+
   display: flex !important;
   align-items: center !important;
+
   box-sizing: border-box !important;
 }
 
@@ -329,6 +418,7 @@
 
 .exam-paper-page .exam-paper-select__indicators {
   height: 41px !important;
+
   display: flex !important;
   align-items: center !important;
 }
@@ -395,6 +485,7 @@
 .exam-paper-page .exam-paper-slider-container {
   width: 100%;
   max-width: 595px;
+
   position: relative;
   padding-top: 29px;
 }
@@ -402,8 +493,10 @@
 .exam-paper-page .exam-paper-slider {
   width: 100%;
   height: 5px;
+
   margin: 0;
   padding: 0;
+
   appearance: none;
   -webkit-appearance: none;
 
@@ -416,6 +509,7 @@
   );
 
   border-radius: 10px;
+
   outline: none;
   cursor: pointer;
 }
@@ -429,12 +523,17 @@
 .exam-paper-page .exam-paper-slider::-webkit-slider-thumb {
   width: 21px;
   height: 21px;
+
   margin-top: -8px;
+
   appearance: none;
   -webkit-appearance: none;
+
   border: 0;
   border-radius: 50%;
+
   background: #5527c7;
+
   cursor: pointer;
 }
 
@@ -453,44 +552,63 @@
 .exam-paper-page .exam-paper-slider::-moz-range-thumb {
   width: 21px;
   height: 21px;
+
   border: 0;
   border-radius: 50%;
+
   background: #5527c7;
 }
 
 .exam-paper-page .exam-paper-percentage-bubble {
   position: absolute;
+
   top: 0;
+
   transform: translateX(-50%);
+
   min-width: 42px;
   height: 29px;
+
   padding: 5px 7px;
+
   border-radius: 5px;
+
   background: #5427c7;
   color: #fff;
+
   font-size: 12px;
   font-weight: 700;
+
   line-height: 19px;
   text-align: center;
+
   box-sizing: border-box;
 }
 
 .exam-paper-page .exam-paper-percentage-bubble::after {
   content: "";
+
   position: absolute;
+
   bottom: -5px;
   left: 50%;
+
   width: 10px;
   height: 10px;
+
   background: #5427c7;
+
   transform: translateX(-50%) rotate(45deg);
+
   z-index: -1;
 }
 
 .exam-paper-page .exam-paper-slider-labels {
   width: 100%;
+
   display: flex;
   justify-content: space-between;
+
   margin-top: 17px;
 }
 
@@ -508,7 +626,9 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
+
   gap: 24px;
+
   margin-top: 1px;
   padding-top: 5px;
 }
@@ -516,28 +636,39 @@
 .exam-paper-page .exam-paper-next-btn,
 .exam-paper-page .exam-paper-save-btn {
   height: 56px;
+
   border-radius: 7px !important;
+
   font-weight: 600;
+
   box-shadow: none !important;
 }
 
 .exam-paper-page .exam-paper-next-btn {
   width: 110px;
+
   border: 1px solid #5122c4 !important;
+
   background: #5224c7 !important;
   color: #fff !important;
+
   font-size: 16px;
 }
 
 .exam-paper-page .exam-paper-save-btn {
   width: 220px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   gap: 17px;
+
   border: 1px solid #d8d0f1 !important;
+
   background: #fff !important;
   color: #4920bc !important;
+
   font-size: 15px;
 }
 
@@ -552,6 +683,7 @@
   border-color: #5122c4 !important;
   background: #5224c7 !important;
   color: #fff !important;
+
   box-shadow: none !important;
 }
 
@@ -561,11 +693,12 @@
   border-color: #c9bfe8 !important;
   background: #fff !important;
   color: #4920bc !important;
+
   box-shadow: none !important;
 }
 
 /* ============================================================
-   RESPONSIVE
+   LARGE TABLET
    ============================================================ */
 
 @media (max-width: 1100px) {
@@ -579,9 +712,13 @@
   }
 
   .exam-paper-page .exam-paper-form-grid {
-    column-gap: 25px;
+    column-gap: 18px;
   }
 }
+
+/* ============================================================
+   TABLET / SMALL SCREEN
+   ============================================================ */
 
 @media (max-width: 800px) {
   .exam-paper-page {
@@ -612,14 +749,30 @@
     padding: 24px 20px;
   }
 
+  /* ========================================================
+     ONE COLUMN ON SMALL SCREENS
+     ======================================================== */
+
   .exam-paper-page .exam-paper-form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .exam-paper-page .exam-paper-form-grid .exam-paper-form-group {
+    grid-column: 1 / -1 !important;
+  }
+
+  .exam-paper-page .exam-name-group {
+    grid-column: 1 / -1 !important;
   }
 
   .exam-paper-page .exam-paper-slider-container {
     max-width: 100%;
   }
 }
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
 
 @media (max-width: 600px) {
   .exam-paper-page {
@@ -643,11 +796,6 @@
     display: none;
   }
 
-  .exam-paper-page .exam-paper-date-time-row {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
   .exam-paper-page .exam-paper-actions {
     flex-direction: column;
     align-items: stretch;
@@ -657,5 +805,17 @@
   .exam-paper-page .exam-paper-next-btn,
   .exam-paper-page .exam-paper-save-btn {
     width: 100%;
+  }
+
+  .exam-paper-page .exam-paper-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .exam-paper-page .exam-paper-form-grid .exam-paper-form-group {
+    grid-column: 1 / -1 !important;
+  }
+
+  .exam-paper-page .exam-name-group {
+    grid-column: 1 / -1 !important;
   }
 }
