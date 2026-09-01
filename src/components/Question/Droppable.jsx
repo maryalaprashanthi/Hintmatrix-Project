@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useRef } from "react";
 import { useDroppable } from "@dnd-kit/react";
 import { Overlay, Tooltip } from "react-bootstrap";
@@ -20,32 +21,6 @@ const Droppable = ({
   isCreditSide,
 }) => {
   const data = useQuestionStore((state) => state.droppableData[id]);
-  // console.log("I am rendering Droppable for id: ", id);
-  // console.log(
-  //   "This is data I am getting in component Droppable for id: ",
-  //   id,
-  //   " and data is ",
-  //   data,
-  // );
-  // const temp = questions.filter((q) =>
-  //   q.answered.some((tar) => tar.startsWith(`${id}-`)),
-  // );
-
-  // const data = temp.map((q) => {
-  //   for (let tar of q.answered) {
-  //     if (tar.startsWith(`${id}-`) && tar.split("-").pop() == "add") {
-  //       // console.log("I entered + with value: ", tar.split("-").pop());
-  //       return { ...q, operation: "+" };
-  //     } else if (tar.startsWith(`${id}-`) && tar.split("-").pop() == "less") {
-  //       // console.log("I entered - with value: ", tar.split("-").pop());
-  //       return { ...q, operation: "-" };
-  //     }
-  //   }
-  // });
-
-  // console.log("This is data I got for id: ", id, " and data is ", data);
-
-  // const isCreditSide = /(Credit Particulars|assets)$/i.test(id || "");
 
   const theme = isCreditSide ? "theme-credit" : "theme-debit";
 
@@ -74,113 +49,115 @@ const Droppable = ({
       ? Number(addObj.amount || 0) - Number(subObj.amount || 0)
       : 0;
   };
-  console.log("All data is ", data);
+
+  const rows = data ?? [];
+
   return (
-    <div className={`droppable-group ${theme}`}>
-      <div className="row g-0">
+    <div className={`q-droppable ${theme}`}>
+      <div className="qd-surface">
+        <table className="table table-sm mb-0 qd-table">
+          <colgroup>
+            <col style={{ width: "44%" }} />
+            <col style={{ width: "28%" }} />
+            <col style={{ width: "28%" }} />
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col">{addLabel}</th>
+              <th scope="col" className="text-end">
+                {amtLabel}
+              </th>
+              <th scope="col" className="text-end">
+                {amtLabel}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((obj) => (
+              <tr key={obj.id}>
+                <td className="particulars-cell">{obj.name}</td>
+                <td className="text-end amount-cell">
+                  {obj.operation === "add"
+                    ? Number(obj.amount).toLocaleString("en-IN")
+                    : obj.isPaired
+                      ? `-${Number(obj.amount).toLocaleString("en-IN")}`
+                      : ""}
+                </td>
+                <td className="text-end amount-cell">
+                  {obj.operation === "less" && !obj.isPaired
+                    ? `-${Number(obj.amount).toLocaleString("en-IN")}`
+                    : obj.operation === "less" && obj.isPaired
+                      ? Number(calcSum(obj.id, obj.pairId)).toLocaleString(
+                          "en-IN",
+                        )
+                      : " "}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="total-row">
+              <td className="fw-bold">Total</td>
+              <td className="fw-bold text-end" />
+              <td className="fw-bold text-end amount-cell">
+                {(addTotal - subTotal).toLocaleString("en-IN")}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+
+        {/* Transparent drop targets layered over the table columns so the
+            table itself stays a single, aligned grid. */}
         <div
           ref={mergeRefs(addRef, addZoneRef)}
-          className={`dropzone add-zone col-12 col-sm-8 ${isAddOver ? "active-dropzone-add" : ""}`}
-        >
-          <table className="table table-sm mb-0 dropzone-table">
-            <thead>
-              <tr>
-                <th scope="col" style={{ width: "70%" }}>
-                  {addLabel}
-                </th>
-                <th scope="col" style={{ width: "30%" }} className="text-end">
-                  {amtLabel}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {data !== undefined &&
-                data.map((obj) => (
-                  <tr key={`${obj.id}-add`}>
-                    <td>{obj.name}</td>
-                    <td className="text-end">
-                      {obj.operation === "add"
-                        ? Number(obj.amount).toLocaleString("en-IN")
-                        : obj.isPaired
-                          ? `-${Number(obj.amount).toLocaleString("en-IN")}`
-                          : ""}
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-            <tfoot>
-              <tr className="total-row">
-                <td className="fw-bold">Total</td>
-                <td className="fw-bold text-end">
-                  {/* {addTotal.toLocaleString("en-IN")} */}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-
-        <Overlay target={addZoneRef.current} show={isAddOver} placement="top">
-          {(overlayProps) => (
-            <Tooltip
-              id={`${id}-add-tooltip`}
-              className="add-tooltip"
-              {...overlayProps}
-            >
-              Add
-            </Tooltip>
-          )}
-        </Overlay>
-
+          className={`drop-overlay drop-overlay-add ${
+            isAddOver ? "is-over" : ""
+          }`}
+          aria-hidden="true"
+        />
         <div
           ref={mergeRefs(subRef, subZoneRef)}
-          className={`dropzone sub-zone col-12 col-sm-4 ${isSubOver ? "active-dropzone-sub" : ""}`}
-        >
-          <table className="table table-sm mb-0 dropzone-table">
-            <thead>
-              <tr>
-                <th scope="col" style={{ width: "100%" }} className="text-end">
-                  {amtLabel}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {data !== undefined &&
-                data.map((obj) => (
-                  <tr key={`${obj.id}-less`}>
-                    <td className="text-end">
-                      {obj.operation === "less" && !obj.isPaired
-                        ? `-${Number(obj.amount).toLocaleString("en-IN")}`
-                        : obj.operation === "less" && obj.isPaired
-                          ? calcSum(obj.id, obj.pairId)
-                          : "\u00A0"}
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-            <tfoot>
-              <tr className="total-row">
-                <td className="fw-bold text-end">
-                  {(addTotal - subTotal).toLocaleString("en-IN")}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-
-        <Overlay target={subZoneRef.current} show={isSubOver} placement="top">
-          {(overlayProps) => (
-            <Tooltip
-              id={`${id}-sub-tooltip`}
-              className="add-tooltip"
-              {...overlayProps}
-            >
-              Less
-            </Tooltip>
-          )}
-        </Overlay>
+          className={`drop-overlay drop-overlay-sub ${
+            isSubOver ? "is-over" : ""
+          }`}
+          aria-hidden="true"
+        />
       </div>
+
+      <Overlay
+        target={addZoneRef.current}
+        show={isAddOver}
+        placement="top"
+        container={document.body}
+      >
+        {(overlayProps) => (
+          <Tooltip
+            id={`${id}-add-tooltip`}
+            className="add-tooltip"
+            {...overlayProps}
+          >
+            Add
+          </Tooltip>
+        )}
+      </Overlay>
+
+      <Overlay
+        target={subZoneRef.current}
+        show={isSubOver}
+        placement="top"
+        container={document.body}
+      >
+        {(overlayProps) => (
+          <Tooltip
+            id={`${id}-sub-tooltip`}
+            className="sub-tooltip"
+            {...overlayProps}
+          >
+            Less
+          </Tooltip>
+        )}
+      </Overlay>
     </div>
   );
 };
-
 export default Droppable;

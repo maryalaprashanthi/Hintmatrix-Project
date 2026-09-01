@@ -1,138 +1,126 @@
-.droppable-group {
+/* Scoped under .q-droppable so these rules can't leak into ExamDroppable,
+   which shares the generic .droppable-group / .qd-table class names. */
+
+.q-droppable {
   border-radius: 10px;
-  overflow: visible;
+  overflow: hidden;
   border: 1px solid #e5e7eb;
-  min-height: clamp(130px, 20vw, 160px);
   width: 100%;
 }
 
-.dropzone {
-  background-color: #ffffff;
-  padding: 0;
-  transition: background-color 0.2s ease;
+/* Positioning context for the transparent drop overlays */
+.q-droppable .qd-surface {
+  position: relative;
+  width: 100%;
 }
 
-.dropzone-table {
+.q-droppable .qd-table {
   width: 100%;
   table-layout: fixed;
-  font-size: clamp(0.72rem, 1.4vw, 0.85rem);
+  font-size: 0.82rem;
   margin-bottom: 0;
+  background-color: #ffffff;
 }
 
-.dropzone-table thead th {
+.q-droppable .qd-table thead th {
   font-weight: 600;
-  padding: clamp(8px, 1.7vw, 10px) clamp(8px, 2vw, 12px);
+  padding: 9px 10px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.dropzone-table tbody td {
-  padding: clamp(7px, 1.5vw, 8px) clamp(8px, 2vw, 12px);
+.q-droppable .qd-table tbody td {
+  padding: 8px 10px;
   vertical-align: middle;
   border-bottom: 1px solid #f3f4f6;
-  overflow-wrap: anywhere;
 }
 
-.dropzone-table tfoot td {
-  padding: clamp(8px, 1.7vw, 10px) clamp(8px, 2vw, 12px);
+.q-droppable .qd-table tfoot td {
+  padding: 9px 10px;
 }
 
-/* Debit / left side theme (blue-purple), matches Dr. columns in screenshot */
-.theme-debit .add-zone thead th {
+/* Particulars column: allowed to wrap onto a second line */
+.q-droppable .particulars-cell {
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Amount columns: keep every number on a single line */
+.q-droppable .amount-cell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Debit / left side theme (blue-purple) */
+.q-droppable.theme-debit .qd-table thead th,
+.q-droppable.theme-debit .total-row td {
   background-color: #eef2ff;
   color: #4338ca;
 }
-.theme-debit .sub-zone thead th {
-  background-color: #eef2ff;
-  color: #4338ca;
-}
-.theme-debit .total-row td {
-  background-color: #eef2ff;
-  color: #4338ca;
-}
 
-/* Credit / right side theme (green), matches Cr. columns in screenshot */
-.theme-credit .add-zone thead th {
-  background-color: #ecfdf5;
-  color: #047857;
-}
-.theme-credit .sub-zone thead th {
-  background-color: #ecfdf5;
-  color: #047857;
-}
-.theme-credit .total-row td {
+/* Credit / right side theme (green) */
+.q-droppable.theme-credit .qd-table thead th,
+.q-droppable.theme-credit .total-row td {
   background-color: #ecfdf5;
   color: #047857;
 }
 
-/* Active drag-over states (kept strong so they visibly override the theme) */
-.active-dropzone-add,
-.active-dropzone-add table,
-.active-dropzone-add th,
-.active-dropzone-add td,
-.active-dropzone-add tr {
-  background-color: #10b981 !important;
-  color: #ffffff !important;
+/* ---------- Transparent drop overlays ---------- */
+
+.q-droppable .drop-overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* stays hit-testable so dnd-kit's pointer collision detection can see it */
+  background-color: transparent;
+  border-radius: 6px;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+  z-index: 2;
 }
 
-.active-dropzone-sub,
-.active-dropzone-sub table,
-.active-dropzone-sub th,
-.active-dropzone-sub td,
-.active-dropzone-sub tr {
-  background-color: #f87171 !important;
-  color: #ffffff !important;
+/* Covers the Particulars + first amount column (the "Add" area) */
+.q-droppable .drop-overlay-add {
+  left: 0;
+  width: 72%;
 }
 
-/* Responsive: stack add/sub zones full-width on very small screens */
+/* Covers the last amount column (the "Less" area) */
+.q-droppable .drop-overlay-sub {
+  left: 72%;
+  width: 28%;
+}
+
+.q-droppable .drop-overlay-add.is-over {
+  background-color: rgba(16, 185, 129, 0.14);
+  box-shadow: inset 0 0 0 2px #10b981;
+}
+
+.q-droppable .drop-overlay-sub.is-over {
+  background-color: rgba(248, 113, 113, 0.16);
+  box-shadow: inset 0 0 0 2px #f87171;
+}
+
+/* ---------- Small screens ---------- */
 @media (max-width: 575.98px) {
-  .droppable-group .row {
-    flex-direction: column;
-  }
-  .add-zone,
-  .sub-zone {
-    width: 100%;
+  .q-droppable .qd-table {
+    font-size: 0.75rem;
   }
 
-  .sub-zone {
-    border-top: 1px solid #e5e7eb;
-  }
-
-  .droppable-group {
-    min-height: 0;
-    border-radius: 8px;
-  }
-
-  .dropzone-table {
-    font-size: 0.78rem;
-  }
-
-  .dropzone-table thead th,
-  .dropzone-table tbody td,
-  .dropzone-table tfoot td {
-    padding: 8px;
-  }
-
-  .dropzone-table th:first-child,
-  .dropzone-table td:first-child {
-    width: 68% !important;
-  }
-
-  .dropzone-table th:last-child,
-  .dropzone-table td:last-child {
-    width: 32% !important;
-    white-space: nowrap;
+  .q-droppable .qd-table thead th,
+  .q-droppable .qd-table tbody td,
+  .q-droppable .qd-table tfoot td {
+    padding: 7px;
   }
 }
 
-@media (min-width: 576px) and (max-width: 991.98px) {
-  .droppable-group {
-    min-height: 145px;
-  }
-}
+/* ---------- Tooltip styling (rendered in a portal, so not scopable) ---------- */
 
-/* ---------- Tooltip styling ---------- */
-
-/* Add-zone tooltip: green, matches the "Add" action */
 .tooltip.add-tooltip .tooltip-inner {
   background-color: #10b981;
   color: #ffffff;
@@ -148,7 +136,6 @@
   border-bottom-color: #10b981 !important;
 }
 
-/* Sub-zone tooltip: red, matches the "Less" action */
 .tooltip.sub-tooltip .tooltip-inner {
   background-color: #f87171;
   color: #ffffff;
@@ -164,7 +151,6 @@
   border-bottom-color: #f87171 !important;
 }
 
-/* Optional: smoother fade since dnd-kit toggles isDropTarget rapidly during drag */
 .tooltip {
   transition: opacity 0.1s ease;
 }
