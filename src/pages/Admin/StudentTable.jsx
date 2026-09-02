@@ -20,7 +20,12 @@ function StudentTable({ data, onEdit, onDeleted, refreshData }) {
       return;
     }
 
-    if (!window.confirm("Delete this Student?")) return;
+    if (
+      !window.confirm(
+        "Are you sure you want to permanently delete this Student?",
+      )
+    )
+      return;
 
     StudentService.deleteStudent(userId)
       .then(async () => {
@@ -29,8 +34,6 @@ function StudentTable({ data, onEdit, onDeleted, refreshData }) {
         } else {
           await refreshData();
         }
-
-        alert("Student deleted successfully!");
       })
       .catch((error) => {
         const message =

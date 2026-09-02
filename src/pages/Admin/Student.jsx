@@ -6,6 +6,8 @@ import StudentForm from "./StudentForm";
 import "./Student.css";
 import StudentTable from "./StudentTable";
 import StudentService from "../../services/UserService";
+import SuccessModal from "../../components/Common/SuccessModal";
+import DeleteModal from "../../components/Common/DeleteModal";
 
 function Student() {
   const [showModal, setShowModal] = useState(false);
@@ -14,6 +16,13 @@ function Student() {
   const [colleges, setColleges] = useState([]);
   const [branches, setBranches] = useState([]);
   const [sections, setSections] = useState([]);
+
+  // Success Modal
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  // Delete Modal
+  const [showDelete, setShowDelete] = useState(false);
 
   const fileInputRef = useRef(null);
 
@@ -28,6 +37,7 @@ function Student() {
       return [];
     }
   };
+
   const fetchColleges = async () => {
     try {
       const response = await CollegeService.getAllColleges();
@@ -85,7 +95,10 @@ function Student() {
 
     StudentService.uploadUsersExcel(file)
       .then((response) => {
-        alert(response.data.message || "Students uploaded successfully!");
+        setSuccessMessage(
+          response.data.message || "Students uploaded successfully!",
+        );
+        setShowSuccess(true);
 
         // Refresh table after upload
         fetchStudents();
@@ -128,6 +141,8 @@ function Student() {
           )
         : refreshedStudents;
     });
+
+    setShowDelete(true);
   };
 
   // Save / Update Student
@@ -144,6 +159,11 @@ function Student() {
       StudentService.updateStudent(studentId, studentData)
         .then(() => {
           fetchStudents();
+
+          setSuccessMessage("Student updated successfully!");
+          setShowSuccess(true);
+
+          setShowModal(false);
           setSelectedStudent(null);
         })
         .catch((error) => {
@@ -154,6 +174,11 @@ function Student() {
       StudentService.createStudent(studentData)
         .then(() => {
           fetchStudents();
+
+          setSuccessMessage("Student saved successfully!");
+          setShowSuccess(true);
+
+          setShowModal(false);
         })
         .catch((error) => {
           console.error("Save Error:", error);
@@ -215,6 +240,20 @@ function Student() {
         colleges={colleges}
         branches={branches}
         sections={sections}
+      />
+
+      {/* Add / Update / Upload Success Modal */}
+      <SuccessModal
+        show={showSuccess}
+        message={successMessage}
+        onClose={() => setShowSuccess(false)}
+      />
+
+      {/* Delete Success Modal */}
+      <DeleteModal
+        show={showDelete}
+        message="Student deleted successfully!"
+        onClose={() => setShowDelete(false)}
       />
     </div>
   );

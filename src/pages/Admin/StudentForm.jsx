@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Select from "react-select";
-import SuccessModal from "../../components/Common/SuccessModal";
 import { validateStudentForm } from "./superAdminValidation";
 
 import {
@@ -40,7 +39,6 @@ function StudentForm({
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [address, setAddress] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     if (selectedStudentData) {
@@ -141,7 +139,6 @@ function StudentForm({
     };
 
     onSave(studentData);
-    setShowSuccess(true);
   };
 
   return createPortal(
@@ -444,23 +441,10 @@ function StudentForm({
             onClick={handleSave}
           >
             <FaSave className="me-2" />
-            Save
+            {selectedStudentData ? "Update" : "Save"}
           </button>
         </div>
       </div>
-
-      <SuccessModal
-        show={showSuccess}
-        message={
-          selectedStudentData
-            ? "Student updated successfully!"
-            : "Student saved successfully!"
-        }
-        onClose={() => {
-          setShowSuccess(false);
-          onClose();
-        }}
-      />
     </div>,
     document.body,
   );
