@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import SuccessModal from "../../components/Common/SuccessModal";
 import { validateSuperAdminForm } from "./superAdminValidation";
 
 import {
@@ -25,7 +24,6 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [address, setAddress] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     if (selectedSuperAdminData) {
@@ -85,7 +83,6 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
     };
 
     onSave(superAdminData);
-    setShowSuccess(true);
   };
 
   return createPortal(
@@ -261,22 +258,10 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
             onClick={handleSave}
           >
             <FaSave className="me-2" />
-            Save
+            {selectedSuperAdminData ? "Update" : "Save"}
           </button>
         </div>
       </div>
-      <SuccessModal
-        show={showSuccess}
-        message={
-          selectedSuperAdminData
-            ? "Super Admin updated successfully!"
-            : "Super Admin saved successfully!"
-        }
-        onClose={() => {
-          setShowSuccess(false);
-          onClose();
-        }}
-      />
     </div>,
     document.body,
   );

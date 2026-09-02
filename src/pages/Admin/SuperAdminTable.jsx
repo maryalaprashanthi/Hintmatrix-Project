@@ -4,7 +4,7 @@ import SuperAdminService from "../../services/UserService";
 import DataGrid from "../../components/DataGrid";
 import ActionIconButton from "../../components/Common/ActionIconButton";
 
-function SuperAdminTable({ data, onEdit, refreshData }) {
+function SuperAdminTable({ data, onEdit, refreshData, onDeleteSuccess }) {
   const defaultColDef = {
     sortable: true,
     filter: true,
@@ -21,12 +21,18 @@ function SuperAdminTable({ data, onEdit, refreshData }) {
       return;
     }
 
-    if (!window.confirm("Delete this Super Admin?")) return;
+    const confirmDelete = window.confirm(
+      "Are you sure you want to permanently delete this Super Admin?",
+    );
+
+    if (!confirmDelete) return;
 
     SuperAdminService.deleteSuperAdmin(id)
       .then(() => {
-        alert("Super Admin deleted successfully!");
         refreshData();
+
+        // Show DeleteModal after successful delete
+        onDeleteSuccess();
       })
       .catch((error) => {
         const message =
