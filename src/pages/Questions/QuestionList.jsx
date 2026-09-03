@@ -3,6 +3,7 @@ import QuestionService from "../../services/QuestionService";
 import SuccessModal from "../../components/Common/SuccessModal";
 import DeleteModal from "../../components/Common/DeleteModal";
 import QuestionUploadErrorsModal from "../../components/Common/QuestionUploadErrorsModal";
+import * as XLSX from "xlsx";
 
 import {
   Container,
@@ -204,76 +205,257 @@ const QuestionList = () => {
   // QUESTION EXCEL UPLOAD
   // =========================================================
 
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
+  // =========================================================
+// QUESTION EXCEL UPLOAD
+// =========================================================
 
-    if (!file) return;
+const handleFileUpload = async (e) => {
+  const file = e.target.files[0];
 
-    console.log("Selected File:", file);
+  if (!file) return;
+
+  console.log("Selected File:", file);
+
+  // =====================================================
+  // CLOSE OLD ERROR POPUP
+  // =====================================================
+
+  setShowUploadErrors(false);
+
+  try {
+    // =====================================================
+    // READ EXCEL FILE
+    // =====================================================
+
+    const arrayBuffer = await file.arrayBuffer();
+
+    const workbook = XLSX.read(arrayBuffer, {
+      type: "array",
+    });
+
+    const firstSheetName = workbook.SheetNames[0];
+
+    const worksheet = workbook.Sheets[firstSheetName];
+
+    const excelData = XLSX.utils.sheet_to_json(worksheet, {
+      defval: "",
+    });
+
+    console.log("Excel Data:", excelData);
 
     // =====================================================
-    // CLOSE OLD ERROR POPUP
+    // CHECK WHETHER THIS IS AN MCQ EXCEL
     // =====================================================
 
-    setShowUploadErrors(false);
+    const excelQuestionType =
+      excelData.length > 0
+        ? (
+            excelData[0].question_type ||
+            excelData[0].Question_Type ||
+            excelData[0].QUESTION_TYPE ||
+            ""
+          )
+            .toString()
+            .trim()
+            .toUpperCase()
+            .replace(/\s+/g, "_")
+        : "";
 
-    const formData = new FormData();
+    console.log("Excel Question Type:", excelQuestionType);
 
-    try {
-      // =====================================================
-      // FILE
-      // =====================================================
+    // =====================================================
+    // MCQ QUESTION UPLOAD
+    // =====================================================
+
+    if (excelQuestionType === "SINGLE_CHOICE") {
+      console.log("MCQ Excel upload detected.");
+
+      // ===================================================
+      // VALIDATE REQUIRED IDs
+      // ===================================================
+
+      if (!courseId || !chapterId || !categoryId) {
+        alert(
+          "Course ID, Chapter ID and Category ID are required for MCQ upload.",
+        );
+
+        return;
+      }
+
+      // ===================================================
+      // MCQ FORM DATA
+      // ===================================================
+
+      const formData = new FormData();
 
       formData.append("file", file);
 
-      // =====================================================
-      // REQUEST DTO
-      // =====================================================
+      formData.append("courseId", courseId);
 
-      const request = {
-        courseId: Number(courseId),
-        chapterId: Number(chapterId),
-        categoryId: Number(categoryId),
-      };
+      formData.append("chapterId", chapterId);
 
-      formData.append(
-        "request",
-        new Blob([JSON.stringify(request)], {
-          type: "application/json",
-        }),
+      formData.append("categoryId", categoryId);
+
+      console.log("MCQ Upload Parameters:", {
+        courseId,
+        chapterId,
+        categoryId,
+      });
+
+      // ===================================================
+      // MCQ UPLOAD API
+      // ===================================================
+
+      const response = await QuestionService.uploadMcqExcel(formData);
+
+      console.log("MCQ Excel upload response:", response);
+
+      console.log(
+        "MCQ Excel upload response data:",
+        response.data,
       );
 
-      console.log("Question upload request:", request);
+      // ===================================================
+      // SUCCESS MESSAGE
+      // ===================================================
 
-      // =====================================================
-      // UPLOAD
-      // =====================================================
+      alert(
+        typeof response.data === "string"
+          ? response.data
+          : "MCQ questions uploaded successfully.",
+      );
 
-      const response = await QuestionService.uploadExcel(formData);
+      // ===================================================
+      // REFRESH QUESTION LIST
+      // ===================================================
 
-      console.log("Excel upload response:", response);
+      await loadQuestions();
 
-      console.log("Excel upload response data:", response.data);
-
-      const result = response.data;
-
-      // =====================================================
-      // GET BACKEND ERRORS
-      // =====================================================
-
-      const errors = Array.isArray(result?.errors) ? result.errors : [];
-
-      console.log("Upload Errors:", errors);
-
-      // =====================================================
-      // IMPORTANT:
+      // ===================================================
+      // IMPORTANT
       //
-      // IF ERRORS EXIST
+      // STOP HERE.
       //
-      // Save them permanently in localStorage.
-      //
-      // This means navigation will NOT remove them.
-      // =====================================================
+      // Normal Excel upload must NOT execute.
+      // ===================================================
+
+      return;
+    }
+
+    // =====================================================
+    // EXISTING NORMAL QUESTION UPLOAD
+    //
+    // THIS FLOW REMAINS THE SAME
+    // =====================================================
+
+    const formData = new FormData();
+
+    // =====================================================
+    // FILE
+    // =====================================================
+
+    formData.append("file", file);
+
+    // =====================================================
+    // REQUEST DTO
+    // =====================================================
+
+    const request = {
+      courseId: Number(courseId),
+      chapterId: Number(chapterId),
+      categoryId: Number(categoryId),
+    };
+
+    formData.append(
+      "request",
+      new Blob([JSON.stringify(request)], {
+        type: "application/json",
+      }),
+    );
+
+    console.log("Question upload request:", request);
+
+    // =====================================================
+    // NORMAL QUESTION UPLOAD
+    // =====================================================
+
+    const response = await QuestionService.uploadExcel(formData);
+
+    console.log("Excel upload response:", response);
+
+    console.log(
+      "Excel upload response data:",
+      response.data,
+    );
+
+    const result = response.data;
+
+    // =====================================================
+    // GET BACKEND ERRORS
+    // =====================================================
+
+    const errors = Array.isArray(result?.errors)
+      ? result.errors
+      : [];
+
+    console.log("Upload Errors:", errors);
+
+    // =====================================================
+    // IF ERRORS EXIST
+    // =====================================================
+
+    if (errors.length > 0) {
+      setUploadErrors(errors);
+
+      localStorage.setItem(
+        QUESTION_UPLOAD_ERRORS_KEY,
+        JSON.stringify(errors),
+      );
+
+      setShowUploadErrors(true);
+    }
+
+    // =====================================================
+    // IF NO ERRORS
+    // =====================================================
+
+    else {
+      console.log("All questions uploaded successfully.");
+
+      setUploadErrors([]);
+
+      localStorage.removeItem(
+        QUESTION_UPLOAD_ERRORS_KEY,
+      );
+
+      setShowUploadErrors(false);
+    }
+
+    // =====================================================
+    // REFRESH QUESTION LIST
+    // =====================================================
+
+    await loadQuestions();
+  } catch (error) {
+    console.error(
+      "Question Excel upload error:",
+      error,
+    );
+
+    // =====================================================
+    // BACKEND ERROR RESPONSE
+    // =====================================================
+
+    const errorData = error.response?.data;
+
+    if (errorData) {
+      const errors = Array.isArray(errorData.errors)
+        ? errorData.errors
+        : [];
+
+      // ===================================================
+      // SAVE ERRORS
+      // ===================================================
 
       if (errors.length > 0) {
         setUploadErrors(errors);
@@ -283,77 +465,28 @@ const QuestionList = () => {
           JSON.stringify(errors),
         );
 
-        // Open popup immediately
         setShowUploadErrors(true);
-      }
-
-      // =====================================================
-      // IMPORTANT:
-      //
-      // IF NO ERRORS
-      //
-      // ALL PREVIOUS ERRORS ARE RESOLVED.
-      //
-      // Remove them from localStorage.
-      // =====================================================
-      else {
-        console.log("All questions uploaded successfully.");
-
-        setUploadErrors([]);
-
-        localStorage.removeItem(QUESTION_UPLOAD_ERRORS_KEY);
-
-        setShowUploadErrors(false);
-      }
-
-      // =====================================================
-      // REFRESH QUESTION LIST
-      // =====================================================
-
-      await loadQuestions();
-    } catch (error) {
-      console.error("Question Excel upload error:", error);
-
-      // =====================================================
-      // BACKEND ERROR RESPONSE
-      // =====================================================
-
-      const errorData = error.response?.data;
-
-      if (errorData) {
-        const errors = Array.isArray(errorData.errors) ? errorData.errors : [];
-
-        // ===================================================
-        // SAVE ERRORS
-        // ===================================================
-
-        if (errors.length > 0) {
-          setUploadErrors(errors);
-
-          localStorage.setItem(
-            QUESTION_UPLOAD_ERRORS_KEY,
-            JSON.stringify(errors),
-          );
-
-          setShowUploadErrors(true);
-        } else {
-          alert(
-            typeof errorData === "string"
-              ? errorData
-              : errorData.message || "Question upload failed.",
-          );
-        }
       } else {
-        alert("Question upload failed. Please try again.");
+        alert(
+          typeof errorData === "string"
+            ? errorData
+            : errorData.message ||
+                "Question upload failed.",
+        );
       }
-    } finally {
-      // =====================================================
-      // ALLOWS SAME FILE TO BE SELECTED AGAIN
-      // =====================================================
-
-      e.target.value = "";
+    } else {
+      alert(
+        "Question upload failed. Please try again.",
+      );
     }
-  };
+  } finally {
+    // =====================================================
+    // ALLOWS SAME FILE TO BE SELECTED AGAIN
+    // =====================================================
+
+    e.target.value = "";
+  }
+};
 
   // =========================================================
   // VIEW
