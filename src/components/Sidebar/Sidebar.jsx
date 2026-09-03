@@ -28,23 +28,28 @@ import {
   MdQuiz,
   MdMenuBook,
   MdCategory,
-  MdHelpOutline,
   MdSecurity,
-  MdPersonOutline,
   MdAdminPanelSettings,
 } from "react-icons/md";
 
-export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
+export default function Sidebar({
+  sidebarOpen,
+  setSidebarOpen,
+  collapsed,
+  setCollapsed,
+}) {
   const [collegeOpen, setCollegeOpen] = useState(false);
   const [tableOpen, setTableOpen] = useState(false);
   const [questionOpen, setQuestionOpen] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
+
   const navigate = useNavigate();
 
   const normalizeRole = (value = "") =>
     value.toString().trim().toUpperCase().replace(/\s+/g, "_");
 
   const userRole = normalizeRole(localStorage.getItem("role") || "GUEST");
+
   const isStudent = userRole === "STUDENT";
   const canAccessAdminMenu = [
     "SUPER_ADMIN",
@@ -61,33 +66,43 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
     "BRANCH_ADMIN",
     "STUDENT",
   ].includes(userRole);
+
   const canAccessQuestionMenu = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(
     userRole,
   );
+
   const canAccessTableMenu = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(userRole);
+
   const canAccessRuleEngine = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(
     userRole,
   );
+
   const canAccessStudentAttendance = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(
     userRole,
   );
+
   const canAccessPractice = ["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"].includes(
     userRole,
   );
+
   const canAccessExam = ["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"].includes(
     userRole,
   );
+
   const canAccessSessions = ["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"].includes(
     userRole,
   );
+
   const canAccessResults = ["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"].includes(
     userRole,
   );
+
   const canAccessCertificates = [
     "SUPER_ADMIN",
     "BRANCH_ADMIN",
     "STUDENT",
   ].includes(userRole);
+
   const canAccessSettings = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(userRole);
 
   const handleLogout = () => {
@@ -107,11 +122,26 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
     isActive ? "submenu-item active-submenu" : "submenu-item";
 
   return (
-    <aside className={`sidebar ${sidebarOpen ? "show" : ""}`}>
+    <aside
+      className={`sidebar ${sidebarOpen ? "show" : ""} ${
+        collapsed ? "collapsed" : ""
+      }`}
+    >
       {/* Logo */}
 
       <div className="sidebar-header">
-        <img src={logo} alt="HintMatrix" className="sidebar-logo" />
+        <div className="sidebar-logo-wrapper">
+          <img src={logo} alt="HintMatrix" className="sidebar-logo" />
+        </div>
+
+        <button
+          type="button"
+          className="sidebar-toggle"
+          onClick={() => setCollapsed((prev) => !prev)}
+          aria-label="Toggle sidebar"
+        >
+          {collapsed ? "›" : "‹"}
+        </button>
       </div>
 
       {/* Menu */}
@@ -127,24 +157,28 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
             onClick={closeSidebar}
           >
             <div className="menu-left">
-              <MdDashboard />
+              <MdDashboard className="menu-icon" />
               <span>Dashboard</span>
             </div>
           </NavLink>
+
           {/* Subscription */}
+
           <NavLink
             to="/subscriptions"
             className={({ isActive }) =>
               `menu-item ${isActive ? "active" : ""}`
             }
+            onClick={closeSidebar}
           >
             <div className="menu-left">
-              <FaCreditCard />
+              <FaCreditCard className="menu-icon" />
               <span>Subscription</span>
             </div>
           </NavLink>
 
           {/* Courses */}
+
           {canAccessCourseMenu && !isStudent && (
             <>
               <NavLink to="/college" className="college-menu-link">
@@ -153,7 +187,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
                   onClick={() => setCollegeOpen(!collegeOpen)}
                 >
                   <div className="menu-left">
-                    <MdSchool />
+                    <MdSchool className="menu-icon" />
                     <span>College</span>
                   </div>
 
@@ -201,7 +235,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
           {isStudent && (
             <NavLink to="/courses" className={menuClass} onClick={closeSidebar}>
               <div className="menu-left">
-                <MdLibraryBooks />
+                <MdLibraryBooks className="menu-icon" />
                 <span>Courses</span>
               </div>
             </NavLink>
@@ -210,13 +244,13 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
           {/* Admin */}
 
           {canAccessAdminMenu && (
-            <>
+            <div className={`admin-menu ${adminOpen ? "open" : ""}`}>
               <div
                 className={`menu-item ${adminOpen ? "active" : ""}`}
                 onClick={() => setAdminOpen(!adminOpen)}
               >
                 <div className="menu-left">
-                  <MdAdminPanelSettings />
+                  <MdAdminPanelSettings className="menu-icon" />
                   <span>Admin</span>
                 </div>
 
@@ -258,14 +292,15 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
                     onClick={closeSidebar}
                   >
                     <MdSchool />
-                    <span>Student </span>
+                    <span>Student</span>
                   </NavLink>
                 </div>
               )}
-            </>
+            </div>
           )}
 
           {/* Questions */}
+
           {canAccessQuestionMenu && (
             <>
               <div
@@ -273,7 +308,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
                 onClick={() => setQuestionOpen(!questionOpen)}
               >
                 <div className="menu-left">
-                  <MdQuiz />
+                  <MdQuiz className="menu-icon" />
                   <span>Questions</span>
                 </div>
 
@@ -332,6 +367,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
           )}
 
           {/* Table */}
+
           {canAccessTableMenu && (
             <>
               <div
@@ -339,7 +375,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
                 onClick={() => setTableOpen(!tableOpen)}
               >
                 <div className="menu-left">
-                  <MdTableChart />
+                  <MdTableChart className="menu-icon" />
                   <span>Table Details</span>
                 </div>
 
@@ -380,6 +416,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
           )}
 
           {/* Rule Engine */}
+
           {canAccessRuleEngine && (
             <NavLink
               to="/ruleengine"
@@ -387,12 +424,14 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
               onClick={closeSidebar}
             >
               <div className="menu-left">
-                <MdSettings />
+                <MdSettings className="menu-icon" />
                 <span>Rule Engine</span>
               </div>
             </NavLink>
           )}
-          {/*student attendance*/}
+
+          {/* Student Attendance */}
+
           {canAccessStudentAttendance && (
             <NavLink
               to="/studentattendance"
@@ -400,11 +439,13 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
               onClick={closeSidebar}
             >
               <div className="menu-left">
-                <MdTableChart />
+                <MdTableChart className="menu-icon" />
                 <span>Student Attendance</span>
               </div>
             </NavLink>
           )}
+
+          {/* Practice */}
 
           {canAccessPractice && (
             <NavLink
@@ -413,11 +454,13 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
               onClick={closeSidebar}
             >
               <div className="menu-left">
-                <MdOutlineEdit />
+                <MdOutlineEdit className="menu-icon" />
                 <span>Practice</span>
               </div>
             </NavLink>
           )}
+
+          {/* Exam */}
 
           {canAccessExam && (
             <NavLink
@@ -426,11 +469,13 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
               onClick={closeSidebar}
             >
               <div className="menu-left">
-                <MdAssignment />
+                <MdAssignment className="menu-icon" />
                 <span>Exam</span>
               </div>
             </NavLink>
           )}
+
+          {/* Sessions */}
 
           {canAccessSessions && (
             <NavLink
@@ -439,20 +484,24 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
               onClick={closeSidebar}
             >
               <div className="menu-left">
-                <MdVideoLibrary />
+                <MdVideoLibrary className="menu-icon" />
                 <span>Sessions</span>
               </div>
             </NavLink>
           )}
 
+          {/* Results */}
+
           {canAccessResults && (
             <NavLink to="/results" className={menuClass} onClick={closeSidebar}>
               <div className="menu-left">
-                <MdBarChart />
+                <MdBarChart className="menu-icon" />
                 <span>Results</span>
               </div>
             </NavLink>
           )}
+
+          {/* Certificates */}
 
           {canAccessCertificates && (
             <NavLink
@@ -461,11 +510,13 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
               onClick={closeSidebar}
             >
               <div className="menu-left">
-                <MdWorkspacePremium />
+                <MdWorkspacePremium className="menu-icon" />
                 <span>Certificates</span>
               </div>
             </NavLink>
           )}
+
+          {/* Settings */}
 
           {canAccessSettings && (
             <NavLink
@@ -474,13 +525,15 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
               onClick={closeSidebar}
             >
               <div className="menu-left">
-                <MdSettings />
+                <MdSettings className="menu-icon" />
                 <span>Settings</span>
               </div>
             </NavLink>
           )}
         </nav>
       </div>
+
+      {/* Logout */}
 
       <button type="button" className="logout" onClick={handleLogout}>
         <MdLogout />

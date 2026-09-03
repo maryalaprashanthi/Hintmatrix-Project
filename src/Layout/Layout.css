@@ -45,6 +45,14 @@ body {
   bottom: 0;
 
   overflow: hidden;
+
+  transition: left 0.3s ease;
+}
+
+/* COLLAPSED SIDEBAR */
+
+.main-layout.sidebar-collapsed {
+  left: 85px;
 }
 
 /* ==========================================
@@ -53,6 +61,7 @@ body {
 
 .page-content {
   position: absolute;
+
   top: 95px;
   left: 0;
   right: 0;
@@ -73,10 +82,15 @@ body {
 @media (max-width: 768px) {
   .main-layout {
     left: 0;
+    width: 100%;
+  }
+
+  .main-layout.sidebar-collapsed {
+    left: 0;
   }
 
   .page-content {
     padding: 20px;
-    width: 100;
+    width: 100%;
   }
 }
