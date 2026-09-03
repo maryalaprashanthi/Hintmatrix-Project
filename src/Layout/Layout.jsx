@@ -3,117 +3,52 @@ import { Outlet } from "react-router-dom";
 
 import Sidebar from "../components/Sidebar/Sidebar";
 import Navbar from "../components/Navbar/Navbar";
-
 import "./Layout.css";
 
+export default function Layout() {
+  const [collapsed, setCollapsed] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
 
-export default function Layout(){
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+        setCollapsed(false);
+      }
+    };
 
-const [sidebarOpen,setSidebarOpen] = useState(
-    window.innerWidth > 768
-);
+    window.addEventListener("resize", handleResize);
 
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
-useEffect(()=>{
+  return (
+    <div className="app-layout">
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        collapsed={collapsed}
+        setCollapsed={setCollapsed}
+      />
 
-const handleResize=()=>{
+      <div className={`main-layout ${collapsed ? "sidebar-collapsed" : ""}`}>
+        <Navbar />
 
-if(window.innerWidth > 768){
+        <main className="page-content">
+          <Outlet />
+        </main>
+      </div>
 
-setSidebarOpen(true);
-
-}
-else{
-
-setSidebarOpen(false);
-
-}
-
-};
-
-
-window.addEventListener(
-"resize",
-handleResize
-);
-
-
-return()=>{
-
-window.removeEventListener(
-"resize",
-handleResize
-);
-
-};
-
-
-},[]);
-
-
-
-return(
-
-<div className="app-layout">
-
-
-<Sidebar
-
-sidebarOpen={sidebarOpen}
-
-setSidebarOpen={setSidebarOpen}
-
-/>
-
-
-
-<div className="main-layout">
-
-
-<Navbar
-
-sidebarOpen={sidebarOpen}
-
-setSidebarOpen={setSidebarOpen}
-
-/>
-
-
-
-<main className="page-content">
-
-<Outlet/>
-
-</main>
-
-
-
-</div>
-
-
-
-{
-sidebarOpen &&
-window.innerWidth <=768 &&
-(
-
-<div
-
-className="sidebar-overlay"
-
-onClick={()=>setSidebarOpen(false)}
-
-></div>
-
-)
-
-}
-
-
-</div>
-
-
-);
-
-
+      {sidebarOpen && window.innerWidth <= 768 && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+        ></div>
+      )}
+    </div>
+  );
 }

@@ -4,7 +4,7 @@ import BranchAdminService from "../../services/UserService";
 import DataGrid from "../../components/DataGrid";
 import ActionIconButton from "../../components/Common/ActionIconButton";
 
-function BranchAdminTable({ data, onEdit, refreshData }) {
+function BranchAdminTable({ data, onEdit, refreshData, onDeleteSuccess }) {
   const defaultColDef = {
     sortable: true,
     filter: true,
@@ -12,12 +12,16 @@ function BranchAdminTable({ data, onEdit, refreshData }) {
   };
 
   const handleDelete = (id) => {
-    if (!window.confirm("Delete this Branch Admin?")) return;
+    const confirmDelete = window.confirm(
+      "Are you sure you want to permanently delete this Branch Admin?",
+    );
+
+    if (!confirmDelete) return;
 
     BranchAdminService.deleteBranchAdmin(id)
       .then(() => {
-        alert("Branch Admin deleted successfully!");
         refreshData();
+        onDeleteSuccess();
       })
       .catch((error) => {
         console.error("Delete Error:", error);
