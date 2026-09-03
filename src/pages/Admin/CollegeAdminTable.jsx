@@ -1,50 +1,43 @@
 import React from "react";
 import { themeQuartz } from "ag-grid-community";
-import SuperAdminService from "../../services/UserService";
+import UserService from "../../services/UserService";
 import DataGrid from "../../components/DataGrid";
 import ActionIconButton from "../../components/Common/ActionIconButton";
 
-function SuperAdminTable({ data, onEdit, refreshData, onDeleteSuccess }) {
+function CollegeAdminTable({ data, onEdit, refreshData }) {
   const defaultColDef = {
     sortable: true,
     filter: true,
     resizable: true,
   };
 
-  const handleDelete = (superAdmin) => {
-    const id =
-      superAdmin?.userId ?? superAdmin?.user_id ?? superAdmin?.superAdminId;
+  // DELETE COLLEGE ADMIN
 
+  const handleDelete = (id) => {
     if (!id) {
-      console.error("Cannot delete super admin without an ID:", superAdmin);
-      alert("Unable to delete Super Admin: ID is missing.");
+      alert("College Admin ID is missing.");
       return;
     }
 
-    const confirmDelete = window.confirm(
-      "Are you sure you want to permanently delete this Super Admin?",
-    );
+    if (!window.confirm("Delete this College Admin?")) {
+      return;
+    }
 
-    if (!confirmDelete) return;
-
-    SuperAdminService.deleteSuperAdmin(id)
+    UserService.deleteCollegeAdmin(id)
       .then(() => {
+        alert("College Admin deleted successfully!");
         refreshData();
-
-        // Show DeleteModal after successful delete
-        onDeleteSuccess();
       })
       .catch((error) => {
-        const message =
-          error.response?.data?.message ||
-          error.response?.data?.error ||
-          error.message ||
-          "Failed to delete Super Admin.";
+        console.error("Delete Error:", error);
 
-        console.error("Delete Error:", error.response?.data || error);
-        alert(`Failed to delete Super Admin: ${message}`);
+        alert(
+          error?.response?.data?.message || "Failed to delete College Admin.",
+        );
       });
   };
+
+  // COLUMN DEFINITIONS
 
   const columnDefs = [
     {
@@ -53,62 +46,92 @@ function SuperAdminTable({ data, onEdit, refreshData, onDeleteSuccess }) {
       flex: 1,
       minWidth: 170,
     },
+
     {
       field: "employeeId",
       headerName: "Employee ID",
-      width: 150,
+      width: 140,
     },
+
     {
       field: "designation",
       headerName: "Designation",
       width: 170,
     },
+
+    {
+      field: "collegeName",
+      headerName: "College Name",
+      width: 180,
+    },
+
     {
       field: "email",
       headerName: "Email",
       flex: 1,
       minWidth: 220,
     },
+
     {
       field: "phoneNumber",
       headerName: "Phone Number",
       width: 160,
     },
+
     {
       field: "address",
       headerName: "Address",
       flex: 1,
       minWidth: 220,
     },
+
+    // ACTION
+
     {
       headerName: "Action",
-      width: 190,
+      width: 110,
+      minWidth: 110,
       sortable: false,
       filter: false,
-      cellRenderer: (params) => (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            height: "100%",
-          }}
-        >
-          <ActionIconButton
-            type="edit"
-            onClick={() => onEdit(params.data)}
-            title="Edit super admin"
-          />
 
-          <ActionIconButton
-            type="delete"
-            onClick={() => handleDelete(params.data)}
-            title="Delete super admin"
-          />
-        </div>
-      ),
+      cellRenderer: (params) => {
+        if (!params.data) {
+          return null;
+        }
+
+        return (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              height: "100%",
+              width: "100%",
+            }}
+          >
+            {/* EDIT */}
+
+            <ActionIconButton
+              type="edit"
+              onClick={() => onEdit(params.data)}
+              title="Edit College Admin"
+            />
+
+            {/* DELETE */}
+
+            <ActionIconButton
+              type="delete"
+              onClick={() => handleDelete(params.data.userId)}
+              title="Delete College Admin"
+            />
+          </div>
+        );
+      },
     },
   ];
+
+  // UI
 
   return (
     <div style={{ marginTop: "20px" }}>
@@ -141,4 +164,4 @@ function SuperAdminTable({ data, onEdit, refreshData, onDeleteSuccess }) {
   );
 }
 
-export default SuperAdminTable;
+export default CollegeAdminTable;

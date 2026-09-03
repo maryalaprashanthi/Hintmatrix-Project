@@ -8,12 +8,14 @@ import BranchService from "../../services/BranchService";
 import CourseService from "../../services/CourseService";
 import SectionService from "../../services/SectionService";
 import ChapterService from "../../services/ChapterService";
+import ExamPaperService from "../../services/ExamPaperService";
 
 import "./ExamPaper.css";
 import QuestionSelection from "./QuestionSelection";
 
 const ExamPaper = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [createdExamId, setCreatedExamId] = useState(null);
 
   // EXAM DETAILS
 
@@ -315,40 +317,60 @@ const ExamPaper = () => {
 
   // SAVE AND FINISH
 
-  const handleSave = () => {
-    const payload = {
-      examName,
+  const handleSave = async () => {
+    try {
+      const requestPayload = {
+        examName,
+        collegeId: college?.value ?? null,
+        branchId: branch?.value ?? null,
+        courseId: course?.value ?? null,
+        sectionId: section?.value ?? null,
+        chapterIds: chapters.map((item) => item.value ?? item),
+        startDate:
+          startDate && startTime ? `${startDate}T${startTime}:00` : null,
+        endDate: endDate && endTime ? `${endDate}T${endTime}:00` : null,
+        passPercentage,
+      };
 
-      college: college?.value || null,
+      console.log("Final exam create payload being sent:", requestPayload);
 
-      branch: branch?.value || null,
+      const response = await ExamPaperService.createExamPaper(requestPayload);
+      const examId = response?.data?.id ?? response?.data?.examId;
 
-      course: course?.value || null,
-
-      section: section?.value || null,
-
-      chapters: chapters.map((item) => item.value),
-
-      startDate,
-      startTime,
-
-      endDate,
-      endTime,
-
-      passPercentage,
-    };
-
-    console.log("Exam Paper:", payload);
-
-    alert("Exam Paper saved successfully.");
+      setCreatedExamId(examId);
+      console.log("Exam created successfully:", response?.data);
+      alert("Exam created successfully.");
+      setCurrentStep(2);
+    } catch (error) {
+      console.error("Failed to create exam:", error);
+      alert(error?.response?.data?.message || "Failed to create exam.");
+    }
   };
 
   // QUESTIONS ADDED
 
-  const handleQuestionsAdded = (questions) => {
-    console.log("Selected Questions:", questions);
+  const handleQuestionsAdded = async (questions) => {
+    if (!createdExamId) {
+      alert("Please create the exam first before adding questions.");
+      return;
+    }
 
-    alert(`${questions.length} questions added to the exam.`);
+    const questionIds = questions.map((question) => question.questionId);
+
+    try {
+      const response = await ExamPaperService.addQuestionsToExam(
+        createdExamId,
+        questionIds,
+      );
+
+      console.log("Questions added to exam:", response?.data);
+      alert(`${questionIds.length} questions added to the exam.`);
+    } catch (error) {
+      console.error("Failed to add questions to exam:", error);
+      alert(
+        error?.response?.data?.message || "Failed to add questions to exam.",
+      );
+    }
   };
 
   // STEP 2
@@ -358,6 +380,7 @@ const ExamPaper = () => {
       <QuestionSelection
         courseId={course?.value}
         chapterIds={chapters.map((item) => item.value)}
+        examId={createdExamId}
         onNext={handleQuestionsAdded}
         onBack={handleBack}
       />

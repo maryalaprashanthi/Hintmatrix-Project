@@ -218,16 +218,30 @@ function McqPractice() {
   return (
     <main className="mcq-practice-page">
       <header className="mcq-header">
-        <div>
+        <div className="mcq-header-copy">
           <span className="eyebrow">STUDENT PRACTICE</span>
           <h1>Practice MCQs</h1>
           <p>Choose a practice set and answer the questions.</p>
         </div>
         {questions.length > 0 && (
-          <div className="practice-progress">
-            <strong>{answeredCount} / {questions.length}</strong>
-            <span>Answered</span>
-            <small>Score: {totalScore}</small>
+          <div className="practice-summary" aria-label="Practice summary">
+            <div className="practice-progress-card">
+              <div className="summary-topline">
+                <span>Progress</span>
+                <strong>{answeredCount}/{questions.length}</strong>
+              </div>
+              <div className="progress-track" aria-hidden="true">
+                <span
+                  className="progress-fill"
+                  style={{ width: `${questions.length ? (answeredCount / questions.length) * 100 : 0}%` }}
+                />
+              </div>
+              <small>{Math.max(questions.length - answeredCount, 0)} left</small>
+            </div>
+            <div className="practice-score-card">
+              <span>Total Score</span>
+              <strong>{totalScore}</strong>
+            </div>
           </div>
         )}
       </header>

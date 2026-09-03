@@ -31,6 +31,43 @@ class UserService {
   }
 
   // =========================
+  // COLLEGE ADMIN
+  // =========================
+
+  createCollegeAdmin(collegeAdminRequestDTO) {
+    return apiClient.post(`${BASE_URL}/collegeAdmin`, collegeAdminRequestDTO, {
+      withCredentials: true,
+    });
+  }
+
+  getAllCollegeAdmins() {
+    return apiClient.get(`${BASE_URL}/collegeAdmin`, {
+      withCredentials: true,
+    });
+  }
+  getCollegeAdminById(id) {
+    return apiClient.get(`${BASE_URL}/collegeAdmin/${id}`, {
+      withCredentials: true,
+    });
+  }
+
+  updateCollegeAdmin(id, collegeAdminRequestDTO) {
+    return apiClient.put(
+      `${BASE_URL}/collegeAdmin/${id}`,
+      collegeAdminRequestDTO,
+      {
+        withCredentials: true,
+      },
+    );
+  }
+
+  deleteCollegeAdmin(id) {
+    return apiClient.delete(`${BASE_URL}/collegeAdmin/${id}`, {
+      withCredentials: true,
+    });
+  }
+
+  // =========================
   // BRANCH ADMIN
   // =========================
 
@@ -45,9 +82,13 @@ class UserService {
   }
 
   updateBranchAdmin(id, branchAdminRequestDTO) {
-    return apiClient.put(`${BASE_URL}/branchAdmin/${id}`, branchAdminRequestDTO, {
-      withCredentials: true,
-    });
+    return apiClient.put(
+      `${BASE_URL}/branchAdmin/${id}`,
+      branchAdminRequestDTO,
+      {
+        withCredentials: true,
+      },
+    );
   }
 
   deleteBranchAdmin(id) {
@@ -77,30 +118,24 @@ class UserService {
   }
 
   deleteStudent(id) {
-    return apiClient.delete(`${BASE_URL}/student/${id}`, { withCredentials: true });
+    return apiClient.delete(`${BASE_URL}/student/${id}`, {
+      withCredentials: true,
+    });
   }
 
   uploadUsersExcel(file) {
+    const formData = new FormData();
 
-  const formData = new FormData();
+    formData.append("file", file);
 
-  formData.append("file", file);
-
-
-  return apiClient.post(
-    `${BASE_URL}/excel/upload`,
-    formData,
-    {
+    return apiClient.post(`${BASE_URL}/excel/upload`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
       withCredentials: true,
-    }
-  );
-}
-
+    });
+  }
 }
 
 // Export an instantiated instance of the service
 export default new UserService();
-

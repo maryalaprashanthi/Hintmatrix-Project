@@ -1,12 +1,22 @@
 import { Link } from "react-router-dom";
 import "./style.css";
 import "./responsive.css";
+import { FaHome, FaInfoCircle, FaBook, FaPhoneAlt } from "react-icons/fa";
+import { useState } from "react";
 
 function Landing() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % 3);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + 3) % 3);
+  };
   return (
     <div className="landing-page">
       {/* ================= HEADER ================= */}
-
       <header>
         <nav className="navbar">
           <div className="logo">
@@ -30,37 +40,47 @@ function Landing() {
           <div className="nav-menu">
             <ul className="nav-links">
               <li>
-                <a href="/">Home</a>
+                <a href="/">
+                  <FaHome />
+                  Home
+                </a>
               </li>
 
               <li>
-                <a href="#about">About</a>
+                <a href="#about">
+                  <FaInfoCircle />
+                  About
+                </a>
               </li>
 
               <li>
-                <a href="#courses">Courses</a>
+                <a href="#courses">
+                  <FaBook />
+                  Courses
+                </a>
               </li>
 
               <li>
-                <a href="#contact">Contact</a>
+                <a href="#contact">
+                  <FaPhoneAlt />
+                  Contact
+                </a>
               </li>
             </ul>
 
             <div className="nav-buttons">
-              <Link to="/login" className="nav-links">
+              <Link to="/login" className="login-link">
                 Login
               </Link>
 
-              <Link to="/signup" className="nav-links">
+              <Link to="/signup" className="signup-link">
                 Sign Up
               </Link>
             </div>
           </div>
         </nav>
       </header>
-
       {/* ================= HERO ================= */}
-
       <section className="hero">
         <div className="hero-content">
           <div className="hero-text">
@@ -97,9 +117,7 @@ function Landing() {
           </div>
         </div>
       </section>
-
       {/* ================= ABOUT ================= */}
-
       <section id="about" className="about">
         <div className="about-container">
           <div className="about-image">
@@ -138,9 +156,7 @@ function Landing() {
           </div>
         </div>
       </section>
-
       {/* ================= FEATURES ================= */}
-
       <section id="features" className="features">
         <h2>Why Choose HINTMATRIX?</h2>
 
@@ -183,9 +199,7 @@ function Landing() {
           </div>
         </div>
       </section>
-
       {/* ================= COURSES ================= */}
-
       <section id="courses" className="courses">
         <div className="section-title">
           <h2>Courses Offered</h2>
@@ -209,9 +223,7 @@ function Landing() {
           </p>
         </div>
       </section>
-
       {/* ================= PRACTICE ================= */}
-
       <div className="practice-images">
         <img src="/images/step1.png" alt="Step 1" />
         <img src="/images/step2.png" alt="Step 2" />
@@ -221,45 +233,113 @@ function Landing() {
         <img src="/images/step2.png" alt="Step 2" />
         <img src="/images/step3.png" alt="Step 3" />
       </div>
-
       {/* ================= BANNERS ================= */}
-
+      /* ================= BANNERS ================= */
       <section className="slider-section">
         <div className="slider">
-          <button className="prev">&#10094;</button>
+          {/* PREVIOUS */}
+          <button
+            className="prev"
+            onClick={prevSlide}
+            aria-label="Previous banner"
+          >
+            &#10094;
+          </button>
 
           <div className="slides">
-            <div className="slide active">
-              <img src="/images/banner1.png" alt="Banner 1" />
+            {/* BANNER 1 */}
+            <div className={`slide ${currentSlide === 0 ? "active" : ""}`}>
+              <img
+                src="/images/banner1.png"
+                alt="HINTMATRIX digital learning"
+              />
 
               <div className="slide-content">
                 <h1>
-                  Get <span>Addicted</span>
+                  HINTMATRIX
                   <br />
-                  to <span>Education</span>
-                  <br />& Practice
+                  <span>Transforming Workbooks</span>
+                  <br />
+                  into Digital Learning Experiences
                 </h1>
 
                 <p>
-                  Practicing Accounting questions by click makes learning
-                  engaging, enjoyable and hassle-free.
+                  Turn traditional practice into an engaging digital learning
+                  experience designed to help you learn, practice and progress
+                  with confidence.
+                </p>
+              </div>
+            </div>
+
+            {/* BANNER 2 */}
+            <div className={`slide ${currentSlide === 1 ? "active" : ""}`}>
+              <img
+                src="/images/banner2.png"
+                alt="Interactive learning and practice"
+              />
+
+              <div className="slide-content">
+                <h1>
+                  Learn.
+                  <br />
+                  <span>Practice.</span>
+                  <br />
+                  Progress.
+                </h1>
+
+                <p>
+                  Build stronger concepts through interactive practice and a
+                  learning experience that keeps you moving forward.
+                </p>
+              </div>
+            </div>
+
+            {/* BANNER 3 */}
+            <div className={`slide ${currentSlide === 2 ? "active" : ""}`}>
+              <img src="/images/banner3.png" alt="Smart digital education" />
+
+              <div className="slide-content">
+                <h1>
+                  Practice With
+                  <br />
+                  <span>Purpose.</span>
+                  <br />
+                  Learn With Confidence.
+                </h1>
+
+                <p>
+                  HINTMATRIX brings learning and practice together in one
+                  digital space — helping you improve with every question.
                 </p>
               </div>
             </div>
           </div>
 
-          <button className="next">&#10095;</button>
+          {/* NEXT */}
+          <button className="next" onClick={nextSlide} aria-label="Next banner">
+            &#10095;
+          </button>
         </div>
 
+        {/* DOTS */}
         <div className="dots">
-          <span className="dot active"></span>
-          <span className="dot"></span>
-          <span className="dot"></span>
+          <span
+            className={`dot ${currentSlide === 0 ? "active" : ""}`}
+            onClick={() => setCurrentSlide(0)}
+          ></span>
+
+          <span
+            className={`dot ${currentSlide === 1 ? "active" : ""}`}
+            onClick={() => setCurrentSlide(1)}
+          ></span>
+
+          <span
+            className={`dot ${currentSlide === 2 ? "active" : ""}`}
+            onClick={() => setCurrentSlide(2)}
+          ></span>
         </div>
       </section>
-
       {/* ================= CONTACT ================= */}
-
       <section id="contact" className="contact">
         <div className="section-title">
           <h2>Contact Us</h2>
@@ -270,24 +350,28 @@ function Landing() {
         <div className="contact-container">
           <div className="contact-info">
             <h3>Get in Touch</h3>
-
             <p>
               <strong>📍 Address</strong>
               <br />
               11-5-416/1/B, Red Hills, Lakdikapool, Hyderabad - 500004
             </p>
-
             <p>
               <strong>📞 Phone</strong>
               <br />
               +91 9949816612
             </p>
-
             <p>
               <strong>📧 Email</strong>
               <br />
               helpbyhm@gmail.com
             </p>
+            <p>
+              <strong>Student Support</strong>
+            </p>
+            <p>Terms & conditions </p>
+            <p>Privacy policy</p>
+            <p>Subscriptions & refund policy </p>
+            <p>FAQs</p>
           </div>
 
           <div className="contact-form">
