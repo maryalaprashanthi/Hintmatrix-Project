@@ -149,9 +149,7 @@
   background: #4d24c5;
 }
 
-
-   FORM CARD
-  
+/* FORM CARD */
 
 .exam-paper-page .exam-paper-form-card {
   margin: 0;
@@ -173,17 +171,11 @@
   line-height: 1.3;
 }
 
-
-   FORM GRID
-
-
-
+/* FORM GRID */
 
 .exam-paper-page .exam-paper-form-grid {
   width: 100%;
   display: grid;
-
-  
 
   grid-template-columns: repeat(6, minmax(0, 1fr));
 

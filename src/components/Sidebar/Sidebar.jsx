@@ -51,13 +51,16 @@ export default function Sidebar({
   const userRole = normalizeRole(localStorage.getItem("role") || "GUEST");
 
   const isStudent = userRole === "STUDENT";
-
-  const canAccessAdminMenu = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(userRole);
-
-  const canAccessCollegeMenu = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(
-    userRole,
-  );
-
+  const canAccessAdminMenu = [
+    "SUPER_ADMIN",
+    "COLLEGE_ADMIN",
+    "BRANCH_ADMIN",
+  ].includes(userRole);
+  const canAccessCollegeMenu = [
+    "SUPER_ADMIN",
+    "COLLEGE_ADMIN",
+    "BRANCH_ADMIN",
+  ].includes(userRole);
   const canAccessCourseMenu = [
     "SUPER_ADMIN",
     "BRANCH_ADMIN",
@@ -263,6 +266,15 @@ export default function Sidebar({
                   >
                     <MdSecurity />
                     <span>Super Admin</span>
+                  </NavLink>
+
+                  <NavLink
+                    to="/admin/college-admin"
+                    className={subMenuClass}
+                    onClick={closeSidebar}
+                  >
+                    <MdSchool />
+                    <span>College Admin</span>
                   </NavLink>
 
                   <NavLink
