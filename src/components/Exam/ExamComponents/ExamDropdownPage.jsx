@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Row, Col } from "react-bootstrap";
@@ -46,7 +47,7 @@ const getRuleConditions = (rule) =>
 // and everything the user picks stays in the shared exam session cache
 // (examSessionStore) until they explicitly hit Reset - navigating away and
 // back does not refetch or wipe it.
-const ExamDropdownPage = ({ id }) => {
+const ExamDropdownPage = ({ id, question: sourceQuestion }) => {
   const { questionId: paramsQuestionId } = useParams();
   const questionId = id ?? paramsQuestionId;
 
@@ -59,8 +60,12 @@ const ExamDropdownPage = ({ id }) => {
   const answeredData = entry?.answeredData ?? {};
 
   const loadPage = async () => {
-    const response = await QuestionService.getQuestionById(questionId);
-    const questionData = response.data;
+    // The API paper passes the question object in; the sample paper doesn't,
+    // so fall back to fetching it by id. RuleEngine is still queried per
+    // attribute to build the dropdown options.
+    const questionData =
+      sourceQuestion ??
+      (await QuestionService.getQuestionById(questionId)).data;
     const attributes = questionData.questionAttributes || [];
 
     const dropdownAttributes = await Promise.all(

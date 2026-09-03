@@ -318,7 +318,7 @@ function ExamHub() {
                 <button
                   type="button"
                   className="exam-action"
-                  onClick={() => navigate(`/exam-mine`)}
+                  onClick={() => navigate(`/exams`)}
                 >
                   <span>{exam.button}</span>
                   <FaArrowRight />

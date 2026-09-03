@@ -1,0 +1,317 @@
+/* =========================================================
+   EXAM CATALOG ONLY
+   Every selector is scoped under .exam-catalog. Nothing global.
+   ========================================================= */
+
+.exam-catalog {
+  --cat-ink: #1c2233;
+  --cat-muted: #6b7392;
+  --cat-canvas: #f4f5fb;
+  --cat-card: #ffffff;
+  --cat-rule: #e4e7f2;
+  --cat-accent: #4f46e5;
+  --cat-open: #15803d;
+  --cat-open-bg: #dcfce7;
+  --cat-soon: #b45309;
+  --cat-soon-bg: #fff3e0;
+  --cat-closed: #6b7392;
+  --cat-closed-bg: #eef0f6;
+
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100%;
+  padding: 26px 22px 40px;
+  background: var(--cat-canvas);
+  color: var(--cat-ink);
+  font-family: "Poppins", Arial, sans-serif;
+  font-feature-settings: "tnum" 1;
+}
+
+.exam-catalog *,
+.exam-catalog *::before,
+.exam-catalog *::after {
+  box-sizing: border-box;
+}
+
+/* ---------- header ---------- */
+
+.exam-catalog__head {
+  margin-bottom: 22px;
+}
+
+.exam-catalog__head h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--cat-ink);
+}
+
+.exam-catalog__head p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--cat-muted);
+}
+
+/* ---------- grid ---------- */
+
+.exam-catalog__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(288px, 1fr));
+}
+
+.exam-catalog__grid > li {
+  display: flex;
+}
+
+/* ---------- card ---------- */
+
+.exam-catalog .exam-card {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 18px 18px 16px 22px;
+  text-align: left;
+  background: var(--cat-card);
+  border: 1px solid var(--cat-rule);
+  border-radius: 14px;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    transform 140ms ease,
+    box-shadow 140ms ease;
+}
+
+/* ledger margin rule */
+.exam-catalog .exam-card::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--cat-accent);
+  transition: width 140ms ease;
+}
+
+.exam-catalog .exam-card:hover {
+  border-color: color-mix(in oklab, var(--cat-accent) 45%, var(--cat-rule));
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -16px rgba(28, 34, 51, 0.4);
+}
+
+.exam-catalog .exam-card:hover::before {
+  width: 5px;
+}
+
+.exam-catalog .exam-card:focus-visible {
+  outline: none;
+  border-color: var(--cat-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--cat-accent) 30%, transparent);
+}
+
+.exam-card__course {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--cat-accent);
+}
+
+.exam-card__title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--cat-ink);
+}
+
+/* the ledger double rule */
+.exam-card__rule {
+  margin: 12px 0 2px;
+  height: 3px;
+  border-top: 1px solid var(--cat-rule);
+  border-bottom: 1px solid var(--cat-rule);
+}
+
+.exam-card__window {
+  display: flex;
+  gap: 26px;
+  margin-top: 4px;
+}
+
+.exam-card__date {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.exam-card__date-key {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--cat-muted);
+}
+
+.exam-card__date-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cat-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.exam-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.exam-card__pill {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--cat-closed-bg);
+  color: var(--cat-closed);
+}
+
+.exam-card[data-state="open"] .exam-card__pill {
+  background: var(--cat-open-bg);
+  color: var(--cat-open);
+}
+
+.exam-card[data-state="soon"] .exam-card__pill {
+  background: var(--cat-soon-bg);
+  color: var(--cat-soon);
+}
+
+.exam-card__cta {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--cat-accent);
+}
+
+/* ---------- skeleton ---------- */
+
+.exam-catalog .exam-card--skeleton {
+  gap: 10px;
+  cursor: default;
+  pointer-events: none;
+}
+
+.exam-catalog .exam-card--skeleton::before {
+  background: var(--cat-rule);
+}
+
+.exam-card__line {
+  display: block;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #eef0f6, #e2e5ef, #eef0f6);
+  background-size: 200% 100%;
+  animation: exam-catalog-shimmer 1.4s ease-in-out infinite;
+}
+
+.exam-card__line--title {
+  width: 78%;
+  height: 16px;
+}
+
+.exam-card__line--sub {
+  width: 45%;
+}
+
+.exam-card__line--foot {
+  width: 60%;
+}
+
+@keyframes exam-catalog-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ---------- notices ---------- */
+
+.exam-catalog__notice {
+  max-width: 420px;
+  margin-top: 8px;
+  padding: 28px 24px;
+  background: var(--cat-card);
+  border: 1px solid var(--cat-rule);
+  border-radius: 14px;
+}
+
+.exam-catalog__notice h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cat-ink);
+}
+
+.exam-catalog__notice p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--cat-muted);
+}
+
+.exam-catalog .exam-catalog__retry-btn {
+  margin-top: 16px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 9px;
+  background: var(--cat-accent);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+
+.exam-catalog .exam-catalog__retry-btn:hover {
+  background: #4338ca;
+}
+
+.exam-catalog .exam-catalog__retry-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--cat-accent) 30%, transparent);
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 560px) {
+  .exam-catalog {
+    padding: 20px 14px 32px;
+  }
+
+  .exam-catalog__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exam-catalog .exam-card,
+  .exam-catalog .exam-card::before,
+  .exam-card__line {
+    transition: none;
+    animation: none;
+  }
+
+  .exam-catalog .exam-card:hover {
+    transform: none;
+  }
+}

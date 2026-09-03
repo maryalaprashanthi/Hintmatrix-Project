@@ -60,6 +60,7 @@ import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import Unauthorized from "./pages/Unauthorized/Unauthorized";
 import ExamPage from "./components/Exam/ExamPage";
 import ExamHub from "./pages/ExamHub/ExamHub";
+import ExamCatalog from "./pages/ExamCatalog/ExamCatalog";
 import ExamPaper from "./pages/ExamPaper/ExamPaper";
 import CreateMcq from "./components/Mcq_Questions/CreateMcq";
 import McqPractice from "./components/Mcq_Questions/McqPractice";
@@ -298,12 +299,14 @@ function App() {
         <Route path="/dropdown/:questionId" element={<DropdownPage />} />
         <Route path="/course-subscribe" element={<CourseSubscribe />} />
         <Route path="/exam-hub" element={<ExamHub />} />
+        <Route path="/exams" element={<ExamCatalog />} />
         <Route path="/exam-paper" element={<ExamPaper />} />
         <Route path="/mcq-questions/create" element={<CreateMcq />} />
         <Route path="/mcq-questions/practice" element={<McqPractice />} />
         <Route path="/mcq-questions/list" element={<McqList />} />
       </Route>
       <Route path="/exam-mine" element={<ExamPage />} />
+      <Route path="/exams/:examId" element={<ExamPage />} />
     </Routes>
   );
 }

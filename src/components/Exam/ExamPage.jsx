@@ -1,7 +1,8 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ExamQuestionRenderer from "./ExamQuestionRenderer";
+import ExamService from "../../services/ExamService";
 import ExamTopBar from "./ExamShell/ExamTopBar";
 import QuestionRail from "./ExamShell/QuestionRail";
 import ExamStartScreen from "./ExamShell/ExamStartScreen";
@@ -70,6 +71,7 @@ const hasAnswer = (questionId, sessionById, droppableData, loadedQuestionId) => 
 
 const ExamPage = () => {
   const navigate = useNavigate();
+  const { examId } = useParams();
   const shellRef = useRef(null);
 
   const [phase, setPhase] = useState("start");
@@ -96,17 +98,35 @@ const ExamPage = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        setQuestions(await loadSampleQuestions());
+        // /exams/:examId loads the paper from the API; /exam-mine keeps the
+        // built-in sample paper. The two share the same shell below.
+        if (examId) {
+          const response = await ExamService.getExamQuestions(examId);
+          const apiQuestions = Array.isArray(response.data) ? response.data : [];
+
+          if (apiQuestions.length === 0) {
+            setError("This paper doesn't have any questions yet.");
+          }
+
+          setQuestions(
+            apiQuestions.map((question) => ({
+              id: question.questionId,
+              question,
+            })),
+          );
+        } else {
+          setQuestions(await loadSampleQuestions());
+        }
       } catch (loadError) {
         console.error("Failed to load exam questions:", loadError);
-        setError("Unable to load exam questions. Please refresh and try again.");
+        setError("We couldn't load this paper. Refresh to try again.");
       } finally {
         setLoading(false);
       }
     };
 
     void load();
-  }, []);
+  }, [examId]);
 
   // --- countdown -----------------------------------------------------------
   useEffect(() => {
@@ -364,6 +384,7 @@ const ExamPage = () => {
                 <ExamQuestionRenderer
                   key={activeQuestion.id}
                   questionId={activeQuestion.id}
+                  question={activeQuestion.question}
                 />
               )
             )}
