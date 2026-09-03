@@ -49,6 +49,12 @@ class QuestionService {
     });
   }
 
+  uploadMcqExcel(formData) {
+  return axios.post("http://localhost:8080/api/mcq-questions/mcq/upload", formData, {
+    withCredentials: true,
+  });
+}
+
   getQuestionById(questionId) {
     return apiClient.get(`${BASE_URL}/${questionId}`, {
       withCredentials: true,
