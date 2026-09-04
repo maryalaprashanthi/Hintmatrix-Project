@@ -8,8 +8,10 @@ import QuestionRail from "./ExamShell/QuestionRail";
 import ExamStartScreen from "./ExamShell/ExamStartScreen";
 import SubmitConfirmDialog from "./ExamShell/SubmitConfirmDialog";
 import TimeUpDialog from "./ExamShell/TimeUpDialog";
+import ExamResultDialog from "./ExamShell/ExamResultDialog";
 import useExamSessionStore from "./ExamComponents/examSessionStore";
 import useExamQuestionStore from "./ExamComponents/examQuestionStore";
+import { buildSubmission } from "./ExamComponents/buildSubmission";
 import { loadSampleQuestions } from "./sampleData";
 import "./ExamShell/examTokens.css";
 import styles from "./ExamPage.module.css";
@@ -49,10 +51,10 @@ const MarkIcon = () => (
 );
 
 // A question counts as answered once the candidate has put something into it.
-// Journal and dropdown questions record that in examSessionStore keyed by
-// question id; the ledger-style question keeps its placements in
-// examQuestionStore, which only ever holds the question currently loaded.
-const hasAnswer = (questionId, sessionById, droppableData, loadedQuestionId) => {
+// Journal and dropdown questions record that in examSessionStore; drag-and-drop
+// placements live in examQuestionStore. Both are keyed by question id, so this
+// reports correctly for every question, not just the one on screen.
+const hasAnswer = (questionId, sessionById, examDragById) => {
   const answeredData = sessionById[questionId]?.answeredData;
 
   if (
@@ -62,8 +64,13 @@ const hasAnswer = (questionId, sessionById, droppableData, loadedQuestionId) => 
     return true;
   }
 
-  if (String(loadedQuestionId) === String(questionId)) {
-    return Object.values(droppableData).some((rows) => (rows ?? []).length > 0);
+  const droppableData = examDragById[questionId]?.droppableData;
+
+  if (
+    droppableData &&
+    Object.values(droppableData).some((rows) => (rows ?? []).length > 0)
+  ) {
+    return true;
   }
 
   return false;
@@ -89,11 +96,20 @@ const ExamPage = () => {
   const [fullscreen, setFullscreen] = useState(false);
   const [confirmingSubmit, setConfirmingSubmit] = useState(false);
 
+  // "idle" until the attempt ends; then the submit call to the API drives it
+  // through "submitting" -> "done" / "error". Only used for a real paper
+  // (an :examId); the sample paper never submits.
+  const [submitState, setSubmitState] = useState("idle");
+  const [result, setResult] = useState(null);
+  const [submitError, setSubmitError] = useState(null);
+  const submitOnce = useRef(false);
+
   const sessionById = useExamSessionStore((state) => state.byQuestionId);
   const resetQuestion = useExamSessionStore((state) => state.resetQuestion);
-  const droppableData = useExamQuestionStore((state) => state.droppableData);
-  const loadedQuestionId = useExamQuestionStore((state) => state.loadedQuestionId);
-  const resetFrontend = useExamQuestionStore((state) => state.resetFrontend);
+  const clearSession = useExamSessionStore((state) => state.reset);
+  const examDragById = useExamQuestionStore((state) => state.byQuestionId);
+  const resetDragQuestion = useExamQuestionStore((state) => state.resetQuestion);
+  const clearDragState = useExamQuestionStore((state) => state.reset);
 
   useEffect(() => {
     const load = async () => {
@@ -201,11 +217,11 @@ const ExamPage = () => {
     const ids = new Set();
 
     questions.forEach(({ id }) => {
-      if (hasAnswer(id, sessionById, droppableData, loadedQuestionId)) ids.add(id);
+      if (hasAnswer(id, sessionById, examDragById)) ids.add(id);
     });
 
     return ids;
-  }, [questions, sessionById, droppableData, loadedQuestionId]);
+  }, [questions, sessionById, examDragById]);
 
   const railQuestions = questions.map(({ id }) => ({
     id,
@@ -236,12 +252,75 @@ const ExamPage = () => {
     await enterFullscreen();
   };
 
+  // Send the attempt for marking. Guarded so the auto-submit paths (time up,
+  // third warning) plus a manual submit can't fire it twice; a failure clears
+  // the guard so the candidate can retry from the result dialog.
+  const runSubmit = async () => {
+    if (submitOnce.current) return;
+    submitOnce.current = true;
+
+    setSubmitState("submitting");
+    setSubmitError(null);
+
+    try {
+      const payload = buildSubmission({
+        questions,
+        sessionById,
+        examDragById,
+        userId: Number(localStorage.getItem("userId")) || undefined,
+      });
+
+      // What we're actually sending for marking. Expand the object in the
+      // console; the JSON string is here for copy/paste into Postman etc.
+      console.groupCollapsed(
+        `[exam submit] POST /api/exams/${examId}/submit — ${payload.answers.length} question(s)`,
+      );
+      console.log("payload:", payload);
+      console.log("payload (JSON):", JSON.stringify(payload, null, 2));
+      console.groupEnd();
+
+      const response = await ExamService.submitExam(examId, payload);
+
+      setResult(response?.data ?? null);
+      setSubmitState("done");
+
+      // The attempt is in - drop every cached answer so nothing carries over
+      // to a later paper. Payload is already built and sent by this point.
+      clearSession();
+      clearDragState();
+    } catch (submitFailure) {
+      console.error("Failed to submit exam:", submitFailure);
+      submitOnce.current = false;
+      setSubmitError(
+        submitFailure?.response?.data?.message ||
+          "We couldn't reach the server.",
+      );
+      setSubmitState("error");
+    }
+  };
+
   const endExam = (reason) => {
     setEndReason(reason);
     setPhase("ended");
     setConfirmingSubmit(false);
     if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
   };
+
+  // However the attempt ended (submit button, time up, third warning): a real
+  // paper is sent for marking once (runSubmit guards itself, and clears the
+  // cached answers after the payload is sent). The sample paper (/exam-mine)
+  // has no endpoint, so it just clears and falls through to TimeUpDialog.
+  useEffect(() => {
+    if (phase !== "ended") return;
+
+    if (examId) {
+      void runSubmit();
+    } else {
+      clearSession();
+      clearDragState();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, examId]);
 
   const goToIndex = (index) => {
     if (!questions.length) return;
@@ -283,7 +362,7 @@ const ExamPage = () => {
     if (!activeQuestion) return;
 
     resetQuestion(activeQuestion.id);
-    if (String(loadedQuestionId) === String(activeQuestion.id)) resetFrontend();
+    resetDragQuestion(activeQuestion.id);
   };
 
   // --- render --------------------------------------------------------------
@@ -380,6 +459,10 @@ const ExamPage = () => {
             ) : loading ? (
               <p className={styles.status}>Loading exam questions…</p>
             ) : (
+              // Once the paper is submitted the cached answers are wiped; not
+              // rendering the question here keeps the pages from refetching
+              // themselves (and re-hitting RuleEngine) behind the result dialog.
+              phase === "running" &&
               activeQuestion && (
                 <ExamQuestionRenderer
                   key={activeQuestion.id}
@@ -443,14 +526,25 @@ const ExamPage = () => {
         />
       )}
 
-      {phase === "ended" && (
-        <TimeUpDialog
-          attempted={answeredIds.size}
-          onExit={() => navigate("/")}
-          reason={endReason}
-          total={questions.length}
-        />
-      )}
+      {phase === "ended" &&
+        (examId ? (
+          <ExamResultDialog
+            attempted={answeredIds.size}
+            error={submitError}
+            onExit={() => navigate("/exams")}
+            onRetry={runSubmit}
+            result={result}
+            state={submitState}
+            total={questions.length}
+          />
+        ) : (
+          <TimeUpDialog
+            attempted={answeredIds.size}
+            onExit={() => navigate("/")}
+            reason={endReason}
+            total={questions.length}
+          />
+        ))}
     </main>
   );
 };

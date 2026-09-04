@@ -23,7 +23,11 @@ const ExamDroppable = ({
   amtLabel = "Amt (₹)",
   isCreditSide,
 }) => {
-  const data = useExamQuestionStore((state) => state.droppableData[id]) || [];
+  const data =
+    useExamQuestionStore(
+      (state) =>
+        state.byQuestionId[state.activeQuestionId]?.droppableData?.[id],
+    ) || [];
   const removeAnswer = useExamQuestionStore((state) => state.removeAnswer);
 
   const theme = isCreditSide ? "theme-credit" : "theme-debit";

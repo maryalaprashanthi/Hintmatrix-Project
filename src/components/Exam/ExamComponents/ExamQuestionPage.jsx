@@ -24,7 +24,8 @@ const ExamQuestionPage = ({ id, question: sourceQuestion }) => {
 
   const [questionType, setQuestionType] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { moveQuestion, setQuestions, setTableData } = useExamQuestionStore();
+  const { moveQuestion, setQuestions, setTableData, setActiveQuestion } =
+    useExamQuestionStore();
   const cacheQuestionType = useExamSessionStore(
     (state) => state.setQuestionType,
   );
@@ -53,6 +54,13 @@ const ExamQuestionPage = ({ id, question: sourceQuestion }) => {
 
     return type;
   };
+
+  // Point the shared drag store at this question every visit, cached or not, so
+  // the table and dropzones read this question's slice and not whichever
+  // drag-and-drop question happened to be loaded last.
+  useEffect(() => {
+    setActiveQuestion(questionId);
+  }, [questionId, setActiveQuestion]);
 
   // Subscribing to the cached type (rather than reading it once) is what makes
   // the exam shell's Reset work: clearing the store drops the cached type and

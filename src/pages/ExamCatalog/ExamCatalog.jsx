@@ -20,6 +20,17 @@ const windowState = (start, end) => {
   return { key: "open", label: "Open now" };
 };
 
+// Managing papers (edit / delete) is an admin job. Students only ever pick a
+// paper to sit, so the controls never render for them.
+const MANAGER_ROLES = ["SUPER_ADMIN", "COLLEGE_ADMIN", "BRANCH_ADMIN"];
+
+const currentRole = () =>
+  (localStorage.getItem("role") || "")
+    .toString()
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "_");
+
 const formatDate = (value) => {
   if (!value) return "—";
   const date = new Date(value);
@@ -35,6 +46,9 @@ function ExamCatalog() {
   const navigate = useNavigate();
   const [exams, setExams] = useState([]);
   const [status, setStatus] = useState("loading");
+  const [deletingId, setDeletingId] = useState(null);
+
+  const canManage = MANAGER_ROLES.includes(currentRole());
 
   const loadExams = useCallback(() => {
     let active = true;
@@ -60,6 +74,30 @@ function ExamCatalog() {
   useEffect(() => loadExams(), [loadExams]);
 
   const openExam = (examId) => navigate(`/exams/${examId}`);
+  const editExam = (examId) => navigate(`/exam-paper/${examId}`);
+
+  const deleteExam = async (exam) => {
+    const confirmed = window.confirm(
+      `Delete "${exam.examName}"? This can't be undone.`,
+    );
+    if (!confirmed) return;
+
+    setDeletingId(exam.examId);
+    try {
+      await ExamService.delete(exam.examId);
+      setExams((current) =>
+        current.filter((item) => item.examId !== exam.examId),
+      );
+    } catch (error) {
+      console.error("Failed to delete exam:", error);
+      window.alert(
+        error?.response?.data?.message ||
+          "We couldn't delete this paper. Try again.",
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   return (
     <div className="exam-catalog">
@@ -108,7 +146,7 @@ function ExamCatalog() {
             const state = windowState(exam.startDate, exam.endDate);
 
             return (
-              <li key={exam.examId}>
+              <li key={exam.examId} className="exam-catalog__cell">
                 <button
                   type="button"
                   className="exam-card"
@@ -142,6 +180,26 @@ function ExamCatalog() {
                     <span className="exam-card__cta">Start paper</span>
                   </span>
                 </button>
+
+                {canManage && (
+                  <div className="exam-card__admin">
+                    <button
+                      type="button"
+                      className="exam-card__admin-btn"
+                      onClick={() => editExam(exam.examId)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      className="exam-card__admin-btn exam-card__admin-btn--danger"
+                      onClick={() => deleteExam(exam)}
+                      disabled={deletingId === exam.examId}
+                    >
+                      {deletingId === exam.examId ? "Deleting…" : "Delete"}
+                    </button>
+                  </div>
+                )}
               </li>
             );
           })}

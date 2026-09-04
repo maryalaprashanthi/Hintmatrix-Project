@@ -48,6 +48,14 @@ class ExamService {
     });
   }
 
+  // Submit a student's attempt for marking
+  // POST /api/exams/{examId}/submit  ->  { examId, userId, totalMarks, percentage }
+  submitExam(examId, submissionDTO) {
+    return apiClient.post(`${BASE_URL}/${examId}/submit`, submissionDTO, {
+      withCredentials: true,
+    });
+  }
+
   // Get questions available for exam
   getAvailableQuestions(examId) {
     return apiClient.get(`${BASE_URL}/${examId}/available-questions`, {

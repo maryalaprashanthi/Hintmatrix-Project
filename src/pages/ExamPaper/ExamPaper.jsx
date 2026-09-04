@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Card, Form, Button } from "react-bootstrap";
 import { FiHelpCircle, FiSave } from "react-icons/fi";
 import Select from "react-select";
@@ -9,13 +10,20 @@ import CourseService from "../../services/CourseService";
 import SectionService from "../../services/SectionService";
 import ChapterService from "../../services/ChapterService";
 import ExamPaperService from "../../services/ExamPaperService";
+import ExamService from "../../services/ExamService";
 
 import "./ExamPaper.css";
 import QuestionSelection from "./QuestionSelection";
 
 const ExamPaper = () => {
+  const navigate = useNavigate();
+  const { examId } = useParams();
+  const isEditMode = Boolean(examId);
+
   const [currentStep, setCurrentStep] = useState(1);
-  const [createdExamId, setCreatedExamId] = useState(null);
+  const [createdExamId, setCreatedExamId] = useState(examId ?? null);
+  const [prefill, setPrefill] = useState(null);
+  const [loadingExam, setLoadingExam] = useState(isEditMode);
 
   // EXAM DETAILS
 
@@ -246,6 +254,98 @@ const ExamPaper = () => {
       }));
   }, [chapterData, course]);
 
+  // EDIT MODE: load the exam being edited and prefill the primitive fields
+  // GET /api/exams/{examId}
+
+  useEffect(() => {
+    if (!isEditMode) return undefined;
+
+    let active = true;
+    setLoadingExam(true);
+
+    ExamService.getById(examId)
+      .then((response) => {
+        if (!active) return;
+
+        const data = response?.data ?? {};
+        const [sd, st] = String(data.startDate ?? "").split("T");
+        const [ed, et] = String(data.endDate ?? "").split("T");
+
+        setExamName(data.examName ?? "");
+
+        if (data.passPercentage != null) {
+          setPassPercentage(Number(data.passPercentage));
+        }
+
+        setStartDate(sd || "");
+        setStartTime((st || "").slice(0, 5));
+        setEndDate(ed || "");
+        setEndTime((et || "").slice(0, 5));
+
+        setPrefill(data);
+      })
+      .catch((error) => {
+        console.error("Failed to load exam for editing:", error);
+        alert(error?.response?.data?.message || "Failed to load this exam.");
+      })
+      .finally(() => {
+        if (active) setLoadingExam(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [isEditMode, examId]);
+
+  // EDIT MODE: resolve each dropdown selection once its option list is ready.
+  // The lists cascade (college -> branch -> course -> section/chapters), so
+  // these effects fire in turn as each selection unlocks the next list.
+
+  const prefillChapterIds = prefill?.chapterIds ?? prefill?.chapters ?? null;
+
+  useEffect(() => {
+    if (prefill?.collegeId == null) return;
+    const match = collegeOptions.find(
+      (item) => String(item.value) === String(prefill.collegeId),
+    );
+    if (match) setCollege(match);
+  }, [prefill, collegeOptions]);
+
+  useEffect(() => {
+    if (prefill?.branchId == null) return;
+    const match = branchOptions.find(
+      (item) => String(item.value) === String(prefill.branchId),
+    );
+    if (match) setBranch(match);
+  }, [prefill, branchOptions]);
+
+  useEffect(() => {
+    if (prefill?.courseId == null) return;
+    const match = courseOptions.find(
+      (item) => String(item.value) === String(prefill.courseId),
+    );
+    if (match) setCourse(match);
+  }, [prefill, courseOptions]);
+
+  useEffect(() => {
+    if (prefill?.sectionId == null) return;
+    const match = sectionOptions.find(
+      (item) => String(item.value) === String(prefill.sectionId),
+    );
+    if (match) setSection(match);
+  }, [prefill, sectionOptions]);
+
+  useEffect(() => {
+    if (!Array.isArray(prefillChapterIds) || prefillChapterIds.length === 0) {
+      return;
+    }
+    const ids = prefillChapterIds.map((item) => String(item.value ?? item));
+    const matches = chapterOptions.filter((item) =>
+      ids.includes(String(item.value)),
+    );
+    if (matches.length) setChapters(matches);
+  }, [prefillChapterIds, chapterOptions]);
+
   // COLLEGE CHANGE ,When college changes:
   // Branch must reset,Chapters must reset, Section must reset,Course must reset
 
@@ -286,6 +386,11 @@ const ExamPaper = () => {
   // NEXT BUTTON
 
   const handleNext = () => {
+    if (isEditMode) {
+      setCurrentStep(2);
+      return;
+    }
+
     if (!examName.trim()) {
       alert("Please enter Exam Name.");
       return;
@@ -332,18 +437,26 @@ const ExamPaper = () => {
         passPercentage,
       };
 
+      if (isEditMode) {
+        console.log("Exam update payload being sent:", requestPayload);
+        await ExamService.update(examId, requestPayload);
+        alert("Exam updated successfully.");
+        navigate("/exams");
+        return;
+      }
+
       console.log("Final exam create payload being sent:", requestPayload);
 
       const response = await ExamPaperService.createExamPaper(requestPayload);
-      const examId = response?.data?.id ?? response?.data?.examId;
+      const newExamId = response?.data?.id ?? response?.data?.examId;
 
-      setCreatedExamId(examId);
+      setCreatedExamId(newExamId);
       console.log("Exam created successfully:", response?.data);
       alert("Exam created successfully.");
       setCurrentStep(2);
     } catch (error) {
-      console.error("Failed to create exam:", error);
-      alert(error?.response?.data?.message || "Failed to create exam.");
+      console.error("Failed to save exam:", error);
+      alert(error?.response?.data?.message || "Failed to save exam.");
     }
   };
 
@@ -393,7 +506,7 @@ const ExamPaper = () => {
     <div className="exam-paper-page">
       <Card className="exam-paper-main-card">
         <Card.Header className="exam-paper-card-header">
-          <h2>Exam Paper</h2>
+          <h2>{isEditMode ? "Edit Exam Paper" : "Exam Paper"}</h2>
 
           <button
             className="exam-paper-help-btn"
@@ -430,7 +543,11 @@ const ExamPaper = () => {
           <Card className="exam-paper-form-card">
             <Card.Body>
               <h3 className="exam-paper-form-title">
-                Enter the details to create a new exam paper
+                {isEditMode
+                  ? loadingExam
+                    ? "Loading exam details…"
+                    : "Update the details of this exam paper"
+                  : "Enter the details to create a new exam paper"}
               </h3>
 
               <div className="exam-paper-form-grid">
@@ -657,12 +774,23 @@ const ExamPaper = () => {
               {/*   BUTTONS */}
 
               <div className="exam-paper-actions">
+                {isEditMode && (
+                  <Button
+                    type="button"
+                    className="exam-paper-next-btn"
+                    variant="light"
+                    onClick={() => navigate("/exams")}
+                  >
+                    Cancel
+                  </Button>
+                )}
+
                 <Button
                   type="button"
                   className="exam-paper-next-btn"
                   onClick={handleNext}
                 >
-                  Next
+                  {isEditMode ? "Manage questions" : "Next"}
                 </Button>
 
                 <Button
@@ -671,7 +799,7 @@ const ExamPaper = () => {
                   onClick={handleSave}
                 >
                   <FiSave />
-                  <span>Save and finish</span>
+                  <span>{isEditMode ? "Update exam" : "Save and finish"}</span>
                 </Button>
               </div>
             </Card.Body>

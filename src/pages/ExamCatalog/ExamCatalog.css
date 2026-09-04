@@ -66,6 +66,7 @@
 
 .exam-catalog__grid > li {
   display: flex;
+  flex-direction: column;
 }
 
 /* ---------- card ---------- */
@@ -199,6 +200,52 @@
   font-size: 12.5px;
   font-weight: 600;
   color: var(--cat-accent);
+}
+
+/* ---------- admin actions (staff only) ---------- */
+
+.exam-card__admin {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  padding-left: 22px;
+}
+
+.exam-catalog .exam-card__admin-btn {
+  flex: 1;
+  padding: 7px 12px;
+  border: 1px solid var(--cat-rule);
+  border-radius: 9px;
+  background: var(--cat-card);
+  color: var(--cat-ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.exam-catalog .exam-card__admin-btn:hover {
+  border-color: color-mix(in oklab, var(--cat-accent) 45%, var(--cat-rule));
+  color: var(--cat-accent);
+}
+
+.exam-catalog .exam-card__admin-btn--danger:hover {
+  border-color: #dc2626;
+  color: #dc2626;
+}
+
+.exam-catalog .exam-card__admin-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--cat-accent) 30%, transparent);
+}
+
+.exam-catalog .exam-card__admin-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 /* ---------- skeleton ---------- */

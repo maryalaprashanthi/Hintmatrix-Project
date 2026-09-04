@@ -320,11 +320,11 @@ function App() {
         <Route path="/exam-hub" element={<ExamHub />} />
         <Route path="/exams" element={<ExamCatalog />} />
         <Route path="/exam-paper" element={<ExamPaper />} />
+        <Route path="/exam-paper/:examId" element={<ExamPaper />} />
         <Route path="/mcq-questions/create" element={<CreateMcq />} />
         <Route path="/mcq-questions/practice" element={<McqPractice />} />
         <Route path="/mcq-questions/list" element={<McqList />} />
       </Route>
-      <Route path="/exam-mine" element={<ExamPage />} />
       <Route path="/exams/:examId" element={<ExamPage />} />
     </Routes>
   );
