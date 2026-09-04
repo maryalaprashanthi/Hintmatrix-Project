@@ -7,7 +7,11 @@ import "../../Question/QuestionTable.css";
 import { data } from "./SampleData";
 
 const ExamQuestionTable = () => {
-  const { questions } = useExamQuestionStore();
+  // Read this question's own slice - see examQuestionStore for why it's keyed.
+  const questions =
+    useExamQuestionStore(
+      (state) => state.byQuestionId[state.activeQuestionId]?.questions,
+    ) || [];
 
   const debitBalances = questions.filter((q) => q.type === "debit");
   const creditBalances = questions.filter((q) => q.type === "credit");

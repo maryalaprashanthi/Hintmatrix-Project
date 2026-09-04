@@ -55,6 +55,10 @@ const useExamSessionStore = create((set, get) => ({
       delete next[questionId];
       return { byQuestionId: next };
     }),
+
+  // Wipe every answer + cached question. Used once the attempt is over (the
+  // paper has been submitted) so a later attempt starts from a clean slate.
+  reset: () => set({ byQuestionId: {} }),
 }));
 
 export default useExamSessionStore;

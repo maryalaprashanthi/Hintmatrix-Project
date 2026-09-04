@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { Col, Row } from "react-bootstrap";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -40,7 +41,7 @@ const getRuleConditions = (rule) =>
 // affordance, and everything the user picks stays in the shared exam
 // session cache (examSessionStore) until they explicitly hit Reset -
 // navigating away and back does not refetch or wipe it.
-const ExamJournalPage = ({ id }) => {
+const ExamJournalPage = ({ id, question: sourceQuestion }) => {
   const { questionId: paramsQuestionId } = useParams();
   const questionId = id ?? paramsQuestionId;
 
@@ -52,8 +53,12 @@ const ExamJournalPage = ({ id }) => {
   const answeredData = entry?.answeredData ?? {};
 
   const loadQuestion = async () => {
-    const response = await QuestionService.getQuestionById(questionId);
-    const questionData = response.data;
+    // The API paper passes the question object in; the sample paper doesn't,
+    // so fall back to fetching it by id. RuleEngine is still queried per
+    // attribute to build the ledger-account options.
+    const questionData =
+      sourceQuestion ??
+      (await QuestionService.getQuestionById(questionId)).data;
     const attributes = questionData.questionAttributes || [];
 
     const journalAttributes = await Promise.all(
@@ -61,6 +66,8 @@ const ExamJournalPage = ({ id }) => {
         const ruleResponse = await RuleEngineService.getRuleEngineByAttributeId(
           attribute.attributeId,
         );
+
+        console.log("This is response I am getting: 2121", ruleResponse);
 
         const rule = ruleResponse?.[0];
         const tables = [];

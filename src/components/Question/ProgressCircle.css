@@ -3,12 +3,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 70px;
-  height: 70px;
+  width: 56px;
+  height: 56px;
   flex-shrink: 0;
 }
 
 .progress-ring {
+  width: 100%;
+  height: 100%;
   transform: rotate(-90deg); /* Starts the progress at 12 o'clock */
 }
 
@@ -19,7 +21,18 @@
 
 .progress-percentage {
   position: absolute;
-  font-size: 14px;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #333;
+}
+
+@media (min-width: 992px) and (max-width: 1399.98px) {
+  .progress-chart-wrapper {
+    width: 46px;
+    height: 46px;
+  }
+
+  .progress-percentage {
+    font-size: 0.68rem;
+  }
 }

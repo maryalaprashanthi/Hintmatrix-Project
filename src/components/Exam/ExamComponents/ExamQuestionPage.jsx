@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { DragDropProvider } from "@dnd-kit/react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -17,13 +18,14 @@ import { data } from "./SampleData";
 // back (examQuestionStore / examSessionStore are keyed by questionId and are
 // only cleared by an explicit Reset) - nothing is refetched or wiped just
 // because the component remounted.
-const ExamQuestionPage = ({ id }) => {
+const ExamQuestionPage = ({ id, question: sourceQuestion }) => {
   const { questionId: paramsQuestionId } = useParams();
   const questionId = id ?? paramsQuestionId;
 
   const [questionType, setQuestionType] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { moveQuestion, setQuestions, setTableData } = useExamQuestionStore();
+  const { moveQuestion, setQuestions, setTableData, setActiveQuestion } =
+    useExamQuestionStore();
   const cacheQuestionType = useExamSessionStore(
     (state) => state.setQuestionType,
   );
@@ -32,9 +34,12 @@ const ExamQuestionPage = ({ id }) => {
   );
 
   const loadQuestion = async () => {
-    const response = await QuestionService.getQuestionById(questionId);
-    const type = response.data.questionType;
-    console.log("I am being called");
+    // The API paper passes the question object in; the sample paper doesn't,
+    // so fall back to fetching it by id.
+    const questionData =
+      sourceQuestion ??
+      (await QuestionService.getQuestionById(questionId)).data;
+    const type = questionData.questionType;
 
     cacheQuestionType(questionId, type);
 
@@ -43,12 +48,19 @@ const ExamQuestionPage = ({ id }) => {
         obj.headers.map((header) => `${obj.name}-${header}`),
       );
 
-      setQuestions(questionId, [response.data]);
+      setQuestions(questionId, [questionData]);
       setTableData(allStrings);
     }
 
     return type;
   };
+
+  // Point the shared drag store at this question every visit, cached or not, so
+  // the table and dropzones read this question's slice and not whichever
+  // drag-and-drop question happened to be loaded last.
+  useEffect(() => {
+    setActiveQuestion(questionId);
+  }, [questionId, setActiveQuestion]);
 
   // Subscribing to the cached type (rather than reading it once) is what makes
   // the exam shell's Reset work: clearing the store drops the cached type and
@@ -78,11 +90,11 @@ const ExamQuestionPage = ({ id }) => {
   }
 
   if (questionType === "JOURNAL") {
-    return <ExamJournalPage id={questionId} />;
+    return <ExamJournalPage id={questionId} question={sourceQuestion} />;
   }
 
   if (questionType === "DROPDOWN") {
-    return <ExamDropdownPage id={questionId} />;
+    return <ExamDropdownPage id={questionId} question={sourceQuestion} />;
   }
 
   return (

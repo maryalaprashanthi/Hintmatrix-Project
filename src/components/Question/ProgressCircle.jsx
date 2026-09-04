@@ -13,7 +13,12 @@ const ProgressCircle = ({ solvedCount = 1, totalCount = 20 }) => {
       : 0;
   return (
     <div className="progress-chart-wrapper">
-      <svg className="progress-ring" width="70" height="70">
+      <svg
+        className="progress-ring"
+        width="70"
+        height="70"
+        viewBox="0 0 70 70"
+      >
         {/* Background gray circle */}
         <circle
           className="progress-ring-circle-bg"
