@@ -40,14 +40,6 @@ function TableNames() {
     }
   };
 
-  // ================= DELETE =================
-
-  const del = useDeleteConfirm({
-    entity: "table name",
-    deleteFn: (row) => TableNameService.delete(row.id ?? row),
-    onDeleted: loadTableNames,
-  });
-
   // ================= GET ALL =================
 
   const loadTableNames = async () => {
@@ -66,6 +58,14 @@ function TableNames() {
       console.log("Error:", error);
     }
   };
+
+  // ================= DELETE =================
+
+  const del = useDeleteConfirm({
+    entity: "table name",
+    deleteFn: (row) => TableNameService.delete(row.id ?? row),
+    onDeleted: loadTableNames,
+  });
 
   // ================= FILE UPLOAD =================
 

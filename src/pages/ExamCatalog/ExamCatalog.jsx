@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FaRegCalendarAlt, FaPlay, FaLock, FaArrowRight } from "react-icons/fa";
 
 import ExamService from "../../services/ExamService";
 import ConfirmDialog from "../../components/Common/ConfirmDialog";
@@ -14,12 +15,22 @@ const windowState = (start, end) => {
   const closesAt = end ? new Date(end).getTime() : null;
 
   if (opensAt && !Number.isNaN(opensAt) && now < opensAt) {
-    return { key: "soon", label: "Opens soon" };
+    return {
+      key: "soon",
+      label: "Opens soon",
+      lockedTitle: "This exam hasn't opened yet",
+      lockedNote: "Come back once the exam window opens.",
+    };
   }
   if (closesAt && !Number.isNaN(closesAt) && now > closesAt) {
-    return { key: "closed", label: "Closed" };
+    return {
+      key: "closed",
+      label: "Closed",
+      lockedTitle: "This exam is closed",
+      lockedNote: "The exam is no longer available.",
+    };
   }
-  return { key: "open", label: "Open now" };
+  return { key: "open", label: "Open Now" };
 };
 
 // Managing papers (edit / delete) is an admin job. Students only ever pick a
@@ -41,6 +52,17 @@ const formatDate = (value) => {
     day: "2-digit",
     month: "short",
     year: "numeric",
+  });
+};
+
+const formatTime = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
   });
 };
 
@@ -131,64 +153,119 @@ function ExamCatalog() {
         <ul className="exam-catalog__grid">
           {exams.map((exam) => {
             const state = windowState(exam.startDate, exam.endDate);
+            const isOpen = state.key === "open";
 
             return (
               <li key={exam.examId} className="exam-catalog__cell">
-                <button
-                  type="button"
-                  className="exam-card"
-                  data-state={state.key}
-                  onClick={() => openExam(exam.examId)}
-                >
-                  <span className="exam-card__course">
-                    {exam.courseName || "Practice"}
-                  </span>
-                  <span className="exam-card__title">{exam.examName}</span>
+                <article className="exam-card" data-state={state.key}>
+                  <div className="exam-card__top">
+                    <span className="exam-card__course">
+                      {exam.courseName || "Practice"}
+                    </span>
+                    <span className="exam-card__pill">
+                      {isOpen && <span className="exam-card__pill-dot" />}
+                      {state.label}
+                    </span>
+                  </div>
+
+                  <h2 className="exam-card__title">{exam.examName}</h2>
+                  <p className="exam-card__desc">
+                    Test your knowledge and complete the exam within the given
+                    time.
+                  </p>
 
                   <span className="exam-card__rule" />
 
-                  <span className="exam-card__window">
-                    <span className="exam-card__date">
-                      <span className="exam-card__date-key">Opens</span>
-                      <span className="exam-card__date-value">
-                        {formatDate(exam.startDate)}
+                  <div className="exam-card__window">
+                    <div className="exam-card__date">
+                      <span className="exam-card__date-icon">
+                        <FaRegCalendarAlt aria-hidden="true" />
                       </span>
-                    </span>
-                    <span className="exam-card__date">
-                      <span className="exam-card__date-key">Closes</span>
-                      <span className="exam-card__date-value">
-                        {formatDate(exam.endDate)}
+                      <span className="exam-card__date-text">
+                        <span className="exam-card__date-key">Opens</span>
+                        <span className="exam-card__date-value">
+                          {formatDate(exam.startDate)}
+                        </span>
+                        <span className="exam-card__date-time">
+                          {formatTime(exam.startDate)}
+                        </span>
                       </span>
-                    </span>
-                  </span>
+                    </div>
 
-                  <span className="exam-card__foot">
-                    <span className="exam-card__pill">{state.label}</span>
-                    <span className="exam-card__cta">Start paper</span>
-                  </span>
-                </button>
+                    <span className="exam-card__date-sep" aria-hidden="true" />
 
-                {canManage && (
-                  <div className="exam-card__admin">
-                    <button
-                      type="button"
-                      className="exam-card__admin-btn"
-                      onClick={() => editExam(exam.examId)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      className="exam-card__admin-btn exam-card__admin-btn--danger"
-                      onClick={() => del.request(exam)}
-                      disabled={del.pending?.examId === exam.examId}
-                    >
-                      {del.pending?.examId === exam.examId && del.deleting
-                        ? "Deleting…"
-                        : "Delete"}
-                    </button>
+                    <div className="exam-card__date">
+                      <span className="exam-card__date-icon">
+                        <FaRegCalendarAlt aria-hidden="true" />
+                      </span>
+                      <span className="exam-card__date-text">
+                        <span className="exam-card__date-key">Closes</span>
+                        <span className="exam-card__date-value">
+                          {formatDate(exam.endDate)}
+                        </span>
+                        <span className="exam-card__date-time">
+                          {formatTime(exam.endDate)}
+                        </span>
+                      </span>
+                    </div>
                   </div>
-                )}
+
+                  <div className="exam-card__foot">
+                    {isOpen ? (
+                      <button
+                        type="button"
+                        className="exam-card__start"
+                        onClick={() => openExam(exam.examId)}
+                      >
+                        <FaPlay aria-hidden="true" />
+                        <span>Start Paper</span>
+                        <FaArrowRight
+                          className="exam-card__start-arrow"
+                          aria-hidden="true"
+                        />
+                      </button>
+                    ) : (
+                      <div className="exam-card__locked">
+                        <span className="exam-card__locked-icon">
+                          <FaLock aria-hidden="true" />
+                        </span>
+                        <span className="exam-card__locked-text">
+                          <strong>{state.lockedTitle}</strong>
+                          <span>{state.lockedNote}</span>
+                        </span>
+                        <button
+                          type="button"
+                          className="exam-card__start exam-card__start--muted"
+                          disabled
+                        >
+                          Start Paper
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {canManage && (
+                    <div className="exam-card__admin">
+                      <button
+                        type="button"
+                        className="exam-card__admin-btn"
+                        onClick={() => editExam(exam.examId)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="exam-card__admin-btn exam-card__admin-btn--danger"
+                        onClick={() => del.request(exam)}
+                        disabled={del.pending?.examId === exam.examId}
+                      >
+                        {del.pending?.examId === exam.examId && del.deleting
+                          ? "Deleting…"
+                          : "Delete"}
+                      </button>
+                    </div>
+                  )}
+                </article>
               </li>
             );
           })}

@@ -5,6 +5,7 @@ import SubjectService from "../../services/SubjectService";
 import ChapterService from "../../services/ChapterService";
 import TopicService from "../../services/TopicService";
 import McqQuestionService from "../../services/McqQuestionService";
+import QuestionTypeService from "../../services/QuestionTypeService";
 import "./CreateMcq.css";
 
 const emptyOptions = () =>
@@ -30,11 +31,15 @@ const itemName = (item) =>
   item.topic_name ??
   "";
 
+const mcqTypeName = (item) =>
+  String(item.questionType ?? item.question_type ?? "").toUpperCase();
+
 function CreateMcq() {
   const [courses, setCourses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [chapters, setChapters] = useState([]);
   const [topics, setTopics] = useState([]);
+  const [questionTypes, setQuestionTypes] = useState([]);
   const [courseId, setCourseId] = useState("");
   const [subjectId, setSubjectId] = useState("");
   const [chapterId, setChapterId] = useState("");
@@ -57,11 +62,13 @@ function CreateMcq() {
           subjectResponse,
           chapterResponse,
           topicResponse,
+          questionTypeResponse,
         ] = await Promise.all([
           CourseService.getAllCourses(),
           SubjectService.getAll(),
           ChapterService.getAll(),
           TopicService.getAll(),
+          QuestionTypeService.getAll(),
         ]);
         setCourses(Array.isArray(courseResponse.data) ? courseResponse.data : []);
         setSubjects(
@@ -72,6 +79,14 @@ function CreateMcq() {
         );
         setTopics(
           Array.isArray(topicResponse.data) ? topicResponse.data : [],
+        );
+        setQuestionTypes(
+          (Array.isArray(questionTypeResponse.data)
+            ? questionTypeResponse.data
+            : []
+          ).filter((item) =>
+            ["SINGLE_CHOICE", "MULTIPLE_CHOICE"].includes(mcqTypeName(item)),
+          ),
         );
       } catch (error) {
         console.error("Failed to load MCQ hierarchy:", error);
@@ -175,6 +190,9 @@ function CreateMcq() {
     if (!chapterId) errors.push("Chapter is required.");
     if (!topicId) errors.push("Topic is required.");
     if (!questionText.trim()) errors.push("Question is required.");
+    if (!questionTypes.some((item) => mcqTypeName(item) === questionType)) {
+      errors.push("The selected MCQ question type is not configured.");
+    }
     if (options.some((option) => !option.optionText.trim())) {
       errors.push("Every option must have text.");
     }
@@ -203,6 +221,12 @@ function CreateMcq() {
     chapterId: Number(chapterId),
     topicId: Number(topicId),
     questionText: questionText.trim(),
+    questionTypeId: Number(
+      itemId(
+        questionTypes.find((item) => mcqTypeName(item) === questionType),
+        "questionType",
+      ),
+    ),
     questionType,
     marks: 1,
     options: options.map(({ optionOrder, optionText, isCorrect }) => ({
@@ -272,7 +296,13 @@ function CreateMcq() {
     try {
       await Promise.all(
         draftQuestions.map((draftQuestion) =>
-          McqQuestionService.create(draftQuestion),
+          McqQuestionService.create(
+            Object.fromEntries(
+              Object.entries(draftQuestion).filter(
+                ([key]) => key !== "questionType",
+              ),
+            ),
+          ),
         ),
       );
       setMessage({ type: "success", text: `${draftQuestions.length} question(s) submitted successfully.` });
@@ -355,8 +385,16 @@ function CreateMcq() {
                   });
                 }
               }}>
-                <option value="SINGLE_CHOICE">Multiple Choice (Single Answer)</option>
-                <option value="MULTIPLE_CHOICE">Multiple Choice (Multiple Answer)</option>
+                {questionTypes.map((type) => {
+                  const typeName = mcqTypeName(type);
+                  return (
+                    <option key={itemId(type, "questionType")} value={typeName}>
+                      {typeName === "SINGLE_CHOICE"
+                        ? "Multiple Choice (Single Answer)"
+                        : "Multiple Choice (Multiple Answer)"}
+                    </option>
+                  );
+                })}
               </select>
             </label>
           </section>

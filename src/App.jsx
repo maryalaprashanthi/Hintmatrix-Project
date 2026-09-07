@@ -6,7 +6,7 @@ import Layout from "./Layout/Layout";
 import Dashboard from "./pages/Dashboard";
 import Subscription from "./pages/Subscription/Subscription";
 import SubscriptionPlans from "./pages/Subscription/SubscriptionPlans";
-import SubscriptionPermissions from "./pages/Subscription/SubscriptionPermissions";
+import SubscriptionHistory from "./pages/Subscription/SubscriptionHistory";
 
 // --- UPDATED EXPORT IMPORTS TO MATCH COMMON NESTED FOLDER ARCHITECTURES ---
 import College from "./pages/College/College";
@@ -171,11 +171,35 @@ function App() {
 
         <Route path="/dashboard" element={<Dashboard />} />
         {/* Subscription */}
-        <Route path="/subscriptions" element={<Subscription />} />
-        <Route path="/subscriptions/plans" element={<SubscriptionPlans />} />
         <Route
-          path="/subscriptions/permissions"
-          element={<SubscriptionPermissions />}
+          path="/subscriptions"
+          element={
+            <ProtectedRoute
+              allowedRoles={["SUPER_ADMIN", "COLLEGE_ADMIN", "BRANCH_ADMIN"]}
+            >
+              <Subscription />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subscriptions/plans"
+          element={
+            <ProtectedRoute
+              allowedRoles={["SUPER_ADMIN", "COLLEGE_ADMIN", "BRANCH_ADMIN"]}
+            >
+              <SubscriptionPlans />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subscriptions/history"
+          element={
+            <ProtectedRoute
+              allowedRoles={["SUPER_ADMIN", "BRANCH_ADMIN"]}
+            >
+              <SubscriptionHistory />
+            </ProtectedRoute>
+          }
         />
         {/* College */}
         <Route path="/college" element={<College />} />
@@ -322,7 +346,14 @@ function App() {
 
         {/* Learning */}
         <Route path="/practice" element={<Practice />} />
-        <Route path="/Exam" element={<ExamList />} />
+        <Route
+          path="/Exam"
+          element={
+            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+              <ExamList />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/sessions" element={<Sessions />} />
         <Route path="/results" element={<Results />} />
         <Route path="/certificates" element={<Certificates />} />
@@ -333,8 +364,22 @@ function App() {
         <Route path="/course-subscribe" element={<CourseSubscribe />} />
         <Route path="/exam-hub" element={<ExamHub />} />
         <Route path="/exams" element={<ExamCatalog />} />
-        <Route path="/exam-paper" element={<ExamPaper />} />
-        <Route path="/exam-paper/:examId" element={<ExamPaper />} />
+        <Route
+          path="/exam-paper"
+          element={
+            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+              <ExamPaper />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/exam-paper/:examId"
+          element={
+            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+              <ExamPaper />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/mcq-questions/create"
           element={

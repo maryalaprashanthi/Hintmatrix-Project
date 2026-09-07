@@ -5,6 +5,7 @@ import SubjectService from "../../services/SubjectService";
 import ChapterService from "../../services/ChapterService";
 import TopicService from "../../services/TopicService";
 import McqQuestionService from "../../services/McqQuestionService";
+import QuestionTypeService from "../../services/QuestionTypeService";
 import ConfirmDialog from "../Common/ConfirmDialog";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { useToast } from "../Toast/useToast";
@@ -22,6 +23,8 @@ const nameOf = (item) =>
   item.chapter_name ??
   item.topic_name ??
   "";
+const mcqTypeName = (item) =>
+  String(item.questionType ?? item.question_type ?? "").toUpperCase();
 
 function McqList() {
   const toast = useToast();
@@ -29,6 +32,7 @@ function McqList() {
   const [subjects, setSubjects] = useState([]);
   const [chapters, setChapters] = useState([]);
   const [topics, setTopics] = useState([]);
+  const [questionTypes, setQuestionTypes] = useState([]);
   const [courseId, setCourseId] = useState("");
   const [subjectId, setSubjectId] = useState("");
   const [chapterId, setChapterId] = useState("");
@@ -47,9 +51,10 @@ function McqList() {
       SubjectService.getAll(),
       ChapterService.getAll(),
       TopicService.getAll(),
+      QuestionTypeService.getAll(),
     ])
       .then(
-        ([courseResponse, subjectResponse, chapterResponse, topicResponse]) => {
+        ([courseResponse, subjectResponse, chapterResponse, topicResponse, questionTypeResponse]) => {
           setCourses(
             Array.isArray(courseResponse.data) ? courseResponse.data : [],
           );
@@ -61,6 +66,14 @@ function McqList() {
           );
           setTopics(
             Array.isArray(topicResponse.data) ? topicResponse.data : [],
+          );
+          setQuestionTypes(
+            (Array.isArray(questionTypeResponse.data)
+              ? questionTypeResponse.data
+              : []
+            ).filter((item) =>
+              ["SINGLE_CHOICE", "MULTIPLE_CHOICE"].includes(mcqTypeName(item)),
+            ),
           );
         },
       )
@@ -225,7 +238,7 @@ function McqList() {
         chapterId: Number(editingQuestion.chapterId ?? chapterId),
         topicId: Number(editingQuestion.topicId ?? topicId),
         questionText: editingQuestion.questionText.trim(),
-        questionType: editingQuestion.questionType,
+        questionTypeId: Number(editingQuestion.questionTypeId),
         marks: 1,
         options: editingQuestion.options.map((option, index) => ({
           ...(option.optionId ? { optionId: option.optionId } : {}),
@@ -377,12 +390,16 @@ function McqList() {
                             <textarea value={editingQuestion.questionText} onChange={(event) => setEditingQuestion((current) => ({ ...current, questionText: event.target.value }))} />
                           </label>
                           <label>Question Type
-                            <select value={editingQuestion.questionType} onChange={(event) => setEditingQuestion((current) => {
-                              const questionType = event.target.value;
+                            <select value={editingQuestion.questionTypeId} onChange={(event) => setEditingQuestion((current) => {
+                              const selectedType = questionTypes.find(
+                                (type) => String(idOf(type, "questionType")) === event.target.value,
+                              );
+                              const questionType = mcqTypeName(selectedType);
                               if (questionType === "SINGLE_CHOICE") {
                                 let foundCorrect = false;
                                 return {
                                   ...current,
+                                  questionTypeId: Number(event.target.value),
                                   questionType,
                                   options: current.options.map((option) => {
                                     if (option.isCorrect && !foundCorrect) {
@@ -393,10 +410,20 @@ function McqList() {
                                   }),
                                 };
                               }
-                              return { ...current, questionType };
+                              return {
+                                ...current,
+                                questionTypeId: Number(event.target.value),
+                                questionType,
+                              };
                             })}>
-                              <option value="SINGLE_CHOICE">Single Answer</option>
-                              <option value="MULTIPLE_CHOICE">Multiple Answers</option>
+                              {questionTypes.map((type) => {
+                                const typeName = mcqTypeName(type);
+                                return (
+                                  <option key={idOf(type, "questionType")} value={idOf(type, "questionType")}>
+                                    {typeName === "SINGLE_CHOICE" ? "Single Answer" : "Multiple Answers"}
+                                  </option>
+                                );
+                              })}
                             </select>
                           </label>
                           <div className="mcq-edit-options">

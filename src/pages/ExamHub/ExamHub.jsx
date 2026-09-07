@@ -18,6 +18,7 @@ import {
   FaBookmark,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { canManageContent } from "../../utils/roles";
 import ExamService from "../../services/ExamService";
 import "./ExamHub.css";
 
@@ -180,6 +181,7 @@ const subjects = [
 
 function ExamHub() {
   const navigate = useNavigate();
+  const canCreateExam = canManageContent();
 
   const [schedules, setSchedules] = useState([]);
   const [scheduleLoading, setScheduleLoading] = useState(true);
@@ -303,13 +305,15 @@ function ExamHub() {
           <p>Every exam you take brings you closer to your dreams.</p>
         </div>
 
-        <button
-          type="button"
-          className="create-exam-btn"
-          onClick={() => navigate("/exam-paper")}
-        >
-          Create Exam
-        </button>
+        {canCreateExam && (
+          <button
+            type="button"
+            className="create-exam-btn"
+            onClick={() => navigate("/exam-paper")}
+          >
+            Create Exam
+          </button>
+        )}
       </div>
 
       {/* ================= STATS ================= */}

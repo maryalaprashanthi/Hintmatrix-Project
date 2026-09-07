@@ -59,16 +59,6 @@ function TableHeaders() {
       toast.error(getApiErrorMessage(error, "Operation failed."));
     }
   };
-  const del = useDeleteConfirm({
-    entity: "table header",
-    deleteFn: (row) => TableHeaderService.delete(row.id ?? row),
-    onDeleted: loadTableHeaders,
-  });
-
-  useEffect(() => {
-    loadTableHeaders();
-  }, []);
-
   const loadTableHeaders = async () => {
     try {
       const result = await TableHeaderService.getAll();
@@ -84,6 +74,16 @@ function TableHeaders() {
       console.log("Error: ", error);
     }
   };
+
+  const del = useDeleteConfirm({
+    entity: "table header",
+    deleteFn: (row) => TableHeaderService.delete(row.id ?? row),
+    onDeleted: loadTableHeaders,
+  });
+
+  useEffect(() => {
+    loadTableHeaders();
+  }, []);
 
   const columnDefs = [
     {

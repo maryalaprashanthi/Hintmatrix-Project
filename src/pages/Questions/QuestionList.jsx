@@ -274,7 +274,7 @@ const handleFileUpload = async (e) => {
     // MCQ QUESTION UPLOAD
     // =====================================================
 
-    if (excelQuestionType === "SINGLE_CHOICE") {
+    if (["SINGLE_CHOICE", "MULTIPLE_CHOICE"].includes(excelQuestionType)) {
       console.log("MCQ Excel upload detected.");
 
       // ===================================================
