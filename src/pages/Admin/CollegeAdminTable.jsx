@@ -1,8 +1,9 @@
-import React from "react";
 import { themeQuartz } from "ag-grid-community";
 import UserService from "../../services/UserService";
 import DataGrid from "../../components/DataGrid";
 import ActionIconButton from "../../components/Common/ActionIconButton";
+import ConfirmDialog from "../../components/Common/ConfirmDialog";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 
 function CollegeAdminTable({ data, onEdit, refreshData }) {
   const defaultColDef = {
@@ -11,31 +12,12 @@ function CollegeAdminTable({ data, onEdit, refreshData }) {
     resizable: true,
   };
 
-  // DELETE COLLEGE ADMIN
-
-  const handleDelete = (id) => {
-    if (!id) {
-      alert("College Admin ID is missing.");
-      return;
-    }
-
-    if (!window.confirm("Delete this College Admin?")) {
-      return;
-    }
-
-    UserService.deleteCollegeAdmin(id)
-      .then(() => {
-        alert("College Admin deleted successfully!");
-        refreshData();
-      })
-      .catch((error) => {
-        console.error("Delete Error:", error);
-
-        alert(
-          error?.response?.data?.message || "Failed to delete College Admin.",
-        );
-      });
-  };
+  const del = useDeleteConfirm({
+    entity: "college admin",
+    deleteFn: (admin) =>
+      UserService.deleteCollegeAdmin(admin?.userId ?? admin?.user_id),
+    onDeleted: refreshData,
+  });
 
   // COLUMN DEFINITIONS
 
@@ -122,7 +104,7 @@ function CollegeAdminTable({ data, onEdit, refreshData }) {
 
             <ActionIconButton
               type="delete"
-              onClick={() => handleDelete(params.data.userId)}
+              onClick={() => del.request(params.data)}
               title="Delete College Admin"
             />
           </div>
@@ -159,6 +141,17 @@ function CollegeAdminTable({ data, onEdit, refreshData }) {
         pageSize={10}
         paginationPageSizeSelector={false}
         rowHeight={50}
+      />
+
+      <ConfirmDialog
+        open={Boolean(del.pending)}
+        title={`Delete "${del.pending?.name || "this college admin"}"?`}
+        body="This person will lose access to the admin console. This can't be undone."
+        confirmLabel="Delete college admin"
+        loading={del.deleting}
+        error={del.error}
+        onConfirm={del.confirm}
+        onCancel={del.close}
       />
     </div>
   );

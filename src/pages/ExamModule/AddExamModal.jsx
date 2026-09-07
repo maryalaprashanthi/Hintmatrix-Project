@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import Select, { components } from "react-select";
 import apiClient from "../../services/apiClient";
 import { FaTimes, FaBook, FaCalendarAlt } from "react-icons/fa";
+import { useToast } from "../../components/Toast/useToast";
 
 import "./AddExamModal.css";
 
@@ -21,6 +22,7 @@ const CheckboxOption = (props) => {
 };
 
 export default function AddExamModal({ show, handleClose, examData, onSave }) {
+  const toast = useToast();
   const [collegeOptions, setCollegeOptions] = useState([]);
   const [branchOptions, setBranchOptions] = useState([]);
   const [courseOptions, setCourseOptions] = useState([]);
@@ -278,36 +280,36 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
 
   const handleSave = () => {
     if (!examName.trim()) {
-      alert("Enter Exam Name");
+      toast.error("Enter Exam Name");
       return;
     }
 
     if (!college) {
-      alert("Select College");
+      toast.error("Select College");
       return;
     }
 
     if (!course) {
-      alert("Select Course");
+      toast.error("Select Course");
       return;
     }
 
     if (chapters.length === 0) {
-      alert("Select at least one chapter");
+      toast.error("Select at least one chapter");
       return;
     }
 
     if (startDate && endDate && endDate < startDate) {
-      alert("End date cannot be before start date");
+      toast.error("End date cannot be before start date");
       return;
     }
     if (!startDate || !startTime) {
-      alert("Select start date and start time");
+      toast.error("Select start date and start time");
       return;
     }
 
     if (!endDate || !endTime) {
-      alert("Select end date and end time");
+      toast.error("Select end date and end time");
       return;
     }
 
@@ -315,7 +317,7 @@ export default function AddExamModal({ show, handleClose, examData, onSave }) {
     const endDateTime = new Date(`${endDate}T${endTime}`);
 
     if (endDateTime <= startDateTime) {
-      alert("End date and time must be after start date and time");
+      toast.error("End date and time must be after start date and time");
       return;
     }
     const payload = {

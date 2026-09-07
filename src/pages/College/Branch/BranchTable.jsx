@@ -63,26 +63,6 @@ function BranchTable({ onEdit, onDelete, refresh }) {
     }
   };
 
-  const handleDelete = (id) => {
-    if (!id) {
-      alert("Cannot delete: Branch ID is missing or undefined.");
-      return;
-    }
-    const confirmDelete = window.confirm(
-      "Are you sure you want to permanently delete this branch?",
-    );
-    if (confirmDelete) {
-      BranchService.deleteBranch(id)
-        .then(() => {
-          alert("Deleted Successfully");
-          loadBranches(); // Refresh data grid layout list
-        })
-        .catch((error) => {
-          console.error("Error executing delete layout pipeline:", error);
-        });
-    }
-  };
-
   // Mapped definitions exactly to match properties from your BranchRequestDTO fields
   const columnDefs = [
     {
@@ -162,7 +142,7 @@ function BranchTable({ onEdit, onDelete, refresh }) {
             />
             <ActionIconButton
               type="delete"
-              onClick={() => onDelete(params.data.branchId)}
+              onClick={() => onDelete(params.data)}
               title="Delete branch"
             />
           </div>

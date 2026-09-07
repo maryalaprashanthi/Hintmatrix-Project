@@ -1,33 +1,25 @@
-import React from "react";
 import { themeQuartz } from "ag-grid-community";
 import BranchAdminService from "../../services/UserService";
 import DataGrid from "../../components/DataGrid";
 import ActionIconButton from "../../components/Common/ActionIconButton";
+import ConfirmDialog from "../../components/Common/ConfirmDialog";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 
-function BranchAdminTable({ data, onEdit, refreshData, onDeleteSuccess }) {
+function BranchAdminTable({ data, onEdit, refreshData }) {
   const defaultColDef = {
     sortable: true,
     filter: true,
     resizable: true,
   };
 
-  const handleDelete = (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to permanently delete this Branch Admin?",
-    );
-
-    if (!confirmDelete) return;
-
-    BranchAdminService.deleteBranchAdmin(id)
-      .then(() => {
-        refreshData();
-        onDeleteSuccess();
-      })
-      .catch((error) => {
-        console.error("Delete Error:", error);
-        alert("Failed to delete Branch Admin.");
-      });
-  };
+  const del = useDeleteConfirm({
+    entity: "branch admin",
+    deleteFn: (admin) =>
+      BranchAdminService.deleteBranchAdmin(
+        admin?.userId ?? admin?.branchAdminId ?? admin?.studentId,
+      ),
+    onDeleted: refreshData,
+  });
 
   const columnDefs = [
     {
@@ -102,13 +94,7 @@ function BranchAdminTable({ data, onEdit, refreshData, onDeleteSuccess }) {
 
             <ActionIconButton
               type="delete"
-              onClick={() =>
-                handleDelete(
-                  params.data.userId ||
-                    params.data.branchAdminId ||
-                    params.data.studentId,
-                )
-              }
+              onClick={() => del.request(params.data)}
               title="Delete branch admin"
             />
           </div>
@@ -143,6 +129,17 @@ function BranchAdminTable({ data, onEdit, refreshData, onDeleteSuccess }) {
         pageSize={10}
         paginationPageSizeSelector={false}
         rowHeight={50}
+      />
+
+      <ConfirmDialog
+        open={Boolean(del.pending)}
+        title={`Delete "${del.pending?.name || "this branch admin"}"?`}
+        body="This person will lose access to the admin console. This can't be undone."
+        confirmLabel="Delete branch admin"
+        loading={del.deleting}
+        error={del.error}
+        onConfirm={del.confirm}
+        onCancel={del.close}
       />
     </div>
   );

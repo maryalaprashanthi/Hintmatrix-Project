@@ -27,7 +27,6 @@ import {
   MdKeyboardArrowUp,
   MdQuiz,
   MdMenuBook,
-  MdCategory,
   MdSecurity,
   MdAdminPanelSettings,
 } from "react-icons/md";
@@ -339,21 +338,21 @@ export default function Sidebar({
               {questionOpen && (
                 <div className="submenu">
                   <NavLink
-                    to="/questions/chapters"
+                    to="/courses"
                     className={subMenuClass}
                     onClick={closeSidebar}
                   >
                     <MdMenuBook />
-                    <span>Chapters</span>
+                    <span>Question Bank</span>
                   </NavLink>
 
                   <NavLink
-                    to="/questions/question-categories"
+                    to="/questions"
                     className={subMenuClass}
                     onClick={closeSidebar}
                   >
-                    <MdCategory />
-                    <span>Question Categories</span>
+                    <MdListAlt />
+                    <span>All Questions</span>
                   </NavLink>
 
                   <NavLink

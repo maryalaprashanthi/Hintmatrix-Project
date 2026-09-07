@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CourseService from "../../../services/CourseService";
 import ChapterService from "../../../services/ChapterService";
-import SuccessModal from "../../../components/Common/SuccessModal";
-import DeleteModal from "../../../components/Common/DeleteModal";
 
 import {
   FaBookOpen,
@@ -18,6 +16,12 @@ import {
 } from "react-icons/fa";
 
 import "./Courses.css";
+import { canManageContent } from "../../../utils/roles";
+import { getApiErrorMessage } from "../../../utils/apiError";
+import { paths } from "../../../routes/paths";
+import ConfirmDialog from "../../../components/Common/ConfirmDialog";
+import { useDeleteConfirm } from "../../../hooks/useDeleteConfirm";
+import { useToast } from "../../../components/Toast/useToast";
 import AddCourseModal from "./AddCourseModal";
 
 import bcom from "../../../assets/courses/bcom.png.jpeg";
@@ -29,11 +33,8 @@ import inter from "../../../assets/courses/inter.png.jpeg";
 
 function Courses() {
   const navigate = useNavigate();
-  const userRole = (localStorage.getItem("role") || "GUEST")
-    .toString()
-    .trim()
-    .toUpperCase();
-  const isStudent = userRole === "STUDENT";
+  const canManage = canManageContent();
+  const toast = useToast();
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
@@ -41,9 +42,6 @@ function Courses() {
   const [courses, setCourses] = useState([]);
   const [chapters, setChapters] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [showDelete, setShowDelete] = useState(false);
 
   const loadCourses = () => {
     CourseService.getAllCourses()
@@ -75,53 +73,29 @@ function Courses() {
     setShowModal(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!id) {
-      alert("Cannot delete: Course ID is missing.");
-      return;
-    }
+  const del = useDeleteConfirm({
+    entity: "course",
+    deleteFn: (course) =>
+      CourseService.deleteCourse(course.courseId ?? course.id),
+    onDeleted: loadCourses,
+  });
 
-    const confirmDelete = window.confirm(
-      "Are you sure you want to permanently delete this course?",
-    );
-
-    if (!confirmDelete) return;
-
-    try {
-      await CourseService.deleteCourse(id);
-
-      // Reload courses from database
-      loadCourses();
-
-      // Show delete success popup
-      setShowDelete(true);
-    } catch (error) {
-      console.error("Delete Error:", error);
-
-      if (error.response) {
-        alert(error.response.data);
-      } else {
-        alert("Failed to delete course.");
-      }
-    }
-  };
   const handleSave = async (courseRequestDTO, isEdit, courseId) => {
     try {
       if (isEdit) {
         await CourseService.updateCourse(courseId, courseRequestDTO);
-        setSuccessMessage("Course updated successfully!");
+        toast.success("Course updated.");
       } else {
         await CourseService.saveCourse(courseRequestDTO);
-        setSuccessMessage("Course saved successfully!");
+        toast.success("Course saved.");
       }
 
       setShowModal(false);
       setSelectedCourse(null);
       loadCourses();
-      setShowSuccess(true);
     } catch (error) {
       console.error(error);
-      alert(error.response?.data?.message || "Failed to save course.");
+      toast.error(getApiErrorMessage(error, "Failed to save course."));
     }
   };
 
@@ -134,21 +108,16 @@ function Courses() {
     try {
       const response = await CourseService.uploadExcel(file);
 
-      alert(
+      toast.success(
         typeof response.data === "string"
           ? response.data
-          : "Course Excel uploaded successfully!",
+          : "Course Excel uploaded.",
       );
 
       loadCourses(); // Refresh course list
     } catch (error) {
       console.error("Upload Error:", error);
-
-      if (error.response) {
-        alert(error.response.data);
-      } else {
-        alert("File upload failed.");
-      }
+      toast.error(getApiErrorMessage(error, "File upload failed."));
     }
 
     // Backend upload API later
@@ -221,7 +190,7 @@ function Courses() {
           onChange={handleFileUpload}
         />
 
-        {!isStudent && (
+        {canManage && (
           <div className="d-flex gap-2">
             <button
               className="btn btn-primary"
@@ -406,7 +375,7 @@ function Courses() {
                     disabled={!course.activeRow}
                     onClick={() => {
                       if (course.activeRow) {
-                        navigate(`/chapters/${course.courseId}`);
+                        navigate(paths.courseSubjects(course.courseId));
                       }
                     }}
                   >
@@ -417,7 +386,7 @@ function Courses() {
                     </span>
                   </button>
 
-                  {!isStudent && (
+                  {canManage && (
                     <div className="d-flex gap-2 mt-3">
                       <button
                         className="btn btn-outline-primary btn-sm"
@@ -429,9 +398,7 @@ function Courses() {
 
                       <button
                         className="btn btn-outline-danger btn-sm"
-                        onClick={() =>
-                          handleDelete(course.courseId || course.id)
-                        }
+                        onClick={() => del.request(course)}
                       >
                         <FaTrash className="me-1" />
                         Delete
@@ -464,15 +431,15 @@ function Courses() {
         onSave={handleSave}
         selectedCourseData={selectedCourse}
       />
-      <SuccessModal
-        show={showSuccess}
-        message={successMessage}
-        onClose={() => setShowSuccess(false)}
-      />
-      <DeleteModal
-        show={showDelete}
-        message="Course deleted successfully!"
-        onClose={() => setShowDelete(false)}
+      <ConfirmDialog
+        open={Boolean(del.pending)}
+        title={`Delete "${del.pending?.name || del.pending?.title || "this course"}"?`}
+        body="Every subject, chapter, topic and question under this course will be removed. This can't be undone."
+        confirmLabel="Delete course"
+        loading={del.deleting}
+        error={del.error}
+        onConfirm={del.confirm}
+        onCancel={del.close}
       />
     </div>
   );

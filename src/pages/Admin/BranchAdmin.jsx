@@ -3,20 +3,13 @@ import BranchAdminForm from "./BranchAdminForm";
 import "./BranchAdmin.css";
 import BranchAdminTable from "./BranchAdminTable";
 import BranchAdminService from "../../services/UserService";
-import SuccessModal from "../../components/Common/SuccessModal";
-import DeleteModal from "../../components/Common/DeleteModal";
+import { useToast } from "../../components/Toast/useToast";
 
 function BranchAdmin() {
+  const toast = useToast();
   const [showModal, setShowModal] = useState(false);
   const [branchAdmins, setBranchAdmins] = useState([]);
   const [selectedBranchAdmin, setSelectedBranchAdmin] = useState(null);
-
-  // Success Modal
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-
-  // Delete Modal
-  const [showDelete, setShowDelete] = useState(false);
 
   // Fetch all Branch Admins
   const fetchBranchAdmins = () => {
@@ -63,15 +56,14 @@ function BranchAdmin() {
         .then(() => {
           fetchBranchAdmins();
 
-          setSuccessMessage("Branch Admin updated successfully!");
-          setShowSuccess(true);
+          toast.success("Branch admin updated.");
 
           setShowModal(false);
           setSelectedBranchAdmin(null);
         })
         .catch((error) => {
           console.error("Update Error:", error);
-          alert("Failed to update Branch Admin.");
+          toast.error("Failed to update branch admin.");
         });
     } else {
       // CREATE
@@ -79,45 +71,15 @@ function BranchAdmin() {
         .then(() => {
           fetchBranchAdmins();
 
-          setSuccessMessage("Branch Admin saved successfully!");
-          setShowSuccess(true);
+          toast.success("Branch admin saved.");
 
           setShowModal(false);
         })
         .catch((error) => {
           console.error("Save Error:", error);
-          alert("Failed to add Branch Admin.");
+          toast.error("Failed to add branch admin.");
         });
     }
-  };
-
-  // Delete Branch Admin
-  const handleDeleteBranchAdmin = (userId) => {
-    if (!userId) {
-      alert("Cannot delete: Branch Admin ID is missing.");
-      return;
-    }
-
-    const confirmDelete = window.confirm(
-      "Are you sure you want to permanently delete this Branch Admin?",
-    );
-
-    if (!confirmDelete) return;
-
-    BranchAdminService.deleteBranchAdmin(userId)
-      .then(() => {
-        fetchBranchAdmins();
-
-        // Show delete success popup
-        setShowDelete(true);
-      })
-      .catch((error) => {
-        console.error("Delete Error:", error);
-
-        alert(
-          error.response?.data?.message || "Failed to delete Branch Admin.",
-        );
-      });
   };
 
   return (
@@ -142,7 +104,6 @@ function BranchAdmin() {
             data={branchAdmins}
             onEdit={handleEditBranchAdmin}
             refreshData={fetchBranchAdmins}
-            onDeleteSuccess={() => setShowDelete(true)}
           />
         </div>
       </div>
@@ -155,19 +116,6 @@ function BranchAdmin() {
         selectedBranchAdminData={selectedBranchAdmin}
       />
 
-      {/* Add / Update Success Modal */}
-      <SuccessModal
-        show={showSuccess}
-        message={successMessage}
-        onClose={() => setShowSuccess(false)}
-      />
-
-      {/* Delete Success Modal */}
-      <DeleteModal
-        show={showDelete}
-        message="Branch Admin deleted successfully!"
-        onClose={() => setShowDelete(false)}
-      />
     </div>
   );
 }

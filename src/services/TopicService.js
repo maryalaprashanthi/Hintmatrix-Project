@@ -1,22 +1,29 @@
-﻿import apiClient from "./apiClient";
+import apiClient from "./apiClient";
 
-// Matches the Spring Boot Controller's @RequestMapping("/api/question-categories")
-const BASE_URL = "/api/question-categories";
+// Matches the Spring Boot Controller's @RequestMapping("/api/topics")
+// (formerly "/api/question-categories" - the "Question Category" level was
+// renamed to "Topic" in the Course -> Subject -> Chapter -> Topic -> Question
+// hierarchy).
+//
+// Request body:  { courseId, subjectId, chapterId, name, activeRow }
+// Response body: { topicId, name, courseId, courseName, subjectId, subjectName,
+//                  chapterId, chapterName, activeRow, ... }
+const BASE_URL = "/api/topics";
 
-class QuestionCategoryService {
+class TopicService {
 
     // Matches @PostMapping
-    // Takes the QuestionCategoryRequestDTO payload for the request body
-    create(questionCategoryRequestDTO) {
+    // Takes the TopicRequestDTO payload for the request body
+    create(topicRequestDTO) {
         return apiClient.post(
             `${BASE_URL}`,
-            questionCategoryRequestDTO,
+            topicRequestDTO,
             { withCredentials: true } // Allows backend session cookies/CORS handshakes
         );
     }
 
     // Matches @GetMapping
-    // Returns an array of QuestionCategoryResponseDTO objects
+    // Returns an array of TopicResponseDTO objects
     getAll() {
         return apiClient.get(
             `${BASE_URL}`,
@@ -25,7 +32,7 @@ class QuestionCategoryService {
     }
 
     // Matches @GetMapping("/{id}")
-    // Returns a specific QuestionCategoryResponseDTO object
+    // Returns a specific TopicResponseDTO object
     getById(id) {
         return apiClient.get(
             `${BASE_URL}/${id}`,
@@ -35,22 +42,21 @@ class QuestionCategoryService {
 
     // Matches @PutMapping("/{id}")
     // Takes id for the URL path variable and the DTO payload for the request body
-    update(id, questionCategoryRequestDTO) {
+    update(id, topicRequestDTO) {
         return apiClient.put(
             `${BASE_URL}/${id}`,
-            questionCategoryRequestDTO,
+            topicRequestDTO,
             { withCredentials: true }
         );
     }
 
     // Matches @DeleteMapping("/{id}")
-        deleteSection(id) {
+    delete(id) {
         return apiClient.delete(
             `${BASE_URL}/${id}`,
             { withCredentials: true }
         );
     }
-
 
     // Upload Excel
     uploadExcel(file) {
@@ -73,6 +79,4 @@ class QuestionCategoryService {
 }
 
 // Export an instantiated instance of the service architecture directly
-export default new QuestionCategoryService();
-
-
+export default new TopicService();

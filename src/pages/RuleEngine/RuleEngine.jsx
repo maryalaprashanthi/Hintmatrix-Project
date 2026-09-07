@@ -3,15 +3,16 @@ import RuleEngineForm from "./RuleEngineForm";
 import RuleEngineTable from "./RuleEngineTable";
 import "./RuleEngine.css";
 import RuleEngineService from "../../services/RuleEngineService";
-import SuccessModal from "../../components/Common/SuccessModal";
-import DeleteModal from "../../components/Common/DeleteModal";
+import ConfirmDialog from "../../components/Common/ConfirmDialog";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
+import { useToast } from "../../components/Toast/useToast";
+import { getApiErrorMessage } from "../../utils/apiError";
 
 function RuleEngine() {
+  const toast = useToast();
   const [showModal, setShowModal] = useState(false);
   const [ruleEngineList, setRuleEngineList] = useState([]);
   const [selectedRule, setSelectedRule] = useState(null);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [showDelete, setShowDelete] = useState(false);
 
   const fileInputRef = useRef(null);
 
@@ -75,21 +76,13 @@ function RuleEngine() {
 
       setRuleEngineList(rulesWithIssues);
 
-      alert(
-        `Excel upload completed!\n\n` +
-          `Total Rows: ${response.totalRows || 0}\n` +
-          `Rules Uploaded: ${response.rulesUploaded || 0}\n` +
-          `Drafts Created: ${response.draftsCreated || 0}\n` +
-          `Failed Rows: ${response.failedRows || 0}`
+      toast.success(
+        `Excel upload complete — ${response.rulesUploaded || 0} uploaded, ` +
+          `${response.draftsCreated || 0} drafts, ${response.failedRows || 0} failed.`,
       );
     } catch (error) {
       console.error("Upload Error:", error);
-      const message =
-        error?.response?.data?.message ||
-        error?.response?.data ||
-        "Rule upload failed";
-
-      alert(message);
+      toast.error(getApiErrorMessage(error, "Rule upload failed."));
     }
     e.target.value = "";
   };
@@ -122,35 +115,22 @@ function RuleEngine() {
     setShowModal(true);
   };
   // Delete Rule
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this rule?"
-    );
-
-    if (!confirmDelete) {
-      return;
-    }
-
-    try {
+  const del = useDeleteConfirm({
+    entity: "rule",
+    deleteFn: async (rule) => {
+      const id = rule?.ruleEngineId ?? rule;
       await RuleEngineService.deleteRule(id);
       setUploadDrafts((prev) =>
-        prev.filter(
-          (item) =>
-            Number(item.ruleEngineId) !== Number(id)
-        )
+        prev.filter((item) => Number(item.ruleEngineId) !== Number(id)),
       );
-
-      await fetchRules();
-
-      setShowDelete(true);
-    } catch (error) {
-      console.error("Error deleting rule:", error);
-    }
-  };
+    },
+    onDeleted: fetchRules,
+  });
   // Save Rule
   const handleSave = async (ruleData) => {
+    const isEdit = Boolean(selectedRule);
     try {
-      if (selectedRule) {
+      if (isEdit) {
         await RuleEngineService.updateRule(
           selectedRule.ruleEngineId,
           ruleData
@@ -164,14 +144,10 @@ function RuleEngine() {
       setShowModal(false);
       setSelectedRule(null);
 
-      setShowSuccess(true);
+      toast.success(isEdit ? "Rule updated." : "Rule added.");
     } catch (error) {
       console.error("Error saving rule:", error);
-
-      alert(
-        error?.response?.data?.message ||
-          "Error saving rule"
-      );
+      toast.error(getApiErrorMessage(error, "Error saving rule."));
     }
   };
   // Close Modal
@@ -234,7 +210,7 @@ function RuleEngine() {
           <RuleEngineTable
             ruleEngineList={ruleEngineList}
             onEdit={handleEdit}
-            onDelete={handleDelete}
+            onDelete={del.request}
           />
 
         </div>
@@ -249,28 +225,16 @@ function RuleEngine() {
         selectedRuleData={selectedRule}
       />
 
-      {}
-      {showSuccess && (
-        <SuccessModal
-          show={showSuccess}
-          onClose={() => setShowSuccess(false)}
-          message={
-            selectedRule
-              ? "Rule updated successfully!"
-              : "Rule added successfully!"
-          }
-        />
-      )}
-
-      {}
-      {showDelete && (
-        <DeleteModal
-          show={showDelete}
-          onClose={() => setShowDelete(false)}
-          message="Rule deleted successfully!"
-        />
-      )}
-
+      <ConfirmDialog
+        open={Boolean(del.pending)}
+        title={`Delete "${del.pending?.attributeName || del.pending?.tableAttribute?.name || "this rule"}"?`}
+        body="Questions that rely on this rule for grading will no longer be scored against it. This can't be undone."
+        confirmLabel="Delete rule"
+        loading={del.deleting}
+        error={del.error}
+        onConfirm={del.confirm}
+        onCancel={del.close}
+      />
     </div>
   );
 }

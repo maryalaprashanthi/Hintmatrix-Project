@@ -3,17 +3,17 @@ import AddBranchModal from "./AddBranchmodal";
 import "./Branch.css";
 import BranchService from "../../../services/BranchService";
 import BranchTable from "./BranchTable";
-import SuccessModal from "../../../components/Common/SuccessModal";
-import DeleteModal from "../../../components/Common/DeleteModal";
+import ConfirmDialog from "../../../components/Common/ConfirmDialog";
+import { useDeleteConfirm } from "../../../hooks/useDeleteConfirm";
+import { useToast } from "../../../components/Toast/useToast";
+import { getApiErrorMessage } from "../../../utils/apiError";
 
 function Branch() {
+  const toast = useToast();
   const [showModal, setShowModal] = useState(false);
   const [branches, setBranches] = useState([]);
   const [selectedBranch, setSelectedBranch] = useState(null); // 🌟 ADDED: State tracking for editing items
   const [refreshTrigger, setRefreshTrigger] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [showDelete, setShowDelete] = useState(false);
 
   // Open Add Branch Form Context Block
   const handleAddBranch = () => {
@@ -34,51 +34,26 @@ function Branch() {
     try {
       if (branchData.branchId) {
         await BranchService.updateBranch(branchData.branchId, branchData);
-        setSuccessMessage("Branch updated successfully!");
+        toast.success("Branch updated.");
       } else {
         await BranchService.saveBranch(branchData);
-        setSuccessMessage("Branch saved successfully!");
+        toast.success("Branch saved.");
       }
 
       setShowModal(false);
       setSelectedBranch(null);
       setRefreshTrigger((prev) => !prev);
-      setShowSuccess(true);
     } catch (error) {
       console.error(error);
-      alert(error.response?.data || "Operation failed.");
+      toast.error(getApiErrorMessage(error, "Operation failed."));
     }
   };
-  const handleDeleteBranch = async (branchId) => {
-    if (!branchId) {
-      alert("Cannot delete: Branch ID is missing.");
-      return;
-    }
-
-    const confirmDelete = window.confirm(
-      "Are you sure you want to permanently delete this branch?",
-    );
-
-    if (!confirmDelete) return;
-
-    try {
-      await BranchService.deleteBranch(branchId);
-
-      // Refresh table from database
-      setRefreshTrigger((prev) => !prev);
-
-      // Show delete success popup
-      setShowDelete(true);
-    } catch (error) {
-      console.error("Error deleting branch:", error);
-
-      if (error.response) {
-        alert(error.response.data);
-      } else {
-        alert("Failed to delete branch.");
-      }
-    }
-  };
+  const del = useDeleteConfirm({
+    entity: "branch",
+    deleteFn: (branch) =>
+      BranchService.deleteBranch(branch.branchId ?? branch.id ?? branch),
+    onDeleted: () => setRefreshTrigger((prev) => !prev),
+  });
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -88,21 +63,16 @@ function Branch() {
     try {
       const response = await BranchService.uploadExcel(file);
 
-      alert(
+      toast.success(
         typeof response.data === "string"
           ? response.data
-          : "Branch Excel uploaded successfully!",
+          : "Branch Excel uploaded.",
       );
 
       setRefreshTrigger((prev) => !prev);
     } catch (error) {
       console.error("Upload Error:", error);
-
-      if (error.response) {
-        alert(error.response.data);
-      } else {
-        alert("File upload failed.");
-      }
+      toast.error(getApiErrorMessage(error, "File upload failed."));
     }
 
     e.target.value = "";
@@ -146,7 +116,7 @@ function Branch() {
           <BranchTable
             refresh={refreshTrigger}
             onEdit={handleEditBranch}
-            onDelete={handleDeleteBranch} // 🌟 Maps Edit row updates directly from table component cell rows
+            onDelete={del.request}
           />
         </div>
       </div>
@@ -161,15 +131,15 @@ function Branch() {
         onSave={handleSave}
         selectedBranchData={selectedBranch} // 🌟 Passes row tracking state downstream to inputs
       />
-      <SuccessModal
-        show={showSuccess}
-        message={successMessage}
-        onClose={() => setShowSuccess(false)}
-      />
-      <DeleteModal
-        show={showDelete}
-        message="Branch deleted successfully!"
-        onClose={() => setShowDelete(false)}
+      <ConfirmDialog
+        open={Boolean(del.pending)}
+        title={`Delete "${del.pending?.branchName || del.pending?.name || "this branch"}"?`}
+        body="Sections, courses and everything under this branch will be removed. This can't be undone."
+        confirmLabel="Delete branch"
+        loading={del.deleting}
+        error={del.error}
+        onConfirm={del.confirm}
+        onCancel={del.close}
       />
     </div>
   );

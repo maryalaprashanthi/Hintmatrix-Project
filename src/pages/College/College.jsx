@@ -2,16 +2,16 @@ import { useState } from "react";
 import CollegeForm from "./CollegeForm";
 import CollegeTable from "./CollegeTable";
 import CollegeService from "../../services/CollegeService";
-import SuccessModal from "../../components/Common/SuccessModal";
-import DeleteModal from "../../components/Common/DeleteModal";
+import ConfirmDialog from "../../components/Common/ConfirmDialog";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
+import { useToast } from "../../components/Toast/useToast";
+import { getApiErrorMessage } from "../../utils/apiError";
 
 function College() {
+  const toast = useToast();
   const [showModal, setShowModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [selectedCollege, setSelectedCollege] = useState(null);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [showDelete, setShowDelete] = useState(false);
 
   // Open Add College
   const handleAddCollege = () => {
@@ -44,42 +44,19 @@ function College() {
       setSelectedCollege(null);
       setShowModal(false);
 
-      setSuccessMessage(
-        isEditing
-          ? "College updated successfully!"
-          : "College saved successfully!",
-      );
-      setShowSuccess(true);
+      toast.success(isEditing ? "College updated." : "College saved.");
     } catch (error) {
       console.error(error);
+      toast.error(getApiErrorMessage(error, "Failed to save college."));
     }
   };
   // Delete College permanently
-  const handleDeleteCollege = async (collegeId) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to permanently delete this college?",
-    );
-
-    if (!confirmDelete) return;
-
-    try {
-      await CollegeService.deleteCollege(collegeId);
-
-      // Refresh table from database
-      setRefreshTrigger((prev) => !prev);
-
-      // Show delete success popup
-      setShowDelete(true);
-    } catch (error) {
-      console.error("Delete College Error:", error);
-
-      if (error.response) {
-        alert(error.response.data);
-      } else {
-        alert("Failed to delete college.");
-      }
-    }
-  };
+  const del = useDeleteConfirm({
+    entity: "college",
+    deleteFn: (college) =>
+      CollegeService.deleteCollege(college.collegeId ?? college.id ?? college),
+    onDeleted: () => setRefreshTrigger((prev) => !prev),
+  });
 
   // Upload (Frontend Only)
   const handleFileUpload = async (e) => {
@@ -90,18 +67,15 @@ function College() {
     try {
       const response = await CollegeService.uploadExcel(file);
 
-      alert(response.data);
+      toast.success(
+        typeof response.data === "string" ? response.data : "Upload complete.",
+      );
 
       // Refresh the table after successful upload
       setRefreshTrigger((prev) => !prev);
     } catch (error) {
       console.error("Upload Error:", error);
-
-      if (error.response) {
-        alert(error.response.data);
-      } else {
-        alert("File upload failed.");
-      }
+      toast.error(getApiErrorMessage(error, "File upload failed."));
     }
 
     // Reset input
@@ -149,7 +123,7 @@ function College() {
           <CollegeTable
             refresh={refreshTrigger}
             onEdit={handleEditCollege}
-            onDelete={handleDeleteCollege}
+            onDelete={del.request}
           />
         </div>
       </div>
@@ -166,15 +140,15 @@ function College() {
         selectedCollegeData={selectedCollege}
       />
 
-      <SuccessModal
-        show={showSuccess}
-        message={successMessage}
-        onClose={() => setShowSuccess(false)}
-      />
-      <DeleteModal
-        show={showDelete}
-        message="College deleted successfully!"
-        onClose={() => setShowDelete(false)}
+      <ConfirmDialog
+        open={Boolean(del.pending)}
+        title={`Delete "${del.pending?.instituteName || del.pending?.name || "this college"}"?`}
+        body="Its branches, courses and everything under them will be removed. This can't be undone."
+        confirmLabel="Delete college"
+        loading={del.deleting}
+        error={del.error}
+        onConfirm={del.confirm}
+        onCancel={del.close}
       />
     </div>
   );

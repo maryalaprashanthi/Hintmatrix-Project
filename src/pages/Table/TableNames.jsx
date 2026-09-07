@@ -3,19 +3,19 @@ import "./TableNames.css";
 import AddTableNameModal from "./AddTableNameModal";
 import TableNameService from "../../services/TableNameService";
 import DataGrid from "../../components/DataGrid";
-import SuccessModal from "../../components/Common/SuccessModal";
-import DeleteModal from "../../components/Common/DeleteModal";
+import ConfirmDialog from "../../components/Common/ConfirmDialog";
 import ActionIconButton from "../../components/Common/ActionIconButton";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
+import { useToast } from "../../components/Toast/useToast";
+import { getApiErrorMessage } from "../../utils/apiError";
 
 function TableNames() {
+  const toast = useToast();
   const [showModal, setShowModal] = useState(false);
   const [tableNames, setTableNames] = useState([]);
 
   const [id, setId] = useState(null);
   const [name, setName] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [showDelete, setShowDelete] = useState(false);
   const fileInputRef = useRef(null);
 
   // ================= SAVE =================
@@ -23,13 +23,11 @@ function TableNames() {
     try {
       if (id == null) {
         await TableNameService.create(newTableName);
-        setSuccessMessage("Table Name added successfully!");
+        toast.success("Table name added.");
       } else {
         await TableNameService.update(id, newTableName);
-        setSuccessMessage("Table Name updated successfully!");
+        toast.success("Table name updated.");
       }
-
-      setShowSuccess(true);
 
       setId(null);
       setName("");
@@ -38,31 +36,7 @@ function TableNames() {
       loadTableNames();
     } catch (error) {
       console.error("Error:", error);
-      alert("Operation failed.");
-    }
-  };
-
-  // ================= DELETE =================
-
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this table name?",
-    );
-
-    if (!confirmDelete) {
-      return;
-    }
-
-    try {
-      await TableNameService.delete(id);
-
-      await loadTableNames();
-
-      // Show delete success popup
-      setShowDelete(true);
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Failed to delete Table Name.");
+      toast.error(getApiErrorMessage(error, "Operation failed."));
     }
   };
 
@@ -85,6 +59,14 @@ function TableNames() {
     }
   };
 
+  // ================= DELETE =================
+
+  const del = useDeleteConfirm({
+    entity: "table name",
+    deleteFn: (row) => TableNameService.delete(row.id ?? row),
+    onDeleted: loadTableNames,
+  });
+
   // ================= FILE UPLOAD =================
 
   const handleFileUpload = async (event) => {
@@ -97,14 +79,14 @@ function TableNames() {
     try {
       const response = await TableNameService.uploadExcel(file);
 
-      setSuccessMessage(response.data);
-      setShowSuccess(true);
+      toast.success(
+        typeof response.data === "string" ? response.data : "Upload complete.",
+      );
 
       loadTableNames();
     } catch (error) {
       console.error(error);
-
-      alert(error.response?.data || "Excel upload failed.");
+      toast.error(getApiErrorMessage(error, "Excel upload failed."));
     }
 
     // Reset input so the same file can be selected again
@@ -152,7 +134,7 @@ function TableNames() {
 
             <ActionIconButton
               type="delete"
-              onClick={() => handleDelete(params.data.id)}
+              onClick={() => del.request(params.data)}
               title="Delete table name"
             />
           </div>
@@ -227,17 +209,15 @@ function TableNames() {
         onSave={handleSave}
         Inputname={name}
       />
-      <SuccessModal
-        show={showSuccess}
-        message={successMessage}
-        onClose={() => {
-          setShowSuccess(false);
-        }}
-      />
-      <DeleteModal
-        show={showDelete}
-        message="Table Name deleted successfully!"
-        onClose={() => setShowDelete(false)}
+      <ConfirmDialog
+        open={Boolean(del.pending)}
+        title={`Delete "${del.pending?.name || "this table name"}"?`}
+        body="Headers, attributes and rules that reference this table may be affected. This can't be undone."
+        confirmLabel="Delete table name"
+        loading={del.deleting}
+        error={del.error}
+        onConfirm={del.confirm}
+        onCancel={del.close}
       />
     </div>
   );

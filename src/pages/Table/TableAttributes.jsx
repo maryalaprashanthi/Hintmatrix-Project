@@ -3,18 +3,18 @@ import AddTableAttributeModal from "./AddTableAttributeModal";
 import "./TableAttributes.css";
 import TableAttributeService from "../../services/TableAttributeService";
 import DataGrid from "../../components/DataGrid";
-import SuccessModal from "../../components/Common/SuccessModal";
-import DeleteModal from "../../components/Common/DeleteModal";
+import ConfirmDialog from "../../components/Common/ConfirmDialog";
 import ActionIconButton from "../../components/Common/ActionIconButton";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
+import { useToast } from "../../components/Toast/useToast";
+import { getApiErrorMessage } from "../../utils/apiError";
 
 function TableAttributes() {
+  const toast = useToast();
   const [showModal, setShowModal] = useState(false);
   const [editingAttribute, setEditingAttribute] = useState(null);
   const [tableAttributes, setTableAttributes] = useState([]);
   const [id, setId] = useState(null);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [showDelete, setShowDelete] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
 
   const loadTableAttributes = async () => {
     try {
@@ -39,27 +39,11 @@ function TableAttributes() {
     loadTableAttributes();
   }, []);
 
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this table attribute?",
-    );
-
-    if (!confirmDelete) {
-      return;
-    }
-
-    try {
-      await TableAttributeService.delete(id);
-
-      await loadTableAttributes();
-
-      // Show delete success popup
-      setShowDelete(true);
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Failed to delete Table Attribute.");
-    }
-  };
+  const del = useDeleteConfirm({
+    entity: "table attribute",
+    deleteFn: (row) => TableAttributeService.delete(row.id ?? row),
+    onDeleted: loadTableAttributes,
+  });
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -71,14 +55,14 @@ function TableAttributes() {
     try {
       const response = await TableAttributeService.uploadExcel(file);
 
-      setSuccessMessage(response.data);
-      setShowSuccess(true);
+      toast.success(
+        typeof response.data === "string" ? response.data : "Upload complete.",
+      );
 
       loadTableAttributes();
     } catch (error) {
       console.error("Upload Error:", error);
-
-      alert(error.response?.data || "Excel upload failed.");
+      toast.error(getApiErrorMessage(error, "Excel upload failed."));
     }
 
     e.target.value = "";
@@ -127,7 +111,7 @@ function TableAttributes() {
 
             <ActionIconButton
               type="delete"
-              onClick={() => handleDelete(params.data.id)}
+              onClick={() => del.request(params.data)}
               title="Delete table attribute"
             />
           </div>
@@ -139,19 +123,18 @@ function TableAttributes() {
     try {
       if (id != null) {
         await TableAttributeService.update(id, newAttribute);
-        setSuccessMessage("Table Attribute updated successfully!");
+        toast.success("Table attribute updated.");
       } else {
         await TableAttributeService.create(newAttribute);
-        setSuccessMessage("Table Attribute added successfully!");
+        toast.success("Table attribute added.");
       }
-      setShowSuccess(true);
       setEditingAttribute(null);
       setId(null);
       setShowModal(false);
       loadTableAttributes();
     } catch (error) {
       console.error("Error:", error);
-      alert("Operation failed.");
+      toast.error(getApiErrorMessage(error, "Operation failed."));
     }
   };
 
@@ -218,17 +201,15 @@ function TableAttributes() {
         onSave={handleSave}
         initialData={editingAttribute}
       />
-      <SuccessModal
-        show={showSuccess}
-        message={successMessage}
-        onClose={() => {
-          setShowSuccess(false);
-        }}
-      />
-      <DeleteModal
-        show={showDelete}
-        message="Table Attribute deleted successfully!"
-        onClose={() => setShowDelete(false)}
+      <ConfirmDialog
+        open={Boolean(del.pending)}
+        title={`Delete "${del.pending?.name || "this table attribute"}"?`}
+        body="Questions and rules that use this attribute may be affected. This can't be undone."
+        confirmLabel="Delete table attribute"
+        loading={del.deleting}
+        error={del.error}
+        onConfirm={del.confirm}
+        onCancel={del.close}
       />
     </div>
   );

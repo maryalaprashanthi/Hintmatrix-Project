@@ -3,8 +3,9 @@ import { createPortal } from "react-dom";
 import Select from "react-select";
 
 import CourseService from "../../services/CourseService";
+import SubjectService from "../../services/SubjectService";
 import ChapterService from "../../services/ChapterService";
-import CategoryService from "../../services/QuestionCategoryService";
+import TopicService from "../../services/TopicService";
 import QuestionTypeService from "../../services/QuestionTypeService";
 import QuestionService from "../../services/QuestionService";
 import TableHeaderService from "../../services/TableHeaderService";
@@ -74,21 +75,25 @@ function QuestionType2Modal({
   onSave,
   questionData,
   initialCourseId,
+  initialSubjectId,
   initialChapterId,
-  initialCategoryId,
+  initialTopicId,
 }) {
   const [courseId, setCourseId] = useState(initialCourseId || null);
+  const [subjectId, setSubjectId] = useState(initialSubjectId || null);
   const [chapterId, setChapterId] = useState(initialChapterId || null);
-  const [categoryId, setCategoryId] = useState(initialCategoryId || null);
+  const [topicId, setTopicId] = useState(initialTopicId || null);
   const [questionTypeId, setQuestionTypeId] = useState(null);
   const [questionText, setQuestionText] = useState("");
 
   const [courseOptions, setCourseOptions] = useState([]);
+  const [subjectOptions, setSubjectOptions] = useState([]);
   const [chapterOptions, setChapterOptions] = useState([]);
-  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [topicOptions, setTopicOptions] = useState([]);
   const [questionTypeOptions, setQuestionTypeOptions] = useState([]);
+  const [allSubjectOptions, setAllSubjectOptions] = useState([]);
   const [allChapterOptions, setAllChapterOptions] = useState([]);
-  const [allCategoryOptions, setAllCategoryOptions] = useState([]);
+  const [allTopicOptions, setAllTopicOptions] = useState([]);
 
   const [headerOptions, setHeaderOptions] = useState([]);
   const [attributeOptions, setAttributeOptions] = useState([]);
@@ -110,7 +115,8 @@ function QuestionType2Modal({
 
   useEffect(() => {
     loadCourses();
-    loadCategories();
+    loadSubjects();
+    loadTopics();
     loadChapters();
     loadQuestionTypes();
     loadHeaders();
@@ -118,11 +124,29 @@ function QuestionType2Modal({
   }, []);
 
   /* =========================================================
-     LOAD CHAPTERS WHEN COURSE CHANGES
+     CASCADE: course -> subject -> chapter -> topic
   ========================================================= */
 
   useEffect(() => {
     if (courseId) {
+      setSubjectOptions(
+        allSubjectOptions.filter(
+          (option) => String(option.courseId) === String(courseId),
+        ),
+      );
+    } else {
+      setSubjectOptions([]);
+    }
+  }, [courseId, allSubjectOptions]);
+
+  useEffect(() => {
+    if (subjectId) {
+      setChapterOptions(
+        allChapterOptions.filter(
+          (option) => String(option.subjectId) === String(subjectId),
+        ),
+      );
+    } else if (courseId) {
       setChapterOptions(
         allChapterOptions.filter(
           (option) => String(option.courseId) === String(courseId),
@@ -131,19 +155,19 @@ function QuestionType2Modal({
     } else {
       setChapterOptions([]);
     }
-  }, [courseId, allChapterOptions]);
+  }, [courseId, subjectId, allChapterOptions]);
 
   useEffect(() => {
     if (chapterId) {
-      setCategoryOptions(
-        allCategoryOptions.filter(
+      setTopicOptions(
+        allTopicOptions.filter(
           (option) => String(option.chapterId) === String(chapterId),
         ),
       );
     } else {
-      setCategoryOptions([]);
+      setTopicOptions([]);
     }
-  }, [chapterId, allCategoryOptions]);
+  }, [chapterId, allTopicOptions]);
 
   /* =========================================================
      EDIT / RESET FORM
@@ -156,16 +180,16 @@ function QuestionType2Modal({
       setQuestionText(questionData.questionText || "");
 
       /*
-       * courseId, chapterId and categoryId are stored
+       * courseId, subjectId, chapterId and topicId are stored
        * as IDs in state.
        */
       setCourseId(questionData.courseId ?? questionData.course_id ?? null);
 
+      setSubjectId(questionData.subjectId ?? questionData.subject_id ?? null);
+
       setChapterId(questionData.chapterId ?? questionData.chapter_id ?? null);
 
-      setCategoryId(
-        questionData.categoryId ?? questionData.category_id ?? null,
-      );
+      setTopicId(questionData.topicId ?? questionData.topic_id ?? null);
       setQuestionTypeId(
         questionData.questionTypeId ?? questionData.question_type_id ?? null,
       );
@@ -212,8 +236,9 @@ function QuestionType2Modal({
       }
     } else {
       setCourseId(initialCourseId || null);
+      setSubjectId(initialSubjectId || null);
       setChapterId(initialChapterId || null);
-      setCategoryId(initialCategoryId || null);
+      setTopicId(initialTopicId || null);
       setQuestionTypeId(null);
       setQuestionText("");
       setQuestionAttributes([emptyRow()]);
@@ -222,7 +247,13 @@ function QuestionType2Modal({
     return () => {
       cancelled = true;
     };
-  }, [questionData, initialCourseId, initialChapterId, initialCategoryId]);
+  }, [
+    questionData,
+    initialCourseId,
+    initialSubjectId,
+    initialChapterId,
+    initialTopicId,
+  ]);
 
   /* =========================================================
      COURSES
@@ -245,32 +276,48 @@ function QuestionType2Modal({
   };
 
   /* =========================================================
-     CATEGORIES
+     SUBJECTS
   ========================================================= */
 
-  const loadCategories = async () => {
+  const loadSubjects = async () => {
     try {
-      const response = await CategoryService.getAll();
+      const response = await SubjectService.getAll();
+      const data = getResponseArray(response);
 
-      console.log("CATEGORY API RESPONSE:", response);
-      console.log("CATEGORY DATA:", response?.data);
+      setAllSubjectOptions(
+        data.map((item) => ({
+          value: item.subject_id ?? item.subjectId ?? item.id,
+          label: item.subject_name ?? item.subjectName ?? item.name ?? "",
+          courseId: item.course_id ?? item.courseId,
+        })),
+      );
+    } catch (error) {
+      console.error("Error loading subjects:", error);
+      setSubjectOptions([]);
+    }
+  };
+
+  /* =========================================================
+     TOPICS
+  ========================================================= */
+
+  const loadTopics = async () => {
+    try {
+      const response = await TopicService.getAll();
 
       const data = getResponseArray(response);
 
-      console.log("CATEGORY ARRAY:", data);
-
       const options = data.map((item) => ({
-        value: item.category_id ?? item.categoryId ?? item.id,
-        label: item.category_name ?? item.categoryName ?? item.name ?? "",
+        value: item.topic_id ?? item.topicId ?? item.id,
+        label: item.topic_name ?? item.topicName ?? item.name ?? "",
         chapterId: item.chapter_id ?? item.chapterId,
+        subjectId: item.subject_id ?? item.subjectId,
       }));
 
-      console.log("CATEGORY OPTIONS:", options);
-
-      setAllCategoryOptions(options);
+      setAllTopicOptions(options);
     } catch (error) {
-      console.error("Error loading categories:", error);
-      setCategoryOptions([]);
+      console.error("Error loading topics:", error);
+      setTopicOptions([]);
     }
   };
 
@@ -298,6 +345,12 @@ function QuestionType2Modal({
           item.course?.course_id ??
           item.course?.courseId ??
           item.course?.id,
+        subjectId:
+          item.subject_id ??
+          item.subjectId ??
+          item.subject?.subject_id ??
+          item.subject?.subjectId ??
+          item.subject?.id,
       }));
 
       console.log("CHAPTER OPTIONS:", options);
@@ -440,8 +493,9 @@ function QuestionType2Modal({
 
   const resetForm = () => {
     setCourseId(null);
+    setSubjectId(null);
     setChapterId(null);
-    setCategoryId(null);
+    setTopicId(null);
     setQuestionTypeId(null);
     setQuestionText("");
 
@@ -467,8 +521,9 @@ function QuestionType2Modal({
   const handleSave = async () => {
     if (
       !courseId ||
+      !subjectId ||
       !chapterId ||
-      !categoryId ||
+      !topicId ||
       !questionTypeId ||
       !questionText.trim()
     ) {
@@ -487,8 +542,9 @@ function QuestionType2Modal({
 
     const payload = {
       courseId: Number(courseId),
+      subjectId: Number(subjectId),
       chapterId: Number(chapterId),
-      categoryId: Number(categoryId),
+      topicId: Number(topicId),
       questionTypeId: Number(questionTypeId),
       questionText: questionText.trim(),
 
@@ -601,6 +657,39 @@ function QuestionType2Modal({
                 </div>
               </div>
 
+              {/* SUBJECT */}
+
+              <div className="qt2-form-group">
+                <label>
+                  Subject <span>*</span>
+                </label>
+
+                <div className="qt2-input-box">
+                  <FaLayerGroup className="qt2-input-icon" />
+
+                  <Select
+                    className="qt2-react-select-container"
+                    classNamePrefix="qt2-react-select"
+                    options={subjectOptions}
+                    value={
+                      subjectOptions.find(
+                        (option) => String(option.value) === String(subjectId),
+                      ) || null
+                    }
+                    placeholder="Select Subject"
+                    isDisabled
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+                    styles={{
+                      menuPortal: (base) => ({
+                        ...base,
+                        zIndex: 99999,
+                      }),
+                    }}
+                  />
+                </div>
+              </div>
+
               {/* CHAPTER */}
 
               <div className="qt2-form-group">
@@ -634,11 +723,11 @@ function QuestionType2Modal({
                 </div>
               </div>
 
-              {/* CATEGORY */}
+              {/* TOPIC */}
 
               <div className="qt2-form-group">
                 <label>
-                  Category <span>*</span>
+                  Topic <span>*</span>
                 </label>
 
                 <div className="qt2-input-box">
@@ -647,16 +736,16 @@ function QuestionType2Modal({
                   <Select
                     className="qt2-react-select-container"
                     classNamePrefix="qt2-react-select"
-                    options={categoryOptions}
+                    options={topicOptions}
                     value={
-                      categoryOptions.find(
-                        (option) => String(option.value) === String(categoryId),
+                      topicOptions.find(
+                        (option) => String(option.value) === String(topicId),
                       ) || null
                     }
                     onChange={(selected) => {
-                      setCategoryId(selected ? selected.value : null);
+                      setTopicId(selected ? selected.value : null);
                     }}
-                    placeholder="Select Category"
+                    placeholder="Select Topic"
                     isDisabled={!chapterId}
                     isSearchable
                     isClearable

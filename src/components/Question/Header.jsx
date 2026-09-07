@@ -146,7 +146,7 @@ function Header({
 
           <small className="text-muted">
             {question &&
-              `${question.courseName} • ${question.chapterName} • ${question.categoryName}`}
+              `${question.courseName} • ${question.subjectName} • ${question.chapterName} • ${question.topicName}`}
           </small>
         </div>
 

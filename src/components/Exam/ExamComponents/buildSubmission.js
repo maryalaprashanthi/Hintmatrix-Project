@@ -133,26 +133,27 @@ export const buildSubmission = ({
   examDragById,
   userId,
 }) => {
-  const answers = questions
-    .map(({ id, question }) => {
-      const entry = sessionById[id];
-      const questionType =
-        question?.questionType ??
-        entry?.questionType ??
-        entry?.question?.questionType;
+  // Every question in the paper is sent, whether attempted or not. An
+  // unattempted question goes out with an empty `answers` array so the
+  // backend can still score it (as a miss) instead of skipping it.
+  const answers = questions.map(({ id, question }) => {
+    const entry = sessionById[id];
+    const questionType =
+      question?.questionType ??
+      entry?.questionType ??
+      entry?.question?.questionType;
 
-      let answered = [];
-      if (questionType === "JOURNAL") {
-        answered = journalAnswers(entry);
-      } else if (questionType === "DROPDOWN") {
-        answered = dropdownAnswers(entry);
-      } else {
-        answered = dragAnswers(examDragById?.[id]);
-      }
+    let answered = [];
+    if (questionType === "JOURNAL") {
+      answered = journalAnswers(entry);
+    } else if (questionType === "DROPDOWN") {
+      answered = dropdownAnswers(entry);
+    } else {
+      answered = dragAnswers(examDragById?.[id]);
+    }
 
-      return { questionId: id, questionType, answers: answered };
-    })
-    .filter((question) => question.answers.length > 0);
+    return { questionId: id, questionType, answers: answered };
+  });
 
   return { userId, answers };
 };

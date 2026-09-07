@@ -20,11 +20,11 @@ import BranchAdmin from "./pages/Admin/BranchAdmin";
 import SuperAdmin from "./pages/Admin/SuperAdmin";
 import Student from "./pages/Admin/Student";
 
+import Subjects from "./pages/Subjects/Subjects";
 import Chapters from "./pages/Chapters/Chapters";
 
-import QuestionCategories from "./pages/QuestionCategories/QuestionCategories";
+import Topics from "./pages/Topics/Topics";
 import QuestionList from "./pages/Questions/QuestionList";
-import QuestionType2 from "./pages/Questions/QuestionType2Modal";
 
 import RuleEngine from "./pages/RuleEngine/RuleEngine";
 import StudentAttendance from "./pages/StudentAttendance/StudentAttendance";
@@ -58,6 +58,7 @@ import JournalPage from "./components/JournalQuestion/JournalPage";
 import DropdownPage from "./components/DropdownQuestions/DropdownPage";
 import CourseSubscribe from "./pages/CourseSubscribe";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
+import { CONTENT_MANAGER_ROLES } from "./utils/roles";
 import Unauthorized from "./pages/Unauthorized/Unauthorized";
 import ExamPage from "./components/Exam/ExamPage";
 import ExamHub from "./pages/ExamHub/ExamHub";
@@ -69,7 +70,6 @@ import McqList from "./components/Mcq_Questions/McqList";
 
 function App() {
   const navigate = useNavigate();
-  const [showQuestionType2, setShowQuestionType2] = useState(true);
   const [coursesList, setCoursesList] = useState([
     {
       id: 1,
@@ -275,49 +275,63 @@ function App() {
           element={<Courses dynamicCourses={coursesList} />}
         />
 
-        {/* Course -> Chapters */}
-        <Route path="/chapters/:courseId" element={<Chapters />} />
-
-        {/* Questions -> Chapters (NEW) */}
-        <Route path="/questions/chapters" element={<Chapters />} />
-
-        {/* Course -> Question Categories */}
-        <Route
-          path="/question-categories/:courseId/:chapterName"
-          element={<QuestionCategories />}
-        />
-
-        {/* Questions -> Question Categories (NEW) */}
-        <Route
-          path="/questions/question-categories"
-          element={<QuestionCategories />}
-        />
-        <Route path="/questions/question-list" element={<QuestionList />} />
-        {/* Questions -> Question List */}
-        <Route
-          path="/questions/question-list/:questionId"
-          element={<QuestionPage />}
-        />
-        <Route
-          path="/questions/questiontype2"
-          element={
-            <QuestionType2
-              show={true}
-              onClose={() => navigate("/questions/question-list")}
-              onSave={(data) => console.log(data)}
-            />
-          }
-        />
-        <Route
-          path="/questions/question-categories/:chapterId/:chapterName"
-          element={<QuestionCategories />}
-        />
-
         {/* Add Course */}
         <Route
           path="/courses/new"
-          element={<CourseForm onSaveCourse={handleSaveCourse} />}
+          element={
+            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+              <CourseForm onSaveCourse={handleSaveCourse} />
+            </ProtectedRoute>
+          }
         />
+
+        {/*
+          Content drill-down: Course > Subject > Chapter > Topic > Questions.
+          One parent id per segment, nothing in query strings or router state.
+          The list pages are content-management, so they're admin-only; the
+          single-question view stays open for practice.
+        */}
+        <Route
+          path="/courses/:courseId/subjects"
+          element={
+            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+              <Subjects />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subjects/:subjectId/chapters"
+          element={
+            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+              <Chapters />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chapters/:chapterId/topics"
+          element={
+            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+              <Topics />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/topics/:topicId/questions"
+          element={
+            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+              <QuestionList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/questions"
+          element={
+            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+              <QuestionList />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/questions/:questionId" element={<QuestionPage />} />
 
         {/* Tables */}
         <Route path="/table-names" element={<TableNames />} />
@@ -332,7 +346,14 @@ function App() {
 
         {/* Learning */}
         <Route path="/practice" element={<Practice />} />
-        <Route path="/Exam" element={<ExamList />} />
+        <Route
+          path="/Exam"
+          element={
+            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+              <ExamList />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/sessions" element={<Sessions />} />
         <Route path="/results" element={<Results />} />
         <Route path="/certificates" element={<Certificates />} />
@@ -343,11 +364,39 @@ function App() {
         <Route path="/course-subscribe" element={<CourseSubscribe />} />
         <Route path="/exam-hub" element={<ExamHub />} />
         <Route path="/exams" element={<ExamCatalog />} />
-        <Route path="/exam-paper" element={<ExamPaper />} />
-        <Route path="/exam-paper/:examId" element={<ExamPaper />} />
-        <Route path="/mcq-questions/create" element={<CreateMcq />} />
+        <Route
+          path="/exam-paper"
+          element={
+            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+              <ExamPaper />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/exam-paper/:examId"
+          element={
+            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+              <ExamPaper />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mcq-questions/create"
+          element={
+            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+              <CreateMcq />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/mcq-questions/practice" element={<McqPractice />} />
-        <Route path="/mcq-questions/list" element={<McqList />} />
+        <Route
+          path="/mcq-questions/list"
+          element={
+            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+              <McqList />
+            </ProtectedRoute>
+          }
+        />
       </Route>
       <Route path="/exams/:examId" element={<ExamPage />} />
     </Routes>

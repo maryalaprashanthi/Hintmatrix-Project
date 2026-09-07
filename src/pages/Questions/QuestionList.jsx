@@ -1,7 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import QuestionService from "../../services/QuestionService";
-import SuccessModal from "../../components/Common/SuccessModal";
-import DeleteModal from "../../components/Common/DeleteModal";
 import QuestionUploadErrorsModal from "../../components/Common/QuestionUploadErrorsModal";
 import * as XLSX from "xlsx";
 
@@ -17,7 +15,14 @@ import {
 
 import { FaSearch, FaPlus, FaEye, FaEdit, FaTrash } from "react-icons/fa";
 
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { canManageContent } from "../../utils/roles";
+import { paths } from "../../routes/paths";
+import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
+import ConfirmDialog from "../../components/Common/ConfirmDialog";
+import TopicService from "../../services/TopicService";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
+import { useToast } from "../../components/Toast/useToast";
 import "./QuestionList.css";
 import AddQuestionModal from "./AddQuestionModal";
 import QuestionType2Modal from "./QuestionType2Modal";
@@ -35,11 +40,10 @@ const getQuestionType = (question) => {
 };
 
 const QuestionList = () => {
+  const toast = useToast();
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [showDelete, setShowDelete] = useState(false);
 
   // =========================================================
   // QUESTION UPLOAD ERROR STATES
@@ -54,12 +58,7 @@ const QuestionList = () => {
 
   const QUESTION_UPLOAD_ERRORS_KEY = "questionUploadErrors";
 
-  const userRole = (localStorage.getItem("role") || "GUEST")
-    .toString()
-    .trim()
-    .toUpperCase();
-
-  const isStudent = userRole === "STUDENT";
+  const canManage = canManageContent();
 
   // =========================================================
   // FILE INPUT
@@ -75,11 +74,26 @@ const QuestionList = () => {
 
   const navigate = useNavigate();
 
-  const [searchParams] = useSearchParams();
+  // /topics/:topicId/questions - the topic id is the only thing in the URL.
+  // Its record carries the course / subject / chapter (ids + names) that the
+  // filter call, the create-question modal and the breadcrumb all need.
+  // No topicId (the flat /questions route) = admin "all questions" mode.
+  const { topicId } = useParams();
+  const [topic, setTopic] = useState(null);
 
-  const courseId = searchParams.get("courseId");
-  const chapterId = searchParams.get("chapterId");
-  const categoryId = searchParams.get("categoryId");
+  useEffect(() => {
+    if (!topicId) {
+      setTopic(null);
+      return;
+    }
+    TopicService.getById(topicId)
+      .then((response) => setTopic(response.data ?? null))
+      .catch((error) => console.error("Error loading topic:", error));
+  }, [topicId]);
+
+  const courseId = topic?.courseId;
+  const subjectId = topic?.subjectId;
+  const chapterId = topic?.chapterId;
 
   // =========================================================
   // QUESTION TYPE
@@ -89,10 +103,6 @@ const QuestionList = () => {
 
   const showQuestionType2 =
     questionType === "JOURNAL" || questionType === "DROPDOWN";
-
-  console.log("Course ID:", courseId);
-  console.log("Chapter ID:", chapterId);
-  console.log("Category ID:", categoryId);
 
   // =========================================================
   // LOAD SAVED UPLOAD ERRORS
@@ -138,46 +148,43 @@ const QuestionList = () => {
   // LOAD QUESTIONS
   // =========================================================
 
+  // Scoped to one topic (/topics/:topicId/questions) vs the flat admin list.
+  const scopedToTopic = Boolean(topicId);
+
   useEffect(() => {
+    // Wait for the topic record before the scoped fetch - it supplies the
+    // course + chapter ids the /filter endpoint needs.
+    if (scopedToTopic && !topic) return;
     loadQuestions();
-  }, [courseId, chapterId, categoryId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [topic, topicId]);
 
   const loadQuestions = async () => {
     try {
       let response;
 
-      if (courseId && chapterId && categoryId) {
-        // Student flow
+      if (scopedToTopic && topic) {
         response = await QuestionService.getQuestionsByMapping(
-          courseId,
-          chapterId,
-          categoryId,
+          topic.courseId,
+          topic.chapterId,
+          topicId,
         );
-
-        console.log("Question API response:", response);
-
-        console.log("Question API data:", response.data);
-      } else {
-        // Admin flow
+      } else if (!scopedToTopic) {
+        // Flat admin list
         response = await QuestionService.getQuestionText();
-
-        console.log("Admin question response:", response);
-
-        console.log("Admin question data:", response.data);
+      } else {
+        return;
       }
 
       const loadedQuestions = Array.isArray(response.data) ? response.data : [];
 
-      if (courseId && chapterId && categoryId) {
-        const matchesMapping = (question) =>
-          String(question.courseId ?? question.course_id) ===
-            String(courseId) &&
-          String(question.chapterId ?? question.chapter_id) ===
-            String(chapterId) &&
-          String(question.categoryId ?? question.category_id) ===
-            String(categoryId);
-
-        setQuestions(loadedQuestions.filter(matchesMapping));
+      if (scopedToTopic) {
+        setQuestions(
+          loadedQuestions.filter(
+            (question) =>
+              String(question.topicId ?? question.topic_id) === String(topicId),
+          ),
+        );
       } else {
         setQuestions(loadedQuestions);
       }
@@ -267,16 +274,16 @@ const handleFileUpload = async (e) => {
     // MCQ QUESTION UPLOAD
     // =====================================================
 
-    if (excelQuestionType === "SINGLE_CHOICE") {
+    if (["SINGLE_CHOICE", "MULTIPLE_CHOICE"].includes(excelQuestionType)) {
       console.log("MCQ Excel upload detected.");
 
       // ===================================================
       // VALIDATE REQUIRED IDs
       // ===================================================
 
-      if (!courseId || !chapterId || !categoryId) {
-        alert(
-          "Course ID, Chapter ID and Category ID are required for MCQ upload.",
+      if (!courseId || !chapterId || !topicId) {
+        toast.error(
+          "Course ID, Chapter ID and Topic ID are required for MCQ upload.",
         );
 
         return;
@@ -294,12 +301,12 @@ const handleFileUpload = async (e) => {
 
       formData.append("chapterId", chapterId);
 
-      formData.append("categoryId", categoryId);
+      formData.append("topicId", topicId);
 
       console.log("MCQ Upload Parameters:", {
         courseId,
         chapterId,
-        categoryId,
+        topicId,
       });
 
       // ===================================================
@@ -319,10 +326,10 @@ const handleFileUpload = async (e) => {
       // SUCCESS MESSAGE
       // ===================================================
 
-      alert(
+      toast.success(
         typeof response.data === "string"
           ? response.data
-          : "MCQ questions uploaded successfully.",
+          : "MCQ questions uploaded.",
       );
 
       // ===================================================
@@ -363,7 +370,7 @@ const handleFileUpload = async (e) => {
     const request = {
       courseId: Number(courseId),
       chapterId: Number(chapterId),
-      categoryId: Number(categoryId),
+      topicId: Number(topicId),
     };
 
     formData.append(
@@ -420,7 +427,7 @@ const handleFileUpload = async (e) => {
     // =====================================================
 
     else {
-      console.log("All questions uploaded successfully.");
+      toast.success("Questions uploaded.");
 
       setUploadErrors([]);
 
@@ -467,7 +474,7 @@ const handleFileUpload = async (e) => {
 
         setShowUploadErrors(true);
       } else {
-        alert(
+        toast.error(
           typeof errorData === "string"
             ? errorData
             : errorData.message ||
@@ -475,9 +482,7 @@ const handleFileUpload = async (e) => {
         );
       }
     } else {
-      alert(
-        "Question upload failed. Please try again.",
-      );
+      toast.error("Question upload failed. Please try again.");
     }
   } finally {
     // =====================================================
@@ -495,9 +500,7 @@ const handleFileUpload = async (e) => {
   const handleView = (question) => {
     if (!isQuestionActive(question)) return;
 
-    navigate(
-      `/questions/question-list/${question.questionId}?courseId=${courseId}&chapterId=${chapterId}&categoryId=${categoryId}`,
-    );
+    navigate(paths.question(question.questionId));
   };
 
   // =========================================================
@@ -532,31 +535,15 @@ const handleFileUpload = async (e) => {
   // DELETE
   // =========================================================
 
-  const handleDeleteClick = async (question) => {
-    if (!isQuestionActive(question)) return;
-
-    const { questionId: id } = question;
-
-    const confirmDelete = window.confirm(
-      "Are you sure you want to permanently delete this question?",
-    );
-
-    if (!confirmDelete) return;
-
-    try {
-      await QuestionService.deleteQuestion(id);
-
+  const del = useDeleteConfirm({
+    entity: "question",
+    deleteFn: async (question) => {
+      await QuestionService.deleteQuestion(question.questionId);
       setQuestions((prevQuestions) =>
-        prevQuestions.filter((question) => question.questionId !== id),
+        prevQuestions.filter((q) => q.questionId !== question.questionId),
       );
-
-      setShowDelete(true);
-    } catch (error) {
-      console.error("Error deleting question:", error);
-
-      alert("Failed to delete question. Please try again.");
-    }
-  };
+    },
+  });
 
   // =========================================================
   // UI
@@ -564,18 +551,47 @@ const handleFileUpload = async (e) => {
 
   return (
     <Container fluid className="question-page">
+      {topic && (
+        <Breadcrumbs
+          items={[
+            { label: topic.courseName || "Course", to: paths.courses() },
+            {
+              label: topic.subjectName,
+              to: topic.courseId
+                ? paths.courseSubjects(topic.courseId)
+                : undefined,
+            },
+            {
+              label: topic.chapterName,
+              to: topic.subjectId
+                ? paths.subjectChapters(topic.subjectId)
+                : undefined,
+            },
+            {
+              label: topic.name,
+              to: topic.chapterId
+                ? paths.chapterTopics(topic.chapterId)
+                : undefined,
+            },
+            { label: "Questions" },
+          ]}
+        />
+      )}
+
       {/* =====================================================
           HEADER
       ====================================================== */}
 
       <Row className="align-items-center mb-4">
         <Col lg={6}>
-          <h2 className="page-title">Easy Model Questions</h2>
+          <h2 className="page-title">
+            {topic?.name ? `${topic.name} — Questions` : "All Questions"}
+          </h2>
 
           <p className="question-count">{filteredQuestions.length} Questions</p>
         </Col>
 
-        {!isStudent && (
+        {canManage && (
           <Col
             lg={6}
             className="d-flex justify-content-lg-end align-items-center gap-2 mt-3 mt-lg-0"
@@ -685,9 +701,11 @@ const handleFileUpload = async (e) => {
                   <div className="question-meta">
                     <Badge bg="success">{question.courseName}</Badge>
 
+                    <Badge bg="secondary">{question.subjectName}</Badge>
+
                     <Badge bg="warning">{question.chapterName}</Badge>
 
-                    <Badge bg="info">{question.categoryName}</Badge>
+                    <Badge bg="info">{question.topicName}</Badge>
                   </div>
                 </Col>
 
@@ -707,39 +725,43 @@ const handleFileUpload = async (e) => {
                     View
                   </Button>
 
-                  {/* EDIT */}
+                  {canManage && (
+                    <>
+                      {/* EDIT */}
 
-                  <Button
-                    variant="outline-warning"
-                    size="sm"
-                    disabled={!isQuestionActive(question)}
-                    onClick={() => handleEdit(question)}
-                  >
-                    <FaEdit className="me-1" />
-                    Edit
-                  </Button>
+                      <Button
+                        variant="outline-warning"
+                        size="sm"
+                        disabled={!isQuestionActive(question)}
+                        onClick={() => handleEdit(question)}
+                      >
+                        <FaEdit className="me-1" />
+                        Edit
+                      </Button>
 
-                  {/* ENABLE / DISABLE */}
+                      {/* ENABLE / DISABLE */}
 
-                  <Form.Check
-                    type="switch"
-                    id={`switch-${question.questionId}`}
-                    checked={isQuestionActive(question)}
-                    onChange={() => handleToggle(question.questionId)}
-                    label="Disable"
-                  />
+                      <Form.Check
+                        type="switch"
+                        id={`switch-${question.questionId}`}
+                        checked={isQuestionActive(question)}
+                        onChange={() => handleToggle(question.questionId)}
+                        label="Disable"
+                      />
 
-                  {/* DELETE */}
+                      {/* DELETE */}
 
-                  <Button
-                    variant="outline-danger"
-                    size="sm"
-                    disabled={!isQuestionActive(question)}
-                    onClick={() => handleDeleteClick(question)}
-                  >
-                    <FaTrash className="me-1" />
-                    Delete
-                  </Button>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        disabled={!isQuestionActive(question)}
+                        onClick={() => del.request(question)}
+                      >
+                        <FaTrash className="me-1" />
+                        Delete
+                      </Button>
+                    </>
+                  )}
                 </Col>
               </Row>
             </ListGroup.Item>
@@ -765,14 +787,16 @@ const handleFileUpload = async (e) => {
             show={true}
             questionData={selectedQuestion}
             initialCourseId={courseId}
+            initialSubjectId={subjectId}
             initialChapterId={chapterId}
-            initialCategoryId={categoryId}
+            initialTopicId={topicId}
             onClose={() => {
               setShowModal(false);
               setSelectedQuestion(null);
             }}
             onSave={async (questionData) => {
-              if (selectedQuestion?.questionId) {
+              const isEdit = Boolean(selectedQuestion?.questionId);
+              if (isEdit) {
                 await QuestionService.update(
                   selectedQuestion.questionId,
                   questionData,
@@ -787,27 +811,29 @@ const handleFileUpload = async (e) => {
 
               setSelectedQuestion(null);
 
-              setShowSuccess(true);
+              toast.success(isEdit ? "Question updated." : "Question added.");
             }}
           />
         ) : (
           <AddQuestionModal
             courseId={courseId}
+            subjectId={subjectId}
             chapterId={chapterId}
-            categoryId={categoryId}
+            topicId={topicId}
             initialData={selectedQuestion}
             onClose={() => {
               setShowModal(false);
               setSelectedQuestion(null);
             }}
             onSave={async () => {
+              const isEdit = Boolean(selectedQuestion?.questionId);
               await loadQuestions();
 
               setShowModal(false);
 
               setSelectedQuestion(null);
 
-              setShowSuccess(true);
+              toast.success(isEdit ? "Question updated." : "Question added.");
             }}
           />
         ))}
@@ -822,29 +848,22 @@ const handleFileUpload = async (e) => {
         onClose={() => setShowUploadErrors(false)}
       />
 
-      {/* =====================================================
-          SUCCESS MODAL
-      ====================================================== */}
-
-      {showSuccess && (
-        <SuccessModal
-          show={showSuccess}
-          onClose={() => setShowSuccess(false)}
-          message="Question added successfully!"
-        />
-      )}
-
-      {/* =====================================================
-          DELETE MODAL
-      ====================================================== */}
-
-      {showDelete && (
-        <DeleteModal
-          show={showDelete}
-          onClose={() => setShowDelete(false)}
-          message="Question deleted successfully!"
-        />
-      )}
+      <ConfirmDialog
+        open={Boolean(del.pending)}
+        title="Delete this question?"
+        body={
+          del.pending?.questionText
+            ? `"${del.pending.questionText.slice(0, 120)}${
+                del.pending.questionText.length > 120 ? "…" : ""
+              }" will be removed. This can't be undone.`
+            : "This question will be removed. This can't be undone."
+        }
+        confirmLabel="Delete question"
+        loading={del.deleting}
+        error={del.error}
+        onConfirm={del.confirm}
+        onCancel={del.close}
+      />
     </Container>
   );
 };

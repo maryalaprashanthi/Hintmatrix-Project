@@ -6,23 +6,16 @@ import StudentForm from "./StudentForm";
 import "./Student.css";
 import StudentTable from "./StudentTable";
 import StudentService from "../../services/UserService";
-import SuccessModal from "../../components/Common/SuccessModal";
-import DeleteModal from "../../components/Common/DeleteModal";
+import { useToast } from "../../components/Toast/useToast";
 
 function Student() {
+  const toast = useToast();
   const [showModal, setShowModal] = useState(false);
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [colleges, setColleges] = useState([]);
   const [branches, setBranches] = useState([]);
   const [sections, setSections] = useState([]);
-
-  // Success Modal
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-
-  // Delete Modal
-  const [showDelete, setShowDelete] = useState(false);
 
   const fileInputRef = useRef(null);
 
@@ -95,18 +88,14 @@ function Student() {
 
     StudentService.uploadUsersExcel(file)
       .then((response) => {
-        setSuccessMessage(
-          response.data.message || "Students uploaded successfully!",
-        );
-        setShowSuccess(true);
+        toast.success(response.data.message || "Students uploaded.");
 
         // Refresh table after upload
         fetchStudents();
       })
       .catch((error) => {
         console.error("Upload Error:", error);
-
-        alert("Failed to upload students.");
+        toast.error("Failed to upload students.");
       });
 
     // reset input so same file can be selected again
@@ -141,8 +130,6 @@ function Student() {
           )
         : refreshedStudents;
     });
-
-    setShowDelete(true);
   };
 
   // Save / Update Student
@@ -152,7 +139,7 @@ function Student() {
 
       if (!studentId) {
         console.error("Cannot update student without an ID:", selectedStudent);
-        alert("Unable to update Student: student ID is missing.");
+        toast.error("Unable to update student: student ID is missing.");
         return;
       }
 
@@ -160,29 +147,27 @@ function Student() {
         .then(() => {
           fetchStudents();
 
-          setSuccessMessage("Student updated successfully!");
-          setShowSuccess(true);
+          toast.success("Student updated.");
 
           setShowModal(false);
           setSelectedStudent(null);
         })
         .catch((error) => {
           console.error("Update Error:", error);
-          alert("Failed to update Student.");
+          toast.error("Failed to update student.");
         });
     } else {
       StudentService.createStudent(studentData)
         .then(() => {
           fetchStudents();
 
-          setSuccessMessage("Student saved successfully!");
-          setShowSuccess(true);
+          toast.success("Student saved.");
 
           setShowModal(false);
         })
         .catch((error) => {
           console.error("Save Error:", error);
-          alert("Failed to add Student.");
+          toast.error("Failed to add student.");
         });
     }
   };
@@ -242,19 +227,6 @@ function Student() {
         sections={sections}
       />
 
-      {/* Add / Update / Upload Success Modal */}
-      <SuccessModal
-        show={showSuccess}
-        message={successMessage}
-        onClose={() => setShowSuccess(false)}
-      />
-
-      {/* Delete Success Modal */}
-      <DeleteModal
-        show={showDelete}
-        message="Student deleted successfully!"
-        onClose={() => setShowDelete(false)}
-      />
     </div>
   );
 }

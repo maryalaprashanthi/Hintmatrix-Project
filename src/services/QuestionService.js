@@ -16,12 +16,14 @@ class QuestionService {
       withCredentials: true,
     });
   }
-  getQuestionsByMapping(courseId, chapterId, categoryId) {
+  // Backend /filter maps on courseId + chapterId + topicId only (subject is
+  // implied by the chapter). Subject is a UI-side cascade helper, not a param.
+  getQuestionsByMapping(courseId, chapterId, topicId) {
     return apiClient.get(`${BASE_URL}/filter`, {
       params: {
         courseId,
         chapterId,
-        categoryId,
+        topicId,
       },
       withCredentials: true,
     });

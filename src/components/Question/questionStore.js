@@ -18,13 +18,15 @@ const useQuestionStore = create((set, get) => ({
         currentQuestion = {
           questionId: q.questionId,
           courseId: q.courseId,
+          subjectId: q.subjectId,
           chapterId: q.chapterId,
           questionText: q.questionText,
-          questionCategory: q.questionCategory,
+          questionTopic: q.questionTopic,
           courseName: q.courseName,
+          subjectName: q.subjectName,
           chapterName: q.chapterName,
-          categoryId: q.categoryId,
-          categoryName: q.categoryName,
+          topicId: q.topicId,
+          topicName: q.topicName,
         };
       }
       if (q.questionAttributes) {

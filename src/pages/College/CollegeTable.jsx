@@ -111,7 +111,7 @@ function CollegeTable({ onEdit, onDelete, refresh }) {
             />
             <ActionIconButton
               type="delete"
-              onClick={() => onDelete(params.data.collegeId)}
+              onClick={() => onDelete(params.data)}
               title="Delete college"
             />
           </div>

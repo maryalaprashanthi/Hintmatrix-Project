@@ -18,11 +18,16 @@ import {
   FaTimesCircle,
 } from "react-icons/fa";
 import ExamService from "../../services/ExamService";
+import ConfirmDialog from "../../components/Common/ConfirmDialog";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
+import { useToast } from "../../components/Toast/useToast";
+import { getApiErrorMessage } from "../../utils/apiError";
 import "./ExamList.css";
 import AddExamModal from "./AddExamModal";
 import QuestionSelectionModal from "./QuestionSelectionModal";
 
 export default function ExamList() {
+  const toast = useToast();
   const [showModal, setShowModal] = useState(false);
 
   const [search, setSearch] = useState("");
@@ -79,23 +84,12 @@ export default function ExamList() {
     setEditExam(exam);
     setShowModal(true);
   };
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this exam?")) {
-      return;
-    }
 
-    try {
-      await ExamService.delete(id);
-
-      alert("Exam deleted successfully");
-
-      fetchExams();
-    } catch (error) {
-      console.error("Error deleting exam:", error);
-
-      alert(error.response?.data?.message || "Failed to delete exam");
-    }
-  };
+  const del = useDeleteConfirm({
+    entity: "exam",
+    deleteFn: (exam) => ExamService.delete(exam.id),
+    onDeleted: fetchExams,
+  });
   const handleAddQuestions = (examId) => {
     setSelectedExamId(examId);
     setShowQuestionModal(true);
@@ -281,7 +275,7 @@ export default function ExamList() {
                     <Button
                       size="sm"
                       variant="outline-danger"
-                      onClick={() => handleDelete(exam.id)}
+                      onClick={() => del.request(exam)}
                     >
                       Delete
                     </Button>
@@ -314,10 +308,10 @@ export default function ExamList() {
           try {
             if (editExam) {
               await ExamService.update(editExam.id, exam);
-              alert("Exam updated successfully");
+              toast.success("Exam updated.");
             } else {
               await ExamService.create(exam);
-              alert("Exam created successfully");
+              toast.success("Exam created.");
             }
 
             // Fetch exams again and calculate status
@@ -328,7 +322,7 @@ export default function ExamList() {
           } catch (error) {
             console.error("Error saving exam:", error);
 
-            alert(error.response?.data?.message || "Failed to save exam");
+            toast.error(getApiErrorMessage(error, "Failed to save exam."));
           }
         }}
       />
@@ -342,6 +336,17 @@ export default function ExamList() {
         onAddQuestions={async (questionIds) => {
           await ExamService.addQuestions(selectedExamId, questionIds);
         }}
+      />
+
+      <ConfirmDialog
+        open={Boolean(del.pending)}
+        title={`Delete "${del.pending?.examName || "this exam"}"?`}
+        body="Students will no longer be able to sit this exam. This can't be undone."
+        confirmLabel="Delete exam"
+        loading={del.deleting}
+        error={del.error}
+        onConfirm={del.confirm}
+        onCancel={del.close}
       />
     </Container>
   );

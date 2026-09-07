@@ -8,15 +8,18 @@ import CollegeService from "../../services/CollegeService";
 import BranchService from "../../services/BranchService";
 import CourseService from "../../services/CourseService";
 import SectionService from "../../services/SectionService";
+import SubjectService from "../../services/SubjectService";
 import ChapterService from "../../services/ChapterService";
 import ExamPaperService from "../../services/ExamPaperService";
 import ExamService from "../../services/ExamService";
 
 import "./ExamPaper.css";
 import QuestionSelection from "./QuestionSelection";
+import { useToast } from "../../components/Toast/useToast";
 
 const ExamPaper = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const { examId } = useParams();
   const isEditMode = Boolean(examId);
 
@@ -35,6 +38,7 @@ const ExamPaper = () => {
   const [college, setCollege] = useState(null);
   const [branch, setBranch] = useState(null);
   const [course, setCourse] = useState(null);
+  const [subject, setSubject] = useState(null);
   const [section, setSection] = useState(null);
   const [chapters, setChapters] = useState([]);
 
@@ -51,6 +55,7 @@ const ExamPaper = () => {
   const [branches, setBranches] = useState([]);
   const [courses, setCourses] = useState([]);
   const [sections, setSections] = useState([]);
+  const [subjectData, setSubjectData] = useState([]);
   const [chapterData, setChapterData] = useState([]);
 
   // LOADING STATES
@@ -59,6 +64,7 @@ const ExamPaper = () => {
   const [loadingBranches, setLoadingBranches] = useState(false);
   const [loadingCourses, setLoadingCourses] = useState(false);
   const [loadingSections, setLoadingSections] = useState(false);
+  const [loadingSubjects, setLoadingSubjects] = useState(false);
   const [loadingChapters, setLoadingChapters] = useState(false);
 
   // LOAD COLLEGES
@@ -141,6 +147,26 @@ const ExamPaper = () => {
     }
   };
 
+  // LOAD SUBJECTS
+  // GET /api/subjects
+
+  const loadSubjects = async () => {
+    try {
+      setLoadingSubjects(true);
+
+      const response = await SubjectService.getAll();
+
+      const data = Array.isArray(response.data) ? response.data : [];
+
+      setSubjectData(data);
+    } catch (error) {
+      console.error("Failed to load subjects:", error);
+      setSubjectData([]);
+    } finally {
+      setLoadingSubjects(false);
+    }
+  };
+
   // LOAD CHAPTERS
   // GET /api/chapter
 
@@ -168,6 +194,7 @@ const ExamPaper = () => {
     loadBranches();
     loadCourses();
     loadSections();
+    loadSubjects();
     loadChapters();
   }, []);
 
@@ -236,23 +263,41 @@ const ExamPaper = () => {
       }));
   }, [sections, course]);
 
-  // CHAPTER OPTIONS
+  // SUBJECT OPTIONS
 
-  // Filter chapters according to selected course
+  // Filter subjects according to selected course
 
-  const chapterOptions = useMemo(() => {
+  const subjectOptions = useMemo(() => {
     if (!course) {
       return [];
     }
 
-    return chapterData
+    return subjectData
       .filter((item) => String(item.courseId) === String(course.value))
+      .filter((item) => item.activeRow !== false)
+      .map((item) => ({
+        value: item.subjectId,
+        label: item.subjectName,
+      }));
+  }, [subjectData, course]);
+
+  // CHAPTER OPTIONS
+
+  // Filter chapters according to selected subject
+
+  const chapterOptions = useMemo(() => {
+    if (!subject) {
+      return [];
+    }
+
+    return chapterData
+      .filter((item) => String(item.subjectId) === String(subject.value))
       .filter((item) => item.activeRow !== false)
       .map((item) => ({
         value: item.chapterId,
         label: item.name,
       }));
-  }, [chapterData, course]);
+  }, [chapterData, subject]);
 
   // EDIT MODE: load the exam being edited and prefill the primitive fields
   // GET /api/exams/{examId}
@@ -286,7 +331,9 @@ const ExamPaper = () => {
       })
       .catch((error) => {
         console.error("Failed to load exam for editing:", error);
-        alert(error?.response?.data?.message || "Failed to load this exam.");
+        toast.error(
+          error?.response?.data?.message || "Failed to load this exam.",
+        );
       })
       .finally(() => {
         if (active) setLoadingExam(false);
@@ -336,6 +383,37 @@ const ExamPaper = () => {
   }, [prefill, sectionOptions]);
 
   useEffect(() => {
+    if (prefill?.subjectId == null) return;
+    const match = subjectOptions.find(
+      (item) => String(item.value) === String(prefill.subjectId),
+    );
+    if (match) setSubject(match);
+  }, [prefill, subjectOptions]);
+
+  // EDIT MODE FALLBACK: the exam record itself doesn't store a subjectId
+  // (backend never added the column), so derive it from one of the exam's
+  // own chapters instead - each chapter already knows its subject.
+  useEffect(() => {
+    if (subject) return;
+    if (!Array.isArray(prefillChapterIds) || prefillChapterIds.length === 0) {
+      return;
+    }
+
+    const firstChapterId = String(
+      prefillChapterIds[0]?.value ?? prefillChapterIds[0],
+    );
+    const matchedChapter = chapterData.find(
+      (item) => String(item.chapterId) === firstChapterId,
+    );
+    if (!matchedChapter) return;
+
+    const match = subjectOptions.find(
+      (item) => String(item.value) === String(matchedChapter.subjectId),
+    );
+    if (match) setSubject(match);
+  }, [prefillChapterIds, chapterData, subjectOptions, subject]);
+
+  useEffect(() => {
     if (!Array.isArray(prefillChapterIds) || prefillChapterIds.length === 0) {
       return;
     }
@@ -355,6 +433,7 @@ const ExamPaper = () => {
     setBranch(null);
     setCourse(null);
     setSection(null);
+    setSubject(null);
     setChapters([]);
   };
 
@@ -368,18 +447,31 @@ const ExamPaper = () => {
 
     setCourse(null);
     setSection(null);
+    setSubject(null);
     setChapters([]);
   };
 
   // COURSE CHANGE
 
   // When course changes:
-  // Section must reset,Chapters must reset
+  // Section must reset, Subject must reset, Chapters must reset
 
   const handleCourseChange = (selectedCourse) => {
     setCourse(selectedCourse);
 
     setSection(null);
+    setSubject(null);
+    setChapters([]);
+  };
+
+  // SUBJECT CHANGE
+
+  // When subject changes:
+  // Chapters must reset
+
+  const handleSubjectChange = (selectedSubject) => {
+    setSubject(selectedSubject);
+
     setChapters([]);
   };
 
@@ -392,22 +484,27 @@ const ExamPaper = () => {
     }
 
     if (!examName.trim()) {
-      alert("Please enter Exam Name.");
+      toast.error("Please enter an exam name.");
       return;
     }
 
     if (!college) {
-      alert("Please select College.");
+      toast.error("Please select a college.");
       return;
     }
 
     if (!course) {
-      alert("Please select Course.");
+      toast.error("Please select a course.");
+      return;
+    }
+
+    if (!subject) {
+      toast.error("Please select a subject.");
       return;
     }
 
     if (chapters.length === 0) {
-      alert("Please select at least one Chapter.");
+      toast.error("Please select at least one chapter.");
       return;
     }
 
@@ -430,6 +527,7 @@ const ExamPaper = () => {
         branchId: branch?.value ?? null,
         courseId: course?.value ?? null,
         sectionId: section?.value ?? null,
+        subjectId: subject?.value ?? null,
         chapterIds: chapters.map((item) => item.value ?? item),
         startDate:
           startDate && startTime ? `${startDate}T${startTime}:00` : null,
@@ -440,7 +538,7 @@ const ExamPaper = () => {
       if (isEditMode) {
         console.log("Exam update payload being sent:", requestPayload);
         await ExamService.update(examId, requestPayload);
-        alert("Exam updated successfully.");
+        toast.success("Exam updated.");
         navigate("/exams");
         return;
       }
@@ -452,11 +550,11 @@ const ExamPaper = () => {
 
       setCreatedExamId(newExamId);
       console.log("Exam created successfully:", response?.data);
-      alert("Exam created successfully.");
+      toast.success("Exam created.");
       setCurrentStep(2);
     } catch (error) {
       console.error("Failed to save exam:", error);
-      alert(error?.response?.data?.message || "Failed to save exam.");
+      toast.error(error?.response?.data?.message || "Failed to save exam.");
     }
   };
 
@@ -464,7 +562,7 @@ const ExamPaper = () => {
 
   const handleQuestionsAdded = async (questions) => {
     if (!createdExamId) {
-      alert("Please create the exam first before adding questions.");
+      toast.error("Please create the exam first before adding questions.");
       return;
     }
 
@@ -477,10 +575,10 @@ const ExamPaper = () => {
       );
 
       console.log("Questions added to exam:", response?.data);
-      alert(`${questionIds.length} questions added to the exam.`);
+      toast.success(`${questionIds.length} questions added to the exam.`);
     } catch (error) {
       console.error("Failed to add questions to exam:", error);
-      alert(
+      toast.error(
         error?.response?.data?.message || "Failed to add questions to exam.",
       );
     }
@@ -659,6 +757,31 @@ const ExamPaper = () => {
                   />
                 </Form.Group>
 
+                {/* SUBJECT */}
+                <Form.Group className="exam-paper-form-group">
+                  <Form.Label>
+                    Subject <span className="exam-paper-required">*</span>
+                  </Form.Label>
+
+                  <Select
+                    options={subjectOptions}
+                    value={subject}
+                    onChange={handleSubjectChange}
+                    placeholder={
+                      !course
+                        ? "Select course first"
+                        : loadingSubjects
+                          ? "Loading subjects..."
+                          : "Search and select subject"
+                    }
+                    isSearchable
+                    isClearable
+                    isLoading={loadingSubjects}
+                    isDisabled={!course}
+                    classNamePrefix="exam-paper-select"
+                  />
+                </Form.Group>
+
                 {/* CHAPTERS */}
                 <Form.Group className="exam-paper-form-group">
                   <Form.Label>
@@ -671,8 +794,8 @@ const ExamPaper = () => {
                     value={chapters}
                     onChange={(selected) => setChapters(selected || [])}
                     placeholder={
-                      !course
-                        ? "Select course first"
+                      !subject
+                        ? "Select subject first"
                         : loadingChapters
                           ? "Loading chapters..."
                           : "Search & select chapters..."
@@ -682,7 +805,7 @@ const ExamPaper = () => {
                     closeMenuOnSelect={false}
                     hideSelectedOptions={false}
                     isLoading={loadingChapters}
-                    isDisabled={!course}
+                    isDisabled={!subject}
                     classNamePrefix="exam-paper-select"
                   />
                 </Form.Group>

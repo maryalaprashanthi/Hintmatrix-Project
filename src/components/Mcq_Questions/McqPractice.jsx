@@ -1,21 +1,34 @@
 import { useEffect, useMemo, useState } from "react";
 import CourseService from "../../services/CourseService";
+import SubjectService from "../../services/SubjectService";
 import ChapterService from "../../services/ChapterService";
-import QuestionCategoryService from "../../services/QuestionCategoryService";
+import TopicService from "../../services/TopicService";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import McqQuestionService from "../../services/McqQuestionService";
 import "./McqPractice.css";
 
 const idOf = (item, type) => item[`${type}Id`] ?? item[`${type}_id`] ?? item.id;
-const nameOf = (item) => item.name ?? item.course_name ?? item.chapter_name ?? item.category_name ?? "";
+const nameOf = (item) =>
+  item.name ??
+  item.subjectName ??
+  item.courseName ??
+  item.chapterName ??
+  item.topicName ??
+  item.course_name ??
+  item.subject_name ??
+  item.chapter_name ??
+  item.topic_name ??
+  "";
 function McqPractice() {
   const userId = 1;
   const [courses, setCourses] = useState([]);
+  const [subjects, setSubjects] = useState([]);
   const [chapters, setChapters] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [topics, setTopics] = useState([]);
   const [courseId, setCourseId] = useState("");
+  const [subjectId, setSubjectId] = useState("");
   const [chapterId, setChapterId] = useState("");
-  const [categoryId, setCategoryId] = useState("");
+  const [topicId, setTopicId] = useState("");
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(true);
@@ -42,11 +55,17 @@ function McqPractice() {
   }, [userId]);
 
   useEffect(() => {
-    Promise.all([CourseService.getAllCourses(), ChapterService.getAll(), QuestionCategoryService.getAll()])
-      .then(([courseResponse, chapterResponse, categoryResponse]) => {
+    Promise.all([
+      CourseService.getAllCourses(),
+      SubjectService.getAll(),
+      ChapterService.getAll(),
+      TopicService.getAll(),
+    ])
+      .then(([courseResponse, subjectResponse, chapterResponse, topicResponse]) => {
         setCourses(Array.isArray(courseResponse.data) ? courseResponse.data : []);
+        setSubjects(Array.isArray(subjectResponse.data) ? subjectResponse.data : []);
         setChapters(Array.isArray(chapterResponse.data) ? chapterResponse.data : []);
-        setCategories(Array.isArray(categoryResponse.data) ? categoryResponse.data : []);
+        setTopics(Array.isArray(topicResponse.data) ? topicResponse.data : []);
       })
       .catch((requestError) => {
         console.error("Failed to load MCQ filters:", requestError);
@@ -55,17 +74,18 @@ function McqPractice() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filteredChapters = useMemo(() => chapters.filter((item) => String(item.courseId ?? item.course_id) === String(courseId)), [chapters, courseId]);
-  const filteredCategories = useMemo(() => categories.filter((item) => String(item.chapterId ?? item.chapter_id) === String(chapterId)), [categories, chapterId]);
+  const filteredSubjects = useMemo(() => subjects.filter((item) => String(item.courseId ?? item.course_id) === String(courseId)), [subjects, courseId]);
+  const filteredChapters = useMemo(() => chapters.filter((item) => String(item.subjectId ?? item.subject_id) === String(subjectId)), [chapters, subjectId]);
+  const filteredTopics = useMemo(() => topics.filter((item) => String(item.chapterId ?? item.chapter_id) === String(chapterId)), [topics, chapterId]);
 
   useEffect(() => {
-    if (!courseId || !chapterId || !categoryId) {
+    if (!courseId || !subjectId || !chapterId || !topicId) {
       setQuestions([]);
       return;
     }
     setLoadingQuestions(true);
     setError("");
-    McqQuestionService.getByFilter(courseId, chapterId, categoryId)
+    McqQuestionService.getByFilter(courseId, chapterId, topicId)
       .then((response) => {
         const loadedQuestions = Array.isArray(response.data)
           ? response.data.map((question) => ({
@@ -85,10 +105,10 @@ function McqPractice() {
       })
       .catch((requestError) => {
         console.error("Failed to load MCQs:", requestError);
-        setError("Unable to load MCQs for this category.");
+        setError("Unable to load MCQs for this topic.");
       })
       .finally(() => setLoadingQuestions(false));
-  }, [courseId, chapterId, categoryId]);
+  }, [courseId, subjectId, chapterId, topicId]);
 
   const submitPractice = async () => {
     if (savingAnswer || submitted || questions.length === 0) {
@@ -250,12 +270,13 @@ function McqPractice() {
         <>
           <section className="practice-filters">
             <div className="filter-heading"><span className="filter-step">1</span><div><strong>Choose a practice set</strong></div></div>
-            <label>Course<select value={courseId} onChange={(event) => { setCourseId(event.target.value); setChapterId(""); setCategoryId(""); }}><option value="">Select course</option>{courses.map((item) => <option key={idOf(item, "course")} value={idOf(item, "course")}>{nameOf(item)}</option>)}</select></label>
-            <label>Chapter<select value={chapterId} disabled={!courseId} onChange={(event) => { setChapterId(event.target.value); setCategoryId(""); }}><option value="">Select chapter</option>{filteredChapters.map((item) => <option key={idOf(item, "chapter")} value={idOf(item, "chapter")}>{nameOf(item)}</option>)}</select></label>
-            <label>Category<select value={categoryId} disabled={!chapterId} onChange={(event) => setCategoryId(event.target.value)}><option value="">Select category</option>{filteredCategories.map((item) => <option key={idOf(item, "category")} value={idOf(item, "category")}>{nameOf(item)}</option>)}</select></label>
+            <label>Course<select value={courseId} onChange={(event) => { setCourseId(event.target.value); setSubjectId(""); setChapterId(""); setTopicId(""); }}><option value="">Select course</option>{courses.map((item) => <option key={idOf(item, "course")} value={idOf(item, "course")}>{nameOf(item)}</option>)}</select></label>
+            <label>Subject<select value={subjectId} disabled={!courseId} onChange={(event) => { setSubjectId(event.target.value); setChapterId(""); setTopicId(""); }}><option value="">Select subject</option>{filteredSubjects.map((item) => <option key={idOf(item, "subject")} value={idOf(item, "subject")}>{nameOf(item)}</option>)}</select></label>
+            <label>Chapter<select value={chapterId} disabled={!subjectId} onChange={(event) => { setChapterId(event.target.value); setTopicId(""); }}><option value="">Select chapter</option>{filteredChapters.map((item) => <option key={idOf(item, "chapter")} value={idOf(item, "chapter")}>{nameOf(item)}</option>)}</select></label>
+            <label>Topic<select value={topicId} disabled={!chapterId} onChange={(event) => setTopicId(event.target.value)}><option value="">Select topic</option>{filteredTopics.map((item) => <option key={idOf(item, "topic")} value={idOf(item, "topic")}>{nameOf(item)}</option>)}</select></label>
           </section>
           {loadingQuestions && <div className="mcq-state">Loading questions...</div>}
-          {!loadingQuestions && courseId && chapterId && categoryId && questions.length === 0 && <div className="mcq-empty">No MCQ questions found for the selected category.</div>}
+          {!loadingQuestions && courseId && subjectId && chapterId && topicId && questions.length === 0 && <div className="mcq-empty">No MCQ questions found for the selected topic.</div>}
           {currentQuestion && <div className="practice-layout">
             <section className="practice-list">
               <article className="practice-card" key={currentQuestion.questionId}>

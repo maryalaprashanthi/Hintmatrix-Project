@@ -3,19 +3,19 @@ import "./TableHeaders.css";
 import AddTableHeaderModal from "./AddTableHeaderModal";
 import TableHeaderService from "../../services/TableHeaderService";
 import DataGrid from "../../components/DataGrid";
-import SuccessModal from "../../components/Common/SuccessModal";
-import DeleteModal from "../../components/Common/DeleteModal";
+import ConfirmDialog from "../../components/Common/ConfirmDialog";
 import ActionIconButton from "../../components/Common/ActionIconButton";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
+import { useToast } from "../../components/Toast/useToast";
+import { getApiErrorMessage } from "../../utils/apiError";
 
 function TableHeaders() {
+  const toast = useToast();
   const [showModal, setShowModal] = useState(false);
 
   const [tableHeaders, setTableHeaders] = useState([]);
   const [id, setId] = useState(null);
   const [name, setName] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [showDelete, setShowDelete] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
 
   // Upload Handler
   const handleFileUpload = async (e) => {
@@ -28,14 +28,14 @@ function TableHeaders() {
     try {
       const response = await TableHeaderService.uploadExcel(file);
 
-      setSuccessMessage(response.data);
-      setShowSuccess(true);
+      toast.success(
+        typeof response.data === "string" ? response.data : "Upload complete.",
+      );
 
       loadTableHeaders();
     } catch (error) {
       console.error("Upload Error:", error);
-
-      alert(error.response?.data || "Excel upload failed.");
+      toast.error(getApiErrorMessage(error, "Excel upload failed."));
     }
 
     e.target.value = "";
@@ -45,47 +45,20 @@ function TableHeaders() {
     try {
       if (id == null) {
         await TableHeaderService.create(newTableHeader);
-        setSuccessMessage("Table Header added successfully.");
+        toast.success("Table header added.");
       } else {
         await TableHeaderService.update(id, newTableHeader);
-        setSuccessMessage("Table Header updated successfully.");
+        toast.success("Table header updated.");
       }
-      setShowSuccess(true);
       setId(null);
       setName("");
       setShowModal(false);
       loadTableHeaders();
     } catch (error) {
       console.error("Error:", error);
-      alert("Operation failed.");
+      toast.error(getApiErrorMessage(error, "Operation failed."));
     }
   };
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this table header?",
-    );
-
-    if (!confirmDelete) {
-      return;
-    }
-
-    try {
-      await TableHeaderService.delete(id);
-
-      await loadTableHeaders();
-
-      // Show Delete success popup
-      setShowDelete(true);
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Failed to delete Table Header.");
-    }
-  };
-
-  useEffect(() => {
-    loadTableHeaders();
-  }, []);
-
   const loadTableHeaders = async () => {
     try {
       const result = await TableHeaderService.getAll();
@@ -101,6 +74,16 @@ function TableHeaders() {
       console.log("Error: ", error);
     }
   };
+
+  const del = useDeleteConfirm({
+    entity: "table header",
+    deleteFn: (row) => TableHeaderService.delete(row.id ?? row),
+    onDeleted: loadTableHeaders,
+  });
+
+  useEffect(() => {
+    loadTableHeaders();
+  }, []);
 
   const columnDefs = [
     {
@@ -136,7 +119,7 @@ function TableHeaders() {
 
             <ActionIconButton
               type="delete"
-              onClick={() => handleDelete(params.data.id)}
+              onClick={() => del.request(params.data)}
               title="Delete table header"
             />
           </div>
@@ -205,17 +188,15 @@ function TableHeaders() {
         onSave={handleSave}
         Inputdata={name}
       />
-      <SuccessModal
-        show={showSuccess}
-        message={successMessage}
-        onClose={() => {
-          setShowSuccess(false);
-        }}
-      />
-      <DeleteModal
-        show={showDelete}
-        message="Table Header deleted successfully!"
-        onClose={() => setShowDelete(false)}
+      <ConfirmDialog
+        open={Boolean(del.pending)}
+        title={`Delete "${del.pending?.name || "this table header"}"?`}
+        body="Attributes and rules that reference this header may be affected. This can't be undone."
+        confirmLabel="Delete table header"
+        loading={del.deleting}
+        error={del.error}
+        onConfirm={del.confirm}
+        onCancel={del.close}
       />
     </div>
   );

@@ -1,50 +1,25 @@
-import React from "react";
 import { themeQuartz } from "ag-grid-community";
 import SuperAdminService from "../../services/UserService";
 import DataGrid from "../../components/DataGrid";
 import ActionIconButton from "../../components/Common/ActionIconButton";
+import ConfirmDialog from "../../components/Common/ConfirmDialog";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 
-function SuperAdminTable({ data, onEdit, refreshData, onDeleteSuccess }) {
+function SuperAdminTable({ data, onEdit, refreshData }) {
   const defaultColDef = {
     sortable: true,
     filter: true,
     resizable: true,
   };
 
-  const handleDelete = (superAdmin) => {
-    const id =
-      superAdmin?.userId ?? superAdmin?.user_id ?? superAdmin?.superAdminId;
-
-    if (!id) {
-      console.error("Cannot delete super admin without an ID:", superAdmin);
-      alert("Unable to delete Super Admin: ID is missing.");
-      return;
-    }
-
-    const confirmDelete = window.confirm(
-      "Are you sure you want to permanently delete this Super Admin?",
-    );
-
-    if (!confirmDelete) return;
-
-    SuperAdminService.deleteSuperAdmin(id)
-      .then(() => {
-        refreshData();
-
-        // Show DeleteModal after successful delete
-        onDeleteSuccess();
-      })
-      .catch((error) => {
-        const message =
-          error.response?.data?.message ||
-          error.response?.data?.error ||
-          error.message ||
-          "Failed to delete Super Admin.";
-
-        console.error("Delete Error:", error.response?.data || error);
-        alert(`Failed to delete Super Admin: ${message}`);
-      });
-  };
+  const del = useDeleteConfirm({
+    entity: "super admin",
+    deleteFn: (admin) =>
+      SuperAdminService.deleteSuperAdmin(
+        admin?.userId ?? admin?.user_id ?? admin?.superAdminId,
+      ),
+    onDeleted: refreshData,
+  });
 
   const columnDefs = [
     {
@@ -102,7 +77,7 @@ function SuperAdminTable({ data, onEdit, refreshData, onDeleteSuccess }) {
 
           <ActionIconButton
             type="delete"
-            onClick={() => handleDelete(params.data)}
+            onClick={() => del.request(params.data)}
             title="Delete super admin"
           />
         </div>
@@ -136,6 +111,17 @@ function SuperAdminTable({ data, onEdit, refreshData, onDeleteSuccess }) {
         pageSize={10}
         paginationPageSizeSelector={false}
         rowHeight={50}
+      />
+
+      <ConfirmDialog
+        open={Boolean(del.pending)}
+        title={`Delete "${del.pending?.name || "this super admin"}"?`}
+        body="This person will lose access to the admin console. This can't be undone."
+        confirmLabel="Delete super admin"
+        loading={del.deleting}
+        error={del.error}
+        onConfirm={del.confirm}
+        onCancel={del.close}
       />
     </div>
   );

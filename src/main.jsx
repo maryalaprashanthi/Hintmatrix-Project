@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
 import App from "./App";
+import ToastProvider from "./components/Toast/ToastProvider";
 import "./index.css";
 
 // 1. Load Bootstrap CSS locally
@@ -14,7 +15,9 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
-      <App />
+      <ToastProvider>
+        <App />
+      </ToastProvider>
     </BrowserRouter>
   </React.StrictMode>,
 );

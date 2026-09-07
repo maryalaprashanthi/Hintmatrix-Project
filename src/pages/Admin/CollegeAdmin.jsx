@@ -3,8 +3,10 @@ import CollegeAdminForm from "./CollegeAdminForm";
 import CollegeAdminTable from "./CollegeAdminTable";
 import "./BranchAdmin.css";
 import UserService from "../../services/UserService";
+import { useToast } from "../../components/Toast/useToast";
 
 function CollegeAdmin() {
+  const toast = useToast();
   const [showModal, setShowModal] = useState(false);
   const [collegeAdmins, setCollegeAdmins] = useState([]);
   const [selectedCollegeAdmin, setSelectedCollegeAdmin] = useState(null);
@@ -38,8 +40,8 @@ function CollegeAdmin() {
     } catch (error) {
       console.error("Error fetching College Admins:", error);
 
-      alert(
-        error?.response?.data?.message || "Failed to fetch College Admins.",
+      toast.error(
+        error?.response?.data?.message || "Failed to fetch college admins.",
       );
     } finally {
       setLoading(false);

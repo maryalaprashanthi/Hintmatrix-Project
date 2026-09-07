@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { FaEdit, FaPlus, FaSave, FaTrash } from "react-icons/fa";
 import CourseService from "../../services/CourseService";
+import SubjectService from "../../services/SubjectService";
 import ChapterService from "../../services/ChapterService";
-import QuestionCategoryService from "../../services/QuestionCategoryService";
+import TopicService from "../../services/TopicService";
 import McqQuestionService from "../../services/McqQuestionService";
+import QuestionTypeService from "../../services/QuestionTypeService";
 import "./CreateMcq.css";
 
 const emptyOptions = () =>
@@ -18,15 +20,30 @@ const itemId = (item, type) =>
   item[`${type}Id`] ?? item[`${type}_id`] ?? item.id;
 
 const itemName = (item) =>
-  item.name ?? item.course_name ?? item.chapter_name ?? item.category_name ?? "";
+  item.name ??
+  item.subjectName ??
+  item.courseName ??
+  item.chapterName ??
+  item.topicName ??
+  item.course_name ??
+  item.subject_name ??
+  item.chapter_name ??
+  item.topic_name ??
+  "";
+
+const mcqTypeName = (item) =>
+  String(item.questionType ?? item.question_type ?? "").toUpperCase();
 
 function CreateMcq() {
   const [courses, setCourses] = useState([]);
+  const [subjects, setSubjects] = useState([]);
   const [chapters, setChapters] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [topics, setTopics] = useState([]);
+  const [questionTypes, setQuestionTypes] = useState([]);
   const [courseId, setCourseId] = useState("");
+  const [subjectId, setSubjectId] = useState("");
   const [chapterId, setChapterId] = useState("");
-  const [categoryId, setCategoryId] = useState("");
+  const [topicId, setTopicId] = useState("");
   const [questionText, setQuestionText] = useState("");
   const [questionType, setQuestionType] = useState("SINGLE_CHOICE");
   const [options, setOptions] = useState(emptyOptions);
@@ -40,18 +57,36 @@ function CreateMcq() {
     const loadHierarchy = async () => {
       setLoading(true);
       try {
-        const [courseResponse, chapterResponse, categoryResponse] =
-          await Promise.all([
-            CourseService.getAllCourses(),
-            ChapterService.getAll(),
-            QuestionCategoryService.getAll(),
-          ]);
+        const [
+          courseResponse,
+          subjectResponse,
+          chapterResponse,
+          topicResponse,
+          questionTypeResponse,
+        ] = await Promise.all([
+          CourseService.getAllCourses(),
+          SubjectService.getAll(),
+          ChapterService.getAll(),
+          TopicService.getAll(),
+          QuestionTypeService.getAll(),
+        ]);
         setCourses(Array.isArray(courseResponse.data) ? courseResponse.data : []);
+        setSubjects(
+          Array.isArray(subjectResponse.data) ? subjectResponse.data : [],
+        );
         setChapters(
           Array.isArray(chapterResponse.data) ? chapterResponse.data : [],
         );
-        setCategories(
-          Array.isArray(categoryResponse.data) ? categoryResponse.data : [],
+        setTopics(
+          Array.isArray(topicResponse.data) ? topicResponse.data : [],
+        );
+        setQuestionTypes(
+          (Array.isArray(questionTypeResponse.data)
+            ? questionTypeResponse.data
+            : []
+          ).filter((item) =>
+            ["SINGLE_CHOICE", "MULTIPLE_CHOICE"].includes(mcqTypeName(item)),
+          ),
         );
       } catch (error) {
         console.error("Failed to load MCQ hierarchy:", error);
@@ -63,23 +98,31 @@ function CreateMcq() {
     loadHierarchy();
   }, []);
 
+  const filteredSubjects = useMemo(
+    () =>
+      subjects.filter(
+        (subject) =>
+          String(subject.courseId ?? subject.course_id) === String(courseId),
+      ),
+    [subjects, courseId],
+  );
+
   const filteredChapters = useMemo(
     () =>
       chapters.filter(
         (chapter) =>
-          String(chapter.courseId ?? chapter.course_id) === String(courseId),
+          String(chapter.subjectId ?? chapter.subject_id) === String(subjectId),
       ),
-    [chapters, courseId],
+    [chapters, subjectId],
   );
 
-  const filteredCategories = useMemo(
+  const filteredTopics = useMemo(
     () =>
-      categories.filter(
-        (category) =>
-          String(category.chapterId ?? category.chapter_id) ===
-          String(chapterId),
+      topics.filter(
+        (topic) =>
+          String(topic.chapterId ?? topic.chapter_id) === String(chapterId),
       ),
-    [categories, chapterId],
+    [topics, chapterId],
   );
 
   const updateOption = (index, value) => {
@@ -143,9 +186,13 @@ function CreateMcq() {
     setMessage({ type: "", text: "" });
     const errors = [];
     if (!courseId) errors.push("Course is required.");
+    if (!subjectId) errors.push("Subject is required.");
     if (!chapterId) errors.push("Chapter is required.");
-    if (!categoryId) errors.push("Category is required.");
+    if (!topicId) errors.push("Topic is required.");
     if (!questionText.trim()) errors.push("Question is required.");
+    if (!questionTypes.some((item) => mcqTypeName(item) === questionType)) {
+      errors.push("The selected MCQ question type is not configured.");
+    }
     if (options.some((option) => !option.optionText.trim())) {
       errors.push("Every option must have text.");
     }
@@ -167,11 +214,19 @@ function CreateMcq() {
     return true;
   };
 
+  // McqQuestionRequestDTO has no subjectId - subject is only a cascade helper
+  // for narrowing the chapter list.
   const buildQuestion = () => ({
     courseId: Number(courseId),
     chapterId: Number(chapterId),
-    categoryId: Number(categoryId),
+    topicId: Number(topicId),
     questionText: questionText.trim(),
+    questionTypeId: Number(
+      itemId(
+        questionTypes.find((item) => mcqTypeName(item) === questionType),
+        "questionType",
+      ),
+    ),
     questionType,
     marks: 1,
     options: options.map(({ optionOrder, optionText, isCorrect }) => ({
@@ -207,9 +262,17 @@ function CreateMcq() {
 
   const handleEditDraft = (index) => {
     const draft = draftQuestions[index];
+    // The draft carries no subjectId (it is not part of the payload); recover
+    // it from the draft's chapter so the cascade re-populates.
+    const draftChapter = chapters.find(
+      (chapter) => String(itemId(chapter, "chapter")) === String(draft.chapterId),
+    );
     setCourseId(String(draft.courseId));
+    setSubjectId(
+      String(draftChapter?.subjectId ?? draftChapter?.subject_id ?? ""),
+    );
     setChapterId(String(draft.chapterId));
-    setCategoryId(String(draft.categoryId));
+    setTopicId(String(draft.topicId ?? ""));
     setQuestionText(draft.questionText);
     setQuestionType(draft.questionType);
     setOptions(
@@ -233,7 +296,13 @@ function CreateMcq() {
     try {
       await Promise.all(
         draftQuestions.map((draftQuestion) =>
-          McqQuestionService.create(draftQuestion),
+          McqQuestionService.create(
+            Object.fromEntries(
+              Object.entries(draftQuestion).filter(
+                ([key]) => key !== "questionType",
+              ),
+            ),
+          ),
         ),
       );
       setMessage({ type: "success", text: `${draftQuestions.length} question(s) submitted successfully.` });
@@ -266,26 +335,37 @@ function CreateMcq() {
             <label className="selection-field">Course *
               <select value={courseId} onChange={(event) => {
                 setCourseId(event.target.value);
+                setSubjectId("");
                 setChapterId("");
-                setCategoryId("");
+                setTopicId("");
               }}>
                 <option value="">Select course</option>
                 {courses.map((course) => <option key={itemId(course, "course")} value={itemId(course, "course")}>{itemName(course)}</option>)}
               </select>
             </label>
+            <label className="selection-field">Subject *
+              <select value={subjectId} disabled={!courseId} onChange={(event) => {
+                setSubjectId(event.target.value);
+                setChapterId("");
+                setTopicId("");
+              }}>
+                <option value="">Select subject</option>
+                {filteredSubjects.map((subject) => <option key={itemId(subject, "subject")} value={itemId(subject, "subject")}>{itemName(subject)}</option>)}
+              </select>
+            </label>
             <label className="selection-field">Chapter *
-              <select value={chapterId} disabled={!courseId} onChange={(event) => {
+              <select value={chapterId} disabled={!subjectId} onChange={(event) => {
                 setChapterId(event.target.value);
-                setCategoryId("");
+                setTopicId("");
               }}>
                 <option value="">Select chapter</option>
                 {filteredChapters.map((chapter) => <option key={itemId(chapter, "chapter")} value={itemId(chapter, "chapter")}>{itemName(chapter)}</option>)}
               </select>
             </label>
-            <label className="selection-field">Category *
-              <select value={categoryId} disabled={!chapterId} onChange={(event) => setCategoryId(event.target.value)}>
-                <option value="">Select category</option>
-                {filteredCategories.map((category) => <option key={itemId(category, "category")} value={itemId(category, "category")}>{itemName(category)}</option>)}
+            <label className="selection-field">Topic *
+              <select value={topicId} disabled={!chapterId} onChange={(event) => setTopicId(event.target.value)}>
+                <option value="">Select topic</option>
+                {filteredTopics.map((topic) => <option key={itemId(topic, "topic")} value={itemId(topic, "topic")}>{itemName(topic)}</option>)}
               </select>
             </label>
             <label className="selection-field">Question Type *
@@ -305,8 +385,16 @@ function CreateMcq() {
                   });
                 }
               }}>
-                <option value="SINGLE_CHOICE">Multiple Choice (Single Answer)</option>
-                <option value="MULTIPLE_CHOICE">Multiple Choice (Multiple Answer)</option>
+                {questionTypes.map((type) => {
+                  const typeName = mcqTypeName(type);
+                  return (
+                    <option key={itemId(type, "questionType")} value={typeName}>
+                      {typeName === "SINGLE_CHOICE"
+                        ? "Multiple Choice (Single Answer)"
+                        : "Multiple Choice (Multiple Answer)"}
+                    </option>
+                  );
+                })}
               </select>
             </label>
           </section>

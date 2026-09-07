@@ -18,6 +18,7 @@ import {
   FaBookmark,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { canManageContent } from "../../utils/roles";
 import "./ExamHub.css";
 
 /* ================= STATS ================= */
@@ -238,6 +239,7 @@ const subjects = [
 
 function ExamHub() {
   const navigate = useNavigate();
+  const canCreateExam = canManageContent();
   return (
     <div className="exam-hub-page" data-page="exam-hub">
       {/* ================= HEADER ================= */}
@@ -251,13 +253,15 @@ function ExamHub() {
           <p>Every exam you take brings you closer to your dreams.</p>
         </div>
 
-        <button
-          type="button"
-          className="create-exam-btn"
-          onClick={() => navigate("/exam-paper")}
-        >
-          Create Exam
-        </button>
+        {canCreateExam && (
+          <button
+            type="button"
+            className="create-exam-btn"
+            onClick={() => navigate("/exam-paper")}
+          >
+            Create Exam
+          </button>
+        )}
       </div>
 
       {/* ================= STATS ================= */}

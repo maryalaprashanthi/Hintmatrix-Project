@@ -17,9 +17,10 @@ class McqQuestionService {
     });
   }
 
-  getByFilter(courseId, chapterId, categoryId) {
+  // Backend /filter maps on courseId + chapterId + topicId only.
+  getByFilter(courseId, chapterId, topicId) {
     return apiClient.get(`${BASE_URL}/filter`, {
-      params: { courseId, chapterId, categoryId },
+      params: { courseId, chapterId, topicId },
       withCredentials: true,
     });
   }

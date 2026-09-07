@@ -1,120 +1,121 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Select from "react-select";
-import { FaTimes, FaSave, FaBook, FaListAlt, FaTag } from "react-icons/fa";
+import { FaTimes, FaSave, FaBook, FaListAlt, FaTag, FaLayerGroup } from "react-icons/fa";
 
-import "./QuestionCategories.css";
-import QuestionCategoryService from "../../services/QuestionCategoryService";
+import "./Topics.css";
+import TopicService from "../../services/TopicService";
 import CourseService from "../../services/CourseService";
+import SubjectService from "../../services/SubjectService";
 import ChapterService from "../../services/ChapterService";
 
-function AddQuestionCategoryModal({
+const idOf = (value) => (value === "" || value == null ? "" : String(value));
+
+function AddTopicModal({
   show,
   closeModal,
-  chapterName,
   initialData,
   chapterId,
+  subjectId,
   selectedChapter,
-  refreshCategories,
+  refreshTopics,
   onSuccess,
 }) {
-  const [chapterIdState, setChapterIdState] = useState("");
-  const [chapters, setChapters] = useState([]);
-  const [categoryName, setCategoryName] = useState("");
-  const [shortName, setShortName] = useState("");
-  const [isActive, setIsActive] = useState(true);
   const [courseId, setCourseId] = useState("");
+  const [subjectIdState, setSubjectIdState] = useState("");
+  const [chapterIdState, setChapterIdState] = useState("");
+  const [topicName, setTopicName] = useState("");
+  const [isActive, setIsActive] = useState(true);
 
   const [courses, setCourses] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [chapters, setChapters] = useState([]);
 
-  useEffect(() => {
-    ChapterService.getAll()
-      .then((response) => {
-        setChapters(response.data || []);
-      })
-      .catch((error) => {
-        console.error("Failed to load chapters", error);
-      });
-  }, []);
-  // Load courses
   useEffect(() => {
     CourseService.getAllCourses()
-      .then((response) => {
-        setCourses(response.data || []);
-        // Automatically select the course when coming from Chapters
-        if (!initialData && selectedChapter?.courseId) {
-          setCourseId(String(selectedChapter.courseId));
-        }
-      })
-      .catch((error) => {
-        console.error("Failed to load courses", error);
-      });
-  }, [selectedChapter, initialData]);
+      .then((response) => setCourses(response.data || []))
+      .catch((error) => console.error("Failed to load courses", error));
 
-  // Load edit data
+    SubjectService.getAll()
+      .then((response) => setSubjects(response.data || []))
+      .catch((error) => console.error("Failed to load subjects", error));
+
+    ChapterService.getAll()
+      .then((response) => setChapters(response.data || []))
+      .catch((error) => console.error("Failed to load chapters", error));
+  }, []);
+
+  // Seed the form: edit data first, else whatever context the Topics page passed.
   useEffect(() => {
+    if (!show) return;
+
     if (initialData) {
       setCourseId(
-        initialData.courseId
-          ? String(initialData.courseId)
-          : selectedChapter?.courseId
-            ? String(selectedChapter.courseId)
-            : "",
+        idOf(
+          initialData.courseId ??
+            selectedChapter?.courseId ??
+            "",
+        ),
+      );
+      setSubjectIdState(
+        idOf(
+          initialData.subjectId ??
+            subjectId ??
+            selectedChapter?.subjectId ??
+            "",
+        ),
       );
       setChapterIdState(
-        initialData.chapterId
-          ? String(initialData.chapterId)
-          : chapterId
-            ? String(chapterId)
-            : "",
+        idOf(initialData.chapterId ?? chapterId ?? ""),
       );
-      setCategoryName(initialData.name || "");
-
-      setShortName(initialData.shortName || "");
-
+      setTopicName(initialData.name || "");
       setIsActive(
         initialData.activeRow !== undefined ? initialData.activeRow : true,
       );
     } else {
-      setCategoryName("");
-
-      setShortName("");
-
-      setCourseId(
-        selectedChapter?.courseId ? String(selectedChapter.courseId) : "",
+      setCourseId(idOf(selectedChapter?.courseId ?? ""));
+      setSubjectIdState(
+        idOf(subjectId ?? selectedChapter?.subjectId ?? ""),
       );
-      setChapterIdState(
-        initialData?.chapterId
-          ? String(initialData.chapterId)
-          : chapterId
-            ? String(chapterId)
-            : "",
-      );
-
+      setChapterIdState(idOf(chapterId ?? ""));
+      setTopicName("");
       setIsActive(true);
     }
-  }, [initialData, show, chapterId, selectedChapter]);
+  }, [initialData, show, chapterId, subjectId, selectedChapter]);
 
   const courseOptions = courses.map((course) => ({
     value: course.courseId,
-    label:
-      course.name ||
-      course.courseName ||
-      course.title ||
-      String(course.courseId || ""),
+    label: course.name || course.courseName || String(course.courseId || ""),
   }));
 
-  const chapterOptions = chapters
+  const subjectOptions = subjects
     .filter(
-      (chapter) => !courseId || Number(chapter.courseId) === Number(courseId),
+      (subject) =>
+        !courseId ||
+        String(subject.courseId ?? subject.course_id) === String(courseId),
     )
+    .map((subject) => ({
+      value: subject.subjectId ?? subject.subject_id,
+      label:
+        subject.subjectName || subject.name || String(subject.subjectId || ""),
+    }));
+
+  const chapterOptions = chapters
+    .filter((chapter) => {
+      if (subjectIdState) {
+        return (
+          String(chapter.subjectId ?? chapter.subject_id) ===
+          String(subjectIdState)
+        );
+      }
+      return (
+        !courseId ||
+        String(chapter.courseId ?? chapter.course_id) === String(courseId)
+      );
+    })
     .map((chapter) => ({
       value: chapter.chapterId,
-      label:
-        chapter.name ||
-        chapter.chapterName ||
-        chapter.title ||
-        String(chapter.chapterId || ""),
+      label: chapter.name || chapter.chapterName || String(chapter.chapterId || ""),
     }));
 
   if (!show) return null;
@@ -122,15 +123,18 @@ function AddQuestionCategoryModal({
   const handleSave = async (e) => {
     e.preventDefault();
 
-    if (!categoryName.trim()) {
-      alert("Please enter Category Name");
-
+    if (!topicName.trim()) {
+      alert("Please enter Topic Name");
       return;
     }
 
     if (!courseId) {
       alert("Please select Course");
+      return;
+    }
 
+    if (!subjectIdState) {
+      alert("Please select Subject");
       return;
     }
 
@@ -139,39 +143,30 @@ function AddQuestionCategoryModal({
       return;
     }
 
+    // Backend TopicRequestDTO: { courseId, subjectId, chapterId, name, activeRow }
     const requestDTO = {
       courseId: Number(courseId),
-
+      subjectId: Number(subjectIdState),
       chapterId: Number(chapterIdState),
-
-      name: categoryName.trim(),
-
-      shortName: shortName.trim(),
-
+      name: topicName.trim(),
       activeRow: isActive,
     };
 
     try {
-      let response;
-
       if (initialData) {
-        response = await QuestionCategoryService.update(
-          initialData.categoryId,
+        await TopicService.update(
+          initialData.topicId ?? initialData.topic_id ?? initialData.id,
           requestDTO,
         );
       } else {
-        response = await QuestionCategoryService.create(requestDTO);
+        await TopicService.create(requestDTO);
       }
 
-      if (refreshCategories) {
-        refreshCategories();
-      }
+      if (refreshTopics) refreshTopics();
 
       closeModal();
 
-      if (onSuccess) {
-        onSuccess();
-      }
+      if (onSuccess) onSuccess();
     } catch (error) {
       console.error(error);
 
@@ -179,21 +174,21 @@ function AddQuestionCategoryModal({
     }
   };
 
+  const selectStyles = {
+    menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+  };
+
   return createPortal(
     <div className="modal-overlay">
       <div className="question-modal">
-        {/* Header */}
-
         <div className="modal-header">
           <div className="modal-title">
-            <h2>
-              {initialData ? "Edit Question Category" : "Add Question Category"}
-            </h2>
+            <h2>{initialData ? "Edit Topic" : "Add Topic"}</h2>
 
             <p>
               {initialData
-                ? "Update the question category."
-                : "Create a new question category."}
+                ? "Update the topic."
+                : "Create a new topic."}
             </p>
           </div>
 
@@ -202,16 +197,13 @@ function AddQuestionCategoryModal({
           </button>
         </div>
 
-        {/* Body */}
-
         <form onSubmit={handleSave}>
           <div className="modal-body">
             <div className="form-card">
-              <h3 className="section-title">Question Category Information</h3>
+              <h3 className="section-title">Topic Information</h3>
 
               <div className="form-grid">
                 {/* Course */}
-
                 <div className="form-group">
                   <label>
                     Course <span>*</span>
@@ -224,9 +216,7 @@ function AddQuestionCategoryModal({
                       className="react-select-container"
                       classNamePrefix="react-select"
                       menuPortalTarget={document.body}
-                      styles={{
-                        menuPortal: (base) => ({ ...base, zIndex: 99999 }),
-                      }}
+                      styles={selectStyles}
                       options={courseOptions}
                       value={
                         courseOptions.find(
@@ -235,6 +225,7 @@ function AddQuestionCategoryModal({
                       }
                       onChange={(option) => {
                         setCourseId(option?.value || "");
+                        setSubjectIdState("");
                         setChapterIdState("");
                       }}
                       placeholder="Search Course"
@@ -245,8 +236,41 @@ function AddQuestionCategoryModal({
                   </div>
                 </div>
 
-                {/* Chapter */}
+                {/* Subject */}
+                <div className="form-group">
+                  <label>
+                    Subject <span>*</span>
+                  </label>
 
+                  <div className="input-box">
+                    <FaLayerGroup className="input-icon" />
+
+                    <Select
+                      className="react-select-container"
+                      classNamePrefix="react-select"
+                      menuPortalTarget={document.body}
+                      styles={selectStyles}
+                      options={subjectOptions}
+                      value={
+                        subjectOptions.find(
+                          (option) =>
+                            String(option.value) === String(subjectIdState),
+                        ) || null
+                      }
+                      onChange={(option) => {
+                        setSubjectIdState(option?.value || "");
+                        setChapterIdState("");
+                      }}
+                      placeholder="Search Subject"
+                      isSearchable
+                      isClearable
+                      isDisabled={!courseId}
+                      noOptionsMessage={() => "No subject found"}
+                    />
+                  </div>
+                </div>
+
+                {/* Chapter */}
                 <div className="form-group">
                   <label>
                     Chapter <span>*</span>
@@ -259,9 +283,7 @@ function AddQuestionCategoryModal({
                       className="react-select-container"
                       classNamePrefix="react-select"
                       menuPortalTarget={document.body}
-                      styles={{
-                        menuPortal: (base) => ({ ...base, zIndex: 99999 }),
-                      }}
+                      styles={selectStyles}
                       options={chapterOptions}
                       value={
                         chapterOptions.find(
@@ -275,17 +297,16 @@ function AddQuestionCategoryModal({
                       placeholder="Search Chapter"
                       isSearchable
                       isClearable
-                      isDisabled={!courseId}
+                      isDisabled={!subjectIdState}
                       noOptionsMessage={() => "No chapter found"}
                     />
                   </div>
                 </div>
 
-                {/* Category Name */}
-
+                {/* Topic Name */}
                 <div className="form-group">
                   <label>
-                    Category Name <span>*</span>
+                    Topic Name <span>*</span>
                   </label>
 
                   <div className="input-box">
@@ -293,11 +314,11 @@ function AddQuestionCategoryModal({
 
                     <input
                       type="text"
-                      placeholder="Enter Category Name"
-                      value={categoryName}
+                      placeholder="Enter Topic Name"
+                      value={topicName}
                       onChange={(e) => {
-                        if (/^[A-Za-z\s]*$/.test(e.target.value)) {
-                          setCategoryName(e.target.value);
+                        if (/^[A-Za-z0-9\s&-]*$/.test(e.target.value)) {
+                          setTopicName(e.target.value);
                         }
                       }}
                     />
@@ -305,8 +326,6 @@ function AddQuestionCategoryModal({
                 </div>
               </div>
             </div>
-
-            {/* Status */}
 
             <div className="form-card">
               <h3 className="section-title">Status</h3>
@@ -323,8 +342,6 @@ function AddQuestionCategoryModal({
               </div>
             </div>
           </div>
-
-          {/* Footer */}
 
           <div className="modal-footer">
             <button
@@ -349,4 +366,4 @@ function AddQuestionCategoryModal({
   );
 }
 
-export default AddQuestionCategoryModal;
+export default AddTopicModal;

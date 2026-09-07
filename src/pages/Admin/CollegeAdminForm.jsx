@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
-import SuccessModal from "../../components/Common/SuccessModal";
+import { useToast } from "../../components/Toast/useToast";
 
 import UserService from "../../services/UserService";
 import CollegeService from "../../services/CollegeService";
@@ -22,6 +22,7 @@ import {
 import "./BranchAdminForm.css";
 
 function CollegeAdminForm({ show, onClose, onSave, selectedCollegeAdminData }) {
+  const toast = useToast();
   // FORM STATE
 
   const [name, setName] = useState("");
@@ -41,12 +42,6 @@ function CollegeAdminForm({ show, onClose, onSave, selectedCollegeAdminData }) {
   // SAVE STATE
 
   const [saving, setSaving] = useState(false);
-
-  // SUCCESS MODAL
-
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-
 
   // HELPER: normalize backend college payloads
  
@@ -95,7 +90,9 @@ function CollegeAdminForm({ show, onClose, onSave, selectedCollegeAdminData }) {
       } catch (error) {
         console.error("Error fetching colleges:", error);
 
-        alert(error?.response?.data?.message || "Failed to load colleges.");
+        toast.error(
+          error?.response?.data?.message || "Failed to load colleges.",
+        );
       } finally {
         setLoadingColleges(false);
       }
@@ -172,43 +169,43 @@ function CollegeAdminForm({ show, onClose, onSave, selectedCollegeAdminData }) {
   const validateForm = () => {
     // Name
     if (!name.trim()) {
-      alert("Please enter Name.");
+      toast.error("Please enter a name.");
       return false;
     }
 
     // Employee ID
     if (!employeeId.trim()) {
-      alert("Please enter Employee ID.");
+      toast.error("Please enter an employee ID.");
       return false;
     }
 
     if (Number(employeeId) <= 0) {
-      alert("Please enter a valid Employee ID.");
+      toast.error("Please enter a valid employee ID.");
       return false;
     }
 
     // Designation
     if (!designation.trim()) {
-      alert("Please enter Designation.");
+      toast.error("Please enter a designation.");
       return false;
     }
 
     // College
     if (!collegeId) {
-      alert("Please select College.");
+      toast.error("Please select a college.");
       return false;
     }
 
     // Email
     if (!email.trim()) {
-      alert("Please enter Email.");
+      toast.error("Please enter an email address.");
       return false;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(email.trim())) {
-      alert("Please enter a valid Email address.");
+      toast.error("Please enter a valid email address.");
       return false;
     }
 
@@ -216,12 +213,12 @@ function CollegeAdminForm({ show, onClose, onSave, selectedCollegeAdminData }) {
     const cleanedPhone = phoneNumber.replace(/\D/g, "");
 
     if (!cleanedPhone) {
-      alert("Please enter Phone Number.");
+      toast.error("Please enter a phone number.");
       return false;
     }
 
     if (cleanedPhone.length !== 10) {
-      alert("Phone Number must contain exactly 10 digits.");
+      toast.error("Phone number must contain exactly 10 digits.");
       return false;
     }
 
@@ -230,19 +227,19 @@ function CollegeAdminForm({ show, onClose, onSave, selectedCollegeAdminData }) {
     // Optional while editing.
     if (!selectedCollegeAdminData) {
       if (!password.trim()) {
-        alert("Please enter Password.");
+        toast.error("Please enter a password.");
         return false;
       }
     }
 
     if (password.trim() && password.trim().length < 6) {
-      alert("Password must contain at least 6 characters.");
+      toast.error("Password must contain at least 6 characters.");
       return false;
     }
 
     // Address
     if (!address.trim()) {
-      alert("Please enter Address.");
+      toast.error("Please enter an address.");
       return false;
     }
 
@@ -294,37 +291,28 @@ function CollegeAdminForm({ show, onClose, onSave, selectedCollegeAdminData }) {
 
       await onSave(collegeAdminData);
 
-      setSuccessMessage(
+      toast.success(
         selectedCollegeAdminData
-          ? "College Admin updated successfully!"
-          : "College Admin saved successfully!",
+          ? "College admin updated."
+          : "College admin saved.",
       );
 
-      setShowSuccess(true);
+      onClose();
     } catch (error) {
       console.error("College Admin Save Error:", error);
 
       const errorMessage =
         error?.response?.data?.message ||
         error?.response?.data ||
-        "Failed to save College Admin.";
+        "Failed to save college admin.";
 
-      alert(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setSaving(false);
     }
   };
 
- 
-  // CLOSE SUCCESS MODAL
-  
 
-  const handleSuccessClose = () => {
-    setShowSuccess(false);
-    onClose();
-  };
-
-  
   // IF MODAL IS NOT OPEN
  
 
@@ -587,14 +575,6 @@ function CollegeAdminForm({ show, onClose, onSave, selectedCollegeAdminData }) {
           </button>
         </div>
       </div>
-
-      {/*  SUCCESS MODAL */}
-
-      <SuccessModal
-        show={showSuccess}
-        message={successMessage}
-        onClose={handleSuccessClose}
-      />
     </div>,
     document.body,
   );

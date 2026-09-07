@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Select from "react-select";
 import CourseService from "../../services/CourseService";
+import SubjectService from "../../services/SubjectService";
 import ChapterService from "../../services/ChapterService";
-import QuestionCategoryService from "../../services/QuestionCategoryService";
+import TopicService from "../../services/TopicService";
 import QuestionTypeService from "../../services/QuestionTypeService";
 import TableAttributeService from "../../services/TableAttributeService";
 import QuestionService from "../../services/QuestionService";
@@ -23,22 +24,25 @@ import "./AddQuestionModal.css";
 
 function AddQuestionModal({
   courseId: initialCourseId,
+  subjectId: initialSubjectId,
   chapterId: initialChapterId,
-  categoryId: initialCategoryId,
+  topicId: initialTopicId,
   initialData,
   onClose,
   onSave,
 }) {
   const [courseId, setCourseId] = useState(null);
+  const [subjectId, setSubjectId] = useState(null);
   const [chapterId, setChapterId] = useState(null);
-  const [categoryId, setCategoryId] = useState(null);
+  const [topicId, setTopicId] = useState(null);
   const [questionTypeId, setQuestionTypeId] = useState(null);
   const [questionText, setQuestionText] = useState("");
 
   // Empty options (Backend team will populate)
   const [courseOptions, setCourseOptions] = useState([]);
+  const [subjectOptions, setSubjectOptions] = useState([]);
   const [chapterOptions, setChapterOptions] = useState([]);
-  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [topicOptions, setTopicOptions] = useState([]);
   const [questionTypeOptions, setQuestionTypeOptions] = useState([]);
   const [balanceOptions, setBalanceOptions] = useState([]);
 
@@ -59,52 +63,86 @@ function AddQuestionModal({
 
   const getData = async () => {
     try {
-      console.log("Reached here");
-      // get courses
-      let courseData = await CourseService.getAllCourses();
-      courseData = await courseData.data;
-      console.log("Courses data: ", courseData);
-      let allCourses = courseData.map((c) => ({
-        id: c.courseId,
-        name: c.name,
-      }));
-      console.log("All courses: ", allCourses);
-      // get chapter
-      let response = await ChapterService.getAll();
-      let chapterData = await response.data;
-      let allChapters = chapterData.map((c) => ({
-        id: c.chapterId,
-        name: c.name,
-      }));
-      // get category
-      let categoriesData = await QuestionCategoryService.getAll();
-      categoriesData = await categoriesData.data;
-      let allCategories = categoriesData.map((c) => ({
-        id: c.categoryId,
-        name: c.name,
-      }));
+      const [courseResponse, subjectResponse, chapterResponse, topicResponse] =
+        await Promise.all([
+          CourseService.getAllCourses(),
+          SubjectService.getAll(),
+          ChapterService.getAll(),
+          TopicService.getAll(),
+        ]);
 
-      let courseOptionsData = allCourses.map((item) => ({
-        value: item.id,
-        label: item.name,
-      }));
+      const courseData = Array.isArray(courseResponse.data)
+        ? courseResponse.data
+        : [];
+      const subjectData = Array.isArray(subjectResponse.data)
+        ? subjectResponse.data
+        : [];
+      const chapterData = Array.isArray(chapterResponse.data)
+        ? chapterResponse.data
+        : [];
+      const topicData = Array.isArray(topicResponse.data)
+        ? topicResponse.data
+        : [];
 
-      let categoryOptionsData = allCategories.map((item) => ({
-        value: item.id,
-        label: item.name,
-      }));
+      setCourseOptions(
+        courseData.map((item) => ({
+          value: item.courseId,
+          label: item.name,
+        })),
+      );
 
-      let chapterOptionData = allChapters.map((item) => ({
-        value: item.id,
-        label: item.name,
-      }));
-      setCategoryOptions(categoryOptionsData);
-      setChapterOptions(chapterOptionData);
-      setCourseOptions(courseOptionsData);
+      setSubjectOptions(
+        subjectData.map((item) => ({
+          value: item.subjectId ?? item.subject_id,
+          label: item.subjectName ?? item.name,
+          courseId: item.courseId ?? item.course_id,
+        })),
+      );
+
+      setChapterOptions(
+        chapterData.map((item) => ({
+          value: item.chapterId,
+          label: item.name,
+          courseId: item.courseId ?? item.course_id,
+          subjectId: item.subjectId ?? item.subject_id,
+        })),
+      );
+
+      setTopicOptions(
+        topicData.map((item) => ({
+          value: item.topicId ?? item.topic_id ?? item.id,
+          label: item.name,
+          chapterId: item.chapterId ?? item.chapter_id,
+          subjectId: item.subjectId ?? item.subject_id,
+        })),
+      );
     } catch (error) {
       console.error("Error: ", error);
     }
   };
+
+  // Cascading option lists: a subject narrows to its course, a chapter to its
+  // subject, a topic to its chapter.
+  const visibleSubjectOptions = subjectOptions.filter(
+    (option) =>
+      !courseId?.value ||
+      String(option.courseId) === String(courseId.value),
+  );
+
+  const visibleChapterOptions = chapterOptions.filter((option) => {
+    if (subjectId?.value) {
+      return String(option.subjectId) === String(subjectId.value);
+    }
+    return (
+      !courseId?.value || String(option.courseId) === String(courseId.value)
+    );
+  });
+
+  const visibleTopicOptions = topicOptions.filter(
+    (option) =>
+      !chapterId?.value ||
+      String(option.chapterId) === String(chapterId.value),
+  );
 
   const loadQuestionTypes = async () => {
     try {
@@ -143,8 +181,9 @@ function AddQuestionModal({
   };
   useEffect(() => {
     const selectedCourseId = initialData?.courseId ?? initialCourseId;
+    const selectedSubjectId = initialData?.subjectId ?? initialSubjectId;
     const selectedChapterId = initialData?.chapterId ?? initialChapterId;
-    const selectedCategoryId = initialData?.categoryId ?? initialCategoryId;
+    const selectedTopicId = initialData?.topicId ?? initialTopicId;
     const selectedQuestionTypeId =
       initialData?.questionTypeId ?? initialData?.question_type_id;
 
@@ -167,6 +206,14 @@ function AddQuestionModal({
         setCourseId(selectedCourse);
       }
     }
+    if (selectedSubjectId && subjectOptions.length > 0) {
+      const selectedSubject = subjectOptions.find(
+        (option) => option.value === Number(selectedSubjectId),
+      );
+      if (selectedSubject) {
+        setSubjectId(selectedSubject);
+      }
+    }
     if (selectedChapterId && chapterOptions.length > 0) {
       const selectedChapter = chapterOptions.find(
         (option) => option.value === Number(selectedChapterId),
@@ -175,22 +222,24 @@ function AddQuestionModal({
         setChapterId(selectedChapter);
       }
     }
-    if (selectedCategoryId && categoryOptions.length > 0) {
-      const selectedCategory = categoryOptions.find(
-        (option) => option.value === Number(selectedCategoryId),
+    if (selectedTopicId && topicOptions.length > 0) {
+      const selectedTopic = topicOptions.find(
+        (option) => option.value === Number(selectedTopicId),
       );
-      if (selectedCategory) {
-        setCategoryId(selectedCategory);
+      if (selectedTopic) {
+        setTopicId(selectedTopic);
       }
     }
   }, [
     initialCourseId,
+    initialSubjectId,
     initialChapterId,
-    initialCategoryId,
+    initialTopicId,
     initialData,
     courseOptions,
+    subjectOptions,
     chapterOptions,
-    categoryOptions,
+    topicOptions,
     questionTypeOptions,
   ]);
 
@@ -328,8 +377,9 @@ function AddQuestionModal({
   const handleSave = async () => {
     if (
       !courseId ||
+      !subjectId ||
       !chapterId ||
-      !categoryId ||
+      !topicId ||
       !questionTypeId ||
       !questionText.trim()
     ) {
@@ -383,8 +433,9 @@ function AddQuestionModal({
 
     const questionData = {
       courseId: Number(courseId.value),
+      subjectId: Number(subjectId.value),
       chapterId: Number(chapterId.value),
-      categoryId: Number(categoryId.value),
+      topicId: Number(topicId.value),
       questionTypeId: Number(questionTypeId.value),
       questionText: questionText.trim(),
       questionAttributes,
@@ -403,8 +454,9 @@ function AddQuestionModal({
 
   const handleClose = () => {
     setCourseId(null);
+    setSubjectId(null);
     setChapterId(null);
-    setCategoryId(null);
+    setTopicId(null);
     setQuestionTypeId(null);
     setQuestionText("");
 
@@ -460,7 +512,12 @@ function AddQuestionModal({
                     classNamePrefix="react-select"
                     options={courseOptions}
                     value={courseId}
-                    onChange={setCourseId}
+                    onChange={(option) => {
+                      setCourseId(option);
+                      setSubjectId(null);
+                      setChapterId(null);
+                      setTopicId(null);
+                    }}
                     placeholder="Select Course Name"
                     isSearchable={true}
                     isDisabled={!!initialCourseId}
@@ -475,11 +532,12 @@ function AddQuestionModal({
                   />
                 </div>
               </div>
-              {/* Chapter ID */}
+
+              {/* Subject */}
 
               <div className="form-group">
                 <label>
-                  Chapter Name <span>*</span>
+                  Subject <span>*</span>
                 </label>
 
                 <div className="input-box">
@@ -487,12 +545,16 @@ function AddQuestionModal({
                   <Select
                     className="react-select-container"
                     classNamePrefix="react-select"
-                    options={chapterOptions}
-                    value={chapterId}
-                    onChange={setChapterId}
-                    placeholder="Select Chapter Name"
+                    options={visibleSubjectOptions}
+                    value={subjectId}
+                    onChange={(option) => {
+                      setSubjectId(option);
+                      setChapterId(null);
+                      setTopicId(null);
+                    }}
+                    placeholder="Select Subject"
                     isSearchable={true}
-                    isDisabled={!!initialChapterId}
+                    isDisabled={!!initialSubjectId || !courseId}
                     menuPortalTarget={document.body}
                     menuPosition="fixed"
                     styles={{
@@ -505,11 +567,44 @@ function AddQuestionModal({
                 </div>
               </div>
 
-              {/* Category ID */}
+              {/* Chapter ID */}
 
               <div className="form-group">
                 <label>
-                  Category <span>*</span>
+                  Chapter Name <span>*</span>
+                </label>
+
+                <div className="input-box">
+                  <FaList className="input-icon" />
+                  <Select
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    options={visibleChapterOptions}
+                    value={chapterId}
+                    onChange={(option) => {
+                      setChapterId(option);
+                      setTopicId(null);
+                    }}
+                    placeholder="Select Chapter Name"
+                    isSearchable={true}
+                    isDisabled={!!initialChapterId || !subjectId}
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+                    styles={{
+                      menuPortal: (base) => ({
+                        ...base,
+                        zIndex: 9999,
+                      }),
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Topic ID */}
+
+              <div className="form-group">
+                <label>
+                  Topic <span>*</span>
                 </label>
 
                 <div className="input-box">
@@ -518,12 +613,12 @@ function AddQuestionModal({
                   <Select
                     className="react-select-container"
                     classNamePrefix="react-select"
-                    options={categoryOptions}
-                    value={categoryId}
-                    onChange={setCategoryId}
-                    placeholder="Select Category"
+                    options={visibleTopicOptions}
+                    value={topicId}
+                    onChange={setTopicId}
+                    placeholder="Select Topic"
                     isSearchable={true}
-                    isDisabled={!!initialCategoryId}
+                    isDisabled={!!initialTopicId || !chapterId}
                     menuPortalTarget={document.body}
                     menuPosition="fixed"
                     styles={{

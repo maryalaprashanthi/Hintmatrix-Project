@@ -1,8 +1,9 @@
-import React from "react";
 import { themeQuartz } from "ag-grid-community";
 import StudentService from "../../services/UserService";
 import DataGrid from "../../components/DataGrid";
 import ActionIconButton from "../../components/Common/ActionIconButton";
+import ConfirmDialog from "../../components/Common/ConfirmDialog";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 
 function StudentTable({ data, onEdit, onDeleted, refreshData }) {
   const defaultColDef = {
@@ -11,41 +12,18 @@ function StudentTable({ data, onEdit, onDeleted, refreshData }) {
     resizable: true,
   };
 
-  const handleDelete = (student) => {
-    const userId = student.userId || student.user_id;
-
-    if (!userId) {
-      console.error("Cannot delete student without an ID:", student);
-      alert("Unable to delete Student: student ID is missing.");
-      return;
-    }
-
-    if (
-      !window.confirm(
-        "Are you sure you want to permanently delete this Student?",
-      )
-    )
-      return;
-
-    StudentService.deleteStudent(userId)
-      .then(async () => {
-        if (onDeleted) {
-          await onDeleted(userId);
-        } else {
-          await refreshData();
-        }
-      })
-      .catch((error) => {
-        const message =
-          error.response?.data?.message ||
-          error.response?.data?.error ||
-          error.message ||
-          "Failed to delete Student.";
-
-        console.error("Delete Error:", error.response?.data || error);
-        alert(`Failed to delete Student: ${message}`);
-      });
-  };
+  const del = useDeleteConfirm({
+    entity: "student",
+    deleteFn: async (student) => {
+      const userId = student.userId || student.user_id;
+      await StudentService.deleteStudent(userId);
+      if (onDeleted) {
+        await onDeleted(userId);
+      } else {
+        await refreshData();
+      }
+    },
+  });
 
   const columnDefs = [
     {
@@ -93,7 +71,7 @@ function StudentTable({ data, onEdit, onDeleted, refreshData }) {
 
           <ActionIconButton
             type="delete"
-            onClick={() => handleDelete(params.data)}
+            onClick={() => del.request(params.data)}
             title="Delete student"
           />
         </div>
@@ -127,6 +105,17 @@ function StudentTable({ data, onEdit, onDeleted, refreshData }) {
         pageSize={10}
         paginationPageSizeSelector={false}
         rowHeight={50}
+      />
+
+      <ConfirmDialog
+        open={Boolean(del.pending)}
+        title={`Delete "${del.pending?.name || "this student"}"?`}
+        body="Their practice history and results will be removed. This can't be undone."
+        confirmLabel="Delete student"
+        loading={del.deleting}
+        error={del.error}
+        onConfirm={del.confirm}
+        onCancel={del.close}
       />
     </div>
   );

@@ -6,16 +6,16 @@ import "./Section.css";
 import SectionForm from "./SectionForm";
 import SectionTable from "./SectionTable";
 import SectionService from "../services/SectionService";
-import SuccessModal from "../components/Common/SuccessModal";
-import DeleteModal from "../components/Common/DeleteModal";
+import ConfirmDialog from "../components/Common/ConfirmDialog";
+import { useDeleteConfirm } from "../hooks/useDeleteConfirm";
+import { useToast } from "../components/Toast/useToast";
+import { getApiErrorMessage } from "../utils/apiError";
 
 function Section() {
+  const toast = useToast();
   const [showModal, setShowModal] = useState(false);
   const [selectedSection, setSelectedSection] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [showDelete, setShowDelete] = useState(false);
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -25,17 +25,16 @@ function Section() {
     try {
       const response = await SectionService.uploadExcel(file);
 
-      alert(
+      toast.success(
         typeof response.data === "string"
           ? response.data
-          : "Section Excel uploaded successfully!",
+          : "Section Excel uploaded.",
       );
 
       setRefreshTrigger((prev) => !prev);
     } catch (error) {
       console.error("Upload Error:", error);
-
-      alert("File upload failed.");
+      toast.error(getApiErrorMessage(error, "File upload failed."));
     }
 
     event.target.value = "";
@@ -60,50 +59,26 @@ function Section() {
     try {
       if (sectionId) {
         await SectionService.updateSection(sectionId, requestDTO);
-
-        setSuccessMessage("Section updated successfully!");
+        toast.success("Section updated.");
       } else {
         await SectionService.saveSection(requestDTO);
-
-        setSuccessMessage("Section saved successfully!");
+        toast.success("Section saved.");
       }
 
-      setShowSuccess(true);
       setSelectedSection(null);
       setShowModal(false);
       setRefreshTrigger((prev) => !prev);
     } catch (error) {
       console.error("Section Save Error:", error);
-
-      alert(error.response?.data?.message || "Failed to save section");
+      toast.error(getApiErrorMessage(error, "Failed to save section."));
     }
   };
-  const handleDeleteSection = async (sectionId) => {
-    if (!sectionId) {
-      alert("Cannot delete: Section ID is missing.");
-      return;
-    }
-
-    const confirmDelete = window.confirm(
-      "Are you sure you want to permanently delete this section?",
-    );
-
-    if (!confirmDelete) return;
-
-    try {
-      await SectionService.deleteSection(sectionId);
-
-      // Refresh table from DB
-      setRefreshTrigger((prev) => !prev);
-
-      // Show success popup
-      setShowDelete(true);
-    } catch (error) {
-      console.error("Section Delete Error:", error);
-
-      alert(error.response?.data?.message || "Failed to delete section");
-    }
-  };
+  const del = useDeleteConfirm({
+    entity: "section",
+    deleteFn: (section) =>
+      SectionService.deleteSection(section.sectionId ?? section.id ?? section),
+    onDeleted: () => setRefreshTrigger((prev) => !prev),
+  });
 
   return (
     <div className="container-fluid py-4 px-4 bg-light min-vh-100">
@@ -141,7 +116,7 @@ function Section() {
           <SectionTable
             refresh={refreshTrigger}
             onEdit={handleEditSection}
-            onDelete={handleDeleteSection}
+            onDelete={del.request}
           />
         </div>
       </div>
@@ -199,15 +174,15 @@ function Section() {
           document.body,
         )}
 
-      <SuccessModal
-        show={showSuccess}
-        message={successMessage}
-        onClose={() => setShowSuccess(false)}
-      />
-      <DeleteModal
-        show={showDelete}
-        message="Section deleted successfully!"
-        onClose={() => setShowDelete(false)}
+      <ConfirmDialog
+        open={Boolean(del.pending)}
+        title={`Delete "${del.pending?.sectionName || del.pending?.name || "this section"}"?`}
+        body="Students assigned to this section will need to be reassigned. This can't be undone."
+        confirmLabel="Delete section"
+        loading={del.deleting}
+        error={del.error}
+        onConfirm={del.confirm}
+        onCancel={del.close}
       />
     </div>
   );

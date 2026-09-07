@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal, Button, Form, Table, InputGroup } from "react-bootstrap";
 import { FaSearch } from "react-icons/fa";
 import apiClient from "../../services/apiClient";
+import { useToast } from "../../components/Toast/useToast";
 import "./QuestionSelectionModal.css";
 
 export default function QuestionSelectionModal({
@@ -10,6 +11,7 @@ export default function QuestionSelectionModal({
   examId,
   onAddQuestions,
 }) {
+  const toast = useToast();
   const [questions, setQuestions] = useState([]);
   const [selectedQuestions, setSelectedQuestions] = useState([]);
   const [search, setSearch] = useState("");
@@ -32,14 +34,14 @@ export default function QuestionSelectionModal({
     try {
       await onAddQuestions(selectedQuestions);
 
-      alert("Questions added to exam successfully.");
+      toast.success("Questions added to exam.");
 
       setSelectedQuestions([]);
       handleClose();
     } catch (error) {
       console.error("Error adding questions:", error);
 
-      alert("Failed to add questions to exam.");
+      toast.error("Failed to add questions to exam.");
     }
   };
   useEffect(() => {

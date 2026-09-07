@@ -1,9 +1,8 @@
 import "./Chapters.css";
 
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
-import SuccessModal from "../../components/Common/SuccessModal";
-import DeleteModal from "../../components/Common/DeleteModal";
+import { useParams, useNavigate } from "react-router-dom";
+import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 
 import {
   FaBookOpen,
@@ -16,15 +15,21 @@ import {
 import ChapterService from "../../services/ChapterService";
 import ChapterForm from "./ChapterForm";
 import EditChapterForm from "./EditChapterForm";
+import ConfirmDialog from "../../components/Common/ConfirmDialog";
+import { canManageContent } from "../../utils/roles";
+import { getApiErrorMessage } from "../../utils/apiError";
+import { paths } from "../../routes/paths";
+import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
+import { useToast } from "../../components/Toast/useToast";
 
 function Chapters() {
-  const { courseId } = useParams();
+  // Chapters lists the chapters of one subject: /subjects/:subjectId/chapters
+  const { subjectId } = useParams();
 
   const navigate = useNavigate();
 
-  const location = useLocation();
-
-  const isQuestionsModule = location.pathname.startsWith("/questions");
+  const canManage = canManageContent();
+  const toast = useToast();
 
   const [chapters, setChapters] = useState([]);
 
@@ -35,9 +40,6 @@ function Chapters() {
   const [selectedChapter, setSelectedChapter] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [showDelete, setShowDelete] = useState(false);
 
   const filteredChapters = chapters.filter((chapter) => {
     const searchMatch = chapter.name
@@ -61,17 +63,13 @@ function Chapters() {
 
       const loadedChapters = Array.isArray(response.data) ? response.data : [];
 
-      if (courseId) {
-        setChapters(
-          loadedChapters.filter(
-            (chapter) =>
-              String(chapter.courseId ?? chapter.course_id) ===
-              String(courseId),
-          ),
-        );
-      } else {
-        setChapters(loadedChapters);
-      }
+      setChapters(
+        loadedChapters.filter(
+          (chapter) =>
+            String(chapter.subjectId ?? chapter.subject_id) ===
+            String(subjectId),
+        ),
+      );
     } catch (error) {
       console.error("Error fetching chapters:", error);
     }
@@ -79,7 +77,7 @@ function Chapters() {
 
   useEffect(() => {
     loadChapters();
-  }, [courseId]);
+  }, [subjectId]);
 
   const handleSaveChapter = async (newChapter) => {
     try {
@@ -87,16 +85,13 @@ function Chapters() {
 
       await ChapterService.create(newChapter);
 
-      setSuccessMessage("Chapter saved successfully!");
-      setShowSuccess(true);
-
+      toast.success("Chapter saved.");
       setShowAddChapter(false);
 
       loadChapters();
     } catch (error) {
       console.error("Create Error:", error.response?.data || error);
-
-      alert("Failed to create chapter");
+      toast.error(getApiErrorMessage(error, "Failed to create chapter."));
     }
   };
 
@@ -117,48 +112,22 @@ function Chapters() {
 
       await ChapterService.update(id, updatedChapter);
 
-      setSuccessMessage("Chapter updated successfully!");
-      setShowSuccess(true);
+      toast.success("Chapter updated.");
       setShowEditChapter(false);
-
       setSelectedChapter(null);
 
       loadChapters();
     } catch (error) {
       console.error("Update Error:", error.response?.data || error);
-
-      alert("Failed to update chapter");
+      toast.error(getApiErrorMessage(error, "Failed to update chapter."));
     }
   };
 
-  // DELETE CHAPTER
-  const handleDelete = async (id) => {
-    if (!id) {
-      alert("Cannot delete: Chapter ID is missing.");
-      return;
-    }
-
-    const confirmDelete = window.confirm(
-      "Are you sure you want to permanently delete this chapter?",
-    );
-
-    if (!confirmDelete) return;
-
-    try {
-      // Permanently delete from database
-      await ChapterService.delete(id);
-
-      // Refresh chapters from database
-      await loadChapters();
-
-      // Show delete success popup
-      setShowDelete(true);
-    } catch (error) {
-      console.error("Delete Error:", error.response?.data || error);
-
-      alert(error.response?.data?.message || "Failed to delete chapter");
-    }
-  };
+  const del = useDeleteConfirm({
+    entity: "chapter",
+    deleteFn: (chapter) => ChapterService.delete(chapter.chapterId),
+    onDeleted: loadChapters,
+  });
 
   // FILE UPLOAD
 
@@ -170,67 +139,45 @@ function Chapters() {
     try {
       const response = await ChapterService.uploadExcel(file);
 
-      alert(
+      toast.success(
         typeof response.data === "string"
           ? response.data
-          : "Chapter Excel uploaded successfully!",
+          : "Chapter Excel uploaded.",
       );
 
       loadChapters();
     } catch (error) {
       console.error("Upload Error:", error);
-
-      if (error.response) {
-        alert(error.response.data);
-      } else {
-        alert("File upload failed.");
-      }
+      toast.error(getApiErrorMessage(error, "File upload failed."));
     }
 
     event.target.value = "";
   };
-  // // Chapter -> Question Categories
-  // const openCategories = (chapterTitle) => {
-  //   const chapterSlug = chapterTitle.toLowerCase().replaceAll(" ", "-");
-
-  //   if (isQuestionsModule) {
-  //     navigate("/questions/question-categories");
-  //   } else {
-  //     navigate(`/question-categories/${courseId}/${chapterSlug}`);
-  //   }
-  // };
-
-  const openCategories = (chapter) => {
-    console.log("Selected Course ID:", courseId);
-    console.log("Selected Chapter:", chapter);
-
-    const chapterSlug = chapter.name.toLowerCase().replaceAll(" ", "-");
-
-    const chapterWithCourse = {
-      ...chapter,
-      courseId: Number(courseId),
-    };
-    console.log("Navigating with :", chapterWithCourse);
-    if (isQuestionsModule) {
-      navigate(
-        `/questions/question-categories/${chapter.chapterId}/${chapterSlug}`,
-        {
-          state: {
-            chapter: chapterWithCourse,
-          },
-        },
-      );
-    } else {
-      navigate(`/question-categories/${courseId}/${chapterSlug}`, {
-        state: {
-          chapter: chapterWithCourse,
-        },
-      });
-    }
+  // Chapter -> Topics
+  const openTopics = (chapter) => {
+    navigate(paths.chapterTopics(chapter.chapterId));
   };
+
+  // Course + subject names ride on every chapter row
+  // (ChapterResponseDTO.courseName / .subjectName).
+  const courseName = chapters[0]?.courseName;
+  const subjectName = chapters[0]?.subjectName;
 
   return (
     <div className="chapters-page">
+      <Breadcrumbs
+        items={[
+          { label: courseName || "Course", to: paths.courses() },
+          {
+            label: subjectName,
+            to: chapters[0]?.courseId
+              ? paths.courseSubjects(chapters[0].courseId)
+              : undefined,
+          },
+          { label: "Chapters" },
+        ]}
+      />
+
       <div className="chapter-header d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
           <h2>All Chapters</h2>
@@ -248,21 +195,23 @@ function Chapters() {
           onChange={handleFileUpload}
         />
 
-        <div className="d-flex gap-2">
-          <button
-            className="btn btn-primary"
-            onClick={() => document.getElementById("chapterUpload").click()}
-          >
-            ⬆ Upload
-          </button>
+        {canManage && (
+          <div className="d-flex gap-2">
+            <button
+              className="btn btn-primary"
+              onClick={() => document.getElementById("chapterUpload").click()}
+            >
+              ⬆ Upload
+            </button>
 
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowAddChapter(true)}
-          >
-            + Add Chapter
-          </button>
-        </div>
+            <button
+              className="btn btn-primary"
+              onClick={() => setShowAddChapter(true)}
+            >
+              + Add Chapter
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="chapter-filters mb-3">
@@ -321,29 +270,31 @@ function Chapters() {
               <button
                 className="btn btn-primary view-btn"
                 disabled={!chapter.activeRow}
-                onClick={() => openCategories(chapter)}
+                onClick={() => openTopics(chapter)}
               >
                 Start Learning
                 <FaArrowRight className="ms-2" />
               </button>
 
-              <div className="chapter-actions-row mt-3">
-                <button
-                  className="chapter-action-btn outline-blue"
-                  onClick={() => handleEdit(chapter)}
-                >
-                  <FaEdit className="me-1" />
-                  Edit
-                </button>
+              {canManage && (
+                <div className="chapter-actions-row mt-3">
+                  <button
+                    className="chapter-action-btn outline-blue"
+                    onClick={() => handleEdit(chapter)}
+                  >
+                    <FaEdit className="me-1" />
+                    Edit
+                  </button>
 
-                <button
-                  className="chapter-action-btn outline-red"
-                  onClick={() => handleDelete(chapter.chapterId)}
-                >
-                  <FaTrash className="me-1" />
-                  Delete
-                </button>
-              </div>
+                  <button
+                    className="chapter-action-btn outline-red"
+                    onClick={() => del.request(chapter)}
+                  >
+                    <FaTrash className="me-1" />
+                    Delete
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -353,6 +304,8 @@ function Chapters() {
         show={showAddChapter}
         onClose={() => setShowAddChapter(false)}
         onSave={handleSaveChapter}
+        presetCourseId={chapters[0]?.courseId}
+        presetSubjectId={subjectId}
       />
 
       {selectedChapter && (
@@ -363,15 +316,15 @@ function Chapters() {
           onUpdate={handleUpdateChapter}
         />
       )}
-      <SuccessModal
-        show={showSuccess}
-        message={successMessage}
-        onClose={() => setShowSuccess(false)}
-      />
-      <DeleteModal
-        show={showDelete}
-        message="Chapter deleted successfully!"
-        onClose={() => setShowDelete(false)}
+      <ConfirmDialog
+        open={Boolean(del.pending)}
+        title={`Delete "${del.pending?.name}"?`}
+        body="The topics and questions inside this chapter will be removed too. This can't be undone."
+        confirmLabel="Delete chapter"
+        loading={del.deleting}
+        error={del.error}
+        onConfirm={del.confirm}
+        onCancel={del.close}
       />
     </div>
   );

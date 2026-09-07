@@ -5,22 +5,27 @@ import { FaTimes, FaBook, FaGraduationCap, FaSave } from "react-icons/fa";
 
 import "./ChapterForm.css";
 import CourseService from "../../services/CourseService";
+import SubjectService from "../../services/SubjectService";
 
 function EditChapterForm({ show, chapter, onClose, onUpdate }) {
   const [courseId, setCourseId] = useState("");
+  const [subjectId, setSubjectId] = useState("");
   const [chapterName, setChapterName] = useState("");
   const [courses, setCourses] = useState([]);
+  const [subjects, setSubjects] = useState([]);
   const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
     if (show) {
       loadCourses();
+      loadSubjects();
     }
   }, [show]);
 
   useEffect(() => {
     if (chapter) {
       setCourseId(chapter.courseId || "");
+      setSubjectId(chapter.subjectId ?? chapter.subject_id ?? "");
       setChapterName(chapter.name || "");
       setIsActive(chapter.activeRow !== undefined ? chapter.activeRow : true);
     }
@@ -30,22 +35,39 @@ function EditChapterForm({ show, chapter, onClose, onUpdate }) {
     try {
       const response = await CourseService.getAllCourses();
 
-      setCourses(response.data);
+      setCourses(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error loading courses:", error);
     }
   };
 
+  const loadSubjects = async () => {
+    try {
+      const response = await SubjectService.getAll();
+
+      setSubjects(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error("Error loading subjects:", error);
+    }
+  };
+
+  const subjectOptions = subjects.filter(
+    (subject) =>
+      !courseId ||
+      String(subject.courseId ?? subject.course_id) === String(courseId),
+  );
+
   if (!show) return null;
 
   const handleUpdate = () => {
-    if (!courseId || !chapterName.trim()) {
+    if (!courseId || !subjectId || !chapterName.trim()) {
       alert("Please fill all the fields.");
       return;
     }
 
     const updatedChapter = {
       courseId: Number(courseId),
+      subjectId: Number(subjectId),
 
       name: chapterName.trim(),
       activeRow: isActive,
@@ -56,6 +78,7 @@ function EditChapterForm({ show, chapter, onClose, onUpdate }) {
 
   const handleClose = () => {
     setCourseId("");
+    setSubjectId("");
     setChapterName("");
     setIsActive(true);
 
@@ -98,13 +121,45 @@ function EditChapterForm({ show, chapter, onClose, onUpdate }) {
 
                   <select
                     value={courseId}
-                    onChange={(e) => setCourseId(e.target.value)}
+                    onChange={(e) => {
+                      setCourseId(e.target.value);
+                      setSubjectId("");
+                    }}
                   >
                     <option value="">Select Course</option>
 
                     {courses.map((course) => (
                       <option key={course.courseId} value={course.courseId}>
                         {course.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Subject */}
+
+              <div className="form-group">
+                <label>
+                  Subject <span>*</span>
+                </label>
+
+                <div className="input-box">
+                  <FaGraduationCap className="input-icon" />
+
+                  <select
+                    value={subjectId}
+                    disabled={!courseId}
+                    onChange={(e) => setSubjectId(e.target.value)}
+                  >
+                    <option value="">Select Subject</option>
+
+                    {subjectOptions.map((subject) => (
+                      <option
+                        key={subject.subjectId ?? subject.subject_id}
+                        value={subject.subjectId ?? subject.subject_id}
+                      >
+                        {subject.subjectName ?? subject.name}
                       </option>
                     ))}
                   </select>

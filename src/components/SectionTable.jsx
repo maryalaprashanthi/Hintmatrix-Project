@@ -125,7 +125,7 @@ function SectionTable({ refresh, onDelete, onEdit }) {
 
           <ActionIconButton
             type="delete"
-            onClick={() => onDelete(params.data.sectionId)}
+            onClick={() => onDelete(params.data)}
             title="Delete section"
           />
         </div>

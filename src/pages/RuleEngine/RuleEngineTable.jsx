@@ -663,11 +663,7 @@ function RuleEngineTable({
 
             <ActionIconButton
               type="delete"
-              onClick={() =>
-                onDelete(
-                  params.data.ruleEngineId
-                )
-              }
+              onClick={() => onDelete(params.data)}
               title="Delete rule"
             />
 

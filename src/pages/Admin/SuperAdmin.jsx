@@ -3,20 +3,13 @@ import SuperAdminForm from "./SuperAdminForm";
 import "./SuperAdmin.css";
 import SuperAdminTable from "./SuperAdminTable";
 import SuperAdminService from "../../services/UserService";
-import SuccessModal from "../../components/Common/SuccessModal";
-import DeleteModal from "../../components/Common/DeleteModal";
+import { useToast } from "../../components/Toast/useToast";
 
 function SuperAdmin() {
+  const toast = useToast();
   const [showModal, setShowModal] = useState(false);
   const [superAdmins, setSuperAdmins] = useState([]);
   const [selectedSuperAdmin, setSelectedSuperAdmin] = useState(null);
-
-  // Success Modal
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-
-  // Delete Modal
-  const [showDelete, setShowDelete] = useState(false);
 
   // Fetch all Super Admins
   const fetchSuperAdmins = () => {
@@ -63,15 +56,14 @@ function SuperAdmin() {
         .then(() => {
           fetchSuperAdmins();
 
-          setSuccessMessage("Super Admin updated successfully!");
-          setShowSuccess(true);
+          toast.success("Super admin updated.");
 
           setShowModal(false);
           setSelectedSuperAdmin(null);
         })
         .catch((error) => {
           console.error("Update Error:", error);
-          alert("Failed to update Super Admin.");
+          toast.error("Failed to update super admin.");
         });
     } else {
       // CREATE
@@ -79,43 +71,15 @@ function SuperAdmin() {
         .then(() => {
           fetchSuperAdmins();
 
-          setSuccessMessage("Super Admin saved successfully!");
-          setShowSuccess(true);
+          toast.success("Super admin saved.");
 
           setShowModal(false);
         })
         .catch((error) => {
           console.error("Save Error:", error);
-          alert("Failed to add Super Admin.");
+          toast.error("Failed to add super admin.");
         });
     }
-  };
-
-  // Delete Super Admin
-  const handleDeleteSuperAdmin = (userId) => {
-    if (!userId) {
-      alert("Cannot delete: Super Admin ID is missing.");
-      return;
-    }
-
-    const confirmDelete = window.confirm(
-      "Are you sure you want to permanently delete this Super Admin?",
-    );
-
-    if (!confirmDelete) return;
-
-    SuperAdminService.deleteSuperAdmin(userId)
-      .then(() => {
-        fetchSuperAdmins();
-
-        // Show delete success popup
-        setShowDelete(true);
-      })
-      .catch((error) => {
-        console.error("Delete Error:", error);
-
-        alert(error.response?.data?.message || "Failed to delete Super Admin.");
-      });
   };
 
   return (
@@ -139,9 +103,7 @@ function SuperAdmin() {
           <SuperAdminTable
             data={superAdmins}
             onEdit={handleEditSuperAdmin}
-            onDelete={handleDeleteSuperAdmin}
             refreshData={fetchSuperAdmins}
-            onDeleteSuccess={() => setShowDelete(true)}
           />
         </div>
       </div>
@@ -154,19 +116,6 @@ function SuperAdmin() {
         selectedSuperAdminData={selectedSuperAdmin}
       />
 
-      {/* Add / Update Success Modal */}
-      <SuccessModal
-        show={showSuccess}
-        message={successMessage}
-        onClose={() => setShowSuccess(false)}
-      />
-
-      {/* Delete Success Modal */}
-      <DeleteModal
-        show={showDelete}
-        message="Super Admin deleted successfully!"
-        onClose={() => setShowDelete(false)}
-      />
     </div>
   );
 }

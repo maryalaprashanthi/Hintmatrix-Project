@@ -3,8 +3,10 @@ import "./CourseForm.css";
 
 import CourseService from "../../../services/CourseService"; // 🌟 Connected service layer
 import BranchService from "../../../services/BranchService";
+import { useToast } from "../../../components/Toast/useToast";
 
 function CourseForm({ onSaveCourse }) {
+  const toast = useToast();
   const [branches, setBranches] = useState([]);
 
   const [branchId, setBranchId] = useState("");
@@ -45,11 +47,11 @@ function CourseForm({ onSaveCourse }) {
     e.preventDefault();
 
     if (!formData.title.trim()) {
-      alert("Please enter a course name.");
+      toast.error("Please enter a course name.");
       return;
     }
     if (!branchId) {
-      alert("Please select branch");
+      toast.error("Please select a branch.");
 
       return;
     }
@@ -63,7 +65,7 @@ function CourseForm({ onSaveCourse }) {
     // 🌟 FIXED: Dispatches the transaction payload data directly to your Spring Boot database engine
     CourseService.saveCourse(courseRequestDTO)
       .then((response) => {
-        alert("Course saved successfully to backend database!");
+        toast.success("Course saved.");
 
         // Retain compatibility layer wrapper with parent trackers if necessary
         if (typeof onSaveCourse === "function") {
@@ -88,9 +90,9 @@ function CourseForm({ onSaveCourse }) {
       })
       .catch((error) => {
         console.error("Database transaction failed:", error);
-        alert(
+        toast.error(
           error.response?.data?.message ||
-            "Validation failed: Make sure your server models match.",
+            "Validation failed: make sure your server models match.",
         );
       });
   };

@@ -5,16 +5,27 @@ import { FaTimes, FaBook, FaGraduationCap, FaSave } from "react-icons/fa";
 
 import "./ChapterForm.css";
 import CourseService from "../../services/CourseService";
+import SubjectService from "../../services/SubjectService";
 
-function ChapterForm({ show, onClose, onSave, selectedChapterData }) {
+function ChapterForm({
+  show,
+  onClose,
+  onSave,
+  selectedChapterData,
+  presetCourseId,
+  presetSubjectId,
+}) {
   const [courseId, setCourseId] = useState("");
+  const [subjectId, setSubjectId] = useState("");
   const [chapterName, setChapterName] = useState("");
   const [courses, setCourses] = useState([]);
+  const [subjects, setSubjects] = useState([]);
   const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
     if (show) {
       loadCourses();
+      loadSubjects();
     }
   }, [show]);
 
@@ -26,16 +37,38 @@ function ChapterForm({ show, onClose, onSave, selectedChapterData }) {
 
       console.log("Courses:", response.data);
 
-      setCourses(response.data);
+      setCourses(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error retrieving courses:", error);
     }
   };
 
+  const loadSubjects = async () => {
+    try {
+      const response = await SubjectService.getAll();
+
+      setSubjects(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error("Error retrieving subjects:", error);
+    }
+  };
+
+  // Only the selected course's subjects are pickable.
+  const subjectOptions = subjects.filter(
+    (subject) =>
+      !courseId ||
+      String(subject.courseId ?? subject.course_id) === String(courseId),
+  );
+
   useEffect(() => {
     if (show) {
       if (selectedChapterData) {
         setCourseId(selectedChapterData.courseId || "");
+        setSubjectId(
+          selectedChapterData.subjectId ??
+            selectedChapterData.subject_id ??
+            "",
+        );
         setChapterName(selectedChapterData.name || "");
         setIsActive(
           selectedChapterData.activeRow !== undefined
@@ -43,17 +76,26 @@ function ChapterForm({ show, onClose, onSave, selectedChapterData }) {
             : true,
         );
       } else {
-        setCourseId("");
+        // Adding from a subject's page - pre-select that subject/course.
+        setCourseId(presetCourseId ? String(presetCourseId) : "");
+        setSubjectId(presetSubjectId ? String(presetSubjectId) : "");
         setChapterName("");
         setIsActive(true);
       }
     }
-  }, [show, selectedChapterData]);
+  }, [show, selectedChapterData, presetCourseId, presetSubjectId]);
 
   if (!show) return null;
 
+  const resetFields = () => {
+    setCourseId("");
+    setSubjectId("");
+    setChapterName("");
+    setIsActive(true);
+  };
+
   const handleSave = () => {
-    if (!courseId || !chapterName.trim()) {
+    if (!courseId || !subjectId || !chapterName.trim()) {
       alert("Please fill all the fields.");
 
       return;
@@ -64,6 +106,7 @@ function ChapterForm({ show, onClose, onSave, selectedChapterData }) {
         chapterId: selectedChapterData.chapterId,
       }),
       courseId: Number(courseId),
+      subjectId: Number(subjectId),
       name: chapterName.trim(),
       activeRow: isActive,
     };
@@ -72,16 +115,11 @@ function ChapterForm({ show, onClose, onSave, selectedChapterData }) {
 
     onSave(newChapter);
 
-    setCourseId("");
-
-    setChapterName("");
-    setIsActive(true);
+    resetFields();
   };
 
   const handleClose = () => {
-    setCourseId("");
-    setChapterName("");
-    setIsActive(true);
+    resetFields();
 
     onClose();
   };
@@ -126,13 +164,45 @@ function ChapterForm({ show, onClose, onSave, selectedChapterData }) {
 
                   <select
                     value={courseId}
-                    onChange={(e) => setCourseId(e.target.value)}
+                    onChange={(e) => {
+                      setCourseId(e.target.value);
+                      setSubjectId("");
+                    }}
                   >
                     <option value="">Select Course</option>
 
                     {courses.map((course) => (
                       <option key={course.courseId} value={course.courseId}>
                         {course.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Subject Dropdown */}
+
+              <div className="form-group">
+                <label>
+                  Subject <span>*</span>
+                </label>
+
+                <div className="input-box">
+                  <FaGraduationCap className="input-icon" />
+
+                  <select
+                    value={subjectId}
+                    disabled={!courseId}
+                    onChange={(e) => setSubjectId(e.target.value)}
+                  >
+                    <option value="">Select Subject</option>
+
+                    {subjectOptions.map((subject) => (
+                      <option
+                        key={subject.subjectId ?? subject.subject_id}
+                        value={subject.subjectId ?? subject.subject_id}
+                      >
+                        {subject.subjectName ?? subject.name}
                       </option>
                     ))}
                   </select>

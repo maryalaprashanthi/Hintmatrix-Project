@@ -1,11 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
-
-const normalizeRole = (value = "") =>
-  value
-    .toString()
-    .trim()
-    .toUpperCase()
-    .replace(/\s+/g, "_");
+import { normalizeRole } from "../../utils/roles";
 
 const isAuthenticated = () => Boolean(localStorage.getItem("token"));
 
