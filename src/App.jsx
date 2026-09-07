@@ -25,6 +25,7 @@ import Chapters from "./pages/Chapters/Chapters";
 
 import Topics from "./pages/Topics/Topics";
 import QuestionList from "./pages/Questions/QuestionList";
+import CreateAllQuestions from "./pages/Questions/CreateAllQuestions";
 
 import RuleEngine from "./pages/RuleEngine/RuleEngine";
 import StudentAttendance from "./pages/StudentAttendance/StudentAttendance";
@@ -328,6 +329,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
               <QuestionList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/questions/create-all"
+          element={
+            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+              <CreateAllQuestions />
             </ProtectedRoute>
           }
         />

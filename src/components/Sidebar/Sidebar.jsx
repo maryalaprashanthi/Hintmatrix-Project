@@ -338,6 +338,15 @@ export default function Sidebar({
               {questionOpen && (
                 <div className="submenu">
                   <NavLink
+                    to="/questions/create-all"
+                    className={subMenuClass}
+                    onClick={closeSidebar}
+                  >
+                    <MdAssignment />
+                    <span>Create Questions</span>
+                  </NavLink>
+
+                  <NavLink
                     to="/courses"
                     className={subMenuClass}
                     onClick={closeSidebar}
@@ -348,6 +357,7 @@ export default function Sidebar({
 
                   <NavLink
                     to="/questions"
+                    end
                     className={subMenuClass}
                     onClick={closeSidebar}
                   >
