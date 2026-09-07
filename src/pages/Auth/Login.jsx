@@ -50,8 +50,7 @@ function Login() {
       localStorage.setItem("email", response.data.email);
       localStorage.setItem("role", response.data.role);
 
-      // Go to your existing dashboard
-      navigate("/dashboard");
+      navigate(response.data.role === "GUEST" ? "/course-subscribe" : "/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
 

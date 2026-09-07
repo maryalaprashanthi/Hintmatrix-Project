@@ -343,3 +343,127 @@
     font-size: 14px;
   }
 }
+.subscription-bulk-card {
+  width: 100%;
+  margin-top: 8px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.subscription-bulk-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.subscription-bulk-card h3 {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 0 0 8px;
+  color: #172554;
+}
+
+.subscription-bulk-card p,
+.subscription-bulk-card small {
+  color: #64748b;
+}
+
+.student-count {
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: #1d4ed8;
+  background: #eff6ff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.subscription-bulk-form {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) minmax(260px, 1.4fr) auto;
+  gap: 16px;
+  margin: 18px 0 10px;
+}
+
+.subscription-bulk-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: #334155;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.subscription-bulk-form select {
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #0f172a;
+  font-size: 0.95rem;
+}
+
+.subscription-bulk-form .student-selector select {
+  min-height: 44px;
+}
+
+.subscription-bulk-form .student-selector small {
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+.subscription-submit-btn {
+  align-self: end;
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  background: #2563eb;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.subscription-submit-btn:hover {
+  background: #1d4ed8;
+}
+
+.subscription-submit-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.subscription-message {
+  margin-top: 12px;
+  color: #166534;
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .subscription-bulk-form {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .subscription-submit-btn {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 576px) {
+  .subscription-bulk-heading {
+    flex-direction: column;
+  }
+
+  .subscription-bulk-form {
+    grid-template-columns: 1fr;
+  }
+
+  .subscription-submit-btn {
+    grid-column: auto;
+  }
+}
