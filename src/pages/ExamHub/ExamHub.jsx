@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import {
   FaFileAlt,
   FaCheckCircle,
@@ -19,33 +19,35 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { canManageContent } from "../../utils/roles";
+import ExamService from "../../services/ExamService";
 import "./ExamHub.css";
 
-/* ================= STATS ================= */
+/* ================= STATS  ================= */
 
-const stats = [
+const statMeta = [
   {
+    key: "total",
     title: "Total Exams",
-    value: "48",
     sub: "All Time",
     type: "blue",
     icon: <FaFileAlt />,
   },
   {
+    key: "completed",
     title: "Completed",
-    value: "26",
-    sub: "54.2%",
+    sub: "0.0%",
     type: "green",
     icon: <FaCheckCircle />,
   },
   {
+    key: "upcoming",
     title: "Upcoming",
-    value: "07",
     sub: "This Week",
     type: "purple",
     icon: <FaCalendarAlt />,
   },
   {
+    key: "avgScore",
     title: "Average Score",
     value: "78.6%",
     sub: "Good Progress",
@@ -53,6 +55,7 @@ const stats = [
     icon: <FaBullseye />,
   },
   {
+    key: "bestScore",
     title: "Best Score",
     value: "92.5%",
     sub: "Mock Test - 12",
@@ -61,13 +64,7 @@ const stats = [
   },
 ];
 
-/* ================= EXAM TYPES ================= */
-/* Keeping only:
-   Practice Exam
-   Mock Test
-   Previous Papers
-   Quick Test
-*/
+/* ================= EXAM TYPES  ================= */
 
 const examTypes = [
   {
@@ -100,44 +97,37 @@ const examTypes = [
   },
 ];
 
-/* ================= SCHEDULE ================= */
+/* ================= SCHEDULE  ================= */
 
-const schedules = [
-  {
-    time: "10:00",
-    period: "AM",
-    title: "Accounting Mock Test - 15",
-    marks: "100 Marks",
-    duration: "60 Min",
-    type: "blue",
-  },
-  {
-    time: "02:00",
-    period: "PM",
-    title: "Business Law Test",
-    marks: "50 Marks",
-    duration: "90 Min",
-    type: "green",
-  },
-  {
-    time: "04:30",
-    period: "PM",
-    title: "Finance Adaptive Exam",
-    marks: "60 Marks",
-    duration: "75 Min",
-    type: "orange",
-  },
-  {
-    time: "07:00",
-    period: "PM",
-    title: "Full Syllabus Mock Test",
-    marks: "120 Marks",
-    duration: "180 Min",
-    type: "pink",
-  },
-];
+const scheduleTypes = ["blue", "green", "orange", "pink"];
+const MAX_SCHEDULE_ITEMS = 4;
 
-/* ================= ACTIVITIES ================= */
+const formatTime = (value) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return { time: "—", period: "" };
+
+  const formatted = date.toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+  const [time, period] = formatted.split(" ");
+  return { time, period };
+};
+
+const formatDate = (value) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
+};
+
+const formatDuration = (start, end) => {
+  const minutes = Math.round((new Date(end) - new Date(start)) / 60000);
+  if (!Number.isFinite(minutes) || minutes <= 0) return "—";
+  return `${minutes} Min`;
+};
+
+/* ================= ACTIVITIES  ================= */
 
 const activities = [
   {
@@ -166,73 +156,25 @@ const activities = [
   },
 ];
 
-/* ================= QUICK ACTIONS ================= */
+/* ================= QUICK ACTIONS  ================= */
 
 const quickActions = [
-  {
-    title: "Bookmarks",
-    icon: <FaBookmark />,
-    type: "blue",
-  },
-  {
-    title: "Weak Areas",
-    icon: <FaBullseye />,
-    type: "pink",
-  },
-  {
-    title: "Downloads",
-    icon: <FaDownload />,
-    type: "blue",
-  },
-  {
-    title: "Study Planner",
-    icon: <FaCalendarAlt />,
-    type: "purple",
-  },
-  {
-    title: "Notes",
-    icon: <FaStickyNote />,
-    type: "cyan",
-  },
-  {
-    title: "Documents",
-    icon: <FaFileAlt />,
-    type: "pink",
-  },
-  {
-    title: "Calculator",
-    icon: <FaCalculator />,
-    type: "green",
-  },
+  { title: "Bookmarks", icon: <FaBookmark />, type: "blue" },
+  { title: "Weak Areas", icon: <FaBullseye />, type: "pink" },
+  { title: "Downloads", icon: <FaDownload />, type: "blue" },
+  { title: "Study Planner", icon: <FaCalendarAlt />, type: "purple" },
+  { title: "Notes", icon: <FaStickyNote />, type: "cyan" },
+  { title: "Documents", icon: <FaFileAlt />, type: "pink" },
+  { title: "Calculator", icon: <FaCalculator />, type: "green" },
 ];
 
-/* ================= SUBJECTS ================= */
+/* ================= SUBJECTS  ================= */
 
 const subjects = [
-  {
-    name: "Accounting",
-    score: "85%",
-    width: "85%",
-    type: "blue",
-  },
-  {
-    name: "Business Law",
-    score: "72%",
-    width: "72%",
-    type: "green",
-  },
-  {
-    name: "Economics",
-    score: "63%",
-    width: "63%",
-    type: "orange",
-  },
-  {
-    name: "Financial Mgmt.",
-    score: "58%",
-    width: "58%",
-    type: "purple",
-  },
+  { name: "Accounting", score: "85%", width: "85%", type: "blue" },
+  { name: "Business Law", score: "72%", width: "72%", type: "green" },
+  { name: "Economics", score: "63%", width: "63%", type: "orange" },
+  { name: "Financial Mgmt.", score: "58%", width: "58%", type: "purple" },
 ];
 
 /* ================= COMPONENT ================= */
@@ -240,6 +182,117 @@ const subjects = [
 function ExamHub() {
   const navigate = useNavigate();
   const canCreateExam = canManageContent();
+
+  const [schedules, setSchedules] = useState([]);
+  const [scheduleLoading, setScheduleLoading] = useState(true);
+  const [scheduleError, setScheduleError] = useState(false);
+
+  const [statValues, setStatValues] = useState({
+    total: "00",
+    completed: "00",
+    completedPct: "0.0%",
+    upcoming: "00",
+  });
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadExamData() {
+      try {
+        setScheduleLoading(true);
+        setScheduleError(false);
+
+        const response = await ExamService.getAll();
+        const exams = Array.isArray(response.data) ? response.data : [];
+        const activeExams = exams.filter((exam) => exam.activeRow !== false);
+        const now = new Date();
+        const oneWeekOut = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+        /* ---- Stats: Total / Completed / Upcoming ---- */
+
+        const totalCount = activeExams.length;
+
+        const completedCount = activeExams.filter(
+          (exam) => new Date(exam.endDate) < now,
+        ).length;
+
+        const upcomingThisWeekCount = activeExams.filter((exam) => {
+          const start = new Date(exam.startDate);
+          return start > now && start <= oneWeekOut;
+        }).length;
+
+        const completedPct =
+          totalCount > 0
+            ? ((completedCount / totalCount) * 100).toFixed(1)
+            : "0.0";
+
+        if (active) {
+          setStatValues({
+            total: String(totalCount).padStart(2, "0"),
+            completed: String(completedCount).padStart(2, "0"),
+            completedPct: `${completedPct}%`,
+            upcoming: String(upcomingThisWeekCount).padStart(2, "0"),
+          });
+        }
+
+        /* ---- Upcoming schedule list  ---- */
+
+        const upcomingExams = activeExams
+          .filter((exam) => new Date(exam.endDate) > now) // not yet finished (covers ongoing + future)
+          .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+          .slice(0, MAX_SCHEDULE_ITEMS)
+          .map((exam, index) => {
+            const { time, period } = formatTime(exam.startDate);
+            const start = new Date(exam.startDate);
+            const end = new Date(exam.endDate);
+            const isOngoing = start <= now && now <= end;
+
+            return {
+              examId: exam.examId,
+              title: exam.examName || "Untitled Test",
+              marks: `Pass: ${exam.passPercentage}%`,
+              duration: formatDuration(exam.startDate, exam.endDate),
+              date: formatDate(exam.startDate),
+              time,
+              period,
+              status: isOngoing ? "Ongoing" : "Upcoming",
+              type: scheduleTypes[index % scheduleTypes.length],
+            };
+          });
+
+        if (active) setSchedules(upcomingExams);
+      } catch (err) {
+        console.error("Failed to load exam data:", err);
+        if (active) setScheduleError(true);
+      } finally {
+        if (active) setScheduleLoading(false);
+      }
+    }
+
+    loadExamData();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Merge dynamic values into the static stat shells
+  const stats = statMeta.map((meta) => {
+    if (meta.key === "total") {
+      return { ...meta, value: statValues.total };
+    }
+    if (meta.key === "completed") {
+      return {
+        ...meta,
+        value: statValues.completed,
+        sub: statValues.completedPct,
+      };
+    }
+    if (meta.key === "upcoming") {
+      return { ...meta, value: statValues.upcoming };
+    }
+    return meta;
+  });
+
   return (
     <div className="exam-hub-page" data-page="exam-hub">
       {/* ================= HEADER ================= */}
@@ -249,7 +302,6 @@ function ExamHub() {
           <h1>
             Good Morning, Prashanthi! <span>👋</span>
           </h1>
-
           <p>Every exam you take brings you closer to your dreams.</p>
         </div>
 
@@ -270,15 +322,11 @@ function ExamHub() {
         {stats.map((item) => (
           <div className={`stat-card ${item.type}`} key={item.title}>
             <div className="stat-icon">{item.icon}</div>
-
             <div className="stat-content">
               <span>{item.title}</span>
-
               <strong>{item.value}</strong>
-
               <small>{item.sub}</small>
             </div>
-
             <div className="stat-wave">
               <i />
               <i />
@@ -299,7 +347,6 @@ function ExamHub() {
         <div className="exam-types-section">
           <div className="section-title">
             <h2>Choose Your Exam Type</h2>
-
             <button type="button">
               View All
               <FaArrowRight />
@@ -311,10 +358,8 @@ function ExamHub() {
               <div className={`exam-type-card ${exam.type}`} key={exam.title}>
                 <div className="exam-type-top">
                   <div className="exam-type-icon">{exam.icon}</div>
-
                   <div className="exam-type-content">
                     <h3>{exam.title}</h3>
-
                     <p>{exam.description}</p>
                   </div>
                 </div>
@@ -332,12 +377,11 @@ function ExamHub() {
           </div>
         </div>
 
-        {/* SCHEDULE */}
+        {/* SCHEDULE — shows upcoming exams, not just today */}
 
         <div className="schedule-section">
           <div className="section-title">
-            <h2>Today's Schedule</h2>
-
+            <h2>Upcoming Schedule</h2>
             <button type="button">
               View Calendar
               <FaArrowRight />
@@ -345,34 +389,47 @@ function ExamHub() {
           </div>
 
           <div className="schedule-list">
-            {schedules.map((item) => (
-              <div className="schedule-card" key={item.title}>
-                <div className={`schedule-time ${item.type}`}>
-                  <strong>{item.time}</strong>
-                  <span>{item.period}</span>
-                </div>
+            {scheduleLoading && (
+              <p className="schedule-status">Loading upcoming exams...</p>
+            )}
 
-                <div className="schedule-info">
-                  <h3>{item.title}</h3>
+            {!scheduleLoading && scheduleError && (
+              <p className="schedule-status schedule-error">
+                Couldn't load upcoming exams.
+              </p>
+            )}
 
-                  <div>
-                    <span>
-                      <FaCalendarAlt />
-                      {item.marks}
-                    </span>
+            {!scheduleLoading && !scheduleError && schedules.length === 0 && (
+              <p className="schedule-status">No upcoming exams scheduled.</p>
+            )}
 
-                    <span>•</span>
-
-                    <span>
-                      <FaClock />
-                      {item.duration}
-                    </span>
+            {!scheduleLoading &&
+              !scheduleError &&
+              schedules.map((item) => (
+                <div className="schedule-card" key={item.examId}>
+                  <div className={`schedule-time ${item.type}`}>
+                    <strong>{item.time}</strong>
+                    <span>{item.period}</span>
                   </div>
-                </div>
 
-                <span className={`upcoming ${item.type}`}>Upcoming</span>
-              </div>
-            ))}
+                  <div className="schedule-info">
+                    <h3>{item.title}</h3>
+                    <div>
+                      <span>
+                        <FaCalendarAlt />
+                        {item.date}
+                      </span>
+                      <span>•</span>
+                      <span>
+                        <FaClock />
+                        {item.duration}
+                      </span>
+                    </div>
+                  </div>
+
+                  <span className={`upcoming ${item.type}`}>{item.status}</span>
+                </div>
+              ))}
           </div>
 
           <button type="button" className="all-schedule">
@@ -385,8 +442,6 @@ function ExamHub() {
       {/* ================= ANALYTICS + QUICK ACTIONS ================= */}
 
       <div className="exam-hub-lower-grid">
-        {/* ANALYTICS */}
-
         <div className="analytics-row">
           {/* PERFORMANCE */}
 
@@ -409,19 +464,16 @@ function ExamHub() {
                   <span>Strong</span>
                   <strong>45%</strong>
                 </div>
-
                 <div>
                   <span className="dot good" />
                   <span>Good</span>
                   <strong>28%</strong>
                 </div>
-
                 <div>
                   <span className="dot average" />
                   <span>Average</span>
                   <strong>17%</strong>
                 </div>
-
                 <div>
                   <span className="dot weak" />
                   <span>Weak</span>
@@ -436,7 +488,6 @@ function ExamHub() {
           <div className="analytics-card">
             <div className="section-title">
               <h2>Subject Strength</h2>
-
               <button type="button">
                 View Detailed Analytics
                 <FaArrowRight />
@@ -450,13 +501,10 @@ function ExamHub() {
                     <span>{subject.name}</span>
                     <strong>{subject.score}</strong>
                   </div>
-
                   <div className="subject-bar">
                     <span
                       className={subject.type}
-                      style={{
-                        width: subject.width,
-                      }}
+                      style={{ width: subject.width }}
                     />
                   </div>
                 </div>
@@ -469,7 +517,6 @@ function ExamHub() {
           <div className="analytics-card activity-card">
             <div className="section-title">
               <h2>Recent Activity</h2>
-
               <button type="button">
                 View All
                 <FaArrowRight />
@@ -482,7 +529,6 @@ function ExamHub() {
                   <div className={`activity-icon ${item.type}`}>
                     {item.icon}
                   </div>
-
                   <div>
                     <strong>{item.title}</strong>
                     <small>{item.sub}</small>
@@ -507,7 +553,6 @@ function ExamHub() {
               {quickActions.map((item) => (
                 <button type="button" className="quick-card" key={item.title}>
                   <span className={`quick-icon ${item.type}`}>{item.icon}</span>
-
                   <span>{item.title}</span>
                 </button>
               ))}
@@ -520,10 +565,8 @@ function ExamHub() {
             <div className="streak-top">
               <div>
                 <h2>Stay Consistent. Keep Improving!</h2>
-
                 <p>You are on a 07 day study streak. 🔥</p>
               </div>
-
               <FaTrophy className="big-trophy" />
             </div>
 
@@ -534,7 +577,6 @@ function ExamHub() {
                     <div className={`streak-circle ${index < 6 ? "done" : ""}`}>
                       {index < 6 && <FaCheck />}
                     </div>
-
                     <span>{day}</span>
                   </div>
                 ),
@@ -563,9 +605,7 @@ function ExamHub() {
             Aim Higher. Achieve More.
             <span> 💪</span>
           </h2>
-
           <p>Take a mock test today and see how far you've come!</p>
-
           <button type="button">
             Take a Mock Test
             <FaArrowRight />
@@ -580,9 +620,7 @@ function ExamHub() {
             <span />
             <span />
           </div>
-
           <FaGraduationCap />
-
           <div className="mini-donut">
             <span>✓</span>
           </div>
