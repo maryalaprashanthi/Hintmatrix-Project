@@ -58,6 +58,12 @@ export default function Sidebar({
     "COLLEGE_ADMIN",
     "BRANCH_ADMIN",
   ].includes(userRole);
+  const canAccessPerformance = [
+    "SUPER_ADMIN",
+    "COLLEGE_ADMIN",
+    "BRANCH_ADMIN",
+    "STUDENT",
+  ].includes(userRole);
   const canAccessCollegeMenu = [
     "SUPER_ADMIN",
     "COLLEGE_ADMIN",
@@ -501,6 +507,21 @@ export default function Sidebar({
               <div className="menu-left">
                 <MdAssignment className="menu-icon" />
                 <span>Exam</span>
+              </div>
+            </NavLink>
+          )}
+
+          {/* Performance */}
+
+          {canAccessPerformance && (
+            <NavLink
+              to="/performance"
+              className={menuClass}
+              onClick={closeSidebar}
+            >
+              <div className="menu-left">
+                <MdBarChart className="menu-icon" />
+                <span>Performance</span>
               </div>
             </NavLink>
           )}
