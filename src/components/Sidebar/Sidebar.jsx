@@ -41,6 +41,9 @@ export default function Sidebar({
   const [tableOpen, setTableOpen] = useState(false);
   const [questionOpen, setQuestionOpen] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
+  const [subscriptionOpen, setSubscriptionOpen] = useState(
+    window.location.pathname.startsWith("/subscriptions"),
+  );
 
   const navigate = useNavigate();
 
@@ -169,18 +172,36 @@ export default function Sidebar({
 
           {/* Subscription */}
 
-          <NavLink
-            to="/subscriptions"
-            className={({ isActive }) =>
-              `menu-item ${isActive ? "active" : ""}`
-            }
-            onClick={closeSidebar}
-          >
-            <div className="menu-left">
-              <FaCreditCard className="menu-icon" />
-              <span>Subscription</span>
+          {canAccessAdminMenu && (
+            <div className={`subscription-menu ${subscriptionOpen ? "open" : ""}`}>
+              <div
+                className={`menu-item ${subscriptionOpen ? "active" : ""}`}
+                onClick={() => setSubscriptionOpen((current) => !current)}
+              >
+                <div className="menu-left">
+                  <FaCreditCard className="menu-icon" />
+                  <span>Subscription</span>
+                </div>
+                {subscriptionOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
+              </div>
+              {subscriptionOpen && (
+                <div className="submenu">
+                  <NavLink to="/subscriptions" end className={subMenuClass} onClick={closeSidebar}>
+                    <FaCreditCard />
+                    <span>Overview</span>
+                  </NavLink>
+                  <NavLink to="/subscriptions/plans" className={subMenuClass} onClick={closeSidebar}>
+                    <FaCreditCard />
+                    <span>Manage Plans</span>
+                  </NavLink>
+                  <NavLink to="/subscriptions/history" className={subMenuClass} onClick={closeSidebar}>
+                    <MdListAlt />
+                    <span>Subscription History</span>
+                  </NavLink>
+                </div>
+              )}
             </div>
-          </NavLink>
+          )}
 
           {/* Courses */}
 
