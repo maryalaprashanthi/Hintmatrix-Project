@@ -495,3 +495,164 @@
     margin: 15px 0;
   }
 }
+.course-subscribe-page {
+  min-height: 100vh;
+  padding: 32px;
+  background: #f6f8fc;
+}
+
+.course-subscribe-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.course-subscribe-heading h1 {
+  margin: 0 0 8px;
+  color: #172554;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.course-subscribe-heading p {
+  margin: 0;
+  color: #64748b;
+}
+
+.course-subscribe-heading .eyebrow {
+  margin-bottom: 8px;
+  color: #2563eb;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.subscription-heading-icon {
+  color: #2563eb;
+  font-size: 54px;
+}
+
+.course-selector-card {
+  max-width: 520px;
+  margin-bottom: 24px;
+  border: 0;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+}
+
+.course-selector-card label {
+  display: block;
+  margin-bottom: 8px;
+  color: #334155;
+  font-weight: 600;
+}
+
+.course-selector-card select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #0f172a;
+  background: #fff;
+}
+
+.subscription-plan-grid {
+  row-gap: 24px;
+}
+
+.customer-plan-card {
+  height: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.customer-plan-card.trial-plan {
+  border-color: #a78bfa;
+  background: #faf5ff;
+}
+
+.plan-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  color: #2563eb;
+  background: #eff6ff;
+  font-size: 22px;
+}
+
+.customer-plan-card h2 {
+  margin-bottom: 8px;
+  color: #172554;
+  font-size: 1.25rem;
+}
+
+.plan-description {
+  min-height: 42px;
+  color: #64748b;
+}
+
+.plan-price {
+  margin: 18px 0;
+  color: #1d4ed8;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.plan-price small {
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.plan-entitlements {
+  min-height: 125px;
+  padding: 0;
+  list-style: none;
+}
+
+.plan-entitlements li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.plan-entitlements svg {
+  flex-shrink: 0;
+  color: #16a34a;
+}
+
+.plan-entitlements li:has(svg:first-child) svg {
+  color: #16a34a;
+}
+
+.subscribe-plan-btn {
+  width: 100%;
+  border: 0;
+  background: #2563eb;
+}
+
+.subscription-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+.active-subscription-alert {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  align-items: center;
+}
+
+.active-subscription-alert span {
+  color: #166534;
+}
