@@ -67,6 +67,7 @@ import ExamPaper from "./pages/ExamPaper/ExamPaper";
 import CreateMcq from "./components/Mcq_Questions/CreateMcq";
 import McqPractice from "./components/Mcq_Questions/McqPractice";
 import McqList from "./components/Mcq_Questions/McqList";
+import PerformanceDashboard from "./pages/Performance/PerformanceDashboard";
 
 function App() {
   const navigate = useNavigate();
@@ -170,6 +171,21 @@ function App() {
         {/* Dashboard */}
 
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route
+          path="/performance"
+          element={
+            <ProtectedRoute
+              allowedRoles={[
+                "SUPER_ADMIN",
+                "COLLEGE_ADMIN",
+                "BRANCH_ADMIN",
+                "STUDENT",
+              ]}
+            >
+              <PerformanceDashboard />
+            </ProtectedRoute>
+          }
+        />
         {/* Subscription */}
         <Route path="/subscriptions" element={<Subscription />} />
         <Route path="/subscriptions/plans" element={<SubscriptionPlans />} />

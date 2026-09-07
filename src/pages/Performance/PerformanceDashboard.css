@@ -1,0 +1,320 @@
+.performance-page {
+  padding-bottom: 40px;
+}
+
+.performance-header,
+.performance-title,
+.performance-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.performance-header {
+  margin-bottom: 24px;
+}
+
+.performance-title {
+  justify-content: flex-start;
+  gap: 14px;
+}
+
+.performance-title-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 12px;
+  color: #2563eb;
+  background: #eaf2ff;
+  font-size: 22px;
+}
+
+.performance-title h1 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.performance-title p,
+.performance-panel-heading p {
+  margin: 5px 0 0;
+  color: #64748b;
+}
+
+.performance-refresh,
+.performance-refresh svg,
+.performance-filters button svg {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.performance-filters {
+  margin-bottom: 24px;
+  padding: 18px;
+}
+
+.performance-filters label {
+  display: block;
+  margin-bottom: 6px;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.performance-filters select {
+  width: 100%;
+  min-height: 38px;
+  padding: 6px 10px;
+  border: 1px solid #dbe3ef;
+  border-radius: 6px;
+  color: #334155;
+  background: #fff;
+}
+
+.performance-summary-row {
+  margin-bottom: 24px;
+}
+
+.student-performance-details {
+  margin-bottom: 24px;
+}
+
+.student-detail-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.student-detail-value {
+  display: block;
+  color: #0f172a;
+  font-size: 17px;
+}
+
+.performance-summary-card {
+  min-height: 112px;
+  padding: 17px;
+  border: 1px solid #e7edf5;
+  border-left: 4px solid currentColor;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.05);
+}
+
+.performance-summary-card span {
+  display: block;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.performance-summary-card strong {
+  display: block;
+  margin-top: 11px;
+  color: #0f172a;
+  font-size: 24px;
+}
+
+.performance-summary-card.blue {
+  color: #2563eb;
+}
+.performance-summary-card.purple {
+  color: #7c3aed;
+}
+.performance-summary-card.teal {
+  color: #0d9488;
+}
+.performance-summary-card.green {
+  color: #16a34a;
+}
+.performance-summary-card.orange {
+  color: #ea580c;
+}
+.performance-summary-card.red {
+  color: #dc2626;
+}
+
+.performance-panel {
+  margin-bottom: 24px;
+  padding: 20px;
+  border: 1px solid #e7edf5;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.05);
+}
+
+.performance-panel-heading {
+  margin-bottom: 18px;
+}
+
+.performance-panel-heading h2 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.performance-panel-heading > svg {
+  color: #2563eb;
+  font-size: 22px;
+}
+
+.performance-chart-wrap {
+  overflow-x: auto;
+  min-height: 280px;
+}
+
+.performance-chart {
+  width: 100%;
+  min-width: 620px;
+}
+
+.performance-charts-row {
+  margin-bottom: 0;
+}
+
+.performance-chart-panel {
+  height: calc(100% - 24px);
+}
+
+.performance-pie-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+}
+
+.performance-pie-chart {
+  width: 100%;
+}
+
+.performance-table-panel {
+  padding: 0;
+  overflow: hidden;
+}
+.performance-table-panel .performance-panel-heading {
+  margin: 0;
+  padding: 20px 20px 15px;
+}
+.performance-table-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.performance-table-search {
+  display: flex;
+  align-items: center;
+  width: 170px;
+  height: 34px;
+  padding: 0 9px;
+  border: 1px solid #dbe3ef;
+  border-radius: 6px;
+  color: #64748b;
+  background: #fff;
+}
+.performance-table-search svg {
+  flex: 0 0 auto;
+  font-size: 12px;
+}
+.performance-table-search input {
+  width: 100%;
+  min-width: 0;
+  padding: 0 0 0 7px;
+  border: 0;
+  outline: 0;
+  color: #334155;
+  font-size: 12px;
+}
+.performance-table-search input::placeholder {
+  color: #94a3b8;
+}
+.performance-table {
+  width: max-content;
+  min-width: 760px;
+  table-layout: auto;
+}
+.performance-table th {
+  padding: 12px 14px;
+  min-width: 88px;
+  color: #64748b;
+  background: #f8fafc;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1.25;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  vertical-align: middle;
+}
+.performance-table td {
+  padding: 13px 14px;
+  min-width: 88px;
+  color: #334155;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.performance-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.performance-empty-cell {
+  padding: 28px 16px !important;
+  color: #94a3b8 !important;
+  text-align: center;
+}
+.performance-empty {
+  padding: 50px 10px;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.performance-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 120px;
+  color: #64748b;
+}
+
+.performance-notice-error {
+  justify-content: space-between;
+  padding: 16px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #b91c1c;
+  background: #fff7f7;
+}
+
+@media (max-width: 768px) {
+  .performance-header {
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .performance-header,
+  .performance-title {
+    flex-wrap: wrap;
+  }
+  .performance-title h1 {
+    font-size: 26px;
+  }
+  .performance-refresh {
+    margin-left: 62px;
+  }
+  .performance-panel {
+    padding: 16px;
+  }
+  .performance-table-panel .performance-panel-heading {
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .performance-table-actions {
+    align-items: flex-end;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
