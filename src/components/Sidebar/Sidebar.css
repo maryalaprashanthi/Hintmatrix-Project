@@ -22,6 +22,10 @@
    HEADER
 ===================================== */
 
+/* =====================================
+   HEADER
+===================================== */
+
 .sidebar-header {
   height: 95px;
   display: flex;
@@ -41,6 +45,31 @@
   width: 250px;
   height: auto;
   transition: all 0.3s ease;
+}
+
+/* =====================================
+   COLLAPSED SIDEBAR
+   SHOW ONLY LOGO SYMBOL
+===================================== */
+
+.sidebar.collapsed .sidebar-header {
+  padding: 0;
+}
+
+.sidebar.collapsed .sidebar-logo-wrapper {
+  width: 60px;
+  height: 85px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+
+.sidebar.collapsed .sidebar-logo {
+  width: 180px;
+  height: auto;
+  max-width: none;
+  flex-shrink: 0;
 }
 
 /* =====================================
@@ -81,6 +110,7 @@
   border-radius: 12px;
   text-decoration: none;
   color: #475569;
+  cursor: pointer;
 }
 
 .menu-item.active {
@@ -105,7 +135,7 @@
 }
 
 /* =====================================
-   SUB MENU
+   SUB MENU - COMMON FOR ALL
 ===================================== */
 
 .submenu {
@@ -125,77 +155,67 @@
   text-decoration: none;
   color: #64748b;
   border-radius: 10px;
+  transition: all 0.2s ease;
 }
 
-.active-submenu {
+/* All submenu icons */
+
+.submenu-item svg {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+  flex-shrink: 0;
+  display: block;
+  visibility: visible;
+  opacity: 1;
+}
+
+/* All submenu text */
+
+.submenu-item span {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Active submenu */
+
+.submenu-item.active-submenu {
   background: #2563eb;
   color: white;
 }
 
+.submenu-item.active-submenu svg {
+  color: white;
+}
+
 /* =====================================
-   COLLAPSED SIDEBAR
+   SUBMENU PARENT MENUS
 ===================================== */
 
-.sidebar.collapsed {
-  width: 85px;
-}
-
-.sidebar.collapsed .sidebar-header {
-  padding: 0;
-  justify-content: center;
-}
-
-/* Only show logo icon */
-.sidebar.collapsed .sidebar-logo-wrapper {
-  width: 63px;
-  height: 60px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.sidebar.collapsed .sidebar-logo {
-  width: 190px;
-  max-width: none;
-  flex-shrink: 0;
-}
-
-/* Hide menu text */
-.sidebar.collapsed .menu-left span {
-  display: none;
-}
-
-/* Keep ALL menu icons visible */
-.sidebar.collapsed .menu-left svg {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  font-size: 20px;
-}
-
-/* Center menu items */
-.sidebar.collapsed .menu-item {
-  justify-content: center;
-  padding: 0;
-}
-.sidebar.collapsed .menu-left .menu-icon {
-  display: block !important;
-  visibility: visible !important;
-}
-
-.sidebar.collapsed .menu-left {
+.subscription-menu,
+.college-menu,
+.question-menu,
+.table-menu,
+.admin-menu {
   width: 100%;
-  justify-content: center;
-  align-items: center;
-  gap: 0;
 }
 
-/* Hide submenus */
+/* =====================================
+   COLLAPSED SIDEBAR - ALL SUBMENUS
+===================================== */
+
+/* Hide submenu when sidebar is collapsed */
+
 .sidebar.collapsed .submenu {
   display: none;
 }
 
+/* Show submenu when its parent is open */
+
+.sidebar.collapsed .subscription-menu.open .submenu,
+.sidebar.collapsed .college-menu.open .submenu,
+.sidebar.collapsed .question-menu.open .submenu,
+.sidebar.collapsed .table-menu.open .submenu,
 .sidebar.collapsed .admin-menu.open .submenu {
   display: flex;
   margin-left: 0;
@@ -204,7 +224,9 @@
   gap: 6px;
 }
 
-.sidebar.collapsed .admin-menu.open .submenu-item {
+/* Same style for every submenu item */
+
+.sidebar.collapsed .submenu-item {
   width: 48px;
   height: 42px;
   justify-content: center;
@@ -212,17 +234,48 @@
   gap: 0;
 }
 
-.sidebar.collapsed .admin-menu.open .submenu-item span {
+/* Hide submenu text */
+
+.sidebar.collapsed .submenu-item span {
   display: none;
 }
 
-.sidebar.collapsed .admin-menu.open .submenu-item svg {
+/* Keep every submenu icon visible */
+
+.sidebar.collapsed .submenu-item svg {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 20px;
+  height: 20px;
   font-size: 20px;
+  flex-shrink: 0;
 }
 
-/* Hide dropdown arrows only */
-.sidebar.collapsed .menu-item > svg {
+/* =====================================
+   COLLAPSED MAIN MENU
+===================================== */
+
+.sidebar.collapsed {
+  width: 80px;
+}
+
+/* Hide main menu text */
+
+.sidebar.collapsed .menu-left span {
   display: none;
+}
+
+/* Center main menu */
+
+.sidebar.collapsed .menu-item {
+  justify-content: center;
+  padding: 0;
+}
+
+.sidebar.collapsed .menu-left {
+  justify-content: center;
+  gap: 0;
 }
 
 /* =====================================
@@ -286,6 +339,8 @@
 ===================================== */
 
 @media (max-width: 768px) {
+  /* Sidebar hidden by default */
+
   .sidebar {
     left: -280px;
     width: 280px;
@@ -293,14 +348,23 @@
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   }
 
+  /* Show sidebar */
+
   .sidebar.show {
     left: 0;
   }
 
-  /* Keep full sidebar on mobile */
+  /* =====================================
+     KEEP FULL SIDEBAR ON MOBILE
+  ===================================== */
+
   .sidebar.collapsed {
     width: 280px;
   }
+
+  /* =====================================
+     MOBILE HEADER
+  ===================================== */
 
   .sidebar.collapsed .sidebar-header {
     padding: 0 20px;
@@ -309,11 +373,17 @@
   .sidebar.collapsed .sidebar-logo-wrapper {
     width: auto;
     height: auto;
+    justify-content: center;
   }
 
   .sidebar.collapsed .sidebar-logo {
     width: 190px;
+    max-width: none;
   }
+
+  /* =====================================
+     MOBILE MAIN MENU
+  ===================================== */
 
   .sidebar.collapsed .menu-item {
     justify-content: space-between;
@@ -325,21 +395,75 @@
     gap: 12px;
   }
 
+  /* Show main menu text */
+
   .sidebar.collapsed .menu-left span {
     display: inline;
   }
 
+  /* =====================================
+     MOBILE SUBMENUS
+  ===================================== */
+
+  /* Always use normal submenu layout on mobile */
+
   .sidebar.collapsed .submenu {
     display: flex;
+    margin-left: 20px;
+    padding-left: 14px;
+    align-items: stretch;
+    gap: 6px;
   }
+
+  /* Normal submenu item size */
+
+  .sidebar.collapsed .submenu-item {
+    width: auto;
+    height: 38px;
+    justify-content: flex-start;
+    padding: 0 12px;
+    gap: 10px;
+  }
+
+  /* Show submenu text */
+
+  .sidebar.collapsed .submenu-item span {
+    display: inline;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  /* Normal submenu icons */
+
+  .sidebar.collapsed .submenu-item svg {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  /* =====================================
+     MOBILE ARROW
+  ===================================== */
 
   .sidebar.collapsed .menu-item > svg {
     display: block;
   }
 
+  /* =====================================
+     MOBILE SEARCH
+  ===================================== */
+
   .sidebar.collapsed .sidebar-search {
     display: flex;
   }
+
+  /* =====================================
+     MOBILE LOGOUT
+  ===================================== */
 
   .sidebar.collapsed .logout {
     justify-content: flex-start;
@@ -349,6 +473,10 @@
   .sidebar.collapsed .logout span {
     display: inline;
   }
+
+  /* =====================================
+     HIDE COLLAPSE BUTTON ON MOBILE
+  ===================================== */
 
   .sidebar-toggle {
     display: none;
