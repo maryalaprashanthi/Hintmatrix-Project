@@ -25,8 +25,8 @@
 }
 
 .drag-btn:hover {
-  border-color: #c7d2fe;
-  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.12);
+  border-color: #bcd6f2;
+  box-shadow: 0 2px 6px rgba(30, 103, 199, 0.12);
   transform: translateY(-1px);
 }
 
@@ -35,7 +35,7 @@
 }
 
 .drag-btn:focus-visible {
-  outline: 3px solid rgba(79, 70, 229, 0.3);
+  outline: 3px solid rgba(30, 103, 199, 0.3);
   outline-offset: 2px;
 }
 

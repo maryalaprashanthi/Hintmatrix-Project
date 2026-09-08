@@ -103,7 +103,7 @@
   background: var(--navy-600);
   border-color: var(--navy-700);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.32);
+  box-shadow: 0 2px 8px rgba(30, 103, 199, 0.3);
 }
 
 .cellDot {

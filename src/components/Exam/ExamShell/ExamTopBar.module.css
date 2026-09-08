@@ -8,7 +8,7 @@
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, var(--navy-500), var(--navy-700));
+  background: var(--action-primary);
   transition: width var(--dur-base) var(--ease-out);
 }
 
