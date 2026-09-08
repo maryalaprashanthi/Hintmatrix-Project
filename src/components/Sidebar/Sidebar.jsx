@@ -173,7 +173,9 @@ export default function Sidebar({
           {/* Subscription */}
 
           {canAccessAdminMenu && (
-            <div className={`subscription-menu ${subscriptionOpen ? "open" : ""}`}>
+            <div
+              className={`subscription-menu ${subscriptionOpen ? "open" : ""}`}
+            >
               <div
                 className={`menu-item ${subscriptionOpen ? "active" : ""}`}
                 onClick={() => setSubscriptionOpen((current) => !current)}
@@ -182,19 +184,31 @@ export default function Sidebar({
                   <FaCreditCard className="menu-icon" />
                   <span>Subscription</span>
                 </div>
-                {subscriptionOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
               </div>
               {subscriptionOpen && (
                 <div className="submenu">
-                  <NavLink to="/subscriptions" end className={subMenuClass} onClick={closeSidebar}>
+                  <NavLink
+                    to="/subscriptions"
+                    end
+                    className={subMenuClass}
+                    onClick={closeSidebar}
+                  >
                     <FaCreditCard />
                     <span>Overview</span>
                   </NavLink>
-                  <NavLink to="/subscriptions/plans" className={subMenuClass} onClick={closeSidebar}>
+                  <NavLink
+                    to="/subscriptions/plans"
+                    className={subMenuClass}
+                    onClick={closeSidebar}
+                  >
                     <FaCreditCard />
                     <span>Manage Plans</span>
                   </NavLink>
-                  <NavLink to="/subscriptions/history" className={subMenuClass} onClick={closeSidebar}>
+                  <NavLink
+                    to="/subscriptions/history"
+                    className={subMenuClass}
+                    onClick={closeSidebar}
+                  >
                     <MdListAlt />
                     <span>Subscription History</span>
                   </NavLink>
@@ -204,24 +218,18 @@ export default function Sidebar({
           )}
 
           {/* Courses */}
-
           {canAccessCourseMenu && !isStudent && (
-            <>
-              <NavLink to="/college" className="college-menu-link">
-                <div
-                  className={`menu-item ${collegeOpen ? "active" : ""}`}
-                  onClick={() => setCollegeOpen(!collegeOpen)}
-                >
+            <div className={`college-menu ${collegeOpen ? "open" : ""}`}>
+              <NavLink
+                to="/college"
+                className="college-menu-link"
+                onClick={() => setCollegeOpen((current) => !current)}
+              >
+                <div className={`menu-item ${collegeOpen ? "active" : ""}`}>
                   <div className="menu-left">
                     <MdSchool className="menu-icon" />
                     <span>College</span>
                   </div>
-
-                  {collegeOpen ? (
-                    <MdKeyboardArrowUp />
-                  ) : (
-                    <MdKeyboardArrowDown />
-                  )}
                 </div>
               </NavLink>
 
@@ -255,16 +263,7 @@ export default function Sidebar({
                   </NavLink>
                 </div>
               )}
-            </>
-          )}
-
-          {isStudent && (
-            <NavLink to="/courses" className={menuClass} onClick={closeSidebar}>
-              <div className="menu-left">
-                <MdLibraryBooks className="menu-icon" />
-                <span>Courses</span>
-              </div>
-            </NavLink>
+            </div>
           )}
 
           {/* Admin */}
@@ -279,8 +278,6 @@ export default function Sidebar({
                   <MdAdminPanelSettings className="menu-icon" />
                   <span>Admin</span>
                 </div>
-
-                {adminOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
               </div>
 
               {adminOpen && (
@@ -328,17 +325,15 @@ export default function Sidebar({
           {/* Questions */}
 
           {canAccessQuestionMenu && (
-            <>
+            <div className={`question-menu ${questionOpen ? "open" : ""}`}>
               <div
                 className={`menu-item ${questionOpen ? "active" : ""}`}
-                onClick={() => setQuestionOpen(!questionOpen)}
+                onClick={() => setQuestionOpen((current) => !current)}
               >
                 <div className="menu-left">
                   <MdQuiz className="menu-icon" />
                   <span>Questions</span>
                 </div>
-
-                {questionOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
               </div>
 
               {questionOpen && (
@@ -399,23 +394,21 @@ export default function Sidebar({
                   </NavLink>
                 </div>
               )}
-            </>
+            </div>
           )}
 
-          {/* Table */}
+          {/* Table Details */}
 
           {canAccessTableMenu && (
-            <>
+            <div className={`table-menu ${tableOpen ? "open" : ""}`}>
               <div
                 className={`menu-item ${tableOpen ? "active" : ""}`}
-                onClick={() => setTableOpen(!tableOpen)}
+                onClick={() => setTableOpen((current) => !current)}
               >
                 <div className="menu-left">
                   <MdTableChart className="menu-icon" />
                   <span>Table Details</span>
                 </div>
-
-                {tableOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
               </div>
 
               {tableOpen && (
@@ -448,7 +441,7 @@ export default function Sidebar({
                   </NavLink>
                 </div>
               )}
-            </>
+            </div>
           )}
 
           {/* Rule Engine */}
