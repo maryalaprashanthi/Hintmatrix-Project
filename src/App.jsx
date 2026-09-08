@@ -6,7 +6,7 @@ import Layout from "./Layout/Layout";
 import Dashboard from "./pages/Dashboard";
 import Subscription from "./pages/Subscription/Subscription";
 import SubscriptionPlans from "./pages/Subscription/SubscriptionPlans";
-import SubscriptionPermissions from "./pages/Subscription/SubscriptionPermissions";
+import SubscriptionHistory from "./pages/Subscription/SubscriptionHistory";
 
 // --- UPDATED EXPORT IMPORTS TO MATCH COMMON NESTED FOLDER ARCHITECTURES ---
 import College from "./pages/College/College";
@@ -25,6 +25,7 @@ import Chapters from "./pages/Chapters/Chapters";
 
 import Topics from "./pages/Topics/Topics";
 import QuestionList from "./pages/Questions/QuestionList";
+import CreateAllQuestions from "./pages/Questions/CreateAllQuestions";
 
 import RuleEngine from "./pages/RuleEngine/RuleEngine";
 import StudentAttendance from "./pages/StudentAttendance/StudentAttendance";
@@ -67,6 +68,7 @@ import ExamPaper from "./pages/ExamPaper/ExamPaper";
 import CreateMcq from "./components/Mcq_Questions/CreateMcq";
 import McqPractice from "./components/Mcq_Questions/McqPractice";
 import McqList from "./components/Mcq_Questions/McqList";
+import PerformanceDashboard from "./pages/Performance/PerformanceDashboard";
 
 function App() {
   const navigate = useNavigate();
@@ -170,12 +172,51 @@ function App() {
         {/* Dashboard */}
 
         <Route path="/dashboard" element={<Dashboard />} />
-        {/* Subscription */}
-        <Route path="/subscriptions" element={<Subscription />} />
-        <Route path="/subscriptions/plans" element={<SubscriptionPlans />} />
         <Route
-          path="/subscriptions/permissions"
-          element={<SubscriptionPermissions />}
+          path="/performance"
+          element={
+            <ProtectedRoute
+              allowedRoles={[
+                "SUPER_ADMIN",
+                "COLLEGE_ADMIN",
+                "BRANCH_ADMIN",
+                "STUDENT",
+              ]}
+            >
+              <PerformanceDashboard />
+            </ProtectedRoute>
+          }
+        />
+        {/* Subscription */}
+        <Route
+          path="/subscriptions"
+          element={
+            <ProtectedRoute
+              allowedRoles={["SUPER_ADMIN", "COLLEGE_ADMIN", "BRANCH_ADMIN"]}
+            >
+              <Subscription />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subscriptions/plans"
+          element={
+            <ProtectedRoute
+              allowedRoles={["SUPER_ADMIN", "COLLEGE_ADMIN", "BRANCH_ADMIN"]}
+            >
+              <SubscriptionPlans />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subscriptions/history"
+          element={
+            <ProtectedRoute
+              allowedRoles={["SUPER_ADMIN", "BRANCH_ADMIN"]}
+            >
+              <SubscriptionHistory />
+            </ProtectedRoute>
+          }
         />
         {/* College */}
         <Route path="/college" element={<College />} />
@@ -304,6 +345,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
               <QuestionList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/questions/create-all"
+          element={
+            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+              <CreateAllQuestions />
             </ProtectedRoute>
           }
         />
