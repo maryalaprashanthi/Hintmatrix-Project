@@ -1,0 +1,370 @@
+.fill-blank-page {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 18px 20px 40px;
+  background: #f7f8fc;
+  color: #172033;
+}
+
+.fill-blank-test-bar {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 14px;
+  padding: 14px 18px;
+  border: 1px solid #e4e6ee;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.fill-blank-test-bar > strong {
+  flex: 1;
+  font-size: 15px;
+}
+
+.fill-blank-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.fill-blank-timer b {
+  font-size: 15px;
+}
+
+.fill-blank-timer small {
+  color: #697180;
+  font-size: 10px;
+}
+
+.fill-blank-test-bar > button {
+  min-height: 40px;
+  padding: 0 17px;
+  border: 0;
+  border-radius: 7px;
+  background: #159564;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.fill-blank-progress-heading {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  color: #313746;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.fill-blank-progress-track {
+  height: 6px;
+  margin-bottom: 24px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #eceef4;
+}
+
+.fill-blank-progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #159564;
+}
+
+.fill-blank-question-card {
+  min-height: 500px;
+}
+
+.fill-blank-hint {
+  margin-top: 24px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: #eef7ff;
+  color: #24527b;
+}
+
+.fill-blank-hint p {
+  margin: 5px 0 0;
+  font-size: 13px;
+}
+
+.fill-blank-header span {
+  color: #159564;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.fill-blank-header h1 {
+  margin: 8px 0 4px;
+  font-size: 30px;
+}
+
+.fill-blank-header p {
+  margin: 0 0 24px;
+  color: #718098;
+}
+
+.fill-blank-card {
+  padding: 26px;
+  border: 1px solid #e1e7ef;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(35, 49, 80, 0.06);
+}
+
+.fill-blank-card-top,
+.fill-blank-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.fill-blank-card-top {
+  color: #159564;
+  font-size: 13px;
+}
+
+.fill-blank-card-top span {
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: #e9f9f1;
+}
+
+.fill-blank-card h2 {
+  margin: 32px 0 22px;
+  font-size: 22px;
+}
+
+.fill-blank-question {
+  padding: 28px;
+  border: 1px solid #e1e7ef;
+  border-radius: 10px;
+  background: #fbfcfe;
+  color: #263146;
+  font-size: 21px;
+  line-height: 2.4;
+}
+
+.fill-blank-question input {
+  width: 150px;
+  margin: 0 7px;
+  padding: 5px 8px;
+  border: 0;
+  border-bottom: 2px solid #159564;
+  outline: none;
+  background: #fff;
+  font: inherit;
+  line-height: 1.2;
+}
+
+.fill-blank-drop-slot {
+  display: inline-flex;
+  min-width: 145px;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  margin: 0 7px;
+  padding: 4px 10px;
+  border: 1px dashed #159564;
+  border-radius: 4px;
+  background: #fff;
+  color: #159564;
+  font-size: 16px;
+  line-height: 1.2;
+  vertical-align: middle;
+}
+
+.fill-blank-drop-slot.is-answered {
+  border-style: solid;
+  background: #e9f9f1;
+  color: #14794f;
+}
+
+.fill-blank-drop-slot.is-empty {
+  border-color: #dc3545;
+  background: #fff1f2;
+}
+
+.fill-blank-answer-bank {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid #d7e6f4;
+  border-radius: 8px;
+  background: #f5f9ff;
+  color: #24527b;
+}
+
+.fill-blank-answer-bank strong {
+  font-size: 13px;
+}
+
+.fill-blank-answer-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.fill-blank-answer-option {
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid #cbdced;
+  border-radius: 7px;
+  background: #fff;
+  color: #263146;
+  font-weight: 700;
+  cursor: grab;
+}
+
+.fill-blank-answer-option:hover,
+.fill-blank-answer-option.dragging {
+  border-color: #159564;
+  background: #e9f9f1;
+  color: #14794f;
+}
+
+.fill-blank-answer-option:active {
+  cursor: grabbing;
+}
+
+.fill-blank-question input.is-answered {
+  border-color: #159564;
+  background: #e9f9f1;
+}
+
+.fill-blank-question input.is-empty {
+  border-color: #dc3545;
+  background: #fff1f2;
+}
+
+.fill-blank-result {
+  margin-top: 20px;
+  padding: 13px 16px;
+  border: 1px solid #b8ecd2;
+  border-radius: 8px;
+  background: #edfff6;
+  color: #14794f;
+  font-weight: 700;
+}
+
+.fill-blank-result-summary {
+  padding: 30px 20px;
+  text-align: center;
+}
+
+.fill-blank-result-summary h2 {
+  margin: 0 0 12px;
+  color: #172033;
+  font-size: 24px;
+}
+
+.fill-blank-result-summary strong {
+  display: block;
+  color: #16865b;
+  font-size: 46px;
+  line-height: 1;
+}
+
+.fill-blank-result-summary p {
+  margin: 14px 0 0;
+  color: #52605a;
+  font-size: 18px;
+}
+
+.fill-blank-review-title {
+  margin: 28px 0 12px;
+  color: #263146;
+  font-size: 20px;
+}
+
+.fill-blank-review-list {
+  display: grid;
+  gap: 10px;
+}
+
+.fill-blank-review-row {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) minmax(130px, auto);
+  gap: 10px;
+  align-items: center;
+  padding: 14px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.fill-blank-review-row.correct {
+  background: #edfff6;
+  color: #14794f;
+}
+
+.fill-blank-review-row.incorrect {
+  background: #fff1f2;
+  color: #b42332;
+}
+
+.fill-blank-actions {
+  margin-top: 26px;
+}
+
+.fill-blank-actions button {
+  min-height: 42px;
+  padding: 0 20px;
+  border: 1px solid #d7dbe5;
+  border-radius: 8px;
+  background: #fff;
+  color: #3c4352;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.fill-blank-actions button.primary {
+  border-color: #159564;
+  background: #159564;
+  color: #fff;
+}
+
+.fill-blank-actions button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 620px) {
+  .fill-blank-page {
+    padding: 22px 14px 40px;
+  }
+
+  .fill-blank-card {
+    padding: 18px;
+  }
+
+  .fill-blank-question {
+    padding: 18px;
+    font-size: 18px;
+  }
+
+  .fill-blank-question input {
+    width: 110px;
+  }
+
+  .fill-blank-drop-slot {
+    min-width: 110px;
+    font-size: 15px;
+  }
+
+  .fill-blank-test-bar {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .fill-blank-test-bar > strong {
+    flex-basis: 100%;
+  }
+
+  .fill-blank-review-row {
+    grid-template-columns: 1fr;
+  }
+}
