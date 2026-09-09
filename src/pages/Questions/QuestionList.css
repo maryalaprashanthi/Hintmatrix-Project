@@ -1,8 +1,16 @@
+/* =========================================================
+   QUESTION PAGE
+========================================================= */
+
 .question-page {
   padding: 25px;
   background: #f8f9fc;
   min-height: 100vh;
 }
+
+/* =========================================================
+   PAGE TITLE
+========================================================= */
 
 .page-title {
   font-size: 28px;
@@ -17,7 +25,9 @@
   margin-bottom: 0;
 }
 
-/* Search */
+/* =========================================================
+   SEARCH
+========================================================= */
 
 .question-search {
   width: 100%;
@@ -29,30 +39,35 @@
   height: 46px;
 }
 
-.input-group-text {
+.question-search .input-group-text {
   background: #fff;
   border-right: none;
 }
 
-.form-control {
+.question-search .form-control {
   border-left: none;
   box-shadow: none !important;
 }
 
-.form-control:focus {
+.question-search .form-control:focus {
   border-color: #ced4da;
 }
 
-/* List */
+/* =========================================================
+   QUESTION LIST
+========================================================= */
 
 .question-list {
   border-radius: 12px;
   overflow: hidden;
   background: #fff;
   border: 1px solid #e9ecef;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-/* Row */
+/* =========================================================
+   QUESTION ITEM
+========================================================= */
 
 .question-item {
   border: none !important;
@@ -70,13 +85,17 @@
   background: #f8fbff;
 }
 
-/* Disabled */
+/* =========================================================
+   DISABLED QUESTION
+========================================================= */
 
 .disabled-question {
   opacity: 0.6;
 }
 
-/* Question */
+/* =========================================================
+   QUESTION TITLE
+========================================================= */
 
 .question-title {
   font-size: 18px;
@@ -85,6 +104,10 @@
   margin-bottom: 12px;
   line-height: 1.5;
 }
+
+/* =========================================================
+   QUESTION META
+========================================================= */
 
 .question-meta {
   display: flex;
@@ -98,19 +121,41 @@
   font-weight: 500;
 }
 
-/* Buttons */
+/* =========================================================
+   QUESTION TYPE BADGE
+========================================================= */
+
+.question-type-badge {
+  font-size: 13px !important;
+  padding: 8px 12px !important;
+  font-weight: 600 !important;
+}
+
+/* =========================================================
+   GENERAL BUTTONS
+========================================================= */
 
 .btn {
   border-radius: 8px;
 }
 
-.btn-outline-primary,
-.btn-outline-warning,
-.btn-outline-danger {
-  min-width: 90px;
+/* =========================================================
+   QUESTION ACTION BUTTONS
+========================================================= */
+
+.question-item .btn-outline-primary,
+.question-item .btn-outline-warning,
+.question-item .btn-outline-danger {
+  min-width: 42px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Switch */
+/* =========================================================
+   GENERAL SWITCH
+========================================================= */
 
 .form-check {
   display: flex;
@@ -129,9 +174,23 @@
   margin-bottom: 0;
 }
 
-/* Responsive */
+/* =========================================================
+   QUESTION ACTION AREA
+========================================================= */
+
+.question-item .d-flex {
+  flex-wrap: wrap;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
 
 @media (max-width: 992px) {
+  .question-page {
+    padding: 20px;
+  }
+
   .question-item {
     padding: 18px;
   }
@@ -160,14 +219,21 @@
 
   .question-meta .badge {
     font-size: 12px;
+    padding: 7px 10px;
   }
 
-  .btn {
-    width: 100%;
+  .question-item .btn-outline-primary,
+  .question-item .btn-outline-warning,
+  .question-item .btn-outline-danger {
+    min-width: 40px;
+    height: 36px;
   }
 
   .form-check {
-    width: 100%;
-    justify-content: space-between;
+    margin: 0 3px;
+  }
+
+  .form-check-label {
+    font-size: 13px;
   }
 }

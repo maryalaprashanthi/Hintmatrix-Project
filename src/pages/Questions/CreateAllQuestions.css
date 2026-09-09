@@ -228,6 +228,45 @@
   display: grid;
   gap: 10px;
 }
+
+.aq-fill-blank-list {
+  display: grid;
+  gap: 10px;
+}
+
+.aq-fill-blank-row {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr) 38px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid var(--aq-line);
+  border-radius: 8px;
+  background: #fbfcff;
+}
+
+.aq-fill-blank-row b {
+  color: var(--aq-ink);
+  font-size: 13px;
+}
+
+.aq-fill-blank-row input {
+  width: 100%;
+}
+
+.aq-fill-blank-row button {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  color: #c53e4c;
+  background: transparent;
+  cursor: pointer;
+}
+
+.aq-fill-blank-row button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
 .aq-option {
   display: grid;
   grid-template-columns: 42px 1fr 30px 40px;
@@ -404,5 +443,12 @@
   }
   .aq-option {
     grid-template-columns: 36px 1fr 24px 34px;
+  }
+  .aq-fill-blank-row {
+    grid-template-columns: 1fr 34px;
+  }
+  .aq-fill-blank-row input {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
 }

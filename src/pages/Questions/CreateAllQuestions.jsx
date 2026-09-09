@@ -4,6 +4,8 @@ import Select from "react-select";
 import ChapterService from "../../services/ChapterService";
 import CourseService from "../../services/CourseService";
 import McqQuestionService from "../../services/McqQuestionService";
+import MatchingQuestionService from "../../services/MatchingQuestionService";
+import FillInBlankQuestionService from "../../services/FillInBlankQuestionService";
 import QuestionService from "../../services/QuestionService";
 import QuestionTypeService from "../../services/QuestionTypeService";
 import SubjectService from "../../services/SubjectService";
@@ -26,6 +28,15 @@ const emptyLedgerRow = () => ({
   creditAttributeId: "",
   creditAmount: "",
 });
+const emptyMatchingPair = () => ({ columnA: "", columnB: "" });
+const emptyMatchingPairs = () =>
+  Array.from({ length: 4 }, emptyMatchingPair);
+const emptyBlank = (index) => ({
+  label: `Blank ${index + 1}`,
+  acceptedAnswers: "",
+});
+const emptyBlanks = () =>
+  [emptyBlank(0)];
 
 const idOf = (item, type) =>
   item?.[`${type}Id`] ?? item?.[`${type}_id`] ?? item?.id;
@@ -51,6 +62,18 @@ const normalizeType = (value = "") => {
 
 const isMcqType = (type) =>
   type === "SINGLE_CHOICE" || type === "MULTIPLE_CHOICE";
+
+const isMatchingType = (type) =>
+  type === "MATCHING" ||
+  type === "MATCH_THE_FOLLOWING" ||
+  type.includes("MATCHING") ||
+  type.includes("MATCH_THE_FOLLOWING");
+
+const isFillBlankType = (type) =>
+  type === "FILL_IN_THE_BLANKS" ||
+  type === "FILL_IN_BLANKS" ||
+  type === "FILL_THE_BLANKS" ||
+  type.includes("FILL") && type.includes("BLANK");
 
 const parseOptionalNumber = (value) =>
   value === "" || value == null ? null : Number(value);
@@ -117,6 +140,8 @@ function CreateAllQuestions() {
   const [mcqOptions, setMcqOptions] = useState(emptyMcqOptions);
   const [attributeRows, setAttributeRows] = useState([emptyAttributeRow()]);
   const [ledgerRows, setLedgerRows] = useState([emptyLedgerRow()]);
+  const [matchingPairs, setMatchingPairs] = useState(emptyMatchingPairs);
+  const [blanks, setBlanks] = useState(emptyBlanks);
 
   const [drafts, setDrafts] = useState([]);
   const [editingDraftId, setEditingDraftId] = useState(null);
@@ -233,6 +258,8 @@ function CreateAllQuestions() {
     setMcqOptions(emptyMcqOptions());
     setAttributeRows([emptyAttributeRow()]);
     setLedgerRows([emptyLedgerRow()]);
+    setMatchingPairs(emptyMatchingPairs());
+    setBlanks(emptyBlanks());
     setEditingDraftId(null);
     setFormError("");
   };
@@ -245,6 +272,46 @@ function CreateAllQuestions() {
       questionTypeId: Number(questionTypeId),
       questionText: questionText.trim(),
     };
+
+    if (isMatchingType(selectedType)) {
+      return {
+        ...common,
+        subjectId: Number(subjectId),
+        pairs: matchingPairs.map((pair, index) => ({
+          columnA: pair.columnA.trim(),
+          columnB: pair.columnB.trim(),
+          displayOrder: index + 1,
+        })),
+      };
+    }
+
+    if (isFillBlankType(selectedType)) {
+      let answerOrder = 0;
+      const blankAnswers = blanks.flatMap((blank, blankIndex) =>
+        blank.acceptedAnswers
+          .split(",")
+          .map((answer) => answer.trim())
+          .filter(Boolean)
+          .map((answer) => ({
+            answerText: answer,
+            displayOrder: ++answerOrder,
+            blankNumber: blankIndex + 1,
+          })),
+      );
+
+      return {
+        ...common,
+        subjectId: Number(subjectId),
+        blanks: blanks.map((blank, index) => ({
+          blankNumber: index + 1,
+          acceptedAnswers: blank.acceptedAnswers
+            .split(",")
+            .map((answer) => answer.trim())
+            .filter(Boolean),
+        })),
+        answers: blankAnswers,
+      };
+    }
 
     if (isMcqType(selectedType)) {
       return {
@@ -309,6 +376,14 @@ function CreateAllQuestions() {
       const correctCount = mcqOptions.filter((option) => option.isCorrect).length;
       if (selectedType === "SINGLE_CHOICE" && correctCount !== 1) errors.push("Select exactly one correct answer.");
       if (selectedType === "MULTIPLE_CHOICE" && correctCount < 1) errors.push("Select at least one correct answer.");
+    } else if (isMatchingType(selectedType)) {
+      if (matchingPairs.some((pair) => !pair.columnA.trim() || !pair.columnB.trim())) {
+        errors.push("Complete Column A and Column B for every pair.");
+      }
+    } else if (isFillBlankType(selectedType)) {
+      if (blanks.some((blank) => !blank.acceptedAnswers.trim())) {
+        errors.push("Add at least one accepted answer for every blank.");
+      }
     } else if (selectedType === "DRAG_AND_DROP") {
       if (!ledgerRows.some((row) => row.debitAttributeId || row.creditAttributeId)) {
         errors.push("Add at least one debit or credit attribute.");
@@ -338,6 +413,8 @@ function CreateAllQuestions() {
       snapshot: {
         courseId, subjectId, chapterId, topicId, questionTypeId,
         questionText, marks, mcqOptions, attributeRows, ledgerRows,
+        matchingPairs,
+        blanks,
       },
     };
 
@@ -362,6 +439,8 @@ function CreateAllQuestions() {
     setMcqOptions(snapshot.mcqOptions);
     setAttributeRows(snapshot.attributeRows);
     setLedgerRows(snapshot.ledgerRows);
+    setMatchingPairs(snapshot.matchingPairs ?? emptyMatchingPairs());
+    setBlanks(snapshot.blanks ?? emptyBlanks());
     setEditingDraftId(draft.id);
     setFormError("");
     setMessage({ type: "", text: "" });
@@ -378,6 +457,10 @@ function CreateAllQuestions() {
       try {
         if (isMcqType(draft.type)) {
           await McqQuestionService.create(draft.payload);
+        } else if (isMatchingType(draft.type)) {
+          await MatchingQuestionService.create(draft.payload);
+        } else if (isFillBlankType(draft.type)) {
+          await FillInBlankQuestionService.create(draft.payload);
         } else {
           await QuestionService.create(draft.payload);
         }
@@ -427,7 +510,7 @@ function CreateAllQuestions() {
               <label>Subject *{searchableSelect({ items: filteredSubjects, type: "subject", value: subjectId, placeholder: "Search subject", disabled: !courseId, onChange: (value) => { setSubjectId(value); setChapterId(""); setTopicId(""); } })}</label>
               <label>Chapter *{searchableSelect({ items: filteredChapters, type: "chapter", value: chapterId, placeholder: "Search chapter", disabled: !subjectId, onChange: (value) => { setChapterId(value); setTopicId(""); } })}</label>
               <label>Topic *{searchableSelect({ items: filteredTopics, type: "topic", value: topicId, placeholder: "Search topic", disabled: !chapterId, onChange: setTopicId })}</label>
-              <label>Question type *{searchableSelect({ items: questionTypes, type: "questionType", value: questionTypeId, placeholder: "Search question type", getLabel: (item) => typeLabel(normalizeType(labelOf(item, "questionType"))), onChange: (value) => { setQuestionTypeId(value); setMcqOptions(emptyMcqOptions()); setAttributeRows([emptyAttributeRow()]); setLedgerRows([emptyLedgerRow()]); } })}</label>
+              <label>Question type *{searchableSelect({ items: questionTypes, type: "questionType", value: questionTypeId, placeholder: "Search question type", getLabel: (item) => typeLabel(normalizeType(labelOf(item, "questionType"))), onChange: (value) => { setQuestionTypeId(value); setMcqOptions(emptyMcqOptions()); setAttributeRows([emptyAttributeRow()]); setLedgerRows([emptyLedgerRow()]); setMatchingPairs(emptyMatchingPairs()); setBlanks(emptyBlanks()); } })}</label>
               {isMcqType(selectedType) && <label>Marks *<input type="number" min="0.25" step="0.25" value={marks} onChange={(event) => setMarks(event.target.value)} /></label>}
             </div>
             <label className="aq-question-text">Question text *<textarea maxLength={500} value={questionText} onChange={(event) => setQuestionText(event.target.value)} placeholder="Enter the question" /><small>{questionText.length} / 500</small></label>
@@ -447,9 +530,23 @@ function CreateAllQuestions() {
             </section>
           )}
 
-          {selectedType && !isMcqType(selectedType) && selectedType !== "DRAG_AND_DROP" && (
+          {isMatchingType(selectedType) && (
             <section className="aq-card">
-              <div className="aq-section-heading"><span>02</span><div><h2>Question attributes</h2><p>Configure the transactions and amounts for this {typeLabel(selectedType).toLowerCase()} question.</p></div><button type="button" className="aq-secondary" onClick={() => setAttributeRows((current) => [...current, emptyAttributeRow()])}><FaPlus /> Add row</button></div>
+              <div className="aq-section-heading"><span>02</span><div><h2>Match the following</h2><p>Create the pairs that belong together.</p></div><button type="button" className="aq-secondary" onClick={() => setMatchingPairs((current) => [...current, emptyMatchingPair()])}><FaPlus /> Add pair</button></div>
+              <div className="aq-table-wrap"><table><thead><tr><th>Column A</th><th>Column B</th><th /></tr></thead><tbody>{matchingPairs.map((pair, index) => <tr key={index}><td><input value={pair.columnA} onChange={(event) => updateRow(setMatchingPairs, index, "columnA", event.target.value)} placeholder="Enter Column A" /></td><td><input value={pair.columnB} onChange={(event) => updateRow(setMatchingPairs, index, "columnB", event.target.value)} placeholder="Enter Column B" /></td><td><button type="button" onClick={() => removeRow(setMatchingPairs, index)} disabled={matchingPairs.length <= 1}><FaTrash /></button></td></tr>)}</tbody></table></div>
+            </section>
+          )}
+
+          {isFillBlankType(selectedType) && (
+            <section className="aq-card">
+              <div className="aq-section-heading"><span>02</span><div><h2>Blank answers</h2><p>Add accepted answers for each blank, separated by commas.</p></div><button type="button" className="aq-secondary" onClick={() => setBlanks((current) => [...current, emptyBlank(current.length)])}><FaPlus /> Add blank</button></div>
+              <div className="aq-fill-blank-list">{blanks.map((blank, index) => <div className="aq-fill-blank-row" key={index}><b>{blank.label}</b><input value={blank.acceptedAnswers} onChange={(event) => updateRow(setBlanks, index, "acceptedAnswers", event.target.value)} placeholder="Accepted answers, e.g. Java, java" /><button type="button" onClick={() => removeRow(setBlanks, index)} disabled={blanks.length <= 1}><FaTrash /></button></div>)}</div>
+            </section>
+          )}
+
+          {selectedType && !isMcqType(selectedType) && selectedType !== "DRAG_AND_DROP" && !isMatchingType(selectedType) && !isFillBlankType(selectedType) && (
+            <section className="aq-card">
+              <div className="aq-section-heading"><span>02</span><div><h2>{isMatchingType(selectedType) ? "Question attributes" : "Question attributes"}</h2><p>{isMatchingType(selectedType) ? "Configure the transactions and amounts for this matching question." : `Configure the transactions and amounts for this ${typeLabel(selectedType).toLowerCase()} question.`}</p></div><button type="button" className="aq-secondary" onClick={() => setAttributeRows((current) => [...current, emptyAttributeRow()])}><FaPlus /> Add row</button></div>
               <div className="aq-table-wrap"><table><thead><tr><th>Transaction</th><th>Amount 1</th><th>Amount 2</th><th /></tr></thead><tbody>{attributeRows.map((row, index) => <tr key={index}><td>{renderAttributeSelect(row.attributeId, (value) => updateRow(setAttributeRows, index, "attributeId", value))}</td><td><input type="number" value={row.amount} onChange={(event) => updateRow(setAttributeRows, index, "amount", event.target.value)} /></td><td><input type="number" value={row.amount2} onChange={(event) => updateRow(setAttributeRows, index, "amount2", event.target.value)} /></td><td><button type="button" onClick={() => removeRow(setAttributeRows, index)} disabled={attributeRows.length <= 1}><FaTrash /></button></td></tr>)}</tbody></table></div>
             </section>
           )}
@@ -461,7 +558,7 @@ function CreateAllQuestions() {
 
       <section className="aq-preview">
         <div className="aq-preview-heading"><div><span>FINAL REVIEW</span><h2>Question preview</h2><p>Nothing is saved until you submit this batch.</p></div><strong>{drafts.length} draft{drafts.length === 1 ? "" : "s"}</strong></div>
-        {drafts.length === 0 ? <div className="aq-empty">Your question previews will appear here.</div> : <div className="aq-drafts">{drafts.map((draft, index) => <article key={draft.id}><div className="aq-draft-top"><span>{String(index + 1).padStart(2, "0")} · {draft.typeLabel}</span><div><button type="button" onClick={() => editDraft(draft)}><FaEdit /> Edit</button><button type="button" onClick={() => setDrafts((current) => current.filter((item) => item.id !== draft.id))}><FaTrash /> Remove</button></div></div><h3>{draft.payload.questionText}</h3><p>{draft.hierarchy.course} / {draft.hierarchy.subject} / {draft.hierarchy.chapter} / {draft.hierarchy.topic}</p>{isMcqType(draft.type) ? <ul>{draft.payload.options.map((option) => <li className={option.isCorrect ? "correct" : ""} key={option.optionOrder}>{String.fromCharCode(64 + option.optionOrder)}. {option.optionText}{option.isCorrect ? " ✓" : ""}</li>)}</ul> : <small>{draft.payload.questionAttributes.length} configured attribute{draft.payload.questionAttributes.length === 1 ? "" : "s"}</small>}</article>)}</div>}
+        {drafts.length === 0 ? <div className="aq-empty">Your question previews will appear here.</div> : <div className="aq-drafts">{drafts.map((draft, index) => <article key={draft.id}><div className="aq-draft-top"><span>{String(index + 1).padStart(2, "0")} · {draft.typeLabel}</span><div><button type="button" onClick={() => editDraft(draft)}><FaEdit /> Edit</button><button type="button" onClick={() => setDrafts((current) => current.filter((item) => item.id !== draft.id))}><FaTrash /> Remove</button></div></div><h3>{draft.payload.questionText}</h3><p>{draft.hierarchy.course} / {draft.hierarchy.subject} / {draft.hierarchy.chapter} / {draft.hierarchy.topic}</p>{isMcqType(draft.type) ? <ul>{draft.payload.options.map((option) => <li className={option.isCorrect ? "correct" : ""} key={option.optionOrder}>{String.fromCharCode(64 + option.optionOrder)}. {option.optionText}{option.isCorrect ? " ✓" : ""}</li>)}</ul> : <small>{isMatchingType(draft.type) ? draft.payload.pairs.length : isFillBlankType(draft.type) ? draft.payload.blanks.length : draft.payload.questionAttributes.length} configured {isMatchingType(draft.type) ? "pair" : isFillBlankType(draft.type) ? "blank" : "attribute"}{(isMatchingType(draft.type) ? draft.payload.pairs.length : isFillBlankType(draft.type) ? draft.payload.blanks.length : draft.payload.questionAttributes.length) === 1 ? "" : "s"}</small>}</article>)}</div>}
         <button type="button" className="aq-submit" disabled={!drafts.length || submitting} onClick={submitDrafts} title={!drafts.length ? "Add at least one question to preview first" : "Submit all previewed questions"}><FaSave /> {submitting ? "Submitting…" : drafts.length ? `Submit ${drafts.length} question${drafts.length === 1 ? "" : "s"}` : "Submit questions"}</button>
         {!drafts.length && <p className="aq-submit-help">Add a completed question to preview to enable submission.</p>}
       </section>
