@@ -1,9 +1,9 @@
 /* =========================================================
    EXAM CATALOG ONLY
-   Every selector is scoped under .exam-catalog. Nothing global.
+   Every selector is scoped under .mock-exam-catalog. Nothing global.
    ========================================================= */
 
-.exam-catalog {
+.mock-exam-catalog {
   --cat-ink: #1c2233;
   --cat-muted: #6b7392;
   --cat-canvas: #f4f5fb;
@@ -27,19 +27,19 @@
   font-feature-settings: "tnum" 1;
 }
 
-.exam-catalog *,
-.exam-catalog *::before,
-.exam-catalog *::after {
+.mock-exam-catalog *,
+.mock-exam-catalog *::before,
+.mock-exam-catalog *::after {
   box-sizing: border-box;
 }
 
 /* ---------- header ---------- */
 
-.exam-catalog__head {
+.mock-exam-catalog__head {
   margin-bottom: 22px;
 }
 
-.exam-catalog__head h1 {
+.mock-exam-catalog__head h1 {
   margin: 0;
   font-size: 22px;
   font-weight: 700;
@@ -47,7 +47,7 @@
   color: var(--cat-ink);
 }
 
-.exam-catalog__head p {
+.mock-exam-catalog__head p {
   margin: 6px 0 0;
   font-size: 13px;
   color: var(--cat-muted);
@@ -55,7 +55,7 @@
 
 /* ---------- list (one card per row) ---------- */
 
-.exam-catalog__grid {
+.mock-exam-catalog__grid {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -64,13 +64,13 @@
   gap: 16px;
 }
 
-.exam-catalog__grid > li {
+.mock-exam-catalog__grid > li {
   display: flex;
 }
 
 /* ---------- card ---------- */
 
-.exam-catalog .exam-card {
+.mock-exam-catalog .mock-exam-card {
   position: relative;
   display: flex;
   flex: 1;
@@ -91,14 +91,14 @@
     box-shadow 140ms ease;
 }
 
-.exam-catalog .exam-card:hover {
+.mock-exam-catalog .mock-exam-card:hover {
   border-color: color-mix(in oklab, var(--cat-accent) 30%, var(--cat-rule));
   box-shadow: 0 14px 30px -20px rgba(28, 34, 51, 0.35);
 }
 
 /* ---------- left icon ---------- */
 
-.exam-card__icon {
+.mock-exam-card__icon {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -111,21 +111,21 @@
   font-size: 25px;
 }
 
-.exam-card[data-state="open"] .exam-card__icon {
+.mock-exam-card[data-state="open"] .mock-exam-card__icon {
   background: #e5edfb;
   color: #1e67c7;
 }
 
 /* ---------- middle ---------- */
 
-.exam-card__body {
+.mock-exam-card__body {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-width: 0;
 }
 
-.exam-card__course {
+.mock-exam-card__course {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -133,7 +133,7 @@
   color: var(--cat-muted);
 }
 
-.exam-card__title {
+.mock-exam-card__title {
   margin: 4px 0 0;
   font-size: 22px;
   font-weight: 700;
@@ -142,14 +142,78 @@
   color: var(--cat-ink);
 }
 
-.exam-card__desc {
+.mock-exam-card__desc {
   margin: 5px 0 0;
   font-size: 14px;
   line-height: 1.5;
   color: var(--cat-muted);
 }
 
-.exam-card__window {
+/* ---------- chapters to prepare ---------- */
+
+.mock-exam-card__section {
+  margin-top: 14px;
+}
+
+.mock-exam-card__section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cat-muted);
+}
+
+.mock-exam-card__section-label svg {
+  font-size: 13px;
+}
+
+.mock-exam-card__chapters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.mock-exam-card__chapter {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border: 1px solid var(--cat-rule);
+  border-radius: 999px;
+  background: #f4f5fb;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--cat-ink);
+}
+
+.mock-exam-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  margin-top: 16px;
+  padding-left: 22px;
+  border-left: 1px solid var(--cat-rule);
+}
+
+.mock-exam-card__meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cat-ink);
+}
+
+.mock-exam-card__meta-item svg {
+  flex-shrink: 0;
+  font-size: 15px;
+  color: #3b4252;
+}
+
+.mock-exam-card__window {
   display: flex;
   align-items: stretch;
   gap: 28px;
@@ -158,7 +222,7 @@
   border-left: 1px solid var(--cat-rule);
 }
 
-.exam-card__date {
+.mock-exam-card__date {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -166,39 +230,39 @@
   min-width: 0;
 }
 
-.exam-card__date-sep {
+.mock-exam-card__date-sep {
   width: 1px;
   align-self: stretch;
   background: var(--cat-rule);
 }
 
-.exam-card__date-icon {
+.mock-exam-card__date-icon {
   flex-shrink: 0;
   font-size: 19px;
   color: #3b4252;
 }
 
-.exam-card__date-text {
+.mock-exam-card__date-text {
   display: flex;
   flex-direction: column;
   gap: 1px;
   min-width: 0;
 }
 
-.exam-card__date-key {
+.mock-exam-card__date-key {
   font-size: 12px;
   font-weight: 600;
   color: var(--cat-muted);
 }
 
-.exam-card__date-value {
+.mock-exam-card__date-value {
   font-size: 16px;
   font-weight: 700;
   color: var(--cat-ink);
   font-variant-numeric: tabular-nums;
 }
 
-.exam-card__date-time {
+.mock-exam-card__date-time {
   font-size: 12px;
   color: var(--cat-muted);
   font-variant-numeric: tabular-nums;
@@ -206,7 +270,7 @@
 
 /* ---------- right column ---------- */
 
-.exam-card__aside {
+.mock-exam-card__aside {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -217,14 +281,14 @@
   border-left: 1px solid var(--cat-rule);
 }
 
-.exam-card__aside-note {
+.mock-exam-card__aside-note {
   margin: 0;
   font-size: 13.5px;
   line-height: 1.45;
   color: var(--cat-muted);
 }
 
-.exam-card__pill {
+.mock-exam-card__pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -236,26 +300,26 @@
   color: #c0392b;
 }
 
-.exam-card__pill-dot {
+.mock-exam-card__pill-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   background: currentColor;
 }
 
-.exam-card[data-state="open"] .exam-card__pill {
+.mock-exam-card[data-state="open"] .mock-exam-card__pill {
   background: var(--cat-open-bg);
   color: var(--cat-open);
 }
 
-.exam-card[data-state="soon"] .exam-card__pill {
+.mock-exam-card[data-state="soon"] .mock-exam-card__pill {
   background: var(--cat-soon-bg);
   color: var(--cat-soon);
 }
 
 /* ---------- start / view button ---------- */
 
-.exam-catalog .exam-card__start {
+.mock-exam-catalog .mock-exam-card__start {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -277,29 +341,29 @@
     transform 140ms ease;
 }
 
-.exam-catalog .exam-card__start:hover {
+.mock-exam-catalog .mock-exam-card__start:hover {
   background: #1a56a8;
 }
 
-.exam-catalog .exam-card__start:active {
+.mock-exam-catalog .mock-exam-card__start:active {
   transform: translateY(1px);
 }
 
-.exam-catalog .exam-card__start:focus-visible {
+.mock-exam-catalog .mock-exam-card__start:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px color-mix(in oklab, #1e67c7 35%, transparent);
 }
 
 /* ---------- admin actions (staff only) ---------- */
 
-.exam-card__admin {
+.mock-exam-card__admin {
   display: flex;
   gap: 8px;
   width: 100%;
   margin-top: 4px;
 }
 
-.exam-catalog .exam-card__admin-btn {
+.mock-exam-catalog .mock-exam-card__admin-btn {
   flex: 1;
   padding: 7px 12px;
   border: 1px solid var(--cat-rule);
@@ -316,29 +380,29 @@
     color 140ms ease;
 }
 
-.exam-catalog .exam-card__admin-btn:hover {
+.mock-exam-catalog .mock-exam-card__admin-btn:hover {
   border-color: color-mix(in oklab, var(--cat-accent) 45%, var(--cat-rule));
   color: var(--cat-accent);
 }
 
-.exam-catalog .exam-card__admin-btn--danger:hover {
+.mock-exam-catalog .mock-exam-card__admin-btn--danger:hover {
   border-color: #dc2626;
   color: #dc2626;
 }
 
-.exam-catalog .exam-card__admin-btn:focus-visible {
+.mock-exam-catalog .mock-exam-card__admin-btn:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--cat-accent) 30%, transparent);
 }
 
-.exam-catalog .exam-card__admin-btn:disabled {
+.mock-exam-catalog .mock-exam-card__admin-btn:disabled {
   opacity: 0.6;
   cursor: default;
 }
 
 /* ---------- skeleton ---------- */
 
-.exam-catalog .exam-card--skeleton {
+.mock-exam-catalog .mock-exam-card--skeleton {
   flex-direction: column;
   align-items: stretch;
   gap: 12px;
@@ -346,34 +410,34 @@
   pointer-events: none;
 }
 
-.exam-card__rule {
+.mock-exam-card__rule {
   height: 1px;
   background: var(--cat-rule);
 }
 
-.exam-card__line {
+.mock-exam-card__line {
   display: block;
   height: 12px;
   border-radius: 6px;
   background: linear-gradient(90deg, #eef0f6, #e2e5ef, #eef0f6);
   background-size: 200% 100%;
-  animation: exam-catalog-shimmer 1.4s ease-in-out infinite;
+  animation: mock-exam-catalog-shimmer 1.4s ease-in-out infinite;
 }
 
-.exam-card__line--title {
+.mock-exam-card__line--title {
   width: 78%;
   height: 16px;
 }
 
-.exam-card__line--sub {
+.mock-exam-card__line--sub {
   width: 45%;
 }
 
-.exam-card__line--foot {
+.mock-exam-card__line--foot {
   width: 60%;
 }
 
-@keyframes exam-catalog-shimmer {
+@keyframes mock-exam-catalog-shimmer {
   0% {
     background-position: 200% 0;
   }
@@ -384,7 +448,7 @@
 
 /* ---------- notices ---------- */
 
-.exam-catalog__notice {
+.mock-exam-catalog__notice {
   max-width: 420px;
   margin-top: 8px;
   padding: 28px 24px;
@@ -393,20 +457,20 @@
   border-radius: 14px;
 }
 
-.exam-catalog__notice h2 {
+.mock-exam-catalog__notice h2 {
   margin: 0;
   font-size: 15px;
   font-weight: 600;
   color: var(--cat-ink);
 }
 
-.exam-catalog__notice p {
+.mock-exam-catalog__notice p {
   margin: 6px 0 0;
   font-size: 13px;
   color: var(--cat-muted);
 }
 
-.exam-catalog .exam-catalog__retry-btn {
+.mock-exam-catalog .mock-exam-catalog__retry-btn {
   margin-top: 16px;
   padding: 8px 16px;
   border: none;
@@ -420,11 +484,11 @@
   transition: background 140ms ease;
 }
 
-.exam-catalog .exam-catalog__retry-btn:hover {
+.mock-exam-catalog .mock-exam-catalog__retry-btn:hover {
   background: #4338ca;
 }
 
-.exam-catalog .exam-catalog__retry-btn:focus-visible {
+.mock-exam-catalog .mock-exam-catalog__retry-btn:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--cat-accent) 30%, transparent);
 }
@@ -432,11 +496,11 @@
 /* ---------- responsive ---------- */
 
 @media (max-width: 860px) {
-  .exam-catalog .exam-card {
+  .mock-exam-catalog .mock-exam-card {
     flex-wrap: wrap;
   }
 
-  .exam-card__aside {
+  .mock-exam-card__aside {
     width: 100%;
     padding-left: 0;
     padding-top: 16px;
@@ -445,41 +509,41 @@
     border-top: 1px solid var(--cat-rule);
   }
 
-  .exam-catalog .exam-card__start {
+  .mock-exam-catalog .mock-exam-card__start {
     margin-top: 0;
   }
 }
 
 @media (max-width: 560px) {
-  .exam-catalog {
+  .mock-exam-catalog {
     padding: 20px 14px 32px;
   }
 
-  .exam-card__icon {
+  .mock-exam-card__icon {
     width: 52px;
     height: 52px;
     font-size: 20px;
   }
 
-  .exam-card__title {
+  .mock-exam-card__title {
     font-size: 20px;
   }
 
-  .exam-card__window {
+  .mock-exam-card__window {
     flex-direction: column;
     gap: 12px;
     padding-left: 16px;
   }
 
-  .exam-card__date-sep {
+  .mock-exam-card__date-sep {
     width: auto;
     height: 1px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .exam-catalog .exam-card,
-  .exam-card__line {
+  .mock-exam-catalog .mock-exam-card,
+  .mock-exam-card__line {
     transition: none;
     animation: none;
   }

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Card, Form, Button } from "react-bootstrap";
 import { FiHelpCircle, FiSave } from "react-icons/fi";
 import Select from "react-select";
@@ -12,6 +12,7 @@ import SubjectService from "../../services/SubjectService";
 import ChapterService from "../../services/ChapterService";
 import ExamPaperService from "../../services/ExamPaperService";
 import ExamService from "../../services/ExamService";
+import MockExamService from "../../services/MockExamService";
 
 import "./ExamPaper.css";
 import QuestionSelection from "./QuestionSelection";
@@ -20,8 +21,12 @@ import { useToast } from "../../components/Toast/useToast";
 const ExamPaper = () => {
   const navigate = useNavigate();
   const toast = useToast();
+  const { pathname } = useLocation();
   const { examId } = useParams();
   const isEditMode = Boolean(examId);
+
+  // /mock-exam-paper/:examId edits a mock exam; /exam-paper/:examId a practice one.
+  const isMockEdit = isEditMode && pathname.startsWith("/mock-exam-paper");
 
   const [currentStep, setCurrentStep] = useState(1);
   const [createdExamId, setCreatedExamId] = useState(examId ?? null);
@@ -29,6 +34,12 @@ const ExamPaper = () => {
   const [loadingExam, setLoadingExam] = useState(isEditMode);
 
   // EXAM DETAILS
+
+  // "practice" -> POST /api/exams (needs college/branch/section/subject/dates)
+  // "mock"     -> POST /api/mock-exams (course + chapters + pass % only)
+  // Only offered while creating; edit mode always stays on the practice path.
+  const [examType, setExamType] = useState("practice");
+  const isMock = isMockEdit || (!isEditMode && examType === "mock");
 
   const [passPercentage, setPassPercentage] = useState(35);
   const [examName, setExamName] = useState("");
@@ -232,18 +243,21 @@ const ExamPaper = () => {
   // Filter courses according to selected branch
 
   const courseOptions = useMemo(() => {
-    if (!branch) {
-      return [];
-    }
+    const active = courses.filter((item) => item.activeRow !== false);
 
-    return courses
-      .filter((item) => String(item.branchId) === String(branch.value))
-      .filter((item) => item.activeRow !== false)
-      .map((item) => ({
-        value: item.courseId,
-        label: item.name,
-      }));
-  }, [courses, branch]);
+    // A mock exam isn't scoped to a college/branch, so every course is on
+    // offer straight away. A practice exam stays gated on the branch.
+    const scoped = isMock
+      ? active
+      : branch
+        ? active.filter((item) => String(item.branchId) === String(branch.value))
+        : [];
+
+    return scoped.map((item) => ({
+      value: item.courseId,
+      label: item.name,
+    }));
+  }, [courses, branch, isMock]);
 
   // SECTION OPTIONS
 
@@ -299,8 +313,8 @@ const ExamPaper = () => {
       }));
   }, [chapterData, subject]);
 
-  // EDIT MODE: load the exam being edited and prefill the primitive fields
-  // GET /api/exams/{examId}
+  // EDIT MODE: load the exam being edited and prefill the primitive fields.
+  // GET /api/exams/{id} for a practice exam, GET /api/mock-exams/{id} for a mock.
 
   useEffect(() => {
     if (!isEditMode) return undefined;
@@ -308,11 +322,26 @@ const ExamPaper = () => {
     let active = true;
     setLoadingExam(true);
 
-    ExamService.getById(examId)
+    const request = isMockEdit
+      ? MockExamService.getById(examId)
+      : ExamService.getById(examId);
+
+    request
       .then((response) => {
         if (!active) return;
 
         const data = response?.data ?? {};
+
+        if (isMockEdit) {
+          // A mock exam has no name-vs-mockExamName ambiguity and no window.
+          setExamName(data.mockExamName ?? "");
+          if (data.passPercentage != null) {
+            setPassPercentage(Number(data.passPercentage));
+          }
+          setPrefill(data);
+          return;
+        }
+
         const [sd, st] = String(data.startDate ?? "").split("T");
         const [ed, et] = String(data.endDate ?? "").split("T");
 
@@ -342,7 +371,7 @@ const ExamPaper = () => {
     return () => {
       active = false;
     };
-  }, [isEditMode, examId]);
+  }, [isEditMode, isMockEdit, examId]);
 
   // EDIT MODE: resolve each dropdown selection once its option list is ready.
   // The lists cascade (college -> branch -> course -> section/chapters), so
@@ -475,6 +504,25 @@ const ExamPaper = () => {
     setChapters([]);
   };
 
+  // EXAM TYPE CHANGE
+
+  // The two types need different fields, so clear the whole cascade to stop a
+  // stale college/branch/date selection leaking across a switch.
+  const handleExamTypeChange = (value) => {
+    setExamType(value);
+
+    setCollege(null);
+    setBranch(null);
+    setCourse(null);
+    setSection(null);
+    setSubject(null);
+    setChapters([]);
+    setStartDate("");
+    setStartTime("");
+    setEndDate("");
+    setEndTime("");
+  };
+
   // NEXT BUTTON
 
   const handleNext = () => {
@@ -488,7 +536,7 @@ const ExamPaper = () => {
       return;
     }
 
-    if (!college) {
+    if (!isMock && !college) {
       toast.error("Please select a college.");
       return;
     }
@@ -521,6 +569,38 @@ const ExamPaper = () => {
 
   const handleSave = async () => {
     try {
+      // MOCK EXAM: course + chapters + pass % only, its own endpoint.
+      if (isMock) {
+        const mockPayload = {
+          mockExamName: examName,
+          courseId: course?.value ?? null,
+          chapterIds: chapters.map((item) => item.value ?? item),
+          passPercentage,
+        };
+
+        if (isMockEdit) {
+          console.log("Mock-exam update payload being sent:", mockPayload);
+          await MockExamService.update(examId, mockPayload);
+          toast.success("Mock exam updated.");
+          navigate("/mock-exams");
+          return;
+        }
+
+        console.log("Final mock-exam create payload being sent:", mockPayload);
+
+        const response = await MockExamService.create(mockPayload);
+        const newMockExamId =
+          response?.data?.mockExamId ??
+          response?.data?.id ??
+          response?.data?.examId;
+
+        setCreatedExamId(newMockExamId);
+        console.log("Mock exam created successfully:", response?.data);
+        toast.success("Mock exam created.");
+        setCurrentStep(2);
+        return;
+      }
+
       const requestPayload = {
         examName,
         collegeId: college?.value ?? null,
@@ -569,10 +649,9 @@ const ExamPaper = () => {
     const questionIds = questions.map((question) => question.questionId);
 
     try {
-      const response = await ExamPaperService.addQuestionsToExam(
-        createdExamId,
-        questionIds,
-      );
+      const response = isMock
+        ? await MockExamService.addQuestions(createdExamId, questionIds)
+        : await ExamPaperService.addQuestionsToExam(createdExamId, questionIds);
 
       console.log("Questions added to exam:", response?.data);
       toast.success(`${questionIds.length} questions added to the exam.`);
@@ -604,7 +683,13 @@ const ExamPaper = () => {
     <div className="exam-paper-page">
       <Card className="exam-paper-main-card">
         <Card.Header className="exam-paper-card-header">
-          <h2>{isEditMode ? "Edit Exam Paper" : "Exam Paper"}</h2>
+          <h2>
+            {isMockEdit
+              ? "Edit Mock Exam"
+              : isEditMode
+                ? "Edit Exam Paper"
+                : "Exam Paper"}
+          </h2>
 
           <button
             className="exam-paper-help-btn"
@@ -648,6 +733,34 @@ const ExamPaper = () => {
                   : "Enter the details to create a new exam paper"}
               </h3>
 
+              {/* EXAM TYPE - create only; edit always stays a practice exam */}
+              {!isEditMode && (
+                <Form.Group className="exam-paper-form-group exam-paper-examtype-group">
+                  <Form.Label>
+                    Exam Type <span className="exam-paper-required">*</span>
+                  </Form.Label>
+
+                  <div className="exam-paper-examtype-options">
+                    <Form.Check
+                      type="radio"
+                      id="exam-type-practice"
+                      name="examType"
+                      label="Practice Exam"
+                      checked={examType === "practice"}
+                      onChange={() => handleExamTypeChange("practice")}
+                    />
+                    <Form.Check
+                      type="radio"
+                      id="exam-type-mock"
+                      name="examType"
+                      label="Mock Exam"
+                      checked={examType === "mock"}
+                      onChange={() => handleExamTypeChange("mock")}
+                    />
+                  </div>
+                </Form.Group>
+              )}
+
               <div className="exam-paper-form-grid">
                 {/* EXAM NAME */}
                 <Form.Group className="exam-paper-form-group exam-name-group">
@@ -664,50 +777,54 @@ const ExamPaper = () => {
                   />
                 </Form.Group>
 
-                {/* COLLEGE */}
-                <Form.Group className="exam-paper-form-group">
-                  <Form.Label>
-                    College <span className="exam-paper-required">*</span>
-                  </Form.Label>
+                {/* COLLEGE - practice exams only */}
+                {!isMock && (
+                  <Form.Group className="exam-paper-form-group">
+                    <Form.Label>
+                      College <span className="exam-paper-required">*</span>
+                    </Form.Label>
 
-                  <Select
-                    options={collegeOptions}
-                    value={college}
-                    onChange={handleCollegeChange}
-                    placeholder={
-                      loadingColleges
-                        ? "Loading colleges..."
-                        : "Search and select college"
-                    }
-                    isSearchable
-                    isClearable
-                    isLoading={loadingColleges}
-                    classNamePrefix="exam-paper-select"
-                  />
-                </Form.Group>
+                    <Select
+                      options={collegeOptions}
+                      value={college}
+                      onChange={handleCollegeChange}
+                      placeholder={
+                        loadingColleges
+                          ? "Loading colleges..."
+                          : "Search and select college"
+                      }
+                      isSearchable
+                      isClearable
+                      isLoading={loadingColleges}
+                      classNamePrefix="exam-paper-select"
+                    />
+                  </Form.Group>
+                )}
 
-                {/* BRANCH */}
-                <Form.Group className="exam-paper-form-group">
-                  <Form.Label>Branch</Form.Label>
+                {/* BRANCH - practice exams only */}
+                {!isMock && (
+                  <Form.Group className="exam-paper-form-group">
+                    <Form.Label>Branch</Form.Label>
 
-                  <Select
-                    options={branchOptions}
-                    value={branch}
-                    onChange={handleBranchChange}
-                    placeholder={
-                      !college
-                        ? "Select college first"
-                        : loadingBranches
-                          ? "Loading branches..."
-                          : "Search and select branch"
-                    }
-                    isSearchable
-                    isClearable
-                    isLoading={loadingBranches}
-                    isDisabled={!college}
-                    classNamePrefix="exam-paper-select"
-                  />
-                </Form.Group>
+                    <Select
+                      options={branchOptions}
+                      value={branch}
+                      onChange={handleBranchChange}
+                      placeholder={
+                        !college
+                          ? "Select college first"
+                          : loadingBranches
+                            ? "Loading branches..."
+                            : "Search and select branch"
+                      }
+                      isSearchable
+                      isClearable
+                      isLoading={loadingBranches}
+                      isDisabled={!college}
+                      classNamePrefix="exam-paper-select"
+                    />
+                  </Form.Group>
+                )}
 
                 {/* COURSE */}
                 <Form.Group className="exam-paper-form-group">
@@ -720,7 +837,7 @@ const ExamPaper = () => {
                     value={course}
                     onChange={handleCourseChange}
                     placeholder={
-                      !branch
+                      !isMock && !branch
                         ? "Select branch first"
                         : loadingCourses
                           ? "Loading courses..."
@@ -729,33 +846,35 @@ const ExamPaper = () => {
                     isSearchable
                     isClearable
                     isLoading={loadingCourses}
-                    isDisabled={!branch}
+                    isDisabled={!isMock && !branch}
                     classNamePrefix="exam-paper-select"
                   />
                 </Form.Group>
 
-                {/* SECTION */}
-                <Form.Group className="exam-paper-form-group">
-                  <Form.Label>Section</Form.Label>
+                {/* SECTION - practice exams only */}
+                {!isMock && (
+                  <Form.Group className="exam-paper-form-group">
+                    <Form.Label>Section</Form.Label>
 
-                  <Select
-                    options={sectionOptions}
-                    value={section}
-                    onChange={setSection}
-                    placeholder={
-                      !course
-                        ? "Select course first"
-                        : loadingSections
-                          ? "Loading sections..."
-                          : "Search and select section"
-                    }
-                    isSearchable
-                    isClearable
-                    isLoading={loadingSections}
-                    isDisabled={!course}
-                    classNamePrefix="exam-paper-select"
-                  />
-                </Form.Group>
+                    <Select
+                      options={sectionOptions}
+                      value={section}
+                      onChange={setSection}
+                      placeholder={
+                        !course
+                          ? "Select course first"
+                          : loadingSections
+                            ? "Loading sections..."
+                            : "Search and select section"
+                      }
+                      isSearchable
+                      isClearable
+                      isLoading={loadingSections}
+                      isDisabled={!course}
+                      classNamePrefix="exam-paper-select"
+                    />
+                  </Form.Group>
+                )}
 
                 {/* SUBJECT */}
                 <Form.Group className="exam-paper-form-group">
@@ -810,54 +929,59 @@ const ExamPaper = () => {
                   />
                 </Form.Group>
 
-                {/* START DATE */}
-                <Form.Group className="exam-paper-form-group">
-                  <Form.Label>Start Date</Form.Label>
+                {/* SCHEDULE - practice exams only; a mock exam has no window */}
+                {!isMock && (
+                  <>
+                    {/* START DATE */}
+                    <Form.Group className="exam-paper-form-group">
+                      <Form.Label>Start Date</Form.Label>
 
-                  <Form.Control
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="exam-paper-input"
-                  />
-                </Form.Group>
+                      <Form.Control
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="exam-paper-input"
+                      />
+                    </Form.Group>
 
-                {/* START TIME */}
-                <Form.Group className="exam-paper-form-group">
-                  <Form.Label>Start Time</Form.Label>
+                    {/* START TIME */}
+                    <Form.Group className="exam-paper-form-group">
+                      <Form.Label>Start Time</Form.Label>
 
-                  <Form.Control
-                    type="time"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    className="exam-paper-input"
-                  />
-                </Form.Group>
+                      <Form.Control
+                        type="time"
+                        value={startTime}
+                        onChange={(e) => setStartTime(e.target.value)}
+                        className="exam-paper-input"
+                      />
+                    </Form.Group>
 
-                {/* END DATE */}
-                <Form.Group className="exam-paper-form-group">
-                  <Form.Label>End Date</Form.Label>
+                    {/* END DATE */}
+                    <Form.Group className="exam-paper-form-group">
+                      <Form.Label>End Date</Form.Label>
 
-                  <Form.Control
-                    type="date"
-                    min={startDate || undefined}
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="exam-paper-input"
-                  />
-                </Form.Group>
+                      <Form.Control
+                        type="date"
+                        min={startDate || undefined}
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="exam-paper-input"
+                      />
+                    </Form.Group>
 
-                {/* END TIME */}
-                <Form.Group className="exam-paper-form-group">
-                  <Form.Label>End Time</Form.Label>
+                    {/* END TIME */}
+                    <Form.Group className="exam-paper-form-group">
+                      <Form.Label>End Time</Form.Label>
 
-                  <Form.Control
-                    type="time"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                    className="exam-paper-input"
-                  />
-                </Form.Group>
+                      <Form.Control
+                        type="time"
+                        value={endTime}
+                        onChange={(e) => setEndTime(e.target.value)}
+                        className="exam-paper-input"
+                      />
+                    </Form.Group>
+                  </>
+                )}
               </div>
 
               {/*  PASS PERCENTAGE */}
@@ -902,7 +1026,7 @@ const ExamPaper = () => {
                     type="button"
                     className="exam-paper-next-btn"
                     variant="light"
-                    onClick={() => navigate("/exams")}
+                    onClick={() => navigate(isMockEdit ? "/mock-exams" : "/exams")}
                   >
                     Cancel
                   </Button>
@@ -922,7 +1046,13 @@ const ExamPaper = () => {
                   onClick={handleSave}
                 >
                   <FiSave />
-                  <span>{isEditMode ? "Update exam" : "Save and finish"}</span>
+                  <span>
+                    {isMockEdit
+                      ? "Update mock exam"
+                      : isEditMode
+                        ? "Update exam"
+                        : "Save and finish"}
+                  </span>
                 </Button>
               </div>
             </Card.Body>

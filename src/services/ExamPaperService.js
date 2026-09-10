@@ -8,6 +8,7 @@ class ExamPaperService {
       branchId: payload.branch ?? payload.branchId ?? null,
       courseId: payload.course ?? payload.courseId ?? null,
       sectionId: payload.section ?? payload.sectionId ?? null,
+      subjectId: payload.subject ?? payload.subjectId ?? null,
       chapterIds:
         payload.chapters?.map((item) => item.value ?? item) ||
         payload.chapterIds ||

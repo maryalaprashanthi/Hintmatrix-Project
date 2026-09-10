@@ -1,6 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap");
 
-/* Design tokens for the exam, scoped to .examRoot so the rest of the app
+/* Design tokens for the exam, scoped to .mockExamRoot so the rest of the app
  * (Inter + Bootstrap, its own palette) is untouched.
  *
  * The accent family follows the exam catalog cards: a flat blue
@@ -15,7 +15,7 @@
  * Component classes double their name (.next.next) because the app's index.css
  * resets buttons via `button:not([class*="btn"])`, whose specificity (0,1,1)
  * would otherwise beat a single module class and drop the design's type. */
-.examRoot {
+.mockExamRoot {
   --font-ui: "Poppins", system-ui, sans-serif;
   --font-display: "Poppins", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "IBM Plex Mono", monospace;
@@ -65,7 +65,7 @@
   text-wrap: pretty;
 }
 
-.examRoot :focus-visible {
+.mockExamRoot :focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
 }

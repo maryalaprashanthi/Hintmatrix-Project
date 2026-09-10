@@ -1,0 +1,41 @@
+/* The exam's "take that line back out" affordance: a × that appears on hover
+   over a row the candidate placed. Shared so the solution tables don't each
+   carry their own copy.
+
+   ExamJournalSolution.css and ExamDroppable.css still define these rules
+   themselves and could import this instead. */
+
+.placed-row {
+  position: relative;
+}
+
+.amount-cell-with-remove {
+  position: relative;
+}
+
+.remove-row-btn {
+  display: none;
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: auto;
+  height: auto;
+  line-height: 1;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #ef4444;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.placed-row:hover .remove-row-btn {
+  display: block;
+}
+
+.remove-row-btn:hover {
+  color: #b91c1c;
+}
