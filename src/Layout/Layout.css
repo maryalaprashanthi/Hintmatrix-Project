@@ -62,7 +62,7 @@ body {
 .page-content {
   position: absolute;
 
-  top: 95px;
+  top: 55px;
   left: 0;
   right: 0;
   bottom: 0;
@@ -74,7 +74,6 @@ body {
 
   background: #f8fafc;
 }
-
 /* ==========================================
    MOBILE
 ========================================== */
