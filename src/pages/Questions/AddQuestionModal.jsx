@@ -10,6 +10,7 @@ import QuestionTypeService from "../../services/QuestionTypeService";
 import TableAttributeService from "../../services/TableAttributeService";
 import QuestionService from "../../services/QuestionService";
 import MatchingQuestionService from "../../services/MatchingQuestionService";
+import McqQuestionService from "../../services/McqQuestionService";
 
 import {
   FaTimes,
@@ -21,6 +22,9 @@ import {
 } from "react-icons/fa";
 
 import "./AddQuestionModal.css";
+
+const mcqType = (name) => String(name || "").trim().toUpperCase().replace(/[\s-]+/g, "_").replace(/^MCQ_/, "");
+const isMcqType = (name) => ["SINGLE_CHOICE", "MULTIPLE_CHOICE"].includes(mcqType(name));
 
 function AddQuestionModal({
   courseId: initialCourseId,
@@ -37,6 +41,34 @@ function AddQuestionModal({
   const [topicId, setTopicId] = useState(null);
   const [questionTypeId, setQuestionTypeId] = useState(null);
   const [questionText, setQuestionText] = useState("");
+  const [mcqOptions, setMcqOptions] = useState([]);
+  const [marks, setMarks] = useState(1);
+  const [mcqLoading, setMcqLoading] = useState(false);
+  const [mcqLoadError, setMcqLoadError] = useState("");
+  const [mcqSaving, setMcqSaving] = useState(false);
+  const isMcqQuestion = isMcqType(questionTypeId?.label);
+  const isMultipleChoice = mcqType(questionTypeId?.label) === "MULTIPLE_CHOICE";
+
+  useEffect(() => {
+    if (!isMcqQuestion) return;
+    if (!initialData?.questionId) {
+      setMcqOptions([{ optionText: "", isCorrect: false }, { optionText: "", isCorrect: false }]);
+      return;
+    }
+    let cancelled = false;
+    setMcqLoading(true);
+    setMcqLoadError("");
+    McqQuestionService.getById(initialData.questionId)
+      .then(({ data }) => {
+        if (cancelled) return;
+        setMarks(data.marks ?? 1);
+        setMcqOptions([...(data.options || [])].sort((a, b) => a.optionOrder - b.optionOrder)
+          .map((option) => ({ ...option, isCorrect: option.isCorrect === true || option.isCorrect === "true" })));
+      })
+      .catch(() => { if (!cancelled) setMcqLoadError("Unable to load MCQ options. Close and reopen the edit form."); })
+      .finally(() => { if (!cancelled) setMcqLoading(false); });
+    return () => { cancelled = true; };
+  }, [initialData?.questionId, isMcqQuestion]);
 
   // =========================================================
   // DROPDOWN OPTIONS
@@ -768,6 +800,7 @@ function AddQuestionModal({
   // =========================================================
 
   const handleSave = async () => {
+    if (mcqSaving) return;
     // =======================================================
     // REQUIRED FIELD VALIDATION
     // =======================================================
@@ -790,6 +823,37 @@ function AddQuestionModal({
     // =======================================================
     // MATCHING QUESTION
     // =======================================================
+
+    if (isMcqQuestion) {
+      if (mcqLoading || mcqLoadError) return;
+      const correctCount = mcqOptions.filter((option) => option.isCorrect).length;
+      if (mcqOptions.length < 2 || mcqOptions.some((option) => !option.optionText?.trim()) ||
+          correctCount === 0 || (!isMultipleChoice && correctCount !== 1) || !Number.isFinite(Number(marks)) || Number(marks) <= 0) {
+        alert("Enter positive marks, at least two options, and select " + (isMultipleChoice ? "at least one correct answer." : "exactly one correct answer."));
+        return;
+      }
+      setMcqSaving(true);
+      try {
+        const payload = {
+          courseId: Number(courseId.value), chapterId: Number(chapterId.value), topicId: Number(topicId.value),
+          questionTypeId: Number(questionTypeId.value), questionText: questionText.trim(), marks: Number(marks),
+          options: mcqOptions.map((option, index) => ({
+            ...(option.optionId ? { optionId: option.optionId } : {}),
+            optionText: option.optionText.trim(), optionOrder: index + 1, isCorrect: option.isCorrect,
+          })),
+        };
+        const response = initialData?.questionId
+          ? await McqQuestionService.update(initialData.questionId, payload)
+          : await McqQuestionService.create(payload);
+        await onSave(response.data);
+        handleClose();
+      } catch (error) {
+        alert(error.response?.data?.message || "Unable to save MCQ question.");
+      } finally {
+        setMcqSaving(false);
+      }
+      return;
+    }
 
     if (isMatchingQuestion) {
       const invalidPair =
@@ -1456,7 +1520,39 @@ function AddQuestionModal({
               MATCHING QUESTION
           ================================================= */}
 
-          {isMatchingQuestion ? (
+          {isMcqQuestion ? (
+            <div className="form-card question-attributes-section">
+              <h3 className="section-title">Answer Options</h3>
+              <div className="form-group">
+                <label htmlFor="mcq-edit-marks">Marks <span>*</span></label>
+                <input id="mcq-edit-marks" className="form-control" type="number" min="1" value={marks}
+                  onChange={(event) => setMarks(event.target.value)} />
+              </div>
+              <p>{isMultipleChoice ? "Select all correct answers." : "Select one correct answer."}</p>
+              {mcqLoading && <p>Loading options...</p>}
+              {mcqLoadError && <div className="alert alert-danger">{mcqLoadError}</div>}
+              {!mcqLoading && !mcqLoadError && <>
+                {mcqOptions.map((option, index) => (
+                  <div className="d-flex align-items-center gap-3 mb-3" key={option.optionId ?? `new-${index}`}>
+                    <input type={isMultipleChoice ? "checkbox" : "radio"} name="mcq-edit-correct"
+                      aria-label={`Option ${index + 1} is correct`} checked={option.isCorrect}
+                      onChange={() => setMcqOptions((current) => current.map((item, i) => ({ ...item,
+                        isCorrect: isMultipleChoice ? (i === index ? !item.isCorrect : item.isCorrect) : i === index,
+                      })))} />
+                    <input className="form-control" aria-label={`Option ${index + 1}`} value={option.optionText}
+                      placeholder={`Option ${String.fromCharCode(65 + index)}`}
+                      onChange={(event) => setMcqOptions((current) => current.map((item, i) => i === index ? { ...item, optionText: event.target.value } : item))} />
+                    <button type="button" className="btn btn-outline-danger" aria-label={`Remove option ${index + 1}`}
+                      disabled={mcqOptions.length <= 2} onClick={() => setMcqOptions((current) => current.filter((_, i) => i !== index))}><FaTrash /></button>
+                  </div>
+                ))}
+                <button type="button" className="btn btn-outline-primary add-row-btn"
+                  onClick={() => setMcqOptions((current) => [...current, { optionText: "", isCorrect: false }])}>
+                  <FaPlus className="me-2" /> Add Option
+                </button>
+              </>}
+            </div>
+          ) : isMatchingQuestion ? (
             <div className="form-card question-attributes-section">
 
               <h3 className="section-title">
@@ -1920,6 +2016,7 @@ function AddQuestionModal({
             type="button"
             className="btn btn-primary"
             onClick={handleSave}
+            disabled={isMcqQuestion && (mcqLoading || !!mcqLoadError || mcqSaving)}
           >
             <FaSave className="me-2" />
 

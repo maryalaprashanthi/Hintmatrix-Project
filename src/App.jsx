@@ -1,4 +1,4 @@
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import Layout from "./Layout/Layout";
@@ -67,9 +67,6 @@ import ExamHub from "./pages/ExamHub/ExamHub";
 import ExamCatalog from "./pages/ExamCatalog/ExamCatalog";
 import MockExamCatalog from "./pages/MockExamCatalog/MockExamCatalog";
 import ExamPaper from "./pages/ExamPaper/ExamPaper";
-import CreateMcq from "./components/Mcq_Questions/CreateMcq";
-import McqPractice from "./components/Mcq_Questions/McqPractice";
-import McqList from "./components/Mcq_Questions/McqList";
 import PerformanceDashboard from "./pages/Performance/PerformanceDashboard";
 
 function App() {
@@ -420,16 +417,16 @@ function App() {
           path="/mcq-questions/create"
           element={
             <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
-              <CreateMcq />
+              <Navigate to="/questions/create-all" replace />
             </ProtectedRoute>
           }
         />
-        <Route path="/mcq-questions/practice" element={<McqPractice />} />
+        <Route path="/mcq-questions/practice" element={<Navigate to="/courses" replace />} />
         <Route
           path="/mcq-questions/list"
           element={
             <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
-              <McqList />
+              <Navigate to="/questions" replace />
             </ProtectedRoute>
           }
         />

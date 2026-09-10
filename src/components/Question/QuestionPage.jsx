@@ -7,6 +7,7 @@ import useQuestionStore from "./questionStore";
 
 import JournalPage from "../JournalQuestion/JournalPage";
 import DropdownPage from "../DropdownQuestions/DropdownPage";
+import McqQuestionView from "./McqQuestionView";
 import MatchingQuestionView from "./MatchingQuestionView";
 import FillInBlankQuestionView from "./FillInBlankQuestionView";
 
@@ -117,6 +118,10 @@ const QuestionPage = () => {
 
   const [questionType, setQuestionType] = useState(null);
 
+  const isMcq = ["SINGLE_CHOICE", "MULTIPLE_CHOICE", "MCQ_SINGLE_CHOICE", "MCQ_MULTIPLE_CHOICE"].includes(questionType);
+
+  const [isLoading, setIsLoading] =
+    useState(true);
   const [isLoading, setIsLoading] = useState(true);
 
   const [matchingQuestion, setMatchingQuestion] = useState(null);
@@ -441,7 +446,7 @@ const QuestionPage = () => {
   // ===========================================================
 
   useEffect(() => {
-    if (testSubmitted) {
+    if (testSubmitted || isMcq) {
       return;
     }
 
@@ -454,8 +459,13 @@ const QuestionPage = () => {
       setTimeLeft((previous) => (previous > 0 ? previous - 1 : 0));
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, [timeLeft, testSubmitted]);
+    return () =>
+      clearInterval(timer);
+  }, [
+    timeLeft,
+    testSubmitted,
+    isMcq,
+  ]);
 
   // ===========================================================
   // FORMAT TIMER
@@ -575,6 +585,10 @@ const QuestionPage = () => {
 
   if (questionType === "JOURNAL") {
     return <JournalPage />;
+  }
+
+  if (isMcq) {
+    return <McqQuestionView key={questionId} questionId={questionId} questionType={questionType} />;
   }
 
   // ===========================================================
