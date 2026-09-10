@@ -16,6 +16,7 @@ function Header({
   answeredData,
   setAnsweredData,
   setCheckMistakes,
+  actions,
 }) {
   const {
     question: storeQuestion,
@@ -152,6 +153,7 @@ function Header({
 
         {/* Right */}
         <div className="d-flex gap-2 flex-shrink-0">
+          {actions ?? <>
           <Button
             variant="light"
             size="sm"
@@ -201,6 +203,7 @@ function Header({
             <FaPaperPlane className="me-1" />
             Submit
           </Button>
+          </>}
         </div>
       </div>
     </Container>

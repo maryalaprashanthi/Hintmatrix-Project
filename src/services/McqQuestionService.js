@@ -37,10 +37,10 @@ class McqQuestionService {
     });
   }
 
-  submit(userId, answers) {
+  submit(userId, answer) {
     return apiClient.post(
       `${BASE_URL}/submit`,
-      { userId, answers },
+      { userId, ...answer },
       { withCredentials: true },
     );
   }
