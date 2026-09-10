@@ -70,9 +70,12 @@ const ExamDropdownPage = ({ id, question: sourceQuestion }) => {
 
     const dropdownAttributes = await Promise.all(
       attributes.map(async (attribute) => {
+        // A dropdown question may have no rule-engine row for an attribute
+        // (the rules only drive the option list, never grading). A 404 there
+        // must not blow up the whole page - it just means no options yet.
         const ruleResponse = await RuleEngineService.getRuleEngineByAttributeId(
           attribute.attributeId,
-        );
+        ).catch(() => null);
 
         const rule = ruleResponse?.[0];
         const ruleConditions = getRuleConditions(rule);
