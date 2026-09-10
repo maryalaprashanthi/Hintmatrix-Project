@@ -1,0 +1,15 @@
+.mcq-answer-option .form-check-input:disabled ~ .form-check-label {
+  opacity: 1;
+}
+
+.mcq-answer-option.mcq-answer-correct {
+  background-color: #eaf7ef;
+  border-color: #198754 !important;
+  color: #146c43;
+}
+
+.mcq-answer-option.mcq-answer-incorrect {
+  background-color: #fcebec;
+  border-color: #dc3545 !important;
+  color: #b02a37;
+}
