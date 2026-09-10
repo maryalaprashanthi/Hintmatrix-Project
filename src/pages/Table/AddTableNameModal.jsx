@@ -79,10 +79,7 @@ function AddTableNameModal({ show, onClose, onSave, Inputname }) {
                type="text"
                placeholder="Enter Table Name"
                value={name}
-               onChange={(e) => {
-               const value = e.target.value.replace(/[^a-zA-Z ]/g, "");
-               setName(value);
-               }}
+               onChange={(e) => setName(e.target.value)}
               />
                 </div>
               </div>

@@ -8,6 +8,7 @@ import QuestionService from "../../services/QuestionService";
 import QuestionTypeService from "../../services/QuestionTypeService";
 import SubjectService from "../../services/SubjectService";
 import TableAttributeService from "../../services/TableAttributeService";
+import TableHeaderService from "../../services/TableHeaderService";
 import TopicService from "../../services/TopicService";
 import "./CreateAllQuestions.css";
 
@@ -45,8 +46,22 @@ const labelOf = (item, type) => {
 };
 
 const normalizeType = (value = "") => {
-  const normalized = String(value).trim().toUpperCase().replace(/[\s-]+/g, "_");
-  return normalized === "DRAGANDDROP" ? "DRAG_AND_DROP" : normalized;
+  let normalized = String(value).trim().toUpperCase().replace(/[\s-]+/g, "_");
+
+  if (normalized.startsWith("MCQ_")) {
+    normalized = normalized.slice(4);
+  }
+  if (normalized.endsWith("_QUESTION")) {
+    normalized = normalized.slice(0, -9);
+  }
+
+  const aliases = {
+    DRAGANDDROP: "DRAG_AND_DROP",
+    SINGLECHOICE: "SINGLE_CHOICE",
+    MULTIPLECHOICE: "MULTIPLE_CHOICE",
+  };
+
+  return aliases[normalized] ?? normalized;
 };
 
 const isMcqType = (type) =>
@@ -106,6 +121,7 @@ function CreateAllQuestions() {
   const [topics, setTopics] = useState([]);
   const [questionTypes, setQuestionTypes] = useState([]);
   const [tableAttributes, setTableAttributes] = useState([]);
+  const [tableHeaders, setTableHeaders] = useState([]);
 
   const [courseId, setCourseId] = useState("");
   const [subjectId, setSubjectId] = useState("");
@@ -135,6 +151,7 @@ function CreateAllQuestions() {
           TopicService.getAll(),
           QuestionTypeService.getAll(),
           TableAttributeService.getRuleAttributes(),
+          TableHeaderService.getAll(),
         ]);
         setCourses(Array.isArray(responses[0].data) ? responses[0].data : []);
         setSubjects(Array.isArray(responses[1].data) ? responses[1].data : []);
@@ -142,6 +159,7 @@ function CreateAllQuestions() {
         setTopics(Array.isArray(responses[3].data) ? responses[3].data : []);
         setQuestionTypes(Array.isArray(responses[4].data) ? responses[4].data : []);
         setTableAttributes(Array.isArray(responses[5].data) ? responses[5].data : []);
+        setTableHeaders(Array.isArray(responses[6].data) ? responses[6].data : []);
       } catch (error) {
         console.error("Failed to load question creation data:", error);
         setMessage({ type: "error", text: "Unable to load question form data." });
@@ -237,6 +255,18 @@ function CreateAllQuestions() {
     setFormError("");
   };
 
+  const headerIdForAttribute = (attributeId) => {
+    const attribute = tableAttributes.find(
+      (item) => String(idOf(item, "attribute")) === String(attributeId),
+    );
+    const headerName = attribute?.tableHeaderName ?? attribute?.table_header_name;
+    const header = tableHeaders.find(
+      (item) => String(item?.name ?? "").trim().toLowerCase() === String(headerName ?? "").trim().toLowerCase(),
+    );
+    const headerId = idOf(header, "header");
+    return headerId == null ? null : Number(headerId);
+  };
+
   const buildPayload = () => {
     const common = {
       courseId: Number(courseId),
@@ -263,7 +293,7 @@ function CreateAllQuestions() {
           const attributes = [];
           if (row.debitAttributeId) {
             attributes.push({
-              headerId: 1,
+              headerId: headerIdForAttribute(row.debitAttributeId),
               attributeId: Number(row.debitAttributeId),
               transaction: "Debit",
               amount: parseOptionalNumber(row.debitAmount),
@@ -272,7 +302,7 @@ function CreateAllQuestions() {
           }
           if (row.creditAttributeId) {
             attributes.push({
-              headerId: 3,
+              headerId: headerIdForAttribute(row.creditAttributeId),
               attributeId: Number(row.creditAttributeId),
               transaction: "Credit",
               amount: parseOptionalNumber(row.creditAmount),
@@ -282,7 +312,7 @@ function CreateAllQuestions() {
           return attributes;
         })
       : attributeRows.map((row) => ({
-          headerId: 1,
+          headerId: headerIdForAttribute(row.attributeId),
           attributeId: Number(row.attributeId),
           transaction: row.attributeId,
           amount: parseOptionalNumber(row.amount),
@@ -313,8 +343,15 @@ function CreateAllQuestions() {
       if (!ledgerRows.some((row) => row.debitAttributeId || row.creditAttributeId)) {
         errors.push("Add at least one debit or credit attribute.");
       }
+      if (ledgerRows.some((row) =>
+        (row.debitAttributeId && !headerIdForAttribute(row.debitAttributeId)) ||
+        (row.creditAttributeId && !headerIdForAttribute(row.creditAttributeId)))) {
+        errors.push("A selected transaction is not linked to a table header.");
+      }
     } else if (attributeRows.some((row) => !row.attributeId)) {
       errors.push("Select a transaction for every row.");
+    } else if (attributeRows.some((row) => !headerIdForAttribute(row.attributeId))) {
+      errors.push("A selected transaction is not linked to a table header.");
     }
 
     if (errors.length) {
@@ -372,6 +409,7 @@ function CreateAllQuestions() {
     if (!drafts.length) return;
     setSubmitting(true);
     const failed = [];
+    const failureMessages = [];
     let savedCount = 0;
 
     for (const draft of drafts) {
@@ -385,6 +423,12 @@ function CreateAllQuestions() {
       } catch (error) {
         console.error("Failed to submit question draft:", error);
         failed.push(draft);
+        const responseData = error?.response?.data;
+        failureMessages.push(
+          (typeof responseData === "string" ? responseData : responseData?.message) ||
+          error?.message ||
+          "Question could not be saved.",
+        );
       }
     }
 
@@ -392,7 +436,7 @@ function CreateAllQuestions() {
     setMessage({
       type: failed.length ? "error" : "success",
       text: failed.length
-        ? `${savedCount} saved; ${failed.length} failed and remain in preview.`
+        ? `${savedCount} saved; ${failed.length} failed and remain in preview. ${failureMessages[0]}`
         : `${savedCount} question${savedCount === 1 ? "" : "s"} submitted successfully.`,
     });
     setSubmitting(false);
