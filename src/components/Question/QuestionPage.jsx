@@ -118,10 +118,13 @@ const QuestionPage = () => {
 
   const [questionType, setQuestionType] = useState(null);
 
-  const isMcq = ["SINGLE_CHOICE", "MULTIPLE_CHOICE", "MCQ_SINGLE_CHOICE", "MCQ_MULTIPLE_CHOICE"].includes(questionType);
+  const isMcq = [
+    "SINGLE_CHOICE",
+    "MULTIPLE_CHOICE",
+    "MCQ_SINGLE_CHOICE",
+    "MCQ_MULTIPLE_CHOICE",
+  ].includes(questionType);
 
-  const [isLoading, setIsLoading] =
-    useState(true);
   const [isLoading, setIsLoading] = useState(true);
 
   const [matchingQuestion, setMatchingQuestion] = useState(null);
@@ -459,13 +462,8 @@ const QuestionPage = () => {
       setTimeLeft((previous) => (previous > 0 ? previous - 1 : 0));
     }, 1000);
 
-    return () =>
-      clearInterval(timer);
-  }, [
-    timeLeft,
-    testSubmitted,
-    isMcq,
-  ]);
+    return () => clearInterval(timer);
+  }, [timeLeft, testSubmitted, isMcq]);
 
   // ===========================================================
   // FORMAT TIMER
@@ -588,7 +586,13 @@ const QuestionPage = () => {
   }
 
   if (isMcq) {
-    return <McqQuestionView key={questionId} questionId={questionId} questionType={questionType} />;
+    return (
+      <McqQuestionView
+        key={questionId}
+        questionId={questionId}
+        questionType={questionType}
+      />
+    );
   }
 
   // ===========================================================
