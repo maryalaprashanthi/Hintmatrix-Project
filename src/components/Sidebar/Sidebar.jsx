@@ -93,9 +93,9 @@ export default function Sidebar({
     userRole,
   );
 
-  const canAccessExam = ["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"].includes(
-    userRole,
-  );
+  // const canAccessExam = ["SUPER_ADMIN", "BRANCH_ADMIN","GUEST","COLLEGE_ADMIN", "STUDENT"].includes(
+  //   userRole,
+  // );
 
   const canAccessSessions = ["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"].includes(
     userRole,
@@ -173,7 +173,9 @@ export default function Sidebar({
           {/* Subscription */}
 
           {canAccessAdminMenu && (
-            <div className={`subscription-menu ${subscriptionOpen ? "open" : ""}`}>
+            <div
+              className={`subscription-menu ${subscriptionOpen ? "open" : ""}`}
+            >
               <div
                 className={`menu-item ${subscriptionOpen ? "active" : ""}`}
                 onClick={() => setSubscriptionOpen((current) => !current)}
@@ -182,19 +184,36 @@ export default function Sidebar({
                   <FaCreditCard className="menu-icon" />
                   <span>Subscription</span>
                 </div>
-                {subscriptionOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
+                {subscriptionOpen ? (
+                  <MdKeyboardArrowUp />
+                ) : (
+                  <MdKeyboardArrowDown />
+                )}
               </div>
               {subscriptionOpen && (
                 <div className="submenu">
-                  <NavLink to="/subscriptions" end className={subMenuClass} onClick={closeSidebar}>
+                  <NavLink
+                    to="/subscriptions"
+                    end
+                    className={subMenuClass}
+                    onClick={closeSidebar}
+                  >
                     <FaCreditCard />
                     <span>Overview</span>
                   </NavLink>
-                  <NavLink to="/subscriptions/plans" className={subMenuClass} onClick={closeSidebar}>
+                  <NavLink
+                    to="/subscriptions/plans"
+                    className={subMenuClass}
+                    onClick={closeSidebar}
+                  >
                     <FaCreditCard />
                     <span>Manage Plans</span>
                   </NavLink>
-                  <NavLink to="/subscriptions/history" className={subMenuClass} onClick={closeSidebar}>
+                  <NavLink
+                    to="/subscriptions/history"
+                    className={subMenuClass}
+                    onClick={closeSidebar}
+                  >
                     <MdListAlt />
                     <span>Subscription History</span>
                   </NavLink>
@@ -498,18 +517,12 @@ export default function Sidebar({
 
           {/* Exam */}
 
-          {canAccessExam && (
-            <NavLink
-              to="/exam-hub"
-              className={menuClass}
-              onClick={closeSidebar}
-            >
-              <div className="menu-left">
-                <MdAssignment className="menu-icon" />
-                <span>Exam</span>
-              </div>
-            </NavLink>
-          )}
+          <NavLink to="/exam-hub" className={menuClass} onClick={closeSidebar}>
+            <div className="menu-left">
+              <MdAssignment className="menu-icon" />
+              <span>Exam</span>
+            </div>
+          </NavLink>
 
           {/* Performance */}
 

@@ -80,6 +80,7 @@ const examTypes = [
     button: "Start Mock Test",
     type: "purple",
     icon: <FaClock />,
+    route: "/mock-exams",
   },
   {
     title: "Previous Papers",
@@ -367,7 +368,7 @@ function ExamHub() {
                 <button
                   type="button"
                   className="exam-action"
-                  onClick={() => navigate(`/exams`)}
+                  onClick={() => navigate(exam.route ?? "/exams")}
                 >
                   <span>{exam.button}</span>
                   <FaArrowRight />
@@ -606,7 +607,7 @@ function ExamHub() {
             <span> 💪</span>
           </h2>
           <p>Take a mock test today and see how far you've come!</p>
-          <button type="button">
+          <button type="button" onClick={() => navigate("/mock-exams")}>
             Take a Mock Test
             <FaArrowRight />
           </button>

@@ -1,0 +1,217 @@
+/* 1a - the exam shell. Rail on the left, question in the middle, actions
+   pinned to the bottom of the question column so Previous/Next/Submit never
+   scroll away. */
+
+.shell {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100dvh;
+  background: var(--surface-app);
+}
+
+.shell:fullscreen {
+  width: 100vw;
+  height: 100dvh;
+  background: var(--surface-app);
+}
+
+.startShell {
+  overflow-y: auto;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.questionArea {
+  flex: 1;
+  min-height: 0;
+  padding: 22px 24px;
+  overflow-y: auto;
+}
+
+/* --- question header --- */
+.questionHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.questionIdentity {
+  display: flex;
+  gap: 12px;
+  min-width: 0;
+}
+
+.questionChip {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: var(--radius-sm);
+  background: var(--navy-100);
+  color: var(--navy-700);
+  font: 600 13px var(--font-mono);
+}
+
+.questionTitle {
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--ink-900);
+}
+
+.questionMeta {
+  margin-top: 3px;
+  font: 400 12.5px var(--font-ui);
+  color: var(--ink-500);
+}
+
+/* Reset and Mark for review are the same outlined control at two sizes. */
+.resetButton.resetButton,
+.markButton.markButton {
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--ink-300);
+  border-radius: var(--radius-sm);
+  color: var(--ink-600);
+  cursor: pointer;
+  transition: var(--transition-control);
+}
+
+.resetButton.resetButton {
+  gap: 6px;
+  height: 32px;
+  flex: none;
+  padding: 0 11px;
+  font: 500 12px var(--font-ui);
+}
+
+.resetButton.resetButton:hover {
+  background: var(--surface-hover);
+  border-color: var(--ink-500);
+}
+
+.status {
+  padding: 8px 0;
+  font: 400 13px var(--font-ui);
+  color: var(--ink-500);
+}
+
+/* --- footer actions --- */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 24px;
+  background: var(--paper-050);
+  border-top: 1px solid var(--ink-200);
+}
+
+.markButton.markButton {
+  gap: 8px;
+  height: 36px;
+  padding: 0 13px;
+  font: 500 12.5px var(--font-ui);
+}
+
+.markButton.markButton:hover {
+  border-color: var(--ink-500);
+}
+
+.markButtonActive.markButtonActive {
+  background: var(--gold-100);
+  border-color: var(--gold-200);
+  color: var(--gold-700);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.previous.previous,
+.next.next,
+.submit.submit {
+  height: 38px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition-control);
+}
+
+.previous.previous,
+.next.next {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.next.next,
+.submit.submit {
+  padding: 0 17px;
+  border: 0;
+  color: #fff;
+  font: 600 13px var(--font-ui);
+}
+
+.previous.previous {
+  padding: 0 15px;
+  background: var(--paper-000);
+  border: 1px solid var(--ink-300);
+  color: var(--ink-700);
+  font: 500 13px var(--font-ui);
+}
+
+.previous.previous:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.next.next {
+  background: var(--action-primary);
+}
+
+.next.next:hover:not(:disabled) {
+  background: var(--action-primary-hover);
+}
+
+.previous.previous:disabled,
+.next.next:disabled {
+  background: var(--action-disabled);
+  border-color: var(--ink-200);
+  color: var(--ink-400);
+  cursor: not-allowed;
+}
+
+.footerDivider {
+  width: 1px;
+  height: 24px;
+  background: var(--ink-200);
+}
+
+.submit.submit {
+  background: #16a34a;
+}
+
+.submit.submit:hover {
+  background: #15803d;
+}

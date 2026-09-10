@@ -62,8 +62,10 @@ import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import { CONTENT_MANAGER_ROLES } from "./utils/roles";
 import Unauthorized from "./pages/Unauthorized/Unauthorized";
 import ExamPage from "./components/Exam/ExamPage";
+import MockExamPage from "./components/MockExam/MockExamPage";
 import ExamHub from "./pages/ExamHub/ExamHub";
 import ExamCatalog from "./pages/ExamCatalog/ExamCatalog";
+import MockExamCatalog from "./pages/MockExamCatalog/MockExamCatalog";
 import ExamPaper from "./pages/ExamPaper/ExamPaper";
 import CreateMcq from "./components/Mcq_Questions/CreateMcq";
 import McqPractice from "./components/Mcq_Questions/McqPractice";
@@ -389,6 +391,7 @@ function App() {
         <Route path="/course-subscribe" element={<CourseSubscribe />} />
         <Route path="/exam-hub" element={<ExamHub />} />
         <Route path="/exams" element={<ExamCatalog />} />
+        <Route path="/mock-exams" element={<MockExamCatalog />} />
         <Route
           path="/exam-paper"
           element={
@@ -399,6 +402,14 @@ function App() {
         />
         <Route
           path="/exam-paper/:examId"
+          element={
+            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+              <ExamPaper />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mock-exam-paper/:examId"
           element={
             <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
               <ExamPaper />
@@ -424,6 +435,7 @@ function App() {
         />
       </Route>
       <Route path="/exams/:examId" element={<ExamPage />} />
+      <Route path="/mock-exams/:examId" element={<MockExamPage />} />
     </Routes>
   );
 }
