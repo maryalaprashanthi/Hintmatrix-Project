@@ -106,6 +106,7 @@ const QuestionTable = () => {
                     key={obj.id}
                     type={obj.type}
                     status={obj.status}
+                    wrongAttempts={obj.wrongAttempts}
                   >
                     <span>{obj.name}</span>
                     <span className="fw-semibold">
@@ -133,6 +134,7 @@ const QuestionTable = () => {
                     key={obj.id}
                     type={obj.type}
                     status={obj.status}
+                    wrongAttempts={obj.wrongAttempts}
                   >
                     <span>{obj.name}</span>
                     <span className="fw-semibold">
