@@ -382,7 +382,7 @@ function Courses() {
                     <FaBookOpen />
 
                     <span>
-                      {course.activeRow ? "View Chapters" : "Inactive"}
+                      {course.activeRow ? "View Subjects" : "Inactive"}
                     </span>
                   </button>
 

@@ -168,6 +168,12 @@
     transform 0.15s ease;
 }
 
+.drag-action-anchor {
+  display: block;
+  width: 100%;
+  position: relative;
+}
+
 .action-menu-item:hover {
   background: #f5f7fa;
 }

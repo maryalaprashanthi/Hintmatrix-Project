@@ -41,6 +41,7 @@ const useQuestionStore = create((set, get) => ({
             type:
               attribute.headerName === "Debit Particulars" ? "debit" : "credit",
             status: "pending",
+            wrongAttempts: 0,
             answered: [],
             actualAnswers: [],
             totalAnswers: 1,
@@ -92,7 +93,11 @@ const useQuestionStore = create((set, get) => ({
     set((state) => {
       const nextQuestions = state.questions.map((item) => {
         if (item.id === id) {
-          return { ...item, status: "wrong" };
+          return {
+            ...item,
+            status: "wrong",
+            wrongAttempts: (item.wrongAttempts || 0) + 1,
+          };
         } else {
           return item;
         }

@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useDraggable } from "@dnd-kit/react";
+import { useEffect, useState } from "react";
 import "./Draggable.css";
 import { VscError } from "react-icons/vsc";
 import { OverlayTrigger, Popover } from "react-bootstrap";
@@ -46,8 +47,22 @@ const PendingIcon = () => (
   </svg>
 );
 
-export default function Draggable({ id, children, type, status = "pending" }) {
+export default function Draggable({
+  id,
+  children,
+  type,
+  status = "pending",
+  wrongAttempts = 0,
+}) {
   const { questionId } = useParams();
+  const [showActions, setShowActions] = useState(false);
+
+  useEffect(() => {
+    if (status === "wrong") {
+      setShowActions(true);
+    }
+  }, [status, wrongAttempts]);
+
   const solved = status === "solved";
   console.log("My status is ", status);
   const { ref } = useDraggable({
@@ -69,6 +84,11 @@ export default function Draggable({ id, children, type, status = "pending" }) {
       className="drag-btn"
       disabled={solved}
       aria-disabled={solved}
+      onTouchEnd={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setShowActions(true);
+      }}
     >
       <span className="drag-btn-content">{children}</span>
 
@@ -175,7 +195,9 @@ export default function Draggable({ id, children, type, status = "pending" }) {
           <OverlayTrigger
             key={id}
             trigger="click"
-            placement="bottom"
+            show={showActions}
+            onToggle={setShowActions}
+            placement="auto"
             rootClose
             container={document.body}
             overlay={
@@ -228,7 +250,7 @@ export default function Draggable({ id, children, type, status = "pending" }) {
               </Popover>
             }
           >
-            {dragButton}
+            <span className="drag-action-anchor">{dragButton}</span>
           </OverlayTrigger>
         ) : (
           dragButton
