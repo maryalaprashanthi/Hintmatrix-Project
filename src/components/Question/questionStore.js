@@ -8,7 +8,7 @@ const useQuestionStore = create((set, get) => ({
   score: 0,
   setCurrentScore: async (id) => {
     const score = await QuestionAnswerService.getOverallMarks(id);
-    set({ score });
+    await set({ score });
   },
   setQuestions: async (apiQuestions) => {
     const formattedQuestions = [];

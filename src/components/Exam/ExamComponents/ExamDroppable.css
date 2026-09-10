@@ -47,24 +47,25 @@
   padding: clamp(8px, 1.7vw, 10px) clamp(8px, 2vw, 12px);
 }
 
-/* Particulars column: allowed to wrap onto a second line */
+/* Particulars column: allowed to wrap onto a second line. The remove (x)
+   control lives here for every placed row - always the first column, never
+   drifting into an amount column. */
 .exam-droppable .particulars-cell {
+  position: relative;
   white-space: normal;
   overflow-wrap: break-word;
   word-break: break-word;
 }
 
-/* Amount columns: keep every number on a single line, leave room for the
-   remove control that appears on hover. */
+.exam-droppable .placed-row .particulars-cell {
+  padding-right: 24px;
+}
+
+/* Amount columns: keep every number on a single line. */
 .exam-droppable .amount-cell {
-  position: relative;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.exam-droppable .placed-row .amount-cell {
-  padding-right: 22px;
 }
 
 /* Debit / left side theme (blue) */
@@ -87,7 +88,11 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  /* stays hit-testable so dnd-kit's pointer collision detection can see it */
+  /* dnd-kit resolves drop targets from each droppable's registered geometry,
+     not from CSS hit-testing, so the overlay must NOT swallow pointer events -
+     otherwise the row underneath never gets :hover and its remove (x) control
+     can't be reached. */
+  pointer-events: none;
   background-color: transparent;
   border-radius: 6px;
   transition:
@@ -119,21 +124,24 @@
 }
 
 /* Exam-only: a placed row carries a remove control instead of a
-   correct/wrong state. The control sits above the drop overlays. */
+   correct/wrong state. Hidden until the row is hovered, pinned to the right
+   of the first (Particulars) column, above the drop overlays. */
 .exam-droppable .remove-row-btn {
   display: none;
+  align-items: center;
+  justify-content: center;
   position: absolute;
-  right: 6px;
+  right: 4px;
   top: 50%;
   transform: translateY(-50%);
-  width: auto;
-  height: auto;
+  width: 18px;
+  height: 18px;
   line-height: 1;
   padding: 0;
   border: none;
-  border-radius: 0;
+  border-radius: 4px;
   background: transparent;
-  color: #ef4444;
+  color: #dc2626;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
@@ -141,10 +149,11 @@
 }
 
 .exam-droppable .placed-row:hover .remove-row-btn {
-  display: block;
+  display: inline-flex;
 }
 
 .exam-droppable .remove-row-btn:hover {
+  background: #fee2e2;
   color: #b91c1c;
 }
 

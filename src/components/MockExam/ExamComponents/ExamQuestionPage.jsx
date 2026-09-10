@@ -8,6 +8,7 @@ import useExamSessionStore from "./examSessionStore";
 import ExamJournalPage from "./ExamJournalPage";
 import ExamDropdownPage from "./ExamDropdownPage";
 import QuestionService from "../../../services/QuestionService";
+import { questionTypeOf } from "./questionTypeOf";
 import { data } from "./SampleData";
 
 // Exam version of QuestionPage: renders the question but never reveals
@@ -39,7 +40,7 @@ const ExamQuestionPage = ({ id, question: sourceQuestion }) => {
     const questionData =
       sourceQuestion ??
       (await QuestionService.getQuestionById(questionId)).data;
-    const type = questionData.questionType;
+    const type = questionTypeOf(questionData);
 
     cacheQuestionType(questionId, type);
 
@@ -67,7 +68,7 @@ const ExamQuestionPage = ({ id, question: sourceQuestion }) => {
   // this reloads the question from scratch.
   useEffect(() => {
     if (cachedType) {
-      setQuestionType(cachedType);
+      setQuestionType(questionTypeOf(cachedType));
       return;
     }
 

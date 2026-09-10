@@ -19,6 +19,8 @@
 // then by questionAttributeId). DRAG_AND_DROP placements live in the separate
 // examQuestionStore, also keyed by questionId.
 
+import { questionTypeOf } from "./questionTypeOf";
+
 const HEADER_BY_SIDE = {
   Debit: "Debit Particulars",
   Credit: "Credit Particulars",
@@ -138,10 +140,13 @@ export const buildSubmission = ({
   // backend can still score it (as a miss) instead of skipping it.
   const answers = questions.map(({ id, question }) => {
     const entry = sessionById[id];
+    // The question_type table stores "Journal" / "DropDown" / "Drag And Drop",
+    // so branch on the normalised token - a raw "Journal" would miss both the
+    // JOURNAL and DROPDOWN cases and submit an empty answer array.
     const questionType =
-      question?.questionType ??
-      entry?.questionType ??
-      entry?.question?.questionType;
+      questionTypeOf(question) ??
+      questionTypeOf(entry?.questionType) ??
+      questionTypeOf(entry?.question);
 
     let answered = [];
     if (questionType === "JOURNAL") {

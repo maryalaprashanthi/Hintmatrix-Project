@@ -63,11 +63,11 @@ const ExamJournalPage = ({ id, question: sourceQuestion }) => {
 
     const journalAttributes = await Promise.all(
       attributes.map(async (attribute) => {
+        // A missing rule-engine row (404) for an attribute must not blow up the
+        // whole page - the rules only build the ledger-account options here.
         const ruleResponse = await RuleEngineService.getRuleEngineByAttributeId(
           attribute.attributeId,
-        );
-
-        console.log("This is response I am getting: 2121", ruleResponse);
+        ).catch(() => null);
 
         const rule = ruleResponse?.[0];
         const tables = [];
@@ -136,13 +136,24 @@ const ExamJournalPage = ({ id, question: sourceQuestion }) => {
 
   const updateAnswered = (updater) => setAnsweredData(questionId, updater);
 
+  // Dropping the last real line takes the whole transaction out, so the
+  // "(Being ...)" narration never lingers on its own with no way to remove it.
   const handleRemoveEntry = (attributeId, index) => {
     updateAnswered((prev) => {
-      const rows = prev[attributeId] || [];
-      return {
-        ...prev,
-        [attributeId]: rows.filter((_, i) => i !== index),
-      };
+      const rows = (prev[attributeId] || []).filter((_, i) => i !== index);
+      const hasPlacedRows = rows.some(
+        (entry) => !entry.particulars?.startsWith("(Being"),
+      );
+
+      const next = { ...prev };
+
+      if (hasPlacedRows) {
+        next[attributeId] = rows;
+      } else {
+        delete next[attributeId];
+      }
+
+      return next;
     });
   };
 

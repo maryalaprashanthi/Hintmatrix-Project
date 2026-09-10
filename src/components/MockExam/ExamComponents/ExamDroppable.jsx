@@ -82,40 +82,26 @@ const ExamDroppable = ({
           <tbody>
             {data.map((obj) => (
               <tr key={obj.id} className="placed-row">
-                <td className="particulars-cell">{obj.name}</td>
-                <td className="text-end amount-cell">
-                  {obj.operation === "add" ? (
-                    <>
-                      {Number(obj.amount).toLocaleString("en-IN")}
-                      <button
-                        type="button"
-                        className="remove-row-btn"
-                        aria-label={`Remove ${obj.name}`}
-                        onClick={() => removeAnswer(obj.id)}
-                      >
-                        ×
-                      </button>
-                    </>
-                  ) : (
-                    ""
-                  )}
+                <td className="particulars-cell">
+                  {obj.name}
+                  <button
+                    type="button"
+                    className="remove-row-btn"
+                    aria-label={`Remove ${obj.name}`}
+                    onClick={() => removeAnswer(obj.id)}
+                  >
+                    ×
+                  </button>
                 </td>
                 <td className="text-end amount-cell">
-                  {obj.operation === "less" ? (
-                    <>
-                      -{Number(obj.amount).toLocaleString("en-IN")}
-                      <button
-                        type="button"
-                        className="remove-row-btn"
-                        aria-label={`Remove ${obj.name}`}
-                        onClick={() => removeAnswer(obj.id)}
-                      >
-                        ×
-                      </button>
-                    </>
-                  ) : (
-                    " "
-                  )}
+                  {obj.operation === "add"
+                    ? Number(obj.amount).toLocaleString("en-IN")
+                    : ""}
+                </td>
+                <td className="text-end amount-cell">
+                  {obj.operation === "less"
+                    ? `-${Number(obj.amount).toLocaleString("en-IN")}`
+                    : " "}
                 </td>
               </tr>
             ))}
