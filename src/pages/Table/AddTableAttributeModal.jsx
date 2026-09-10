@@ -109,17 +109,12 @@ function AddTableAttributeModal({ show, onClose, onSave, initialData }) {
                     type="text"
                     placeholder="Enter Attribute Name"
                     value={formData.name}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(
-                        /[^a-zA-Z0-9 ]/g,
-                        "",
-                      );
-
+                    onChange={(e) =>
                       setFormData({
                         ...formData,
-                        name: value,
-                      });
-                    }}
+                        name: e.target.value,
+                      })
+                    }
                   />
                 </div>
               </div>

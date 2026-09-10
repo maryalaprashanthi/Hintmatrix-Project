@@ -223,13 +223,7 @@ function ChapterForm({
               type="text"
               placeholder="Enter Chapter Name"
               value={chapterName}
-              onChange={(e) => {
-              const value = e.target.value;
-
-              if (/^[A-Za-z\s]*$/.test(value)) {
-              setChapterName(value);
-             }
-            }}
+              onChange={(e) => setChapterName(e.target.value)}
           />
          </div>
        </div>
