@@ -38,7 +38,6 @@ const getQuestionType = (question) => {
 
   if (typeof type === "string") {
     const normalizedType = type.trim().toUpperCase().replace(/\s+/g, "_");
-    const normalizedType = type.trim().toUpperCase().replace(/\s+/g, "_");
 
     const normalizedQuestionType = normalizedType.replace(/-/g, "_");
 
@@ -118,7 +117,6 @@ const QuestionPage = () => {
   // ===========================================================
 
   const [questionType, setQuestionType] = useState(null);
-  const [questionType, setQuestionType] = useState(null);
 
   const isMcq = [
     "SINGLE_CHOICE",
@@ -128,35 +126,33 @@ const QuestionPage = () => {
   ].includes(questionType);
 
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
+  
 
   const [matchingQuestion, setMatchingQuestion] = useState(null);
-  const [matchingQuestion, setMatchingQuestion] = useState(null);
-
+  
   // All questions for navigation
   const [testQuestions, setTestQuestions] = useState([]);
-  const [testQuestions, setTestQuestions] = useState([]);
+ 
 
   // Current question index
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  
 
   // Completed questions
   const [completedQuestions, setCompletedQuestions] = useState({});
-  const [completedQuestions, setCompletedQuestions] = useState({});
+ 
 
   // Timer - 30 minutes
   const [timeLeft, setTimeLeft] = useState(30 * 60);
-  const [timeLeft, setTimeLeft] = useState(30 * 60);
+ 
 
   const [testSubmitted, setTestSubmitted] = useState(false);
-  const [testSubmitted, setTestSubmitted] = useState(false);
+  
 
   // ===========================================================
   // TOTAL QUESTIONS
   // ===========================================================
 
-  const totalQuestions = testQuestions.length > 0 ? testQuestions.length : 20;
   const totalQuestions = testQuestions.length > 0 ? testQuestions.length : 20;
 
   // ===========================================================
@@ -174,7 +170,7 @@ const QuestionPage = () => {
 
   const completedCount =
     Object.values(completedQuestions).filter(Boolean).length;
-    Object.values(completedQuestions).filter(Boolean).length;
+  
 
   // ===========================================================
   // PROGRESS
@@ -182,7 +178,6 @@ const QuestionPage = () => {
 
   const progressPercentage =
     totalQuestions > 0
-      ? Math.round((completedCount / totalQuestions) * 100)
       ? Math.round((completedCount / totalQuestions) * 100)
       : 0;
 
@@ -196,26 +191,26 @@ const QuestionPage = () => {
 
       try {
         const response = await loadQuestions(questionId);
-        const response = await loadQuestions(questionId);
+   
 
         if (!response?.data) {
           return;
         }
 
         let type = getQuestionType(response.data);
-        let type = getQuestionType(response.data);
+      
 
         const questionTypeId =
           response.data?.questionTypeId ?? response.data?.question_type_id;
-          response.data?.questionTypeId ?? response.data?.question_type_id;
+         
 
         if (!type && questionTypeId) {
           const typeResponse =
             await QuestionTypeService.getById(questionTypeId);
-            await QuestionTypeService.getById(questionTypeId);
+         
 
           type = getQuestionType(typeResponse?.data);
-          type = getQuestionType(typeResponse?.data);
+        
         }
 
         let questionData = response.data;
@@ -228,9 +223,7 @@ const QuestionPage = () => {
             const matchingResponse = await MatchingQuestionService.getById(
               questionData.questionId ?? questionId,
             );
-            const matchingResponse = await MatchingQuestionService.getById(
-              questionData.questionId ?? questionId,
-            );
+          
 
             questionData = {
               ...questionData,
@@ -239,7 +232,7 @@ const QuestionPage = () => {
             setMatchingQuestion(questionData);
           } catch (matchingError) {
             console.error("Failed to load matching pairs:", matchingError);
-            console.error("Failed to load matching pairs:", matchingError);
+          
           }
         }
 
@@ -251,9 +244,7 @@ const QuestionPage = () => {
             const fillBlankResponse = await FillInBlankQuestionService.getById(
               questionData.questionId ?? questionId,
             );
-            const fillBlankResponse = await FillInBlankQuestionService.getById(
-              questionData.questionId ?? questionId,
-            );
+          
 
             questionData = {
               ...questionData,
@@ -262,7 +253,6 @@ const QuestionPage = () => {
           } catch (fillBlankError) {
             console.error(
               "Failed to load fill-in-the-blanks data:",
-              fillBlankError,
               fillBlankError,
             );
           }
@@ -275,19 +265,19 @@ const QuestionPage = () => {
         // -----------------------------------------------------
 
         await loadTestQuestions(questionData);
-        await loadTestQuestions(questionData);
+     
 
         // -----------------------------------------------------
         // Restore drag/drop answers
         // -----------------------------------------------------
 
         if (type === "DRAG_AND_DROP") {
-        if (type === "DRAG_AND_DROP") {
+
           await loadAnsweredQuestions();
         }
       } catch (error) {
         console.error("Failed to initialize question:", error);
-        console.error("Failed to initialize question:", error);
+     
       } finally {
         setIsLoading(false);
       }
@@ -303,32 +293,29 @@ const QuestionPage = () => {
   const loadQuestions = async (qId) => {
     try {
       const response = await QuestionService.getQuestionById(qId || questionId);
-      const response = await QuestionService.getQuestionById(qId || questionId);
+     
 
-      const allStrings = data.flatMap((obj) =>
-        obj.headers.map((header) => `${obj.name}-${header}`),
       const allStrings = data.flatMap((obj) =>
         obj.headers.map((header) => `${obj.name}-${header}`),
       );
 
       console.log("QUESTION RESPONSE:", response.data);
-      console.log("QUESTION RESPONSE:", response.data);
+  
 
       console.log("QUESTION PAIRS:", response.data?.pairs);
-      console.log("QUESTION PAIRS:", response.data?.pairs);
+      
 
       await setQuestions([response.data]);
-      await setQuestions([response.data]);
+
 
       setMatchingQuestion(response.data);
-      setMatchingQuestion(response.data);
 
-      setTableData(allStrings);
+
       setTableData(allStrings);
 
       return response;
     } catch (error) {
-      console.error("Failed to load question:", error);
+  
       console.error("Failed to load question:", error);
 
       return null;
@@ -340,21 +327,18 @@ const QuestionPage = () => {
   // ===========================================================
 
   const loadTestQuestions = async (currentQuestionData) => {
-  const loadTestQuestions = async (currentQuestionData) => {
     try {
       const courseId = currentQuestionData?.courseId;
-      const courseId = currentQuestionData?.courseId;
+     
 
-      const chapterId = currentQuestionData?.chapterId;
       const chapterId = currentQuestionData?.chapterId;
 
       const topicId =
         currentQuestionData?.topicId ??
-        currentQuestionData?.topic_id ??
+    
         currentQuestionData?.categoryId;
 
-      if (!courseId || !chapterId || !topicId) {
-        setTestQuestions([currentQuestionData]);
+  
       if (!courseId || !chapterId || !topicId) {
         setTestQuestions([currentQuestionData]);
 
@@ -363,20 +347,14 @@ const QuestionPage = () => {
         return;
       }
 
-      const response = await QuestionService.getQuestionsByMapping(
-        courseId,
-        chapterId,
-        topicId,
-      );
+     
       const response = await QuestionService.getQuestionsByMapping(
         courseId,
         chapterId,
         topicId,
       );
 
-      const result = Array.isArray(response?.data)
-        ? response.data
-        : Array.isArray(response)
+     
       const result = Array.isArray(response?.data)
         ? response.data
         : Array.isArray(response)
@@ -387,9 +365,7 @@ const QuestionPage = () => {
       // Remove inactive questions if activeRow exists
       // -------------------------------------------------------
 
-      const activeQuestions = result.filter(
-        (question) => question?.activeRow !== false,
-      );
+   
       const activeQuestions = result.filter(
         (question) => question?.activeRow !== false,
       );
@@ -399,11 +375,7 @@ const QuestionPage = () => {
       // add it.
       // -------------------------------------------------------
 
-      const containsCurrent = activeQuestions.some(
-        (question) =>
-          Number(question.questionId) ===
-          Number(currentQuestionData.questionId),
-      );
+   
       const containsCurrent = activeQuestions.some(
         (question) =>
           Number(question.questionId) ===
@@ -411,11 +383,11 @@ const QuestionPage = () => {
       );
 
       let finalQuestions = activeQuestions;
-      let finalQuestions = activeQuestions;
+      
 
       if (!containsCurrent) {
         finalQuestions = [currentQuestionData, ...activeQuestions];
-        finalQuestions = [currentQuestionData, ...activeQuestions];
+       
       }
 
       // -------------------------------------------------------
@@ -423,20 +395,14 @@ const QuestionPage = () => {
       // -------------------------------------------------------
 
       finalQuestions = finalQuestions.slice(0, 20);
-      finalQuestions = finalQuestions.slice(0, 20);
-
-      setTestQuestions(finalQuestions);
+      
       setTestQuestions(finalQuestions);
 
       // -------------------------------------------------------
       // Find current question
       // -------------------------------------------------------
 
-      const currentIndex = finalQuestions.findIndex(
-        (question) =>
-          Number(question.questionId) ===
-          Number(currentQuestionData.questionId),
-      );
+     
       const currentIndex = finalQuestions.findIndex(
         (question) =>
           Number(question.questionId) ===
@@ -444,15 +410,11 @@ const QuestionPage = () => {
       );
 
       setCurrentQuestionIndex(currentIndex >= 0 ? currentIndex : 0);
-      setCurrentQuestionIndex(currentIndex >= 0 ? currentIndex : 0);
-
-      console.log("TEST QUESTIONS:", finalQuestions);
+     
       console.log("TEST QUESTIONS:", finalQuestions);
     } catch (error) {
       console.error("Failed to load test questions:", error);
-      console.error("Failed to load test questions:", error);
-
-      setTestQuestions([currentQuestionData]);
+     
       setTestQuestions([currentQuestionData]);
 
       setCurrentQuestionIndex(0);
@@ -466,23 +428,14 @@ const QuestionPage = () => {
   const loadAnsweredQuestions = async () => {
     const correctAnswers =
       await QuestionAnswerService.getAnswersByQuestionId(questionId);
-  const loadAnsweredQuestions = async () => {
-    const correctAnswers =
-      await QuestionAnswerService.getAnswersByQuestionId(questionId);
 
-    console.log("Completed data ", correctAnswers);
     console.log("Completed data ", correctAnswers);
 
     const savedAnswers = Array.isArray(correctAnswers) ? correctAnswers : [];
-    const savedAnswers = Array.isArray(correctAnswers) ? correctAnswers : [];
-
-    if (savedAnswers.length === 0) {
-      console.warn("No saved answers to restore:", correctAnswers);
+   
     if (savedAnswers.length === 0) {
       console.warn("No saved answers to restore:", correctAnswers);
 
-      return;
-    }
       return;
     }
 
@@ -490,56 +443,29 @@ const QuestionPage = () => {
       if (!answer) {
         return map;
       }
-    const answerMap = savedAnswers.reduce((map, answer) => {
-      if (!answer) {
-        return map;
-      }
 
-      const entries = (map[answer.attributeId] = map[answer.attributeId] || []);
       const entries = (map[answer.attributeId] = map[answer.attributeId] || []);
 
       entries.push({
         totalAnswers: answer.totalAnswers,
-      entries.push({
-        totalAnswers: answer.totalAnswers,
 
-        targetId: `${answer.tableName}-${answer.headerName}-${answer.arithmetic}`,
         targetId: `${answer.tableName}-${answer.headerName}-${answer.arithmetic}`,
 
         conditionId: answer.conditionId,
-        conditionId: answer.conditionId,
 
-        pairAttributeId: answer.pairAttributeId,
-      });
         pairAttributeId: answer.pairAttributeId,
       });
 
       return map;
     }, {});
-      return map;
-    }, {});
 
-    console.log("I have data in answerMap: ", answerMap);
     console.log("I have data in answerMap: ", answerMap);
 
     for (const [sourceId, answers] of Object.entries(answerMap)) {
       const attributeId = Number(sourceId);
-    for (const [sourceId, answers] of Object.entries(answerMap)) {
-      const attributeId = Number(sourceId);
 
       await setTotalAnswers(attributeId, answers[0].totalAnswers);
-      await setTotalAnswers(attributeId, answers[0].totalAnswers);
 
-      for (const obj of answers) {
-        await moveQuestion(
-          attributeId,
-          obj.targetId,
-          obj.conditionId,
-          obj.pairAttributeId,
-        );
-      }
-    }
-  };
       for (const obj of answers) {
         await moveQuestion(
           attributeId,
@@ -568,9 +494,6 @@ const QuestionPage = () => {
     const timer = setInterval(() => {
       setTimeLeft((previous) => (previous > 0 ? previous - 1 : 0));
     }, 1000);
-    const timer = setInterval(() => {
-      setTimeLeft((previous) => (previous > 0 ? previous - 1 : 0));
-    }, 1000);
 
     return () => clearInterval(timer);
   }, [timeLeft, testSubmitted, isMcq]);
@@ -581,17 +504,9 @@ const QuestionPage = () => {
 
   const formattedTime = useMemo(() => {
     const minutes = Math.floor(timeLeft / 60);
-  const formattedTime = useMemo(() => {
-    const minutes = Math.floor(timeLeft / 60);
 
     const seconds = timeLeft % 60;
-    const seconds = timeLeft % 60;
 
-    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
-      2,
-      "0",
-    )}`;
-  }, [timeLeft]);
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
       2,
       "0",
@@ -607,17 +522,11 @@ const QuestionPage = () => {
       ...previous,
       [completedQuestionId]: true,
     }));
-  const handleQuestionCompleted = (completedQuestionId, questionScore) => {
-    setCompletedQuestions((previous) => ({
-      ...previous,
-      [completedQuestionId]: true,
-    }));
 
     console.log(
       "Completed question:",
       completedQuestionId,
       "Score:",
-      questionScore,
       questionScore,
     );
   };
@@ -628,20 +537,15 @@ const QuestionPage = () => {
 
   const handleSelectQuestion = (index) => {
     if (index < 0 || index >= testQuestions.length) {
-  const handleSelectQuestion = (index) => {
-    if (index < 0 || index >= testQuestions.length) {
       return;
     }
 
     setCurrentQuestionIndex(index);
 
     const selected = testQuestions[index];
-    const selected = testQuestions[index];
 
     setMatchingQuestion(selected);
-    setMatchingQuestion(selected);
 
-    setQuestionType(getQuestionType(selected));
     setQuestionType(getQuestionType(selected));
 
     setCurrentScore(0);
@@ -654,8 +558,6 @@ const QuestionPage = () => {
   const handleNextQuestion = () => {
     if (currentQuestionIndex < testQuestions.length - 1) {
       handleSelectQuestion(currentQuestionIndex + 1);
-    if (currentQuestionIndex < testQuestions.length - 1) {
-      handleSelectQuestion(currentQuestionIndex + 1);
     }
   };
 
@@ -664,8 +566,6 @@ const QuestionPage = () => {
   // ===========================================================
 
   const handlePreviousQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      handleSelectQuestion(currentQuestionIndex - 1);
     if (currentQuestionIndex > 0) {
       handleSelectQuestion(currentQuestionIndex - 1);
     }
@@ -679,7 +579,6 @@ const QuestionPage = () => {
     setTestSubmitted(true);
 
     alert(`Test submitted.\nCompleted: ${completedCount} / ${totalQuestions}`);
-    alert(`Test submitted.\nCompleted: ${completedCount} / ${totalQuestions}`);
   };
 
   // ===========================================================
@@ -687,7 +586,6 @@ const QuestionPage = () => {
   // ===========================================================
 
   if (isLoading) {
-    return <div className="question-page-loading">Loading question...</div>;
     return <div className="question-page-loading">Loading question...</div>;
   }
 
@@ -700,14 +598,10 @@ const QuestionPage = () => {
       <div className="test-completed-screen">
         <div className="test-completed-card">
           <div className="completed-icon">✓</div>
-          <div className="completed-icon">✓</div>
 
-          <h2>Test Submitted</h2>
           <h2>Test Submitted</h2>
 
           <p>
-            You completed <strong>{completedCount}</strong> out of{" "}
-            <strong>{totalQuestions}</strong> questions.
             You completed <strong>{completedCount}</strong> out of{" "}
             <strong>{totalQuestions}</strong> questions.
           </p>
@@ -720,7 +614,6 @@ const QuestionPage = () => {
   // JOURNAL
   // ===========================================================
 
-  if (questionType === "JOURNAL") {
   if (questionType === "JOURNAL") {
     return <JournalPage />;
   }
@@ -739,7 +632,6 @@ const QuestionPage = () => {
   // DROPDOWN
   // ===========================================================
 
-  if (questionType === "DROPDOWN") {
   if (questionType === "DROPDOWN") {
     return <DropdownPage />;
   }
@@ -767,19 +659,8 @@ const QuestionPage = () => {
   // ===========================================================
 
   if (questionType === "MATCH_THE_FOLLOWING") {
-  if (questionType === "MATCH_THE_FOLLOWING") {
     return (
       <MatchingQuestionView
-        question={currentQuestion || matchingQuestion}
-        questionNumber={currentQuestionIndex + 1}
-        totalQuestions={totalQuestions}
-        completedCount={completedCount}
-        questions={testQuestions}
-        completedQuestions={completedQuestions}
-        onCompleted={handleQuestionCompleted}
-        onQuestionSelect={handleSelectQuestion}
-        onNext={handleNextQuestion}
-        onPrevious={handlePreviousQuestion}
         question={currentQuestion || matchingQuestion}
         questionNumber={currentQuestionIndex + 1}
         totalQuestions={totalQuestions}
@@ -800,8 +681,6 @@ const QuestionPage = () => {
 
   if (questionType !== "DRAG_AND_DROP") {
     return <div>Unsupported question type.</div>;
-  if (questionType !== "DRAG_AND_DROP") {
-    return <div>Unsupported question type.</div>;
   }
 
   // ===========================================================
@@ -816,22 +695,17 @@ const QuestionPage = () => {
         }
 
         const sourceId = Event.operation.source.id;
-        const sourceId = Event.operation.source.id;
 
-        const targetId = Event.operation.target?.id;
         const targetId = Event.operation.target?.id;
 
         if (targetId == null) {
-          console.log("I did nothing");
           console.log("I did nothing");
 
           return;
         }
 
         console.log(`I got dropped into ${targetId}`);
-        console.log(`I got dropped into ${targetId}`);
 
-        const myQuestion = questions.find((q) => q.id == sourceId);
         const myQuestion = questions.find((q) => q.id == sourceId);
 
         if (!myQuestion) {
@@ -841,42 +715,31 @@ const QuestionPage = () => {
         for (const cur of myQuestion.answered) {
           if (cur === targetId) {
             console.log("This was already added");
-          if (cur === targetId) {
-            console.log("This was already added");
 
             return;
           }
         }
 
         const [first, second, third] = targetId.split("-");
-        const [first, second, third] = targetId.split("-");
 
         let count = 0;
 
         try {
           let actualAnswers = myQuestion.actualAnswers;
-          let actualAnswers = myQuestion.actualAnswers;
 
-          if (myQuestion.actualAnswers.length === 0) {
           if (myQuestion.actualAnswers.length === 0) {
             const response =
               await RuleEngineService.getAttributeAnswers(sourceId);
-              await RuleEngineService.getAttributeAnswers(sourceId);
 
-            const apiData = response[0];
             const apiData = response[0];
 
             let allHints = [];
 
             for (let i = 1; i <= 4; i++) {
               const pairId = apiData.pairAttributeId;
-            for (let i = 1; i <= 4; i++) {
-              const pairId = apiData.pairAttributeId;
 
               const condition = apiData[`condition${i}`];
-              const condition = apiData[`condition${i}`];
 
-              if (condition.arithmetic == null) {
               if (condition.arithmetic == null) {
                 continue;
               }
@@ -884,9 +747,7 @@ const QuestionPage = () => {
               count++;
 
               allHints.push(condition.information);
-              allHints.push(condition.information);
 
-              const string = `${condition.tableName}-${condition.headerName}-${condition.arithmetic}`;
               const string = `${condition.tableName}-${condition.headerName}-${condition.arithmetic}`;
 
               actualAnswers.push({
@@ -895,24 +756,17 @@ const QuestionPage = () => {
                 tableNameId: condition.tableId,
                 headerId: condition.headerId,
                 pairAttributeId: pairId,
-                tableNameId: condition.tableId,
-                headerId: condition.headerId,
-                pairAttributeId: pairId,
               });
             }
 
             setActualAnswers(sourceId, actualAnswers);
-            setActualAnswers(sourceId, actualAnswers);
 
             setTotalAnswers(sourceId, count);
-            setTotalAnswers(sourceId, count);
 
-            setHints(sourceId, allHints);
             setHints(sourceId, allHints);
           }
 
           if (count === 0) {
-            count = myQuestion.totalAnswers;
             count = myQuestion.totalAnswers;
           }
 
@@ -923,11 +777,7 @@ const QuestionPage = () => {
           const alreadyAnswered = myQuestion.answered.find(
             (a) => a.answer === targetId,
           );
-          const alreadyAnswered = myQuestion.answered.find(
-            (a) => a.answer === targetId,
-          );
 
-          if (alreadyAnswered) {
           if (alreadyAnswered) {
             return;
           }
@@ -935,15 +785,10 @@ const QuestionPage = () => {
           const correctAnswer = actualAnswers.find(
             (a) => a.answer === targetId,
           );
-          const correctAnswer = actualAnswers.find(
-            (a) => a.answer === targetId,
-          );
 
-          if (correctAnswer) {
           if (correctAnswer) {
             matched = true;
 
-            answerId = correctAnswer.conditionId;
             answerId = correctAnswer.conditionId;
           }
 
@@ -953,19 +798,14 @@ const QuestionPage = () => {
             }
 
             const answeredIds = myQuestion.answered.map((a) => a.conditionId);
-            const answeredIds = myQuestion.answered.map((a) => a.conditionId);
 
             let enter = false;
 
             let newValue = null;
 
             if (answeredIds.includes(myQuestion.attemptingId)) {
-            if (answeredIds.includes(myQuestion.attemptingId)) {
               enter = true;
 
-              const nextAttempt = myQuestion.actualAnswers.find(
-                (a) => !answeredIds.includes(a.conditionId),
-              );
               const nextAttempt = myQuestion.actualAnswers.find(
                 (a) => !answeredIds.includes(a.conditionId),
               );
@@ -975,9 +815,7 @@ const QuestionPage = () => {
               }
 
               newValue = nextAttempt.conditionId;
-              newValue = nextAttempt.conditionId;
 
-              setAttributeId(sourceId, nextAttempt.conditionId);
               setAttributeId(sourceId, nextAttempt.conditionId);
             }
 
@@ -985,62 +823,44 @@ const QuestionPage = () => {
               userId: 1,
 
               questionId: questionId,
-              questionId: questionId,
 
-              attributeId: sourceId,
               attributeId: sourceId,
 
               arithmetic: answerMap[third],
-              arithmetic: answerMap[third],
 
               eventType: "ANSWER",
-              eventType: "ANSWER",
 
-              answerPosition: enter ? newValue : myQuestion.attemptingId,
               answerPosition: enter ? newValue : myQuestion.attemptingId,
 
               isCorrect: false,
 
               description: `from ${questionMap[myQuestion.type]} of ${myQuestion.name} is ${myQuestion.amount} >> attempted to ${answerMap[third]} on ${second} of ${first}.`,
-              description: `from ${questionMap[myQuestion.type]} of ${myQuestion.name} is ${myQuestion.amount} >> attempted to ${answerMap[third]} on ${second} of ${first}.`,
 
-              userAnswer: `attempted to ${answerMap[third]} on ${second} of ${first}.`,
               userAnswer: `attempted to ${answerMap[third]} on ${second} of ${first}.`,
             };
 
-            await QuestionAnswerService.processAnswerEvent(body);
             await QuestionAnswerService.processAnswerEvent(body);
           } else {
             const body = {
               userId: 1,
 
               questionId: questionId,
-              questionId: questionId,
 
-              attributeId: sourceId,
               attributeId: sourceId,
 
               arithmetic: answerMap[third],
-              arithmetic: answerMap[third],
 
               answerPosition: answerId,
-              answerPosition: answerId,
 
-              eventType: myQuestion.usedHint ? "HINT" : "ANSWER",
               eventType: myQuestion.usedHint ? "HINT" : "ANSWER",
 
               isCorrect: true,
 
               description: `from ${questionMap[myQuestion.type]} of ${myQuestion.name} is ${myQuestion.amount} >> attempted to ${answerMap[third]} on ${second} of ${first}.`,
-              description: `from ${questionMap[myQuestion.type]} of ${myQuestion.name} is ${myQuestion.amount} >> attempted to ${answerMap[third]} on ${second} of ${first}.`,
 
-              userAnswer: `attempted to ${answerMap[third]} on ${second} of ${first}.`,
               userAnswer: `attempted to ${answerMap[third]} on ${second} of ${first}.`,
             };
 
-            const correctAnswer = myQuestion.actualAnswers.find(
-              (a) => a.answer === targetId,
-            );
             const correctAnswer = myQuestion.actualAnswers.find(
               (a) => a.answer === targetId,
             );
@@ -1049,34 +869,24 @@ const QuestionPage = () => {
               userId: 1,
 
               questionId: questionId,
-              questionId: questionId,
 
-              tableNameId: correctAnswer.tableNameId,
               tableNameId: correctAnswer.tableNameId,
 
               headerId: correctAnswer.headerId,
-              headerId: correctAnswer.headerId,
 
-              attributeId: sourceId,
               attributeId: sourceId,
 
               arithmetic: third,
-              arithmetic: third,
 
-              amount: myQuestion.amount,
               amount: myQuestion.amount,
 
               conditionId: correctAnswer.conditionId,
-              conditionId: correctAnswer.conditionId,
 
               pairAttributeId: correctAnswer.pairAttributeId,
-              pairAttributeId: correctAnswer.pairAttributeId,
 
-              totalAnswers: count,
               totalAnswers: count,
             };
 
-            await QuestionAnswerService.processAnswerEvent(body);
             await QuestionAnswerService.processAnswerEvent(body);
 
             await QuestionAnswerService.saveAnswer(questionBody);
@@ -1087,11 +897,9 @@ const QuestionPage = () => {
               targetId,
               answerId,
               correctAnswer.pairAttributeId,
-              correctAnswer.pairAttributeId,
             );
           }
         } catch (error) {
-          console.log("Error is ", error, " for id ", sourceId);
           console.log("Error is ", error, " for id ", sourceId);
         }
       }}
@@ -1102,4 +910,3 @@ const QuestionPage = () => {
 };
 
 export default QuestionPage;
-
