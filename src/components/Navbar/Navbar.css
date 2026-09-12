@@ -8,7 +8,7 @@
   left: 0;
   right: 0;
 
-  height: 65px;
+  height: 75px;
 
   background: linear-gradient(90deg, #406eae 0%, #3479bd 50%, #9ccfec 120%);
 
@@ -68,7 +68,7 @@
 
   max-width: 400px;
 
-  height: 40px !important;
+  height: 45px !important;
 
   display: flex;
   align-items: center;
