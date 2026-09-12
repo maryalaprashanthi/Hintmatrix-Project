@@ -1,468 +1,885 @@
-/* =====================================
+/* =========================================================
    SUBSCRIPTION PLANS PAGE
-===================================== */
+   ALL STYLES ARE SCOPED — NO GLOBAL CSS
+========================================================= */
 
 .subscription-plans-page {
-  padding: 30px;
-  background: #f5f7fb;
-  min-height: 100vh;
+  width: 100%;
+  min-height: calc(100vh - 70px);
+  padding: 12px 24px 28px;
+  background: #f7f9fc;
+  color: #173b63;
+  box-sizing: border-box;
 }
 
-/* =====================================
-   HEADER
-===================================== */
+.subscription-plans-page *,
+.subscription-plans-page *::before,
+.subscription-plans-page *::after {
+  box-sizing: border-box;
+}
 
-.subscription-plans-header {
+/* =========================================================
+   HERO
+========================================================= */
+
+.subscription-plans-page .subscription-hero {
+  position: relative;
+  height: 120px;
+  margin-bottom: 14px;
+  padding: 18px 22px;
+
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 35px;
-  gap: 20px;
-}
-
-/* =====================================
-   TITLE SECTION
-===================================== */
-
-.subscription-plans-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* =====================================
-   BACK BUTTON
-===================================== */
-
-.back-btn {
-  width: 50px !important;
-  height: 50px !important;
-  min-width: 50px !important;
-
-  border: none !important;
-  border-radius: 14px !important;
-
-  background: #eaf2ff !important;
-  color: #2563eb !important;
-
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-
-  padding: 0 !important;
-  margin: 0 !important;
-
-  cursor: pointer;
-
-  font-size: 18px !important;
-
-  transition: all 0.3s ease;
-}
-
-.back-btn:hover {
-  background: #477bec !important;
-  color: #ffffff !important;
-  transform: translateX(-2px);
-}
-
-.back-btn svg {
-  font-size: 18px !important;
-}
-
-/* =====================================
-   TITLE
-===================================== */
-
-.subscription-plans-title h2 {
-  margin: 0;
-
-  font-size: 3rem;
-  font-weight: 700;
-
-  color: #212529;
-
-  line-height: 1.2;
-}
-
-.subscription-plans-title p {
-  margin-top: 6px;
-  margin-bottom: 0;
-
-  color: #6b7280;
-
-  font-size: 15px;
-}
-
-/* =====================================
-   ADD SUBSCRIPTION BUTTON
-===================================== */
-
-.add-subscription-btn {
-  display: inline-flex;
-
-  align-items: center;
-  justify-content: center;
-
-  gap: 8px;
-
-  background: #2563eb;
-  color: #ffffff;
-
-  border: none;
-
-  border-radius: 12px;
-
-  padding: 12px 22px;
-
-  height: 42px;
-
-  font-size: 14px;
-  font-weight: 600;
-
-  cursor: pointer;
-
-  transition: all 0.3s ease;
-}
-
-.add-subscription-btn:hover {
-  background: #1d4ed8;
-  transform: translateY(-2px);
-}
-
-.add-subscription-btn svg {
-  font-size: 16px;
-}
-
-/* =====================================
-   TABLE CONTAINER
-===================================== */
-
-.subscription-table-container {
-  background: #ffffff;
-
-  border-radius: 20px;
-
-  border: 1px solid #edf2f7;
-
-  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.05);
 
   overflow: hidden;
+
+  border: 1px solid #d8e8f8;
+  border-radius: 14px;
+
+  background: linear-gradient(100deg, #f0f7ff 0%, #f8fbff 58%, #eafaff 100%);
 }
 
-/* =====================================
-   TABLE HEADER
-===================================== */
-
-.table-header {
-  padding: 24px 25px;
-
-  border-bottom: 1px solid #edf2f7;
+.subscription-plans-page .hero-content {
+  position: relative;
+  z-index: 2;
 }
 
-.table-header h3 {
-  margin: 0 0 5px;
+.subscription-plans-page .hero-content > span {
+  display: block;
+  margin-bottom: 5px;
 
-  font-size: 22px;
+  color: #287fe0;
+  font-size: 11px;
   font-weight: 700;
-
-  color: #111827;
-}
-
-.table-header p {
-  margin: 0;
-
-  color: #64748b;
-
-  font-size: 14px;
-}
-
-/* =====================================
-   AG GRID
-===================================== */
-
-.subscription-grid {
-  width: 100%;
-}
-
-/* =====================================
-   AG GRID ROW & CELL ALIGNMENT
-===================================== */
-
-.subscription-grid .ag-row {
-  display: flex !important;
-  align-items: center !important;
-}
-
-.subscription-grid .ag-cell {
-  display: flex !important;
-  align-items: center !important;
-
-  height: 100% !important;
-
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-}
-
-.subscription-grid .ag-cell-wrapper {
-  display: flex !important;
-  align-items: center !important;
-
-  height: 100% !important;
-}
-
-.subscription-grid .ag-cell-value {
-  display: flex !important;
-  align-items: center !important;
-}
-
-/* =====================================
-   ACTIONS CONTAINER
-===================================== */
-
-.subscription-plan-actions {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  gap: 10px !important;
-
-  width: 100%;
-  height: 100%;
-}
-
-/* =====================================
-   ACTION BUTTON
-===================================== */
-
-.action-icon-only {
-  width: 42px !important;
-  min-width: 42px !important;
-
-  height: 42px !important;
-  min-height: 42px !important;
-
-  padding: 0 !important;
-  margin: 0 !important;
-
-  border-radius: 8px !important;
-
-  background: #ffffff !important;
-
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-
-  cursor: pointer;
-
-  outline: none !important;
-  box-shadow: none !important;
-
-  transition: all 0.2s ease;
-}
-
-/* =====================================
-   EDIT BUTTON - BLUE
-===================================== */
-
-.subscription-plan-actions .edit-icon {
-  border: 1px solid #2563eb !important;
-  color: #2563eb !important;
-}
-
-.subscription-plan-actions .edit-icon svg {
-  color: #2563eb !important;
-  fill: #2563eb !important;
-  font-size: 18px !important;
-}
-
-.subscription-plan-actions .edit-icon:hover {
-  background: #eff6ff !important;
-  border-color: #1d4ed8 !important;
-}
-
-.subscription-plan-actions .edit-icon:hover svg {
-  color: #1d4ed8 !important;
-  fill: #1d4ed8 !important;
-}
-
-/* =====================================
-   DELETE BUTTON - RED
-===================================== */
-
-.subscription-plan-actions .delete-icon {
-  border: 1px solid #ef233c !important;
-  color: #ef233c !important;
-}
-
-.subscription-plan-actions .delete-icon svg {
-  color: #ef233c !important;
-  fill: #ef233c !important;
-  font-size: 18px !important;
-}
-
-.subscription-plan-actions .delete-icon:hover {
-  background: #fff1f2 !important;
-  border-color: #dc2626 !important;
-}
-
-.subscription-plan-actions .delete-icon:hover svg {
-  color: #dc2626 !important;
-  fill: #dc2626 !important;
-}
-/* =====================================
-   RESPONSIVE
-===================================== */
-
-@media (max-width: 768px) {
-  .subscription-plans-page {
-    padding: 20px;
-  }
-
-  .subscription-plans-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .subscription-plans-title h2 {
-    font-size: 28px;
-  }
-
-  .add-subscription-btn {
-    width: 100%;
-  }
-
-  .subscription-plan-actions {
-    gap: 10px !important;
-  }
-}
-
-/* =====================================
-   MOBILE
-===================================== */
-
-@media (max-width: 576px) {
-  .subscription-plans-page {
-    padding: 15px;
-  }
-
-  .subscription-plans-title {
-    gap: 6px;
-  }
-
-  .back-btn {
-    width: 45px !important;
-    height: 45px !important;
-    min-width: 45px !important;
-  }
-
-  .subscription-plans-title h2 {
-    font-size: 24px;
-  }
-
-  .action-icon-only {
-    width: 40px !important;
-    min-width: 40px !important;
-
-    height: 40px !important;
-  }
-}
-.subscription-plan-admin-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-.subscription-admin-card {
-  padding: 22px;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-}
-
-.subscription-admin-card-heading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.subscription-admin-card h3 {
-  margin: 0 0 6px;
-  color: #172554;
-}
-
-.subscription-admin-card-heading span {
-  color: #64748b;
-  font-size: 0.82rem;
-}
-
-.plan-status {
-  padding: 4px 8px;
-  border-radius: 999px;
-  color: #166534 !important;
-  background: #dcfce7;
-  font-size: 0.75rem !important;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.plan-status.inactive {
-  color: #991b1b !important;
-  background: #fee2e2;
-}
-
-.subscription-admin-card > p {
-  min-height: 44px;
-  margin: 18px 0;
-  color: #64748b;
-}
-
-.subscription-admin-entitlements {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 14px 0;
-  border-top: 1px solid #f1f5f9;
-  border-bottom: 1px solid #f1f5f9;
-  color: #334155;
-  font-size: 0.9rem;
-}
-
-.subscription-admin-courses {
-  display: flex;
-  flex-direction: column;
-  min-height: 42px;
-  padding-top: 14px;
-  color: #2563eb;
-  font-size: 0.85rem;
-}
-
-.subscription-admin-courses strong {
-  margin-bottom: 4px;
-  color: #334155;
-  font-size: 0.78rem;
-  text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-.subscription-admin-courses span {
-  color: #2563eb;
+.subscription-plans-page .hero-content h1 {
+  margin: 0;
+
+  color: #123d69;
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 700;
 }
 
-.plan-course-mapping {
-  display: grid;
-  gap: 8px;
-  max-height: 150px;
-  margin-bottom: 6px;
-  padding: 12px;
-  overflow-y: auto;
-  border: 1px solid #e2e8f0;
+.subscription-plans-page .hero-content p {
+  margin: 6px 0 0;
+
+  color: #698198;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+/* =========================================================
+   HERO ILLUSTRATION
+========================================================= */
+
+.subscription-plans-page .hero-illustration {
+  position: absolute;
+  top: 50%;
+  right: 250px;
+
+  width: 190px;
+  height: 88px;
+
+  transform: translateY(-50%);
+}
+
+.subscription-plans-page .hero-crown {
+  position: absolute;
+  top: 20px;
+  left: 18px;
+
+  width: 50px;
+  height: 46px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 11px;
+
+  background: linear-gradient(145deg, #4c91f5, #2868df);
+  color: #fff;
+
+  font-size: 21px;
+
+  transform: rotate(-7deg);
+
+  box-shadow: 0 7px 15px rgba(39, 105, 224, 0.22);
+}
+
+.subscription-plans-page .hero-card {
+  position: absolute;
+  top: 10px;
+  left: 70px;
+
+  width: 88px;
+  height: 57px;
+
+  padding: 13px 12px;
+
   border-radius: 8px;
+
+  background: #fff;
+
+  transform: rotate(5deg);
+
+  box-shadow: 0 7px 18px rgba(44, 77, 110, 0.12);
+}
+
+.subscription-plans-page .hero-card i {
+  display: block;
+
+  height: 5px;
+  margin-bottom: 7px;
+
+  border-radius: 5px;
+
+  background: #dcecff;
+}
+
+.subscription-plans-page .hero-card i:nth-child(1) {
+  width: 59px;
+}
+
+.subscription-plans-page .hero-card i:nth-child(2) {
+  width: 47px;
+}
+
+.subscription-plans-page .hero-card i:nth-child(3) {
+  width: 35px;
+}
+
+.subscription-plans-page .hero-illustration b {
+  position: absolute;
+  right: 27px;
+  bottom: 4px;
+
+  width: 30px;
+  height: 42px;
+
+  border-right: 9px solid #55c49b;
+  border-bottom: 9px solid #55c49b;
+
+  border-radius: 0 0 18px 0;
+
+  transform: rotate(32deg);
+}
+
+.subscription-plans-page .hero-illustration em {
+  display: none;
+}
+
+/* =========================================================
+   HERO QUOTE
+========================================================= */
+
+.subscription-plans-page .hero-quote {
+  position: absolute;
+  top: 20px;
+  right: 110px;
+
+  width: 120px;
+
+  z-index: 2;
+}
+
+.subscription-plans-page .hero-quote strong {
+  display: block;
+
+  height: 17px;
+
+  color: #8ebcf0;
+  font-size: 21px;
+  line-height: 1;
+}
+
+.subscription-plans-page .hero-quote p {
+  margin: 0;
+
+  color: #647c94;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.subscription-plans-page .hero-quote span {
+  display: block;
+
+  width: 44px;
+  height: 2px;
+  margin-top: 7px;
+
+  background: #3988eb;
+}
+
+/* =========================================================
+   ADD PLAN
+========================================================= */
+
+.subscription-plans-page .hero-add-btn {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  z-index: 5;
+
+  height: 40px;
+  padding: 0 18px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  border: none;
+  border-radius: 21px;
+
+  background: #2563eb;
+  color: #fff;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transform: translateY(-50%);
+
+  box-shadow: 0 5px 13px rgba(37, 99, 235, 0.2);
+
+  transition: background 0.2s ease;
+}
+
+.subscription-plans-page .hero-add-btn:hover {
+  background: #1d4ed8;
+}
+
+.subscription-plans-page .hero-add-btn svg {
+  font-size: 13px;
+}
+
+/* =========================================================
+   ALERT
+========================================================= */
+
+.subscription-plans-page > .alert {
+  margin: 0 0 14px;
+}
+
+/* =========================================================
+   STATISTICS
+========================================================= */
+
+.subscription-plans-page .subscription-stats {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+
+  margin-bottom: 14px;
+}
+
+.subscription-plans-page .stat-card {
+  position: relative;
+
+  height: 158px;
+  min-width: 0;
+
+  padding: 20px;
+
+  border: 1px solid #e0e8f1;
+  border-radius: 13px;
+
+  background: #fff;
+
+  box-shadow: 0 3px 12px rgba(27, 55, 85, 0.035);
+}
+
+/* =========================================================
+   STAT ICON
+========================================================= */
+
+.subscription-plans-page .stat-icon {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+
+  width: 46px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  font-size: 17px;
+}
+
+.subscription-plans-page .stat-card.blue .stat-icon {
+  background: #e3f0ff;
+  color: #2781e8;
+}
+
+.subscription-plans-page .stat-card.green .stat-icon {
+  background: #e0f7ed;
+  color: #11a979;
+}
+
+.subscription-plans-page .stat-card.purple .stat-icon {
+  background: #eee6ff;
+  color: #7945e8;
+}
+
+.subscription-plans-page .stat-card.orange .stat-icon {
+  background: #fff0e8;
+  color: #f06b4d;
+}
+
+/* =========================================================
+   STAT ARROW
+========================================================= */
+
+.subscription-plans-page .stat-arrow {
+  position: absolute;
+  top: 23px;
+  right: 18px;
+
+  color: #a9b9cc;
+
+  font-size: 19px;
+  line-height: 1;
+}
+
+/* =========================================================
+   STAT TEXT
+========================================================= */
+
+.subscription-plans-page .stat-card label {
+  position: absolute;
+  top: 70px;
+  left: 20px;
+
+  color: #536c85;
+
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.subscription-plans-page .stat-card strong {
+  position: absolute;
+  top: 94px;
+  left: 20px;
+
+  color: #143c68;
+
+  font-size: 23px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.subscription-plans-page .stat-card small {
+  position: absolute;
+  top: 127px;
+  left: 20px;
+
+  color: #13ad7c;
+
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 600;
+}
+
+.subscription-plans-page .stat-card.orange small {
+  color: #ef4658;
+}
+
+/* =========================================================
+   PLAN GRID
+========================================================= */
+
+.subscription-plans-page .subscription-plan-grid {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+
+  align-items: start;
+}
+
+/* =========================================================
+   PLAN CARD
+========================================================= */
+
+.subscription-plans-page .plan-card {
+  width: 100%;
+  min-width: 0;
+  height: 200px;
+
+  padding: 14px 15px;
+
+  border: 1px solid #dce5ef;
+  border-radius: 13px;
+
+  background: #fff;
+
+  overflow: hidden;
+
+  box-shadow: 0 4px 13px rgba(28, 58, 91, 0.035);
+}
+
+/* PLAN BORDER COLORS */
+
+.subscription-plans-page .plan-card.free {
+  border-color: #7bb7ff;
+}
+
+.subscription-plans-page .plan-card.basic {
+  border-color: #64d2b0;
+}
+
+.subscription-plans-page .plan-card.standard {
+  border-color: #c39cff;
+}
+
+.subscription-plans-page .plan-card.premium {
+  border-color: #ffbca7;
+}
+
+/* =========================================================
+   PLAN HEADER
+========================================================= */
+
+.subscription-plans-page .plan-header {
+  width: 100%;
+  min-height: 54px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 8px;
+}
+
+.subscription-plans-page .plan-title {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+}
+
+/* =========================================================
+   PLAN ICON
+========================================================= */
+
+.subscription-plans-page .plan-icon {
+  flex: 0 0 56px;
+
+  width: 56px;
+  height: 39px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  font-size: 17px;
+}
+
+.subscription-plans-page .plan-card.free .plan-icon {
+  background: #e4f1ff;
+  color: #2781e8;
+}
+
+.subscription-plans-page .plan-card.basic .plan-icon {
+  background: #e0f7ed;
+  color: #11a979;
+}
+
+.subscription-plans-page .plan-card.standard .plan-icon {
+  background: #eee7ff;
+  color: #7846e8;
+}
+
+.subscription-plans-page .plan-card.premium .plan-icon {
+  background: #fff0e8;
+  color: #f06b4d;
+}
+
+.subscription-plans-page
+  .plan-card:not(.free):not(.basic):not(.standard):not(.premium)
+  .plan-icon {
+  background: #edf1ff;
+  color: #526bd1;
+}
+
+/* =========================================================
+   PLAN TITLE
+========================================================= */
+
+.subscription-plans-page .plan-title h3 {
+  margin: 0 0 3px;
+
+  overflow: hidden;
+
+  color: #123b68;
+
+  font-size: 16px;
+  line-height: 1.1;
+  font-weight: 700;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subscription-plans-page .plan-title span {
+  display: block;
+
+  color: #7b8da0;
+
+  font-size: 9px;
+  line-height: 1.2;
+
+  white-space: nowrap;
+}
+
+/* =========================================================
+   PLAN STATUS
+========================================================= */
+
+.subscription-plans-page .plan-status {
+  flex: 0 0 auto;
+
+  padding: 5px 9px;
+
+  border-radius: 999px;
+
+  background: #dff7eb;
+  color: #079969;
+
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.subscription-plans-page .plan-status.inactive {
+  background: #ffe0e4;
+  color: #e63d4d;
+}
+
+/* =========================================================
+   DESCRIPTION
+========================================================= */
+
+.subscription-plans-page .plan-description {
+  height: 37px;
+
+  margin: 7px 0 0;
+
+  color: #536d86;
+
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+/* =========================================================
+   FEATURES
+========================================================= */
+
+.subscription-plans-page .plan-features {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  padding: 9px 0;
+
+  border-top: 1px solid #edf1f5;
+  border-bottom: 1px solid #edf1f5;
+}
+
+.subscription-plans-page .plan-features span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  color: #314f6d;
+
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.subscription-plans-page .plan-features svg {
+  flex: 0 0 auto;
+
+  color: #12b887;
+
+  font-size: 9px;
+}
+
+.subscription-plans-page .plan-card.standard .plan-features svg {
+  color: #8750eb;
+}
+
+.subscription-plans-page .plan-card.premium .plan-features svg {
+  color: #f26b4d;
+}
+
+/* =========================================================
+   MAPPED COURSES
+========================================================= */
+
+.subscription-plans-page .mapped-courses {
+  min-height: 42px;
+
+  padding-top: 8px;
+}
+
+.subscription-plans-page .mapped-courses strong {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: #36516c;
+
+  font-size: 9px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.subscription-plans-page .mapped-courses > span {
+  display: block;
+
+  overflow: hidden;
+
+  color: #2563eb;
+
+  font-size: 10px;
+  line-height: 1.2;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   PLAN ACTIONS
+========================================================= */
+
+.subscription-plans-page .plan-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  margin-top: 5px;
+}
+
+.subscription-plans-page .plan-actions .btn {
+  min-width: 90px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.subscription-plans-page .plan-actions .btn svg {
+  font-size: 10px;
+}
+
+/* EDIT */
+
+.subscription-plans-page .plan-actions .btn-outline-primary {
+  border-color: #55a0f4;
+  color: #1976e8;
+  background: #fff;
+}
+
+.subscription-plans-page .plan-actions .btn-outline-primary:hover {
+  border-color: #1976e8;
+  background: #edf6ff;
+  color: #1976e8;
+}
+
+/* DEACTIVATE */
+
+.subscription-plans-page .plan-actions .btn-outline-danger {
+  border-color: #ff8794;
+  color: #ed4054;
+  background: #fff;
+}
+
+.subscription-plans-page .plan-actions .btn-outline-danger:hover {
+  border-color: #ed4054;
+  background: #fff1f3;
+  color: #ed4054;
+}
+
+/* ACTIVATE */
+
+.subscription-plans-page .plan-actions .activate-btn {
+  border: 1px solid #58cba7;
+  background: #fff;
+  color: #10a579;
+}
+
+.subscription-plans-page .plan-actions .activate-btn:hover {
+  background: #edfbf6;
+}
+
+/* =========================================================
+   COURSE MAPPING
+========================================================= */
+
+.subscription-plans-page .plan-course-mapping {
+  display: grid;
+  gap: 7px;
+
+  max-height: 150px;
+
+  margin: 7px 0 0;
+  padding: 10px;
+
+  overflow-y: auto;
+
+  border: 1px solid #e1e7ef;
+  border-radius: 8px;
+
   background: #f8fafc;
 }
 
-.subscription-admin-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 18px;
+.subscription-plans-page .plan-course-mapping .form-check {
+  margin: 0;
+}
+
+.subscription-plans-page .plan-course-mapping .form-check-label {
+  color: #334155;
+  font-size: 13px;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1200px) {
+  .subscription-plans-page {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .subscription-plans-page .subscription-stats,
+  .subscription-plans-page .subscription-plan-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .subscription-plans-page .hero-illustration {
+    right: 220px;
+  }
+
+  .subscription-plans-page .hero-quote {
+    right: 95px;
+  }
+}
+
+@media (max-width: 768px) {
+  .subscription-plans-page {
+    padding: 16px;
+  }
+
+  .subscription-plans-page .subscription-hero {
+    height: auto;
+    min-height: 120px;
+    padding: 18px;
+  }
+
+  .subscription-plans-page .hero-content h1 {
+    font-size: 24px;
+  }
+
+  .subscription-plans-page .hero-illustration,
+  .subscription-plans-page .hero-quote {
+    display: none;
+  }
+
+  .subscription-plans-page .hero-add-btn {
+    right: 16px;
+  }
+
+  .subscription-plans-page .subscription-stats,
+  .subscription-plans-page .subscription-plan-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .subscription-plans-page {
+    padding: 12px;
+  }
+
+  .subscription-plans-page .subscription-hero {
+    flex-wrap: wrap;
+  }
+
+  .subscription-plans-page .hero-content h1 {
+    font-size: 21px;
+  }
+
+  .subscription-plans-page .hero-add-btn {
+    position: static;
+
+    margin-left: auto;
+
+    transform: none;
+  }
+
+  .subscription-plans-page .hero-add-btn:hover {
+    transform: none;
+  }
+
+  .subscription-plans-page .stat-card {
+    height: 140px;
+  }
+}
+/* Plan tile text readability - only subscription plan cards */
+.subscription-plan-grid .plan-card .plan-description {
+  font-size: 18px;
+}
+
+.subscription-plan-grid .plan-card .plan-features span {
+  font-size: 18px;
+}
+
+.subscription-plan-grid .plan-card .mapped-courses {
+  font-size: 18px;
+}
+
+.subscription-plan-grid .plan-card .mapped-courses strong {
+  font-size: 14px;
+}
+/* =====================================
+   SUMMARY TILE TEXT SIZE
+   Only affects the 4 subscription stat cards
+===================================== */
+
+.subscription-stats .stat-card label {
+  font-size: 16px;
+}
+
+.subscription-stats .stat-card strong {
+  font-size: 18px;
+}
+
+.subscription-stats .stat-card small {
+  font-size: 16px;
 }
