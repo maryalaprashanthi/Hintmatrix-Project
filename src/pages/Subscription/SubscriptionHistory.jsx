@@ -7,6 +7,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 
 import SubscriptionService from "../../services/SubscriptionService";
+import { getCurrentUserName } from "../../utils/user";
 import "./SubscriptionHistory.css";
 
 const statusFor = (subscription) => {
@@ -14,6 +15,14 @@ const statusFor = (subscription) => {
   if (subscription.expiresAt && new Date(subscription.expiresAt) < new Date()) return "Expired";
   return "Active";
 };
+
+const getDisplayName = (record, currentUserId, currentUserName) =>
+  record.studentName ||
+  record.userName ||
+  record.name ||
+  record.user?.name ||
+  (String(record.userId) === currentUserId ? currentUserName : null) ||
+  `User ${record.userId}`;
 
 export default function SubscriptionHistory() {
   const navigate = useNavigate();
@@ -23,15 +32,27 @@ export default function SubscriptionHistory() {
   const [message, setMessage] = useState("");
   const [deactivatingId, setDeactivatingId] = useState(null);
   const [query, setQuery] = useState("");
+  const currentUserId = localStorage.getItem("userId");
+  const currentUserName = getCurrentUserName("");
   const canDeactivate = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(
     localStorage.getItem("role"),
   );
 
   const loadHistory = () => {
+    console.info("[SubscriptionHistory] Loading subscription history");
     setLoading(true);
     SubscriptionService.getHistory()
-      .then((response) => setRecords(response.data || []))
-      .catch(() => setError("Unable to load subscription history."))
+      .then((response) => {
+        const history = response.data || [];
+        console.info("[SubscriptionHistory] Subscription history loaded", {
+          recordCount: history.length,
+        });
+        setRecords(history);
+      })
+      .catch((requestError) => {
+        console.error("[SubscriptionHistory] Failed to load subscription history", requestError);
+        setError("Unable to load subscription history.");
+      })
       .finally(() => setLoading(false));
   };
 
@@ -40,14 +61,31 @@ export default function SubscriptionHistory() {
   }, []);
 
   const handleDeactivate = (subscription) => {
-    if (subscription.status !== "Active") return;
-    if (!window.confirm(`Deactivate the subscription for ${subscription.displayName}?`)) return;
+    if (subscription.status !== "Active") {
+      console.warn("[SubscriptionHistory] Ignoring deactivation for inactive subscription", {
+        subscriptionId: subscription.subscriptionId,
+        status: subscription.status,
+      });
+      return;
+    }
+    if (!window.confirm(`Deactivate the subscription for ${subscription.displayName}?`)) {
+      console.info("[SubscriptionHistory] Deactivation cancelled", {
+        subscriptionId: subscription.subscriptionId,
+      });
+      return;
+    }
 
     setError("");
     setMessage("");
     setDeactivatingId(subscription.subscriptionId);
+    console.info("[SubscriptionHistory] Deactivating subscription", {
+      subscriptionId: subscription.subscriptionId,
+    });
     SubscriptionService.deactivate(subscription.subscriptionId)
       .then(() => {
+        console.info("[SubscriptionHistory] Subscription deactivated", {
+          subscriptionId: subscription.subscriptionId,
+        });
         setRecords((current) =>
           current.map((record) =>
             record.subscriptionId === subscription.subscriptionId
@@ -58,6 +96,10 @@ export default function SubscriptionHistory() {
         setMessage(`Subscription for ${subscription.displayName} was deactivated.`);
       })
       .catch((requestError) => {
+        console.error("[SubscriptionHistory] Failed to deactivate subscription", {
+          subscriptionId: subscription.subscriptionId,
+          error: requestError,
+        });
         setError(requestError.response?.data?.message || "Unable to deactivate subscription.");
       })
       .finally(() => setDeactivatingId(null));
@@ -67,13 +109,13 @@ export default function SubscriptionHistory() {
     () =>
       records.map((record) => ({
         ...record,
-        displayName: record.studentName || `User ${record.userId}`,
+        displayName: getDisplayName(record, currentUserId, currentUserName),
         email: record.studentEmail,
         courseName: record.course,
         planName: record.plan,
         status: statusFor(record),
       })),
-    [records],
+    [currentUserId, currentUserName, records],
   );
 
   const columnDefs = useMemo(

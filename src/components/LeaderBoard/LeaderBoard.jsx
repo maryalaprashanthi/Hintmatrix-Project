@@ -1,9 +1,10 @@
 import "./LeaderBoard.css";
+import { getCurrentUserName } from "../../utils/user";
 
 const leaderboardData = [
   {
     rank: 1,
-    name: "Prashanthi (You)",
+    name: "",
     score: 5120,
     image: "https://i.pravatar.cc/100?img=47",
     current: true,
@@ -48,6 +49,8 @@ const medalColor = (rank) => {
 };
 
 function LeaderBoard() {
+  const currentUserName = getCurrentUserName();
+
   return (
     <div className="leaderboard-card">
       <div className="leaderboard-header">
@@ -70,7 +73,7 @@ function LeaderBoard() {
           <img src={user.image} alt={user.name} />
 
           <div className="leader-info">
-            <h4>{user.name}</h4>
+            <h4>{user.current ? `${currentUserName} (You)` : user.name}</h4>
           </div>
 
           <div className="leader-score">{user.score}</div>

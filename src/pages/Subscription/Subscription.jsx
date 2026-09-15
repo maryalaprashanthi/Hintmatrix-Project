@@ -17,6 +17,11 @@ import "./Subscription.css";
 import CourseService from "../../services/CourseService";
 import SubscriptionService from "../../services/SubscriptionService";
 import apiClient from "../../services/apiClient";
+import { getCurrentUserName } from "../../utils/user";
+
+const isActiveSubscription = (subscription) =>
+  subscription.active !== false &&
+  (!subscription.expiresAt || new Date(subscription.expiresAt) >= new Date());
 
 function Subscription() {
   const navigate = useNavigate();
@@ -24,23 +29,29 @@ function Subscription() {
   const [courses, setCourses] = useState([]);
   const [plans, setPlans] = useState([]);
   const [students, setStudents] = useState([]);
+  const [activeSubscriptionCount, setActiveSubscriptionCount] = useState(0);
   const [courseId, setCourseId] = useState("");
   const [planId, setPlanId] = useState("");
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
   const [message, setMessage] = useState("");
 
   const isBranchAdmin = localStorage.getItem("role") === "BRANCH_ADMIN";
+  const userName = getCurrentUserName();
 
   useEffect(() => {
     Promise.all([
       CourseService.getAllCourses(),
       SubscriptionService.getPlans(),
       apiClient.get("/api/users/students"),
+      SubscriptionService.getHistory(),
     ])
-      .then(([courseResponse, planResponse, studentResponse]) => {
+      .then(([courseResponse, planResponse, studentResponse, historyResponse]) => {
         setCourses(courseResponse.data || []);
         setPlans(planResponse.data || []);
         setStudents(studentResponse.data || []);
+        setActiveSubscriptionCount(
+          (historyResponse.data || []).filter(isActiveSubscription).length,
+        );
       })
       .catch(() => setMessage("Unable to load subscription assignment data."));
   }, []);
@@ -75,7 +86,7 @@ function Subscription() {
           <span className="welcome-label">WELCOME BACK,</span>
 
           <h1>
-            Prashanthi <span>👋</span>
+            {userName} <span>👋</span>
           </h1>
 
           <p>
@@ -161,8 +172,8 @@ function Subscription() {
 
           <div className="stat-info">
             <span>Active Subscriptions</span>
-            <strong>{students.length}</strong>
-            <small className="positive">↑ students available</small>
+            <strong>{activeSubscriptionCount}</strong>
+            <small className="positive">↑ currently active</small>
           </div>
 
           <FaEllipsisV className="stat-menu" />
