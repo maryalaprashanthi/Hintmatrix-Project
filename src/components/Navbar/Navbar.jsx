@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../../interceptors/axiosInterceptor";
+import { getCurrentUserName } from "../../utils/user";
 import "./Navbar.css";
 
 import {
@@ -19,6 +20,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
 
   const menuRef = useRef(null);
   const userRole = localStorage.getItem("role") || "GUEST";
+  const userName = getCurrentUserName();
 
   const handleLogout = () => {
     logoutUser(navigate);
@@ -80,7 +82,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
 
             <div className="profile-info">
               <span className="profile-name">
-                Prashanthi
+                {userName}
               </span>
 
               <span className="profile-role">

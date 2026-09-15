@@ -19,6 +19,7 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { canManageContent } from "../../utils/roles";
+import { getCurrentUserName } from "../../utils/user";
 import ExamService from "../../services/ExamService";
 import "./ExamHub.css";
 
@@ -181,6 +182,7 @@ const subjects = [
 /* ================= COMPONENT ================= */
 
 function ExamHub() {
+  const userName = getCurrentUserName();
   const navigate = useNavigate();
   const canCreateExam = canManageContent();
 
@@ -301,7 +303,7 @@ function ExamHub() {
       <div className="examhub-top">
         <div className="welcome">
           <h1>
-            Good Morning, Prashanthi! <span>👋</span>
+            Good Morning, {userName}! <span>👋</span>
           </h1>
           <p>Every exam you take brings you closer to your dreams.</p>
         </div>
