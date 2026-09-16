@@ -7,6 +7,7 @@ import React, {
 } from "react";
 
 import { AgGridReact } from "ag-grid-react";
+import { BarChart } from "@mui/x-charts/BarChart";
 
 import {
   FaCalendarAlt,
@@ -29,8 +30,10 @@ import "ag-grid-community/styles/ag-theme-quartz.css";
 import "./StudentAttendance.css";
 
 import AttendanceService from "../../services/AttendanceService";
+import { currentRole, ROLES } from "../../utils/roles";
 
 function StudentAttendance() {
+  const isStudent = currentRole() === ROLES.STUDENT;
   const fileInputRef = useRef(null);
 
   // ==============================
@@ -54,6 +57,14 @@ function StudentAttendance() {
   const [selectedSection, setSelectedSection] = useState("");
 
   const [appliedSection, setAppliedSection] = useState("");
+
+  const normalizeAttendanceResponse = (response) => {
+    if (Array.isArray(response)) return response;
+    if (Array.isArray(response?.attendance)) return response.attendance;
+    if (Array.isArray(response?.data)) return response.data;
+    if (Array.isArray(response?.content)) return response.content;
+    return [];
+  };
 
   // ==============================
   // GET TODAY DATE
@@ -81,11 +92,13 @@ function StudentAttendance() {
 
       setError("");
 
-      const data = await AttendanceService.getAllAttendance();
+      const data = await (isStudent
+        ? AttendanceService.getMyAttendance()
+        : AttendanceService.getAllAttendance());
 
       console.log("Attendance API:", data);
 
-      setAttendance(Array.isArray(data) ? data : []);
+      setAttendance(normalizeAttendanceResponse(data));
     } catch (err) {
       console.error("Failed to load attendance:", err);
 
@@ -93,7 +106,7 @@ function StudentAttendance() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isStudent]);
 
   useEffect(() => {
     loadAttendance();
@@ -170,6 +183,35 @@ function StudentAttendance() {
 
   const attendancePercentage =
     totalStudents > 0 ? Math.round((attendedCount / totalStudents) * 100) : 0;
+
+  const attendanceChart = useMemo(() => {
+    const byDate = new Map();
+
+    attendance.forEach((item) => {
+      const date = item.attendanceDate || "Unknown";
+      const current = byDate.get(date) || {
+        present: 0,
+        late: 0,
+        absent: 0,
+      };
+      const status = getStatus(item.status);
+
+      if (status === "Present") current.present += 1;
+      if (status === "Late") current.late += 1;
+      if (status === "Absent") current.absent += 1;
+
+      byDate.set(date, current);
+    });
+
+    const dates = [...byDate.keys()].sort();
+
+    return {
+      dates,
+      present: dates.map((date) => byDate.get(date).present),
+      late: dates.map((date) => byDate.get(date).late),
+      absent: dates.map((date) => byDate.get(date).absent),
+    };
+  }, [attendance]);
 
   // ==============================
   // TODAY'S ATTENDANCE
@@ -477,24 +519,28 @@ function StudentAttendance() {
             <h1>Attendance Dashboard</h1>
           </div>
 
-          <input
-            type="file"
-            ref={fileInputRef}
-            accept=".xlsx,.xls,.csv"
-            style={{
-              display: "none",
-            }}
-            onChange={handleFileChange}
-          />
+          {!isStudent && (
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept=".xlsx,.xls,.csv"
+              style={{
+                display: "none",
+              }}
+              onChange={handleFileChange}
+            />
+          )}
 
           <div className="d-flex gap-2">
-            <button
-              className="btn btn-primary"
-              onClick={handleUploadClick}
-              disabled={uploading}
-            >
-              {uploading ? "Uploading..." : "⬆ Upload"}
-            </button>
+            {!isStudent && (
+              <button
+                className="btn btn-primary"
+                onClick={handleUploadClick}
+                disabled={uploading}
+              >
+                {uploading ? "Uploading..." : "⬆ Upload"}
+              </button>
+            )}
 
             <div className="header-date">
               <FaCalendarAlt />
@@ -537,7 +583,9 @@ function StudentAttendance() {
               <FaUsers />
             </div>
 
-            <div className="kpi-title">Total Students</div>
+            <div className="kpi-title">
+              {isStudent ? "My Attendance Days" : "Total Students"}
+            </div>
 
             <div className="kpi-number">{totalStudents}</div>
           </div>
@@ -581,152 +629,201 @@ function StudentAttendance() {
 
         {/* ================= FILTERS ================= */}
 
-        <section className="attendance-filter-card">
-          <div className="attendance-section-heading">
-            <FaFilter />
+        {!isStudent && (
+          <section className="attendance-filter-card">
+            <div className="attendance-section-heading">
+              <FaFilter />
 
-            <h2>Filters</h2>
-          </div>
-
-          <div className="attendance-filter-grid">
-            {/* Branch */}
-
-            <div className="attendance-filter">
-              <label>Branch</label>
-
-              <div
-                className="attendance-select"
-                style={{
-                  opacity: 0.6,
-                  cursor: "not-allowed",
-                }}
-              >
-                <FaGraduationCap />
-
-                <span>Branch unavailable</span>
-
-                <FaChevronDown className="select-arrow" />
-              </div>
+              <h2>Filters</h2>
             </div>
 
-            {/* Course */}
+            <div className="attendance-filter-grid">
+              {/* Branch */}
 
-            <div className="attendance-filter">
-              <label>Course</label>
+              <div className="attendance-filter">
+                <label>Branch</label>
 
-              <div
-                className="attendance-select"
-                style={{
-                  opacity: 0.6,
-                  cursor: "not-allowed",
-                }}
-              >
-                <FaGraduationCap />
-
-                <span>Course unavailable</span>
-
-                <FaChevronDown className="select-arrow" />
-              </div>
-            </div>
-
-            {/* Section */}
-
-            <div className="attendance-filter">
-              <label>Section</label>
-
-              <div className="attendance-select">
-                <FaUserFriends />
-
-                <select
-                  value={selectedSection}
-                  onChange={(e) => setSelectedSection(e.target.value)}
+                <div
+                  className="attendance-select"
                   style={{
-                    flex: 1,
-                    border: "none",
-                    outline: "none",
-                    background: "transparent",
-                    color: "#24466d",
+                    opacity: 0.6,
+                    cursor: "not-allowed",
                   }}
                 >
-                  <option value="">Select Section</option>
+                  <FaGraduationCap />
 
-                  {sections.map((section) => (
-                    <option key={section} value={section}>
-                      {section}
-                    </option>
-                  ))}
-                </select>
+                  <span>Branch unavailable</span>
+
+                  <FaChevronDown className="select-arrow" />
+                </div>
               </div>
+
+              {/* Course */}
+
+              <div className="attendance-filter">
+                <label>Course</label>
+
+                <div
+                  className="attendance-select"
+                  style={{
+                    opacity: 0.6,
+                    cursor: "not-allowed",
+                  }}
+                >
+                  <FaGraduationCap />
+
+                  <span>Course unavailable</span>
+
+                  <FaChevronDown className="select-arrow" />
+                </div>
+              </div>
+
+              {!isStudent && (
+                <div className="attendance-filter">
+                  <label>Section</label>
+
+                  <div className="attendance-select">
+                    <FaUserFriends />
+
+                    <select
+                      value={selectedSection}
+                      onChange={(e) => setSelectedSection(e.target.value)}
+                      style={{
+                        flex: 1,
+                        border: "none",
+                        outline: "none",
+                        background: "transparent",
+                        color: "#24466d",
+                      }}
+                    >
+                      <option value="">Select Section</option>
+
+                      {sections.map((section) => (
+                        <option key={section} value={section}>
+                          {section}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {/* Apply */}
+
+              <button className="attendance-apply" onClick={handleApplyFilters}>
+                <FaSearch />
+                Apply Filters
+              </button>
             </div>
-
-            {/* Apply */}
-
-            <button className="attendance-apply" onClick={handleApplyFilters}>
-              <FaSearch />
-              Apply Filters
-            </button>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* ================= TABLES ================= */}
 
-        <section className="attendance-data-grid">
-          {/* TODAY'S ATTENDANCE */}
-
-          <div className="attendance-data-card">
-            <div className="data-card-header">
-              <div className="attendance-section-heading">
-                <FaClipboardList />
-
-                <h2>Today's Attendance</h2>
-              </div>
-            </div>
-
-            <div
-              className="ag-theme-quartz"
-              style={{
-                height: 320,
-                width: "100%",
-              }}
-            >
-              <AgGridReact
-                rowData={studentRows}
-                columnDefs={studentColumns}
-                pagination={true}
-                paginationPageSize={5}
-                animateRows={true}
-              />
-            </div>
-          </div>
-
-          {/* ATTENDANCE BY SECTION */}
-
-          <div className="attendance-data-card">
+        {isStudent && (
+          <section
+            className="attendance-data-card"
+            style={{ marginBottom: 24 }}
+          >
             <div className="data-card-header">
               <div className="attendance-section-heading">
                 <FaChartBar />
-
-                <h2>Attendance by Section</h2>
+                <h2>My Attendance Graph</h2>
               </div>
             </div>
 
-            <div
-              className="ag-theme-quartz"
-              style={{
-                height: 320,
-                width: "100%",
-              }}
-            >
-              <AgGridReact
-                rowData={sectionRows}
-                columnDefs={sectionColumns}
-                pagination={true}
-                paginationPageSize={5}
-                animateRows={true}
-              />
+            <div style={{ width: "100%", minHeight: 320 }}>
+              {attendanceChart.dates.length > 0 ? (
+                <BarChart
+                  height={300}
+                  xAxis={[{ scaleType: "band", data: attendanceChart.dates }]}
+                  series={[
+                    {
+                      data: attendanceChart.present,
+                      label: "Present",
+                      color: "#16a34a",
+                    },
+                    {
+                      data: attendanceChart.late,
+                      label: "Late",
+                      color: "#f59e0b",
+                    },
+                    {
+                      data: attendanceChart.absent,
+                      label: "Absent",
+                      color: "#dc3545",
+                    },
+                  ]}
+                  margin={{ left: 45, right: 20, top: 25, bottom: 55 }}
+                  borderRadius={4}
+                  slotProps={{ legend: { hidden: false } }}
+                />
+              ) : (
+                <div className="text-muted p-4">
+                  No attendance history available.
+                </div>
+              )}
             </div>
-          </div>
-        </section>
+          </section>
+        )}
+
+        {!isStudent && (
+          <section className="attendance-data-grid">
+            {/* TODAY'S ATTENDANCE */}
+
+            <div className="attendance-data-card">
+              <div className="data-card-header">
+                <div className="attendance-section-heading">
+                  <FaClipboardList />
+
+                  <h2>Today's Attendance</h2>
+                </div>
+              </div>
+
+              <div
+                className="ag-theme-quartz"
+                style={{
+                  height: 320,
+                  width: "100%",
+                }}
+              >
+                <AgGridReact
+                  rowData={studentRows}
+                  columnDefs={studentColumns}
+                  pagination={true}
+                  paginationPageSize={5}
+                  animateRows={true}
+                />
+              </div>
+            </div>
+
+            <div className="attendance-data-card">
+              <div className="data-card-header">
+                <div className="attendance-section-heading">
+                  <FaChartBar />
+
+                  <h2>Attendance by Section</h2>
+                </div>
+              </div>
+
+              <div
+                className="ag-theme-quartz"
+                style={{
+                  height: 320,
+                  width: "100%",
+                }}
+              >
+                <AgGridReact
+                  rowData={sectionRows}
+                  columnDefs={sectionColumns}
+                  pagination={true}
+                  paginationPageSize={5}
+                  animateRows={true}
+                />
+              </div>
+            </div>
+          </section>
+        )}
       </main>
     </div>
   );

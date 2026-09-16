@@ -22,12 +22,14 @@ import ConfirmDialog from "../../components/Common/ConfirmDialog";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { useToast } from "../../components/Toast/useToast";
 import { getApiErrorMessage } from "../../utils/apiError";
+import { canAccessFeature, currentRole } from "../../utils/roles";
 import "./ExamList.css";
 import AddExamModal from "./AddExamModal";
 import QuestionSelectionModal from "./QuestionSelectionModal";
 
 export default function ExamList() {
   const toast = useToast();
+  const canManage = canAccessFeature("manageExams", currentRole());
   const [showModal, setShowModal] = useState(false);
 
   const [search, setSearch] = useState("");
@@ -106,33 +108,37 @@ export default function ExamList() {
         </Col>
 
         <Col md={6} className="text-end">
-          <input
-            type="file"
-            id="examUpload"
-            style={{ display: "none" }}
-            onChange={(e) => {
-              console.log("Uploaded file:", e.target.files[0]);
-            }}
-          />
+          {canManage && (
+            <>
+              <input
+                type="file"
+                id="examUpload"
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  console.log("Uploaded file:", e.target.files[0]);
+                }}
+              />
 
-          <Button
-            className="me-3"
-            variant="primary"
-            onClick={() => document.getElementById("examUpload").click()}
-          >
-            ⬆ Upload
-          </Button>
+              <Button
+                className="me-3"
+                variant="primary"
+                onClick={() => document.getElementById("examUpload").click()}
+              >
+                ⬆ Upload
+              </Button>
 
-          <Button
-            className="add-btn"
-            onClick={() => {
-              setEditExam(null);
-              setShowModal(true);
-            }}
-          >
-            <FaPlus className="me-2" />
-            Add Exam
-          </Button>
+              <Button
+                className="add-btn"
+                onClick={() => {
+                  setEditExam(null);
+                  setShowModal(true);
+                }}
+              >
+                <FaPlus className="me-2" />
+                Add Exam
+              </Button>
+            </>
+          )}
         </Col>
       </Row>
 
@@ -263,31 +269,33 @@ export default function ExamList() {
                     {exam.status}
                   </span>
 
-                  <div className="exam-actions mt-3">
-                    <Button
-                      size="sm"
-                      variant="outline-primary"
-                      onClick={() => handleEdit(exam)}
-                    >
-                      Edit
-                    </Button>
+                  {canManage && (
+                    <div className="exam-actions mt-3">
+                      <Button
+                        size="sm"
+                        variant="outline-primary"
+                        onClick={() => handleEdit(exam)}
+                      >
+                        Edit
+                      </Button>
 
-                    <Button
-                      size="sm"
-                      variant="outline-danger"
-                      onClick={() => del.request(exam)}
-                    >
-                      Delete
-                    </Button>
+                      <Button
+                        size="sm"
+                        variant="outline-danger"
+                        onClick={() => del.request(exam)}
+                      >
+                        Delete
+                      </Button>
 
-                    <Button
-                      size="sm"
-                      variant="outline-success"
-                      onClick={() => handleAddQuestions(exam.id)}
-                    >
-                      Add Questions
-                    </Button>
-                  </div>
+                      <Button
+                        size="sm"
+                        variant="outline-success"
+                        onClick={() => handleAddQuestions(exam.id)}
+                      >
+                        Add Questions
+                      </Button>
+                    </div>
+                  )}
                 </Card.Body>
               </Card>
             </Col>

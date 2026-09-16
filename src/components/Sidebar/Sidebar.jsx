@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { logoutUser } from "../../interceptors/axiosInterceptor";
 import "./Sidebar.css";
 import { FaCreditCard } from "react-icons/fa";
+import { canAccessFeature, normalizeRole, ROLES } from "../../utils/roles";
 
 import logo from "../../assets/hintmatrix-logo.png";
 
@@ -47,71 +48,39 @@ export default function Sidebar({
 
   const navigate = useNavigate();
 
-  const normalizeRole = (value = "") =>
-    value.toString().trim().toUpperCase().replace(/\s+/g, "_");
+  const userRole = normalizeRole(localStorage.getItem("role") || ROLES.GUEST);
 
-  const userRole = normalizeRole(localStorage.getItem("role") || "GUEST");
-
-  const isStudent = userRole === "STUDENT";
-  const canAccessAdminMenu = [
-    "SUPER_ADMIN",
-    "COLLEGE_ADMIN",
-    "BRANCH_ADMIN",
-  ].includes(userRole);
-  const canAccessPerformance = [
-    "SUPER_ADMIN",
-    "COLLEGE_ADMIN",
-    "BRANCH_ADMIN",
-    "STUDENT",
-  ].includes(userRole);
-  const canAccessCollegeMenu = [
-    "SUPER_ADMIN",
-    "COLLEGE_ADMIN",
-    "BRANCH_ADMIN",
-  ].includes(userRole);
-  const canAccessCourseMenu = [
-    "SUPER_ADMIN",
-    "BRANCH_ADMIN",
-    "STUDENT",
-  ].includes(userRole);
-
-  const canAccessQuestionMenu = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(
+  const isStudent = userRole === ROLES.STUDENT;
+  const isGuest = userRole === ROLES.GUEST;
+  const canAccessAdminMenu = canAccessFeature("subscriptions", userRole);
+  const canAccessPlans = canAccessFeature("subscriptionsPlans", userRole);
+  const canAccessPerformance = canAccessFeature("performance", userRole);
+  const canAccessCollegeMenu = canAccessFeature("colleges", userRole);
+  const canAccessBranchMenu = canAccessFeature("branches", userRole);
+  const canAccessCourseMenu = canAccessFeature("courses", userRole);
+  const canManageCollegeAdminUsers = canAccessFeature(
+    "manageCollegeAdmins",
     userRole,
   );
-
-  const canAccessTableMenu = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(userRole);
-
-  const canAccessRuleEngine = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(
+  const canManageSuperAdminUsers = canAccessFeature(
+    "manageSuperAdmins",
     userRole,
   );
-
-  const canAccessStudentAttendance = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(
+  const canManageBranchAdminUsers = canAccessFeature(
+    "manageBranchAdmins",
     userRole,
   );
+  const canManageStudentUsers = canAccessFeature("manageStudents", userRole);
 
-  const canAccessPractice = ["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"].includes(
-    userRole,
-  );
-
-  // const canAccessExam = ["SUPER_ADMIN", "BRANCH_ADMIN","GUEST","COLLEGE_ADMIN", "STUDENT"].includes(
-  //   userRole,
-  // );
-
-  const canAccessSessions = ["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"].includes(
-    userRole,
-  );
-
-  const canAccessResults = ["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"].includes(
-    userRole,
-  );
-
-  const canAccessCertificates = [
-    "SUPER_ADMIN",
-    "BRANCH_ADMIN",
-    "STUDENT",
-  ].includes(userRole);
-
-  const canAccessSettings = ["SUPER_ADMIN", "BRANCH_ADMIN"].includes(userRole);
+  const canAccessQuestionMenu = canAccessFeature("manageQuestions", userRole);
+  const canAccessTableMenu = canAccessFeature("tableMetadata", userRole);
+  const canAccessRuleEngine = canAccessFeature("ruleEngine", userRole);
+  const canAccessStudentAttendance = canAccessFeature("attendance", userRole);
+  const canAccessPractice = canAccessFeature("practiceQuestions", userRole);
+  const canAccessSessions = canAccessFeature("attemptExams", userRole);
+  const canAccessResults = canAccessFeature("results", userRole);
+  const canAccessCertificates = canAccessFeature("certificates", userRole);
+  const canAccessSettings = canAccessFeature("settings", userRole);
 
   const handleLogout = () => {
     logoutUser(navigate);
@@ -172,7 +141,7 @@ export default function Sidebar({
 
           {/* Subscription */}
 
-          {canAccessAdminMenu && (
+          {(canAccessAdminMenu || canAccessPlans) && (
             <div
               className={`subscription-menu ${subscriptionOpen ? "open" : ""}`}
             >
@@ -187,62 +156,90 @@ export default function Sidebar({
               </div>
               {subscriptionOpen && (
                 <div className="submenu">
-                  <NavLink
-                    to="/subscriptions"
-                    end
-                    className={subMenuClass}
-                    onClick={closeSidebar}
-                  >
-                    <FaCreditCard />
-                    <span>Overview</span>
-                  </NavLink>
+                  {canAccessAdminMenu && (
+                    <NavLink
+                      to="/subscriptions"
+                      end
+                      className={subMenuClass}
+                      onClick={closeSidebar}
+                    >
+                      <FaCreditCard />
+                      <span>Overview</span>
+                    </NavLink>
+                  )}
                   <NavLink
                     to="/subscriptions/plans"
                     className={subMenuClass}
                     onClick={closeSidebar}
                   >
                     <FaCreditCard />
-                    <span>Manage Plans</span>
+                    <span>{canAccessAdminMenu ? "Manage Plans" : "Plans"}</span>
                   </NavLink>
-                  <NavLink
-                    to="/subscriptions/history"
-                    className={subMenuClass}
-                    onClick={closeSidebar}
-                  >
-                    <MdListAlt />
-                    <span>Subscription History</span>
-                  </NavLink>
+                  {isStudent && (
+                    <NavLink
+                      to="/course-subscription"
+                      className={subMenuClass}
+                      onClick={closeSidebar}
+                    >
+                      <FaCreditCard />
+                      <span>Course Subscription</span>
+                    </NavLink>
+                  )}
+                  {canAccessAdminMenu && (
+                    <NavLink
+                      to="/subscriptions/history"
+                      className={subMenuClass}
+                      onClick={closeSidebar}
+                    >
+                      <MdListAlt />
+                      <span>Subscription History</span>
+                    </NavLink>
+                  )}
                 </div>
               )}
             </div>
           )}
 
           {/* Courses */}
-          {canAccessCourseMenu && !isStudent && (
+          {canAccessCourseMenu && !isStudent && !isGuest && (
             <div className={`college-menu ${collegeOpen ? "open" : ""}`}>
-              <NavLink
-                to="/college"
-                className="college-menu-link"
-                onClick={() => setCollegeOpen((current) => !current)}
-              >
-                <div className={`menu-item ${collegeOpen ? "active" : ""}`}>
+              {canAccessCollegeMenu ? (
+                <NavLink
+                  to="/college"
+                  className="college-menu-link"
+                  onClick={() => setCollegeOpen((current) => !current)}
+                >
+                  <div className={`menu-item ${collegeOpen ? "active" : ""}`}>
+                    <div className="menu-left">
+                      <MdSchool className="menu-icon" />
+                      <span>College</span>
+                    </div>
+                  </div>
+                </NavLink>
+              ) : (
+                <div
+                  className={`menu-item ${collegeOpen ? "active" : ""}`}
+                  onClick={() => setCollegeOpen((current) => !current)}
+                >
                   <div className="menu-left">
                     <MdSchool className="menu-icon" />
-                    <span>College</span>
+                    <span>Organization</span>
                   </div>
                 </div>
-              </NavLink>
+              )}
 
               {collegeOpen && (
                 <div className="submenu">
-                  <NavLink
-                    to="/branch"
-                    className={subMenuClass}
-                    onClick={closeSidebar}
-                  >
-                    <MdAccountTree />
-                    <span>Branch</span>
-                  </NavLink>
+                  {canAccessBranchMenu && (
+                    <NavLink
+                      to="/branch"
+                      className={subMenuClass}
+                      onClick={closeSidebar}
+                    >
+                      <MdAccountTree />
+                      <span>Branch</span>
+                    </NavLink>
+                  )}
 
                   <NavLink
                     to="/courses"
@@ -266,6 +263,15 @@ export default function Sidebar({
             </div>
           )}
 
+          {canAccessCourseMenu && (
+            <NavLink to="/courses" className={menuClass} onClick={closeSidebar}>
+              <div className="menu-left">
+                <MdMenuBook className="menu-icon" />
+                <span>Question Bank</span>
+              </div>
+            </NavLink>
+          )}
+
           {/* Admin */}
 
           {canAccessAdminMenu && (
@@ -282,41 +288,49 @@ export default function Sidebar({
 
               {adminOpen && (
                 <div className="submenu">
-                  <NavLink
-                    to="/admin/super-admin"
-                    className={subMenuClass}
-                    onClick={closeSidebar}
-                  >
-                    <MdSecurity />
-                    <span>Super Admin</span>
-                  </NavLink>
+                  {canManageSuperAdminUsers && (
+                    <NavLink
+                      to="/admin/super-admin"
+                      className={subMenuClass}
+                      onClick={closeSidebar}
+                    >
+                      <MdSecurity />
+                      <span>Super Admin</span>
+                    </NavLink>
+                  )}
 
-                  <NavLink
-                    to="/admin/college-admin"
-                    className={subMenuClass}
-                    onClick={closeSidebar}
-                  >
-                    <MdSchool />
-                    <span>College Admin</span>
-                  </NavLink>
+                  {canManageCollegeAdminUsers && (
+                    <NavLink
+                      to="/admin/college-admin"
+                      className={subMenuClass}
+                      onClick={closeSidebar}
+                    >
+                      <MdSchool />
+                      <span>College Admin</span>
+                    </NavLink>
+                  )}
 
-                  <NavLink
-                    to="/admin/branch-admin"
-                    className={subMenuClass}
-                    onClick={closeSidebar}
-                  >
-                    <MdAccountTree />
-                    <span>Branch Admin</span>
-                  </NavLink>
+                  {canManageBranchAdminUsers && (
+                    <NavLink
+                      to="/admin/branch-admin"
+                      className={subMenuClass}
+                      onClick={closeSidebar}
+                    >
+                      <MdAccountTree />
+                      <span>Branch Admin</span>
+                    </NavLink>
+                  )}
 
-                  <NavLink
-                    to="/admin/student"
-                    className={subMenuClass}
-                    onClick={closeSidebar}
-                  >
-                    <MdSchool />
-                    <span>Student</span>
-                  </NavLink>
+                  {canManageStudentUsers && (
+                    <NavLink
+                      to="/admin/student"
+                      className={subMenuClass}
+                      onClick={closeSidebar}
+                    >
+                      <MdSchool />
+                      <span>Student</span>
+                    </NavLink>
+                  )}
                 </div>
               )}
             </div>
@@ -365,7 +379,6 @@ export default function Sidebar({
                     <MdListAlt />
                     <span>All Questions</span>
                   </NavLink>
-
                 </div>
               )}
             </div>
@@ -465,12 +478,18 @@ export default function Sidebar({
 
           {/* Exam */}
 
-          <NavLink to="/exam-hub" className={menuClass} onClick={closeSidebar}>
-            <div className="menu-left">
-              <MdAssignment className="menu-icon" />
-              <span>Exam</span>
-            </div>
-          </NavLink>
+          {canAccessFeature("attemptExams", userRole) && (
+            <NavLink
+              to="/exam-hub"
+              className={menuClass}
+              onClick={closeSidebar}
+            >
+              <div className="menu-left">
+                <MdAssignment className="menu-icon" />
+                <span>Exam</span>
+              </div>
+            </NavLink>
+          )}
 
           {/* Performance */}
 

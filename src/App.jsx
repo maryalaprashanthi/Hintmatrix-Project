@@ -59,7 +59,14 @@ import JournalPage from "./components/JournalQuestion/JournalPage";
 import DropdownPage from "./components/DropdownQuestions/DropdownPage";
 import CourseSubscribe from "./pages/CourseSubscribe";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
-import { CONTENT_MANAGER_ROLES } from "./utils/roles";
+import {
+  ADMIN_ROLES,
+  ATTEMPT_ROLES,
+  CONTENT_MANAGER_ROLES,
+  RESULT_ROLES,
+  ROLES,
+  VIEWER_ROLES,
+} from "./utils/roles";
 import Unauthorized from "./pages/Unauthorized/Unauthorized";
 import ExamPage from "./components/Exam/ExamPage";
 import MockExamPage from "./components/MockExam/MockExamPage";
@@ -170,18 +177,18 @@ function App() {
       >
         {/* Dashboard */}
 
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={VIEWER_ROLES}>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/performance"
           element={
-            <ProtectedRoute
-              allowedRoles={[
-                "SUPER_ADMIN",
-                "COLLEGE_ADMIN",
-                "BRANCH_ADMIN",
-                "STUDENT",
-              ]}
-            >
+            <ProtectedRoute allowedRoles={ATTEMPT_ROLES}>
               <PerformanceDashboard />
             </ProtectedRoute>
           }
@@ -190,9 +197,7 @@ function App() {
         <Route
           path="/subscriptions"
           element={
-            <ProtectedRoute
-              allowedRoles={["SUPER_ADMIN", "COLLEGE_ADMIN", "BRANCH_ADMIN"]}
-            >
+            <ProtectedRoute allowedRoles={ADMIN_ROLES}>
               <Subscription />
             </ProtectedRoute>
           }
@@ -200,9 +205,7 @@ function App() {
         <Route
           path="/subscriptions/plans"
           element={
-            <ProtectedRoute
-              allowedRoles={["SUPER_ADMIN", "COLLEGE_ADMIN", "BRANCH_ADMIN"]}
-            >
+            <ProtectedRoute allowedRoles={VIEWER_ROLES}>
               <SubscriptionPlans />
             </ProtectedRoute>
           }
@@ -210,23 +213,44 @@ function App() {
         <Route
           path="/subscriptions/history"
           element={
-            <ProtectedRoute
-              allowedRoles={["SUPER_ADMIN", "BRANCH_ADMIN"]}
-            >
+            <ProtectedRoute allowedRoles={ADMIN_ROLES}>
               <SubscriptionHistory />
             </ProtectedRoute>
           }
         />
         {/* College */}
-        <Route path="/college" element={<College />} />
-        <Route path="/branch" element={<Branch />} />
-        <Route path="/section" element={<Section />} />
+        <Route
+          path="/college"
+          element={
+            <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
+              <College />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/branch"
+          element={
+            <ProtectedRoute
+              allowedRoles={[ROLES.SUPER_ADMIN, ROLES.COLLEGE_ADMIN]}
+            >
+              <Branch />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/section"
+          element={
+            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+              <Section />
+            </ProtectedRoute>
+          }
+        />
 
         {/* College Admin */}
         <Route
           path="/college-admin"
           element={
-            <ProtectedRoute allowedRoles={["SUPER_ADMIN", "COLLEGE_ADMIN"]}>
+            <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
               <CollegeAdmin />
             </ProtectedRoute>
           }
@@ -234,7 +258,7 @@ function App() {
         <Route
           path="/admin/college-admin"
           element={
-            <ProtectedRoute allowedRoles={["SUPER_ADMIN", "COLLEGE_ADMIN"]}>
+            <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
               <CollegeAdmin />
             </ProtectedRoute>
           }
@@ -244,7 +268,7 @@ function App() {
         <Route
           path="/branch-admin"
           element={
-            <ProtectedRoute allowedRoles={["SUPER_ADMIN", "BRANCH_ADMIN"]}>
+            <ProtectedRoute allowedRoles={["SUPER_ADMIN", "COLLEGE_ADMIN"]}>
               <BranchAdmin />
             </ProtectedRoute>
           }
@@ -252,7 +276,7 @@ function App() {
         <Route
           path="/admin/branch-admin"
           element={
-            <ProtectedRoute allowedRoles={["SUPER_ADMIN", "BRANCH_ADMIN"]}>
+            <ProtectedRoute allowedRoles={["SUPER_ADMIN", "COLLEGE_ADMIN"]}>
               <BranchAdmin />
             </ProtectedRoute>
           }
@@ -273,7 +297,12 @@ function App() {
           path="/admin/student"
           element={
             <ProtectedRoute
-              allowedRoles={["SUPER_ADMIN", "BRANCH_ADMIN", "STUDENT"]}
+              allowedRoles={[
+                "SUPER_ADMIN",
+                "COLLEGE_ADMIN",
+                "BRANCH_ADMIN",
+                "STUDENT",
+              ]}
             >
               <Student />
             </ProtectedRoute>
@@ -283,12 +312,20 @@ function App() {
         {/* Courses */}
         <Route
           path="/courses"
-          element={<Courses dynamicCourses={coursesList} />}
+          element={
+            <ProtectedRoute allowedRoles={VIEWER_ROLES}>
+              <Courses dynamicCourses={coursesList} />
+            </ProtectedRoute>
+          }
         />
 
         <Route
           path="/course"
-          element={<Courses dynamicCourses={coursesList} />}
+          element={
+            <ProtectedRoute allowedRoles={VIEWER_ROLES}>
+              <Courses dynamicCourses={coursesList} />
+            </ProtectedRoute>
+          }
         />
 
         {/* Add Course */}
@@ -304,13 +341,13 @@ function App() {
         {/*
           Content drill-down: Course > Subject > Chapter > Topic > Questions.
           One parent id per segment, nothing in query strings or router state.
-          The list pages are content-management, so they're admin-only; the
-          single-question view stays open for practice.
+          The list pages are available for question-bank browsing; authoring
+          remains protected by the separate create route.
         */}
         <Route
           path="/courses/:courseId/subjects"
           element={
-            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+            <ProtectedRoute allowedRoles={VIEWER_ROLES}>
               <Subjects />
             </ProtectedRoute>
           }
@@ -318,7 +355,7 @@ function App() {
         <Route
           path="/subjects/:subjectId/chapters"
           element={
-            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+            <ProtectedRoute allowedRoles={VIEWER_ROLES}>
               <Chapters />
             </ProtectedRoute>
           }
@@ -326,7 +363,7 @@ function App() {
         <Route
           path="/chapters/:chapterId/topics"
           element={
-            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+            <ProtectedRoute allowedRoles={VIEWER_ROLES}>
               <Topics />
             </ProtectedRoute>
           }
@@ -334,7 +371,7 @@ function App() {
         <Route
           path="/topics/:topicId/questions"
           element={
-            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+            <ProtectedRoute allowedRoles={VIEWER_ROLES}>
               <QuestionList />
             </ProtectedRoute>
           }
@@ -342,7 +379,7 @@ function App() {
         <Route
           path="/questions"
           element={
-            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+            <ProtectedRoute allowedRoles={VIEWER_ROLES}>
               <QuestionList />
             </ProtectedRoute>
           }
@@ -373,7 +410,7 @@ function App() {
         <Route
           path="/Exam"
           element={
-            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+            <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
               <ExamList />
             </ProtectedRoute>
           }
@@ -386,13 +423,35 @@ function App() {
         <Route path="/journal/:questionId" element={<JournalPage />} />
         <Route path="/dropdown/:questionId" element={<DropdownPage />} />
         <Route path="/course-subscribe" element={<CourseSubscribe />} />
-        <Route path="/exam-hub" element={<ExamHub />} />
-        <Route path="/exams" element={<ExamCatalog />} />
-        <Route path="/mock-exams" element={<MockExamCatalog />} />
+        <Route path="/course-subscription" element={<CourseSubscribe />} />
+        <Route
+          path="/exam-hub"
+          element={
+            <ProtectedRoute allowedRoles={ATTEMPT_ROLES}>
+              <ExamHub />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/exams"
+          element={
+            <ProtectedRoute allowedRoles={ATTEMPT_ROLES}>
+              <ExamCatalog />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mock-exams"
+          element={
+            <ProtectedRoute allowedRoles={ATTEMPT_ROLES}>
+              <MockExamCatalog />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/exam-paper"
           element={
-            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+            <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
               <ExamPaper />
             </ProtectedRoute>
           }
@@ -400,7 +459,7 @@ function App() {
         <Route
           path="/exam-paper/:examId"
           element={
-            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+            <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
               <ExamPaper />
             </ProtectedRoute>
           }
@@ -408,7 +467,7 @@ function App() {
         <Route
           path="/mock-exam-paper/:examId"
           element={
-            <ProtectedRoute allowedRoles={CONTENT_MANAGER_ROLES}>
+            <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
               <ExamPaper />
             </ProtectedRoute>
           }
@@ -421,7 +480,10 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/mcq-questions/practice" element={<Navigate to="/courses" replace />} />
+        <Route
+          path="/mcq-questions/practice"
+          element={<Navigate to="/courses" replace />}
+        />
         <Route
           path="/mcq-questions/list"
           element={
@@ -431,8 +493,22 @@ function App() {
           }
         />
       </Route>
-      <Route path="/exams/:examId" element={<ExamPage />} />
-      <Route path="/mock-exams/:examId" element={<MockExamPage />} />
+      <Route
+        path="/exams/:examId"
+        element={
+          <ProtectedRoute allowedRoles={ATTEMPT_ROLES}>
+            <ExamPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/mock-exams/:examId"
+        element={
+          <ProtectedRoute allowedRoles={ATTEMPT_ROLES}>
+            <MockExamPage />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }

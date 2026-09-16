@@ -6,9 +6,12 @@ const isAuthenticated = () => Boolean(localStorage.getItem("token"));
 const hasRequiredRole = (allowedRoles = []) => {
   if (!allowedRoles.length) return true;
 
-  const userRole = normalizeRole(localStorage.getItem("role"));
+  const userRole = normalizeRole(localStorage.getItem("role") || "GUEST");
 
-  return allowedRoles.some((role) => normalizeRole(role) === userRole);
+  return (
+    userRole === "SUPER_ADMIN" ||
+    allowedRoles.some((role) => normalizeRole(role) === userRole)
+  );
 };
 
 export default function ProtectedRoute({ children, allowedRoles = [] }) {
@@ -19,7 +22,13 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
   }
 
   if (!hasRequiredRole(allowedRoles)) {
-    return <Navigate to="/unauthorized" replace state={{ from: location.pathname }} />;
+    return (
+      <Navigate
+        to="/unauthorized"
+        replace
+        state={{ from: location.pathname }}
+      />
+    );
   }
 
   return children;

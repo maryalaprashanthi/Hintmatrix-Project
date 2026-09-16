@@ -18,7 +18,7 @@ import {
   FaBookmark,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { canManageContent } from "../../utils/roles";
+import { canAccessFeature, currentRole } from "../../utils/roles";
 import { getCurrentUserName } from "../../utils/user";
 import ExamService from "../../services/ExamService";
 import "./ExamHub.css";
@@ -184,7 +184,7 @@ const subjects = [
 function ExamHub() {
   const userName = getCurrentUserName();
   const navigate = useNavigate();
-  const canCreateExam = canManageContent();
+  const canCreateExam = canAccessFeature("manageExams", currentRole());
 
   const [schedules, setSchedules] = useState([]);
   const [scheduleLoading, setScheduleLoading] = useState(true);
