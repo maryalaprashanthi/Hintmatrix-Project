@@ -5,8 +5,10 @@ import Layout from "./Layout/Layout";
 
 import Dashboard from "./pages/Dashboard";
 import Subscription from "./pages/Subscription/Subscription";
+import PlanAccess from "./pages/Subscription/PlanAccess";
 import SubscriptionPlans from "./pages/Subscription/SubscriptionPlans";
 import SubscriptionHistory from "./pages/Subscription/SubscriptionHistory";
+import CourseLevelAccess from "./pages/Subscription/courselevelaccess";
 
 // --- UPDATED EXPORT IMPORTS TO MATCH COMMON NESTED FOLDER ARCHITECTURES ---
 import College from "./pages/College/College";
@@ -197,6 +199,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/course-level-access" element={<CourseLevelAccess />} />
+        <Route path="/plan-access" element={<PlanAccess />} />
         <Route
           path="/subscriptions/plans"
           element={
@@ -210,9 +214,7 @@ function App() {
         <Route
           path="/subscriptions/history"
           element={
-            <ProtectedRoute
-              allowedRoles={["SUPER_ADMIN", "BRANCH_ADMIN"]}
-            >
+            <ProtectedRoute allowedRoles={["SUPER_ADMIN", "BRANCH_ADMIN"]}>
               <SubscriptionHistory />
             </ProtectedRoute>
           }
@@ -421,7 +423,10 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/mcq-questions/practice" element={<Navigate to="/courses" replace />} />
+        <Route
+          path="/mcq-questions/practice"
+          element={<Navigate to="/courses" replace />}
+        />
         <Route
           path="/mcq-questions/list"
           element={

@@ -647,10 +647,9 @@
 
 .subscription-bulk-form {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) minmax(
-      260px,
-      1.4fr
-    ) auto;
+  grid-template-columns:
+    minmax(180px, 1fr) minmax(180px, 1fr) minmax(260px, 1.4fr)
+    auto;
   gap: 16px;
   margin-top: 20px;
 }

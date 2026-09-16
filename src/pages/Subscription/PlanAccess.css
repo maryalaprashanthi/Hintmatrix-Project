@@ -1,0 +1,933 @@
+.plan-access-page {
+  width: 100%;
+  color: #142b55;
+  font-family: "Poppins", "Segoe UI", Arial, sans-serif;
+}
+
+.plan-access-page .pa-main {
+  width: 100%;
+  padding: 24px 25px 30px;
+}
+
+/* =========================================================
+   BREADCRUMB
+   ========================================================= */
+
+.plan-access-page .breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 5px 0 12px 12px;
+  color: #66809e;
+  font-size: 13px;
+}
+
+.plan-access-page .breadcrumb strong {
+  color: #426488;
+}
+
+.plan-access-page .breadcrumb b {
+  color: #9cb0c6;
+}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.plan-access-page .pa-hero {
+  min-height: 156px;
+  border-radius: 13px;
+  overflow: hidden;
+  position: relative;
+  background:
+    radial-gradient(
+      circle at 75% 40%,
+      rgba(203, 227, 255, 0.9),
+      transparent 32%
+    ),
+    linear-gradient(105deg, #ffffff 0%, #f5faff 55%, #e9f4ff 100%);
+  border: 1px solid #e2edf8;
+  display: flex;
+  padding: 28px 30px;
+  box-shadow: 0 3px 14px rgba(36, 84, 135, 0.04);
+}
+
+.plan-access-page .hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 570px;
+}
+
+.plan-access-page .hero-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #0874e8;
+  letter-spacing: 0.5px;
+}
+
+.plan-access-page .hero-content h1 {
+  margin: 7px 0 4px;
+  font-size: 30px;
+  line-height: 1.2;
+  color: #132f5e;
+}
+
+.plan-access-page .hero-content p {
+  margin: 0;
+  color: #69829e;
+  font-size: 13px;
+  line-height: 1.7;
+  max-width: 600px;
+}
+
+.plan-access-page .hero-illustration {
+  position: absolute;
+  right: 30px;
+  top: 0;
+  bottom: 0;
+  width: 500px;
+}
+
+.plan-access-page .crown-box {
+  position: absolute;
+  left: 130px;
+  top: 51px;
+  width: 58px;
+  height: 58px;
+  border-radius: 13px;
+  background: #176ce0;
+  color: #ffffff;
+  font-size: 29px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 25px rgba(23, 108, 224, 0.22);
+}
+
+.plan-access-page .hero-document {
+  position: absolute;
+  left: 185px;
+  top: 30px;
+  width: 130px;
+  height: 125px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(50, 100, 160, 0.12);
+  padding: 17px;
+}
+
+.plan-access-page .document-dots {
+  color: #8ca7c5;
+  font-size: 10px;
+  margin-bottom: 12px;
+}
+
+.plan-access-page .document-line {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+  color: #4286e7;
+  font-size: 11px;
+}
+
+.plan-access-page .document-line i {
+  height: 5px;
+  width: 65px;
+  border-radius: 4px;
+  background: #d8e7f8;
+}
+
+.plan-access-page .document-line.orange {
+  color: #f3a63d;
+}
+
+.plan-access-page .document-line.green {
+  color: #43b982;
+}
+
+.plan-access-page .plant {
+  position: absolute;
+  left: 315px;
+  top: 65px;
+  font-size: 52px;
+}
+
+.plan-access-page .hero-quote {
+  position: absolute;
+  left: 375px;
+  top: 45px;
+  font-size: 13px;
+  line-height: 1.8;
+  color: #6883a0;
+}
+
+.plan-access-page .hero-quote div {
+  margin-top: 8px;
+  width: 30px;
+  height: 2px;
+  background: #2783e7;
+}
+
+/* =========================================================
+   PLAN SELECTOR
+   ========================================================= */
+
+.plan-access-page .plan-selector {
+  margin-top: 14px;
+  background: #ffffff;
+  border: 1px solid #e2ebf5;
+  border-radius: 13px;
+  min-height: 108px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 3px 14px rgba(38, 78, 120, 0.04);
+}
+
+.plan-access-page .plan-selector-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 53%;
+}
+
+.plan-access-page .plan-crown {
+  width: 65px;
+  height: 65px;
+  border-radius: 16px;
+  background: #e8f3ff;
+  color: #0874e8;
+  font-size: 31px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.plan-access-page .select-area {
+  width: 100%;
+}
+
+.plan-access-page .select-area label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #17365f;
+  margin-bottom: 7px;
+}
+
+.plan-access-page .select-box {
+  height: 42px;
+  border: 1px solid #cfe1f4;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  padding: 0 13px;
+  color: #29476d;
+  font-size: 13px;
+  background: #fbfdff;
+}
+
+.plan-access-page .small-crown {
+  margin-right: 11px;
+  color: #176ce0;
+  font-size: 18px;
+}
+
+.plan-access-page .popular {
+  margin-left: 15px;
+  padding: 5px 11px;
+  border-radius: 15px;
+  background: #dcf8ef;
+  color: #16a579;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.plan-access-page .select-arrow {
+  margin-left: auto;
+  font-size: 18px;
+  color: #527392;
+}
+
+.plan-access-page .plan-stats {
+  flex: 1;
+  height: 70px;
+  border-radius: 10px;
+  background: #f8fbff;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.plan-access-page .stat {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.plan-access-page .stat-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #e7f2ff;
+  color: #0874e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+}
+
+.plan-access-page .stat div:last-child {
+  display: flex;
+  flex-direction: column;
+}
+
+.plan-access-page .stat strong {
+  color: #18365e;
+  font-size: 12px;
+}
+
+.plan-access-page .stat span {
+  color: #5f7996;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.plan-access-page .stat small {
+  color: #8aa0b7;
+  font-size: 9px;
+  margin-top: 1px;
+}
+
+.plan-access-page .stat-divider {
+  width: 1px;
+  height: 42px;
+  background: #dce7f2;
+}
+
+/* =========================================================
+   ACCESS CONTAINER
+   ========================================================= */
+
+.plan-access-page .access-container {
+  margin-top: 14px;
+  background: #ffffff;
+  border: 1px solid #e0eaf4;
+  border-radius: 13px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(40, 85, 130, 0.04);
+}
+
+/* =========================================================
+   TABS
+   ========================================================= */
+
+.plan-access-page .access-tabs {
+  height: 58px;
+  display: flex;
+  align-items: stretch;
+  padding-left: 18px;
+  border-bottom: 1px solid #e4edf6;
+}
+
+.plan-access-page .tab {
+  border: none;
+  background: transparent;
+  padding: 0 25px;
+  position: relative;
+  color: #647d99;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.plan-access-page .tab span {
+  font-size: 15px;
+}
+
+.plan-access-page .tab.active {
+  color: #0874e8;
+  font-weight: 600;
+}
+
+.plan-access-page .tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 15px;
+  right: 15px;
+  height: 3px;
+  background: #0874e8;
+  border-radius: 4px 4px 0 0;
+}
+
+/* =========================================================
+   ACCESS BODY
+   ========================================================= */
+
+.plan-access-page .access-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 395px;
+  min-height: 405px;
+}
+
+.plan-access-page .course-section {
+  padding: 22px 18px 18px;
+}
+
+.plan-access-page .course-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.plan-access-page .course-header h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #18365f;
+}
+
+.plan-access-page .course-header p {
+  margin: 4px 0 0;
+  color: #7890a9;
+  font-size: 11px;
+}
+
+.plan-access-page .selected-count {
+  background: #e1f8ef;
+  color: #13a378;
+  padding: 8px 13px;
+  border-radius: 18px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.plan-access-page .selected-count span {
+  margin-right: 5px;
+  font-size: 8px;
+}
+
+.plan-access-page .course-list {
+  border: 1px solid #e3edf6;
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+.plan-access-page .course-row {
+  height: 59px;
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  border-bottom: 1px solid #edf2f7;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.plan-access-page .course-row:last-child {
+  border-bottom: none;
+}
+
+.plan-access-page .course-row:hover {
+  background: #f7fbff;
+}
+
+.plan-access-page .course-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  margin-right: 12px;
+}
+
+.plan-access-page .course-icon.blue {
+  background: #dceeff;
+  color: #1674df;
+}
+
+.plan-access-page .course-icon.purple {
+  background: #eee3ff;
+  color: #7b43db;
+}
+
+.plan-access-page .course-icon.green {
+  background: #dcf8eb;
+  color: #20a96d;
+}
+
+.plan-access-page .course-icon.orange {
+  background: #fff0dc;
+  color: #ef941f;
+}
+
+.plan-access-page .course-icon.pink {
+  background: #ffe3ed;
+  color: #e74b83;
+}
+
+.plan-access-page .course-icon.indigo {
+  background: #e3e5ff;
+  color: #5757d9;
+}
+
+.plan-access-page .course-details {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.plan-access-page .course-details strong {
+  font-size: 12px;
+  color: #203d65;
+}
+
+.plan-access-page .course-details span {
+  margin-top: 2px;
+  font-size: 10px;
+  color: #7e95ad;
+}
+
+.plan-access-page .course-checkbox {
+  width: 21px;
+  height: 21px;
+  border-radius: 5px;
+  border: 1.5px solid #c9dbea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 12px;
+  margin-right: 25px;
+}
+
+.plan-access-page .course-checkbox.checked {
+  border-color: #1475e6;
+  background: #1475e6;
+  box-shadow: 0 3px 8px rgba(20, 117, 230, 0.2);
+}
+
+.plan-access-page .course-arrow {
+  color: #6b88a5;
+  font-size: 22px;
+}
+
+/* =========================================================
+   SUMMARY
+   ========================================================= */
+
+.plan-access-page .plan-summary {
+  border-left: 1px solid #e5edf6;
+  padding: 20px;
+  background: #fcfdff;
+}
+
+.plan-access-page .summary-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #e8eff6;
+}
+
+.plan-access-page .summary-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #e5f1ff;
+  color: #0874e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.plan-access-page .summary-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #19375f;
+}
+
+.plan-access-page .summary-header p {
+  margin: 3px 0 0;
+  color: #7890a9;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.plan-access-page .benefits {
+  padding: 17px 5px;
+}
+
+.plan-access-page .benefit {
+  display: flex;
+  gap: 11px;
+  margin-bottom: 17px;
+}
+
+.plan-access-page .benefit > span {
+  width: 21px;
+  height: 21px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #e0f0ff;
+  color: #0874e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.plan-access-page .benefit div {
+  display: flex;
+  flex-direction: column;
+}
+
+.plan-access-page .benefit strong {
+  font-size: 11px;
+  color: #29486e;
+}
+
+.plan-access-page .benefit small {
+  margin-top: 3px;
+  font-size: 9px;
+  color: #8399b0;
+}
+
+.plan-access-page .upgrade-box {
+  min-height: 68px;
+  border-radius: 10px;
+  background: linear-gradient(105deg, #eef7ff, #f2f7ff);
+  display: flex;
+  align-items: center;
+  padding: 11px;
+  gap: 10px;
+}
+
+.plan-access-page .upgrade-icon {
+  width: 37px;
+  height: 37px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #e0edff;
+  color: #176de0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.plan-access-page .upgrade-box div:nth-child(2) {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.plan-access-page .upgrade-box strong {
+  color: #0874e8;
+  font-size: 11px;
+}
+
+.plan-access-page .upgrade-box span {
+  color: #7891ac;
+  font-size: 8px;
+  margin-top: 3px;
+}
+
+.plan-access-page .upgrade-box > b {
+  color: #0874e8;
+  font-size: 20px;
+}
+
+/* =========================================================
+   PLACEHOLDER / PERMISSIONS / USAGE
+   ========================================================= */
+
+.plan-access-page .placeholder-section {
+  min-height: 405px;
+  padding: 35px;
+  text-align: center;
+}
+
+.plan-access-page .placeholder-icon {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 12px;
+  border-radius: 15px;
+  background: #e7f2ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.plan-access-page .placeholder-section h2 {
+  margin: 0;
+  color: #18365f;
+  font-size: 19px;
+}
+
+.plan-access-page .placeholder-section > p {
+  color: #8095ac;
+  font-size: 12px;
+  margin: 7px 0 25px;
+}
+
+.plan-access-page .permission-grid,
+.plan-access-page .usage-grid {
+  max-width: 850px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  text-align: left;
+}
+
+.plan-access-page .permission-card,
+.plan-access-page .usage-card {
+  border: 1px solid #e3edf6;
+  border-radius: 10px;
+  padding: 16px;
+  background: #fbfdff;
+}
+
+.plan-access-page .permission-card {
+  display: flex;
+  gap: 12px;
+}
+
+.plan-access-page .permission-card > span {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #e2f5ec;
+  color: #20a36e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.plan-access-page .permission-card div {
+  display: flex;
+  flex-direction: column;
+}
+
+.plan-access-page .permission-card strong {
+  font-size: 12px;
+  color: #29486c;
+}
+
+.plan-access-page .permission-card small {
+  color: #8297ae;
+  margin-top: 4px;
+  font-size: 9px;
+}
+
+.plan-access-page .usage-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.plan-access-page .usage-card span {
+  font-size: 10px;
+  color: #7b91a9;
+}
+
+.plan-access-page .usage-card strong {
+  margin-top: 6px;
+  color: #1675e3;
+  font-size: 18px;
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.plan-access-page .access-footer {
+  min-height: 70px;
+  border-top: 1px solid #e3edf6;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+}
+
+.plan-access-page .footer-note {
+  color: #8096ad;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plan-access-page .footer-note span {
+  color: #5581a9;
+  font-size: 15px;
+}
+
+.plan-access-page .footer-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.plan-access-page .cancel-btn,
+.plan-access-page .save-btn {
+  height: 40px;
+  border-radius: 7px;
+  padding: 0 23px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.plan-access-page .cancel-btn {
+  background: #ffffff;
+  border: 1px solid #2381eb;
+  color: #1475e4;
+}
+
+.plan-access-page .cancel-btn:hover {
+  background: #f2f8ff;
+}
+
+.plan-access-page .save-btn {
+  background: #1475e6;
+  border: 1px solid #1475e6;
+  color: #ffffff;
+  box-shadow: 0 5px 13px rgba(20, 117, 230, 0.18);
+}
+
+.plan-access-page .save-btn:hover {
+  background: #0968d6;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1200px) {
+  .plan-access-page .pa-main {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .plan-access-page .plan-stats {
+    display: none;
+  }
+
+  .plan-access-page .plan-selector-left {
+    width: 100%;
+  }
+
+  .plan-access-page .access-body {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-access-page .plan-summary {
+    border-left: none;
+    border-top: 1px solid #e5edf6;
+  }
+
+  .plan-access-page .hero-illustration {
+    opacity: 0.55;
+  }
+}
+
+@media (max-width: 850px) {
+  .plan-access-page .pa-main {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .plan-access-page .plan-selector {
+    padding: 16px;
+  }
+
+  .plan-access-page .hero-illustration {
+    display: none;
+  }
+
+  .plan-access-page .pa-hero {
+    min-height: 170px;
+  }
+
+  .plan-access-page .access-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .plan-access-page .footer-buttons {
+    width: 100%;
+  }
+
+  .plan-access-page .cancel-btn,
+  .plan-access-page .save-btn {
+    flex: 1;
+  }
+
+  .plan-access-page .permission-grid,
+  .plan-access-page .usage-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .plan-access-page .pa-main {
+    padding: 18px 10px 25px;
+  }
+
+  .plan-access-page .breadcrumb {
+    margin-left: 5px;
+  }
+
+  .plan-access-page .pa-hero {
+    padding: 22px;
+  }
+
+  .plan-access-page .hero-content h1 {
+    font-size: 25px;
+  }
+
+  .plan-access-page .access-tabs {
+    overflow-x: auto;
+  }
+
+  .plan-access-page .tab {
+    white-space: nowrap;
+    padding: 0 17px;
+  }
+
+  .plan-access-page .course-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .plan-access-page .course-details span {
+    display: none;
+  }
+
+  .plan-access-page .course-row {
+    padding: 0 10px;
+  }
+
+  .plan-access-page .course-checkbox {
+    margin-right: 10px;
+  }
+
+  .plan-access-page .placeholder-section {
+    padding: 25px 15px;
+  }
+}

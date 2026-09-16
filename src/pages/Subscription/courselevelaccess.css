@@ -1,0 +1,515 @@
+/* =========================================================
+   COURSE LEVEL ACCESS
+   PAGE-SCOPED CSS ONLY
+   ========================================================= */
+
+.course-level-access-page {
+  width: 100%;
+  color: #17365f;
+  font-family: "Poppins", "Segoe UI", Arial, sans-serif;
+}
+
+.course-level-access-page,
+.course-level-access-page * {
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   MAIN PAGE
+   ========================================================= */
+
+.course-level-access-page {
+  padding: 24px 25px 30px;
+}
+
+/* =========================================================
+   BREADCRUMB
+   ========================================================= */
+
+.course-level-access-page .cla-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 5px 0 15px 12px;
+  color: #6d86a2;
+  font-size: 13px;
+}
+
+.course-level-access-page .cla-breadcrumb-arrow {
+  color: #a0b2c5;
+  font-size: 16px;
+}
+
+.course-level-access-page .cla-breadcrumb-current {
+  color: #284e78;
+  font-weight: 600;
+}
+
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
+
+.course-level-access-page .cla-page-header {
+  margin: 0 0 18px 12px;
+}
+
+.course-level-access-page .cla-page-header h1 {
+  margin: 0;
+  color: #17365f;
+  font-size: 27px;
+  line-height: 1.25;
+  font-weight: 650;
+}
+
+.course-level-access-page .cla-page-header p {
+  margin: 6px 0 0;
+  color: #7890a9;
+  font-size: 12px;
+}
+
+/* =========================================================
+   MAIN CARD
+   ========================================================= */
+
+.course-level-access-page .cla-main-card {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #e1eaf3;
+  border-radius: 13px;
+  overflow: visible;
+  box-shadow: 0 4px 16px rgba(37, 76, 118, 0.04);
+}
+
+/* =========================================================
+   PLAN SECTION
+   ========================================================= */
+
+.course-level-access-page .cla-plan-section {
+  padding: 20px 22px;
+  border-bottom: 1px solid #e6edf5;
+}
+
+.course-level-access-page .cla-plan-section label {
+  display: block;
+  margin-bottom: 8px;
+  color: #17365f;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.course-level-access-page .cla-plan-select {
+  width: 100%;
+  max-width: 520px;
+  height: 46px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid #cfe0f1;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+/* =========================================================
+   PLAN ICON
+   ========================================================= */
+
+.course-level-access-page .cla-plan-icon {
+  width: 46px;
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #176fe2;
+}
+
+.course-level-access-page .cla-plan-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* =========================================================
+   PLAN SELECT
+   ========================================================= */
+
+.course-level-access-page .cla-plan-select select {
+  width: 100%;
+  height: 44px;
+  padding: 0 42px 0 0;
+  border: 0;
+  outline: none;
+  appearance: none;
+  background: transparent;
+  color: #29486c;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.course-level-access-page .cla-select-arrow {
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #6b86a1;
+}
+
+.course-level-access-page .cla-select-arrow svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.course-level-access-page .cla-table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.course-level-access-page .cla-course-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.course-level-access-page .cla-course-table thead {
+  background: #f8fbfe;
+}
+
+.course-level-access-page .cla-course-table th {
+  height: 48px;
+  padding: 0 20px;
+  border-bottom: 1px solid #e5edf5;
+  color: #617b97;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.course-level-access-page .cla-course-table td {
+  height: 65px;
+  padding: 0 20px;
+  border-bottom: 1px solid #edf2f7;
+  color: #29486c;
+  font-size: 12px;
+}
+
+.course-level-access-page .cla-course-table tbody tr {
+  transition: background 0.18s ease;
+}
+
+.course-level-access-page .cla-course-table tbody tr:hover {
+  background: #f9fcff;
+}
+
+.course-level-access-page .cla-course-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* =========================================================
+   TABLE COLUMNS
+   ========================================================= */
+
+.course-level-access-page .cla-course-column {
+  width: 60%;
+}
+
+.course-level-access-page .cla-access-column {
+  width: 20%;
+  text-align: center !important;
+}
+
+.course-level-access-page .cla-actions-column {
+  width: 20%;
+  text-align: right !important;
+}
+
+/* =========================================================
+   COURSE NAME
+   ========================================================= */
+
+.course-level-access-page .cla-course-name {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  font-weight: 600;
+}
+
+.course-level-access-page .cla-course-icon {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: #e8f3ff;
+  color: #1474df;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* Different course icon colors */
+
+.course-level-access-page
+  .cla-course-table
+  tbody
+  tr:nth-child(2)
+  .cla-course-icon {
+  background: #eee6ff;
+  color: #7844d8;
+}
+
+.course-level-access-page
+  .cla-course-table
+  tbody
+  tr:nth-child(3)
+  .cla-course-icon {
+  background: #e2f7ed;
+  color: #1da56b;
+}
+
+.course-level-access-page
+  .cla-course-table
+  tbody
+  tr:nth-child(4)
+  .cla-course-icon {
+  background: #fff0df;
+  color: #ed921e;
+}
+
+.course-level-access-page
+  .cla-course-table
+  tbody
+  tr:nth-child(5)
+  .cla-course-icon {
+  background: #ffe6ef;
+  color: #df4c82;
+}
+
+.course-level-access-page
+  .cla-course-table
+  tbody
+  tr:nth-child(6)
+  .cla-course-icon {
+  background: #e7e7ff;
+  color: #5657d8;
+}
+
+/* =========================================================
+   ACCESS TOGGLE
+   ========================================================= */
+
+.course-level-access-page .cla-toggle {
+  width: 44px;
+  height: 24px;
+  position: relative;
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.course-level-access-page .cla-toggle-on {
+  background: #1877e8;
+}
+
+.course-level-access-page .cla-toggle-off {
+  background: #cbd7e3;
+}
+
+.course-level-access-page .cla-toggle-circle {
+  width: 18px;
+  height: 18px;
+  position: absolute;
+  top: 3px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  transition: left 0.2s ease;
+}
+
+.course-level-access-page .cla-toggle-on .cla-toggle-circle {
+  left: 23px;
+}
+
+.course-level-access-page .cla-toggle-off .cla-toggle-circle {
+  left: 3px;
+}
+
+/* =========================================================
+   ACTION BUTTON
+   ========================================================= */
+
+.course-level-access-page .cla-action-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.course-level-access-page .cla-action-button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid #dce6ef;
+  border-radius: 7px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.course-level-access-page .cla-action-button:hover {
+  background: #f4f9ff;
+  border-color: #bdd5ec;
+}
+
+.course-level-access-page .cla-action-button span {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #68839e;
+}
+
+/* =========================================================
+   ACTION MENU
+   ========================================================= */
+
+.course-level-access-page .cla-action-menu {
+  position: absolute;
+  top: 39px;
+  right: 0;
+  z-index: 20;
+  min-width: 150px;
+  padding: 5px;
+  border: 1px solid #e0e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(38, 75, 111, 0.12);
+}
+
+.course-level-access-page .cla-action-menu button {
+  width: 100%;
+  padding: 9px 11px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #315171;
+  font-family: inherit;
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.course-level-access-page .cla-action-menu button:hover {
+  background: #f1f7fd;
+  color: #1474df;
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.course-level-access-page .cla-footer {
+  min-height: 72px;
+  padding: 13px 22px;
+  border-top: 1px solid #e5edf5;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 11px;
+  background: #ffffff;
+  border-radius: 0 0 13px 13px;
+}
+
+.course-level-access-page .cla-cancel-button,
+.course-level-access-page .cla-save-button {
+  height: 39px;
+  padding: 0 22px;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.course-level-access-page .cla-cancel-button {
+  border: 1px solid #247be3;
+  background: #ffffff;
+  color: #1474df;
+}
+
+.course-level-access-page .cla-cancel-button:hover {
+  background: #f3f8ff;
+}
+
+.course-level-access-page .cla-save-button {
+  border: 1px solid #1474df;
+  background: #1474df;
+  color: #ffffff;
+  box-shadow: 0 5px 13px rgba(20, 116, 223, 0.18);
+}
+
+.course-level-access-page .cla-save-button:hover {
+  background: #0969d5;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .course-level-access-page {
+    padding: 20px;
+  }
+
+  .course-level-access-page .cla-course-column {
+    width: 50%;
+  }
+
+  .course-level-access-page .cla-access-column {
+    width: 25%;
+  }
+
+  .course-level-access-page .cla-actions-column {
+    width: 25%;
+  }
+}
+
+@media (max-width: 650px) {
+  .course-level-access-page {
+    padding: 15px 10px 25px;
+  }
+
+  .course-level-access-page .cla-breadcrumb {
+    margin-left: 4px;
+  }
+
+  .course-level-access-page .cla-page-header {
+    margin-left: 4px;
+  }
+
+  .course-level-access-page .cla-page-header h1 {
+    font-size: 23px;
+  }
+
+  .course-level-access-page .cla-plan-section {
+    padding: 16px;
+  }
+
+  .course-level-access-page .cla-course-table {
+    min-width: 620px;
+  }
+
+  .course-level-access-page .cla-footer {
+    padding: 12px 15px;
+  }
+}
