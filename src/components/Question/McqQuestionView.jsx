@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Alert, Button, Card, Form } from "react-bootstrap";
 import { FaPaperPlane, FaRedo } from "react-icons/fa";
 import Header from "./Header";
-import SummaryCards from "./SummaryCards";
 import McqQuestionService from "../../services/McqQuestionService";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import QuestionService from "../../services/QuestionService";
@@ -16,7 +15,6 @@ export default function McqQuestionView({ questionId, questionType }) {
   const [question, setQuestion] = useState(null);
   const [selected, setSelected] = useState([]);
   const [result, setResult] = useState(null);
-  const [totalScore, setTotalScore] = useState(0);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [nextQuestionId, setNextQuestionId] = useState(null);
@@ -30,14 +28,6 @@ export default function McqQuestionView({ questionId, questionType }) {
       .catch(() => { if (active) setError("Unable to load this MCQ. Please reopen the question."); });
     return () => { active = false; };
   }, [questionId]);
-
-  useEffect(() => {
-    let active = true;
-    QuestionAnswerService.getOverallMarks(1)
-      .then((score) => { if (active) setTotalScore(Number(score) || 0); })
-      .catch((err) => console.error("Failed to load total score:", err));
-    return () => { active = false; };
-  }, [questionId, result]);
 
   useEffect(() => {
     if (!question?.courseId || !question?.chapterId || !question?.topicId) return;
@@ -96,7 +86,7 @@ export default function McqQuestionView({ questionId, questionType }) {
 
   return (
     <div>
-      <Header question={{ ...metadata, ...question }} actions={<>
+      <Header question={{ ...metadata, ...question }} questionTypeLabel={multiple ? "MCQ Multiple Choice" : "MCQ Single Choice"} actions={<>
         <Button variant="light" size="sm" onClick={reset} disabled={busy}>
           <FaRedo className="me-1" /> Reset
         </Button>
@@ -104,7 +94,6 @@ export default function McqQuestionView({ questionId, questionType }) {
           <FaPaperPlane className="me-1" /> {busy ? "Please wait..." : result ? "Answer Saved" : "Submit Answer"}
         </Button>
       </>} />
-      <SummaryCards debit={0} credit={0} total={1} solved={correct ? 1 : 0} totalScore={totalScore} />
       {error && <Alert variant="danger">{error}</Alert>}
       <Card className="shadow-sm">
         <Card.Body>

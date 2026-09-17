@@ -5,7 +5,7 @@ import CollegeService from "../../../services/CollegeService";
 import DataGrid from "../../../components/DataGrid";
 import ActionIconButton from "../../../components/Common/ActionIconButton";
 
-function BranchTable({ onEdit, onDelete, refresh }) {
+function BranchTable({ onEdit, onDelete, refresh, onCountsChange }) {
   const [branches, setBranches] = useState([]);
   const [collegesList, setCollegesList] = useState([]);
   const defaultColDef = {
@@ -30,6 +30,7 @@ function BranchTable({ onEdit, onDelete, refresh }) {
   }, [refresh]);
 
   const loadBranches = () => {
+    onCountsChange?.(null);
     BranchService.getAllBranches()
       .then((response) => {
         // Map and transform keys to ensure structural safety with your DTO configurations
@@ -48,6 +49,8 @@ function BranchTable({ onEdit, onDelete, refresh }) {
         }));
 
         setBranches(sanitizedData);
+        const active = sanitizedData.filter((branch) => Boolean(branch.activeRow)).length;
+        onCountsChange?.({ total: sanitizedData.length, active, inactive: sanitizedData.length - active });
       })
       .catch((error) => {
         console.error(

@@ -17,6 +17,7 @@ function Header({
   setAnsweredData,
   setCheckMistakes,
   actions,
+  questionTypeLabel,
 }) {
   const {
     question: storeQuestion,
@@ -148,6 +149,7 @@ function Header({
           <small className="text-muted">
             {question &&
               `${question.courseName} • ${question.subjectName} • ${question.chapterName} • ${question.topicName}`}
+            {questionTypeLabel && ` • ${questionTypeLabel}`}
           </small>
         </div>
 

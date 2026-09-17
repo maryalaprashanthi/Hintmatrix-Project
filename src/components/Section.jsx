@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
-import { FaSave, FaTimes } from "react-icons/fa";
+import { FaSave, FaTimes, FaLayerGroup } from "react-icons/fa";
+import ManagementCountTiles from "./Common/ManagementCountTiles";
 import "./Section.css";
 
 import SectionForm from "./SectionForm";
@@ -16,6 +17,7 @@ function Section() {
   const [showModal, setShowModal] = useState(false);
   const [selectedSection, setSelectedSection] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
+  const [sectionCounts, setSectionCounts] = useState(null);
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -111,12 +113,15 @@ function Section() {
         </div>
       </div>
 
+      <ManagementCountTiles label="Sections" counts={sectionCounts} icon={FaLayerGroup} />
+
       <div className="card shadow-sm border-0">
         <div className="card-body">
           <SectionTable
             refresh={refreshTrigger}
             onEdit={handleEditSection}
             onDelete={del.request}
+            onCountsChange={setSectionCounts}
           />
         </div>
       </div>

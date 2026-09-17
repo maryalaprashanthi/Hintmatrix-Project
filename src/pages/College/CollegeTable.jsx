@@ -3,7 +3,7 @@ import CollegeService from "../../services/CollegeService";
 import DataGrid from "../../components/DataGrid";
 import ActionIconButton from "../../components/Common/ActionIconButton";
 
-function CollegeTable({ onEdit, onDelete, refresh }) {
+function CollegeTable({ onEdit, onDelete, refresh, onCountsChange }) {
   const [colleges, setColleges] = useState([]);
 
   const defaultColDef = {
@@ -17,6 +17,7 @@ function CollegeTable({ onEdit, onDelete, refresh }) {
   }, [refresh]);
 
   const loadColleges = () => {
+    onCountsChange?.(null);
     CollegeService.getAllColleges()
       .then((response) => {
         const rawData = response.data || [];
@@ -33,6 +34,8 @@ function CollegeTable({ onEdit, onDelete, refresh }) {
         }));
 
         setColleges(sanitizedData);
+        const active = sanitizedData.filter((college) => Boolean(college.activeRow)).length;
+        onCountsChange?.({ total: sanitizedData.length, active, inactive: sanitizedData.length - active });
       })
       .catch((error) => {
         console.error("Error retrieving college data:", error);
