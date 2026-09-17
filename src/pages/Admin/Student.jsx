@@ -1,7 +1,6 @@
 import CollegeService from "../../services/CollegeService";
 import BranchService from "../../services/BranchService";
 import SectionService from "../../services/SectionService";
-import CourseService from "../../services/CourseService";
 import { useEffect, useRef, useState } from "react";
 import StudentForm from "./StudentForm";
 import "./Student.css";
@@ -17,7 +16,6 @@ function Student() {
   const [colleges, setColleges] = useState([]);
   const [branches, setBranches] = useState([]);
   const [sections, setSections] = useState([]);
-  const [courses, setCourses] = useState([]);
 
   const fileInputRef = useRef(null);
 
@@ -69,21 +67,11 @@ function Student() {
     }
   };
 
-  const fetchCourses = async () => {
-    try {
-      const response = await CourseService.getAllCourses();
-      setCourses(response.data || []);
-    } catch (error) {
-      console.error("COURSE API ERROR:", error);
-    }
-  };
-
   useEffect(() => {
     fetchStudents();
     fetchColleges();
     fetchBranches();
     fetchSections();
-    fetchCourses();
   }, []);
 
   // Upload
@@ -145,43 +133,42 @@ function Student() {
   };
 
   // Save / Update Student
-  const handleSave = async (studentData, courseData = null) => {
-    try {
-      if (selectedStudent) {
-        const studentId = selectedStudent.userId || selectedStudent.studentId;
+  const handleSave = (studentData) => {
+    if (selectedStudent) {
+      const studentId = selectedStudent.userId || selectedStudent.studentId;
 
-        if (!studentId) {
-          console.error(
-            "Cannot update student without an ID:",
-            selectedStudent,
-          );
-          toast.error("Unable to update student: student ID is missing.");
-          return;
-        }
-
-        await StudentService.updateStudent(studentId, studentData);
-        toast.success("Student updated.");
-      } else {
-        await StudentService.createStudent(studentData);
-        toast.success("Student saved.");
+      if (!studentId) {
+        console.error("Cannot update student without an ID:", selectedStudent);
+        toast.error("Unable to update student: student ID is missing.");
+        return;
       }
 
-      if (courseData) {
-        await CourseService.saveCourse(courseData);
-        toast.success("Course created successfully.");
-      }
+      StudentService.updateStudent(studentId, studentData)
+        .then(() => {
+          fetchStudents();
 
-      fetchStudents();
-      setShowModal(false);
-      setSelectedStudent(null);
-    } catch (error) {
-      console.error("Save Error:", error);
-      toast.error(
-        error.response?.data?.message ||
-          (courseData
-            ? "Failed to save student or course."
-            : "Failed to add student."),
-      );
+          toast.success("Student updated.");
+
+          setShowModal(false);
+          setSelectedStudent(null);
+        })
+        .catch((error) => {
+          console.error("Update Error:", error);
+          toast.error("Failed to update student.");
+        });
+    } else {
+      StudentService.createStudent(studentData)
+        .then(() => {
+          fetchStudents();
+
+          toast.success("Student saved.");
+
+          setShowModal(false);
+        })
+        .catch((error) => {
+          console.error("Save Error:", error);
+          toast.error("Failed to add student.");
+        });
     }
   };
 
@@ -238,8 +225,8 @@ function Student() {
         colleges={colleges}
         branches={branches}
         sections={sections}
-        courses={courses}
       />
+
     </div>
   );
 }
