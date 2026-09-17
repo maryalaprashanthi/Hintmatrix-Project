@@ -158,6 +158,26 @@ export default function SubscriptionPlans() {
     }
   };
 
+  const handleActivate = async (plan) => {
+    const id = plan.id || plan.planId;
+
+    try {
+      await SubscriptionService.updatePlan(id, {
+        ...plan,
+        active: true,
+        courseIds:
+          plan.courseIds || plan.courses?.map((course) => course.courseId) || [],
+      });
+      setMessage({ type: "success", text: `${plan.name} is now active.` });
+      await loadData();
+    } catch (error) {
+      setMessage({
+        type: "danger",
+        text: error.response?.data?.message || "Unable to activate plan.",
+      });
+    }
+  };
+
   const updateField = (field, value) => {
     setForm((current) => ({
       ...current,

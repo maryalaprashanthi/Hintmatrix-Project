@@ -38,6 +38,13 @@ function Subscription() {
   const isBranchAdmin = localStorage.getItem("role") === "BRANCH_ADMIN";
   const userName = getCurrentUserName();
 
+  const refreshActiveSubscriptionCount = () =>
+    SubscriptionService.getHistory().then((response) => {
+      setActiveSubscriptionCount(
+        (response.data || []).filter(isActiveSubscription).length,
+      );
+    });
+
   useEffect(() => {
     Promise.all([
       CourseService.getAllCourses(),
@@ -68,6 +75,9 @@ function Subscription() {
 
       setMessage("Subscriptions assigned successfully.");
       setSelectedStudentIds([]);
+      await refreshActiveSubscriptionCount().catch(() => {
+        console.warn("[Subscription] Unable to refresh active subscription count");
+      });
     } catch (error) {
       setMessage(
         error.response?.data?.message || "Unable to assign subscriptions.",
