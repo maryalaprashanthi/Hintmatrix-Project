@@ -2,6 +2,7 @@ import React from "react";
 import { AgGridReact } from "ag-grid-react";
 import { themeQuartz } from "ag-grid-community";
 import ActionIconButton from "../../components/Common/ActionIconButton";
+import { getActiveRow } from "../../utils/managementCounts";
 
 function RuleEngineTable({
   ruleEngineList,
@@ -420,6 +421,39 @@ function RuleEngineTable({
 
         const data =
           params.data;
+
+        if (!getActiveRow(data)) {
+          return (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "7px",
+                height: "100%",
+              }}
+            >
+              <span
+                style={{
+                  width: "9px",
+                  height: "9px",
+                  minWidth: "9px",
+                  borderRadius: "50%",
+                  backgroundColor: "#dc2626",
+                  display: "inline-block",
+                }}
+              />
+              <span
+                style={{
+                  color: "#dc2626",
+                  fontWeight: "600",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Inactive
+              </span>
+            </div>
+          );
+        }
 
         // ------------------------------------------------------
         // GET EFFECTIVE ISSUES

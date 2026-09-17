@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FaUniversity, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import CollegeForm from "./CollegeForm";
 import CollegeTable from "./CollegeTable";
 import CollegeService from "../../services/CollegeService";
@@ -12,6 +13,7 @@ function College() {
   const [showModal, setShowModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [selectedCollege, setSelectedCollege] = useState(null);
+  const [collegeCounts, setCollegeCounts] = useState(null);
 
   // Open Add College
   const handleAddCollege = () => {
@@ -118,12 +120,33 @@ function College() {
 
       {/* Table */}
 
+      <div className="row g-3 mb-4">
+        {[
+          { title: "Total Colleges", count: collegeCounts?.total, icon: FaUniversity, color: "primary" },
+          { title: "Total Active Colleges", count: collegeCounts?.active, icon: FaCheckCircle, color: "success" },
+          { title: "Total Inactive Colleges", count: collegeCounts?.inactive, icon: FaTimesCircle, color: "danger" },
+        ].map(({ title, count, icon: Icon, color }) => (
+          <div className="col-12 col-md-4" key={title}>
+            <div className="card shadow-sm border-0 h-100">
+              <div className="card-body d-flex align-items-center gap-3">
+                <Icon className={`text-${color} flex-shrink-0`} size={32} aria-hidden="true" />
+                <div>
+                  <div className="fw-semibold">{title}</div>
+                  <div className={`fs-3 fw-bold text-${color}`}>{count ?? "—"}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
       <div className="card shadow-sm border-0">
         <div className="card-body">
           <CollegeTable
             refresh={refreshTrigger}
             onEdit={handleEditCollege}
             onDelete={del.request}
+            onCountsChange={setCollegeCounts}
           />
         </div>
       </div>

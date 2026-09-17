@@ -7,6 +7,9 @@ import ConfirmDialog from "../../components/Common/ConfirmDialog";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { useToast } from "../../components/Toast/useToast";
 import { getApiErrorMessage } from "../../utils/apiError";
+import ManagementCountTiles from "../../components/Common/ManagementCountTiles";
+import { getManagementCounts } from "../../utils/managementCounts";
+import { FaGavel } from "react-icons/fa";
 
 function RuleEngine() {
   const toast = useToast();
@@ -156,6 +159,8 @@ function RuleEngine() {
     setSelectedRule(null);
   };
 
+  const ruleEngineCounts = getManagementCounts(ruleEngineList);
+
   return (
     <div className="container-fluid py-4">
 
@@ -202,7 +207,12 @@ function RuleEngine() {
         </div>
       </div>
 
-      {}
+      <ManagementCountTiles
+        label="Rule Engines"
+        counts={ruleEngineCounts}
+        icon={FaGavel}
+      />
+
       <div className="card shadow-sm border-0">
 
         <div className="card-body">
