@@ -3,7 +3,7 @@ import SectionService from "../services/SectionService";
 import DataGrid from "./DataGrid";
 import ActionIconButton from "./Common/ActionIconButton";
 
-function SectionTable({ refresh, onDelete, onEdit }) {
+function SectionTable({ refresh, onDelete, onEdit, onCountsChange }) {
   const [sections, setSections] = useState([]);
 
   const defaultColDef = {
@@ -17,6 +17,7 @@ function SectionTable({ refresh, onDelete, onEdit }) {
   }, [refresh]);
 
   const loadSections = () => {
+    onCountsChange?.(null);
     SectionService.getAllSections()
       .then((response) => {
         const rawData = response.data || [];
@@ -34,6 +35,8 @@ function SectionTable({ refresh, onDelete, onEdit }) {
         }));
 
         setSections(sanitizedData);
+        const active = sanitizedData.filter((section) => Boolean(section.activeRow)).length;
+        onCountsChange?.({ total: sanitizedData.length, active, inactive: sanitizedData.length - active });
       })
 
       .catch((error) => {

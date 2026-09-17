@@ -38,6 +38,13 @@ function Subscription() {
   const isBranchAdmin = localStorage.getItem("role") === "BRANCH_ADMIN";
   const userName = getCurrentUserName();
 
+  const refreshActiveSubscriptionCount = () =>
+    SubscriptionService.getHistory().then((response) => {
+      setActiveSubscriptionCount(
+        (response.data || []).filter(isActiveSubscription).length,
+      );
+    });
+
   useEffect(() => {
     Promise.all([
       CourseService.getAllCourses(),
@@ -68,6 +75,9 @@ function Subscription() {
 
       setMessage("Subscriptions assigned successfully.");
       setSelectedStudentIds([]);
+      await refreshActiveSubscriptionCount().catch(() => {
+        console.warn("[Subscription] Unable to refresh active subscription count");
+      });
     } catch (error) {
       setMessage(
         error.response?.data?.message || "Unable to assign subscriptions.",
@@ -235,7 +245,12 @@ function Subscription() {
           <div className="plan-divider" />
 
           <div className="plan-features">
-            <div className="plan-feature">
+            {/* MANAGE PLANS */}
+
+            <div
+              className="plan-feature"
+              onClick={() => navigate("/subscriptions/plans")}
+            >
               <div className="feature-check blue">
                 <FaCheck />
               </div>
@@ -248,7 +263,12 @@ function Subscription() {
               <FaArrowRight className="feature-arrow" />
             </div>
 
-            <div className="plan-feature">
+            {/* PLAN ACCESS */}
+
+            <div
+              className="plan-feature"
+              onClick={() => navigate("/plan-access")}
+            >
               <div className="feature-check blue">
                 <FaCheck />
               </div>
@@ -294,7 +314,12 @@ function Subscription() {
           <div className="plan-divider" />
 
           <div className="plan-features">
-            <div className="plan-feature">
+            {/* COURSE LEVEL ACCESS */}
+
+            <div
+              className="plan-feature"
+              onClick={() => navigate("/course-level-access")}
+            >
               <div className="feature-check purple">
                 <FaCheck />
               </div>
@@ -306,6 +331,8 @@ function Subscription() {
 
               <FaArrowRight className="feature-arrow" />
             </div>
+
+            {/* USAGE LIMITS */}
 
             <div className="plan-feature">
               <div className="feature-check purple">

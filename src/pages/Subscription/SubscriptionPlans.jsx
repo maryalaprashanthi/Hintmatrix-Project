@@ -2,18 +2,25 @@ import { useEffect, useState } from "react";
 import { Alert, Button, Form, Modal } from "react-bootstrap";
 import {
   FaArrowLeft,
+  FaBookOpen,
+  FaCalendarAlt,
   FaCheck,
+  FaChevronDown,
   FaClock,
   FaCrown,
   FaEdit,
+  FaFileAlt,
   FaPlus,
+  FaQuestionCircle,
   FaRupeeSign,
+  FaSave,
   FaTrash,
   FaUsers,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import CourseService from "../../services/CourseService";
 import SubscriptionService from "../../services/SubscriptionService";
+import { canAccessFeature, currentRole } from "../../utils/roles";
 import "./SubscriptionPlans.css";
 
 const initialForm = {
@@ -32,6 +39,7 @@ const initialForm = {
 
 export default function SubscriptionPlans() {
   const navigate = useNavigate();
+  const canManagePlans = canAccessFeature("subscriptions", currentRole());
   const [plans, setPlans] = useState([]);
   const [courses, setCourses] = useState([]);
   const [form, setForm] = useState(initialForm);
@@ -45,6 +53,7 @@ export default function SubscriptionPlans() {
         SubscriptionService.getPlans(),
         CourseService.getAllCourses(),
       ]);
+
       setPlans(planResponse.data || []);
       setCourses(courseResponse.data || []);
     } catch {
@@ -67,12 +76,14 @@ export default function SubscriptionPlans() {
 
   const openEdit = (plan) => {
     setEditingId(plan.id || plan.planId);
+
     setForm({
       ...initialForm,
       ...plan,
       courseIds:
         plan.courseIds || plan.courses?.map((course) => course.courseId) || [],
     });
+
     setShowModal(true);
   };
 
@@ -104,7 +115,12 @@ export default function SubscriptionPlans() {
       }
 
       setShowModal(false);
-      setMessage({ type: "success", text: "Subscription plan saved." });
+
+      setMessage({
+        type: "success",
+        text: "Subscription plan saved.",
+      });
+
       await loadData();
     } catch (error) {
       setMessage({
@@ -127,10 +143,12 @@ export default function SubscriptionPlans() {
 
     try {
       await SubscriptionService.deletePlan(id);
+
       setMessage({
         type: "success",
         text: "Subscription plan and all active user subscriptions using it were deactivated.",
       });
+
       await loadData();
     } catch {
       setMessage({
@@ -140,8 +158,31 @@ export default function SubscriptionPlans() {
     }
   };
 
+  const handleActivate = async (plan) => {
+    const id = plan.id || plan.planId;
+
+    try {
+      await SubscriptionService.updatePlan(id, {
+        ...plan,
+        active: true,
+        courseIds:
+          plan.courseIds || plan.courses?.map((course) => course.courseId) || [],
+      });
+      setMessage({ type: "success", text: `${plan.name} is now active.` });
+      await loadData();
+    } catch (error) {
+      setMessage({
+        type: "danger",
+        text: error.response?.data?.message || "Unable to activate plan.",
+      });
+    }
+  };
+
   const updateField = (field, value) => {
-    setForm((current) => ({ ...current, [field]: value }));
+    setForm((current) => ({
+      ...current,
+      [field]: value,
+    }));
   };
 
   const courseNamesForPlan = (plan) =>
@@ -160,6 +201,7 @@ export default function SubscriptionPlans() {
     if (name.includes("basic")) return "basic";
     if (name.includes("standard")) return "standard";
     if (name.includes("premium")) return "premium";
+
     return "custom";
   };
 
@@ -168,24 +210,24 @@ export default function SubscriptionPlans() {
     if (type === "basic") return <FaUsers />;
     if (type === "standard") return <FaRupeeSign />;
     if (type === "premium") return <FaClock />;
+
     return <FaUsers />;
   };
 
-  const activePlans = plans.filter((plan) => plan.active !== false).length;
-  const inactivePlans = plans.filter((plan) => plan.active === false).length;
-  const planValue = plans.reduce(
-    (total, plan) => total + Number(plan.price || 0),
-    0,
-  );
-
   return (
     <div className="subscription-plans-page">
+      {/* HERO */}
+
       <section className="subscription-hero">
         <div className="hero-content">
           <span>SUBSCRIPTION PLANS</span>
-          <h1>Manage Your Learning Plans</h1>
+          <h1>
+            {canManagePlans ? "Manage Your Learning Plans" : "Learning Plans"}
+          </h1>
           <p>
-            Create, configure and manage subscription plans for your learners.
+            {canManagePlans
+              ? "Create, configure and manage subscription plans for your learners."
+              : "Explore the plans available for your learning journey."}
           </p>
         </div>
 
@@ -193,17 +235,20 @@ export default function SubscriptionPlans() {
           <div className="hero-crown">
             <FaCrown />
           </div>
+
           <div className="hero-card">
             <i />
             <i />
             <i />
           </div>
+
           <b />
           <em />
         </div>
 
         <div className="hero-quote">
           <strong>“</strong>
+
           <p>
             The best learning
             <br />
@@ -211,13 +256,18 @@ export default function SubscriptionPlans() {
             <br />
             right plan.
           </p>
+
           <span />
         </div>
 
-        <button className="hero-add-btn" onClick={openCreate}>
-          <FaPlus /> Add plan
-        </button>
+        {canManagePlans && (
+          <button className="hero-add-btn" onClick={openCreate}>
+            <FaPlus /> Add plan
+          </button>
+        )}
       </section>
+
+      {/* MESSAGE */}
 
       {message && (
         <Alert
@@ -229,47 +279,7 @@ export default function SubscriptionPlans() {
         </Alert>
       )}
 
-      <div className="subscription-stats">
-        <div className="stat-card blue">
-          <div className="stat-icon">
-            <FaCrown />
-          </div>
-          <span className="stat-arrow">›</span>
-          <label>Total Plans</label>
-          <strong>{plans.length}</strong>
-          <small>↗ {plans.length} plans available</small>
-        </div>
-
-        <div className="stat-card green">
-          <div className="stat-icon">
-            <FaUsers />
-          </div>
-          <span className="stat-arrow">›</span>
-          <label>Active Plans</label>
-          <strong>{activePlans}</strong>
-          <small>↗ Currently active</small>
-        </div>
-
-        <div className="stat-card purple">
-          <div className="stat-icon">
-            <FaRupeeSign />
-          </div>
-          <span className="stat-arrow">›</span>
-          <label>Plan Value</label>
-          <strong>₹ {planValue.toLocaleString("en-IN")}</strong>
-          <small>↗ Combined plan pricing</small>
-        </div>
-
-        <div className="stat-card orange">
-          <div className="stat-icon">
-            <FaClock />
-          </div>
-          <span className="stat-arrow">›</span>
-          <label>Inactive Plans</label>
-          <strong>{inactivePlans}</strong>
-          <small>↘ Currently inactive</small>
-        </div>
-      </div>
+      {/* PLAN CARDS */}
 
       <div className="subscription-plan-grid">
         {plans.map((plan) => {
@@ -282,8 +292,10 @@ export default function SubscriptionPlans() {
               <div className="plan-header">
                 <div className="plan-title">
                   <div className="plan-icon">{getPlanIcon(type)}</div>
+
                   <div>
                     <h3>{plan.name}</h3>
+
                     <span>
                       {plan.type || "PAID"} · ₹ {plan.price ?? 0} /{" "}
                       {plan.durationDays || plan.duration || 30} days
@@ -312,12 +324,14 @@ export default function SubscriptionPlans() {
                     "Unlimited"}{" "}
                   questions
                 </span>
+
                 <span>
                   <FaCheck />
                   {plan.mockTestEnabled === false
                     ? "No mock tests"
                     : `${plan.mockTestLimit ?? "Unlimited"} mock tests`}
                 </span>
+
                 <span>
                   <FaCheck />
                   {plan.examEnabled === false
@@ -328,6 +342,7 @@ export default function SubscriptionPlans() {
 
               <div className="mapped-courses">
                 <strong>MAPPED COURSES</strong>
+
                 <span>
                   {courseNames.length
                     ? courseNames.join(", ")
@@ -335,190 +350,336 @@ export default function SubscriptionPlans() {
                 </span>
               </div>
 
-              <div className="plan-actions">
-                <Button
-                  onClick={() => openEdit(plan)}
-                  variant="outline-primary"
-                >
-                  <FaEdit /> Edit
-                </Button>
-
-                {plan.active === false ? (
+              {canManagePlans && (
+                <div className="plan-actions">
                   <Button
-                    className="activate-btn"
                     onClick={() => openEdit(plan)}
+                    variant="outline-primary"
                   >
-                    <FaCheck /> Activate
+                    <FaEdit /> Edit
                   </Button>
-                ) : (
-                  <Button
-                    onClick={() => handleDelete(plan)}
-                    variant="outline-danger"
-                  >
-                    <FaTrash /> Deactivate
-                  </Button>
-                )}
-              </div>
+
+                  {plan.active === false ? (
+                    <Button
+                      className="activate-btn"
+                      onClick={() => openEdit(plan)}
+                    >
+                      <FaCheck /> Activate
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => handleDelete(plan)}
+                      variant="outline-danger"
+                    >
+                      <FaTrash /> Deactivate
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}
       </div>
 
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>{editingId ? "Edit plan" : "Create plan"}</Modal.Title>
-        </Modal.Header>
+      {/* CREATE / EDIT PLAN MODAL */}
+
+      <Modal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        centered
+        dialogClassName="subscription-plan-modal"
+        contentClassName="subscription-plan-modal-content"
+      >
+        <div className="subscription-plan-modal-header">
+          <div className="subscription-plan-modal-title-wrap">
+            <div className="subscription-plan-modal-icon">
+              <FaCrown />
+            </div>
+
+            <div>
+              <h2>{editingId ? "Edit plan" : "Create plan"}</h2>
+
+              <p>
+                Set up a new subscription plan with your preferred settings.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="subscription-plan-modal-close"
+            onClick={() => setShowModal(false)}
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
 
         <Form onSubmit={handleSubmit}>
-          <Modal.Body>
-            <Form.Group className="mb-3">
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                required
-                value={form.name}
-                onChange={(event) => updateField("name", event.target.value)}
-              />
+          <div className="subscription-plan-modal-body">
+            {/* NAME */}
+
+            <Form.Group className="subscription-plan-field">
+              <Form.Label>
+                Name <span>*</span>
+              </Form.Label>
+
+              <div className="subscription-plan-input-wrap">
+                <FaFileAlt />
+
+                <Form.Control
+                  required
+                  value={form.name}
+                  placeholder="Enter plan name"
+                  onChange={(event) => updateField("name", event.target.value)}
+                />
+              </div>
             </Form.Group>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Description</Form.Label>
-              <Form.Control
-                value={form.description}
-                onChange={(event) =>
-                  updateField("description", event.target.value)
-                }
-              />
+            {/* DESCRIPTION */}
+
+            <Form.Group className="subscription-plan-field">
+              <Form.Label>
+                Description <span>*</span>
+              </Form.Label>
+
+              <div className="subscription-plan-textarea-wrap">
+                <FaFileAlt />
+
+                <Form.Control
+                  as="textarea"
+                  required
+                  maxLength={500}
+                  value={form.description}
+                  placeholder="Enter plan description"
+                  onChange={(event) =>
+                    updateField("description", event.target.value)
+                  }
+                />
+
+                <small>{form.description.length}/500</small>
+              </div>
             </Form.Group>
 
-            <div className="row">
-              <Form.Group className="col-6 mb-3">
-                <Form.Label>Type</Form.Label>
-                <Form.Select
-                  value={form.type}
-                  onChange={(event) => updateField("type", event.target.value)}
-                >
-                  <option value="FREE_TRIAL">Free Trial</option>
-                  <option value="PAID">Paid</option>
-                </Form.Select>
+            {/* TYPE + PRICE */}
+
+            <div className="subscription-plan-two-column">
+              <Form.Group className="subscription-plan-field">
+                <Form.Label>
+                  Type <span>*</span>
+                </Form.Label>
+
+                <div className="subscription-plan-input-wrap">
+                  <FaCrown />
+
+                  <Form.Select
+                    value={form.type}
+                    onChange={(event) =>
+                      updateField("type", event.target.value)
+                    }
+                  >
+                    <option value="FREE_TRIAL">Free Trial</option>
+                    <option value="PAID">Paid</option>
+                  </Form.Select>
+
+                  <FaChevronDown className="subscription-plan-select-arrow" />
+                </div>
               </Form.Group>
 
-              <Form.Group className="col-6 mb-3">
-                <Form.Label>Price</Form.Label>
-                <Form.Control
-                  type="number"
-                  min="0"
-                  value={form.price}
-                  onChange={(event) => updateField("price", event.target.value)}
-                />
-              </Form.Group>
+              <Form.Group className="subscription-plan-field">
+                <Form.Label>
+                  Price <span>*</span>
+                </Form.Label>
 
-              <Form.Group className="col-6 mb-3">
-                <Form.Label>Duration (days)</Form.Label>
-                <Form.Control
-                  type="number"
-                  min="1"
-                  value={form.durationDays}
-                  onChange={(event) =>
-                    updateField("durationDays", event.target.value)
-                  }
-                />
-              </Form.Group>
+                <div className="subscription-plan-input-wrap">
+                  <FaRupeeSign />
 
-              <Form.Group className="col-6 mb-3">
-                <Form.Label>Question limit</Form.Label>
-                <Form.Control
-                  type="number"
-                  min="-1"
-                  value={form.practiceQuestionLimit}
-                  onChange={(event) =>
-                    updateField("practiceQuestionLimit", event.target.value)
-                  }
-                />
+                  <Form.Control
+                    required
+                    type="number"
+                    min="0"
+                    value={form.price}
+                    placeholder="Enter price"
+                    onChange={(event) =>
+                      updateField("price", event.target.value)
+                    }
+                  />
+                </div>
               </Form.Group>
             </div>
 
-            <Form.Check
-              className="mb-2"
-              label="Include mock tests"
-              checked={form.mockTestEnabled}
-              onChange={(event) =>
-                updateField("mockTestEnabled", event.target.checked)
-              }
-            />
+            {/* DURATION + QUESTION LIMIT */}
 
-            {form.mockTestEnabled && (
-              <Form.Control
-                className="mb-3"
-                type="number"
-                min="-1"
-                placeholder="Mock test limit (-1 for unlimited)"
-                value={form.mockTestLimit}
-                onChange={(event) =>
-                  updateField("mockTestLimit", event.target.value)
-                }
-              />
-            )}
+            <div className="subscription-plan-two-column">
+              <Form.Group className="subscription-plan-field">
+                <Form.Label>
+                  Duration (days) <span>*</span>
+                </Form.Label>
 
-            <Form.Check
-              className="mb-2"
-              label="Include exams"
-              checked={form.examEnabled}
-              onChange={(event) =>
-                updateField("examEnabled", event.target.checked)
-              }
-            />
+                <div className="subscription-plan-input-wrap">
+                  <FaCalendarAlt />
 
-            {form.examEnabled && (
-              <Form.Control
-                className="mb-3"
-                type="number"
-                min="-1"
-                placeholder="Exam attempt limit (-1 for unlimited)"
-                value={form.examAttemptLimit}
-                onChange={(event) =>
-                  updateField("examAttemptLimit", event.target.value)
-                }
-              />
-            )}
+                  <Form.Control
+                    required
+                    type="number"
+                    min="1"
+                    value={form.durationDays}
+                    onChange={(event) =>
+                      updateField("durationDays", event.target.value)
+                    }
+                  />
+                </div>
+              </Form.Group>
 
-            <Form.Label>Courses included in this plan</Form.Label>
+              <Form.Group className="subscription-plan-field">
+                <Form.Label>
+                  Question limit <span>*</span>
+                </Form.Label>
 
-            <div className="plan-course-mapping">
-              {courses.map((course) => (
+                <div className="subscription-plan-input-wrap">
+                  <FaQuestionCircle />
+
+                  <Form.Control
+                    required
+                    type="number"
+                    min="-1"
+                    value={form.practiceQuestionLimit}
+                    onChange={(event) =>
+                      updateField("practiceQuestionLimit", event.target.value)
+                    }
+                  />
+                </div>
+              </Form.Group>
+            </div>
+
+            {/* MOCK TEST + EXAM */}
+
+            <div className="subscription-plan-options">
+              <div className="subscription-plan-option">
                 <Form.Check
-                  key={course.courseId}
                   type="checkbox"
-                  label={`${course.name} (Course ID: ${course.courseId})`}
-                  checked={form.courseIds
-                    .map(String)
-                    .includes(String(course.courseId))}
+                  checked={form.mockTestEnabled}
                   onChange={(event) =>
-                    updateField(
-                      "courseIds",
-                      event.target.checked
-                        ? [...form.courseIds, course.courseId]
-                        : form.courseIds.filter(
-                            (id) => String(id) !== String(course.courseId),
-                          ),
-                    )
+                    updateField("mockTestEnabled", event.target.checked)
                   }
+                  label="Include mock tests"
                 />
-              ))}
+
+                <span>Allow users to take mock tests with this plan</span>
+
+                {form.mockTestEnabled && (
+                  <Form.Control
+                    type="number"
+                    min="-1"
+                    placeholder="Mock test limit"
+                    value={form.mockTestLimit}
+                    onChange={(event) =>
+                      updateField("mockTestLimit", event.target.value)
+                    }
+                  />
+                )}
+              </div>
+
+              <div className="subscription-plan-option">
+                <Form.Check
+                  type="checkbox"
+                  checked={form.examEnabled}
+                  onChange={(event) =>
+                    updateField("examEnabled", event.target.checked)
+                  }
+                  label="Include exams"
+                />
+
+                <span>Allow users to take exams with this plan</span>
+
+                {form.examEnabled && (
+                  <Form.Control
+                    type="number"
+                    min="-1"
+                    placeholder="Exam attempt limit"
+                    value={form.examAttemptLimit}
+                    onChange={(event) =>
+                      updateField("examAttemptLimit", event.target.value)
+                    }
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* COURSES */}
+
+            <Form.Label className="subscription-plan-courses-label">
+              Courses included in this plan
+            </Form.Label>
+
+            <div className="subscription-plan-course-list">
+              {courses.map((course) => {
+                const selected = form.courseIds
+                  .map(String)
+                  .includes(String(course.courseId));
+
+                return (
+                  <label
+                    key={course.courseId}
+                    className={`subscription-plan-course ${
+                      selected ? "selected" : ""
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selected}
+                      onChange={(event) =>
+                        updateField(
+                          "courseIds",
+                          event.target.checked
+                            ? [...form.courseIds, course.courseId]
+                            : form.courseIds.filter(
+                                (id) => String(id) !== String(course.courseId),
+                              ),
+                        )
+                      }
+                    />
+
+                    <span className="subscription-plan-course-check">
+                      <FaCheck />
+                    </span>
+
+                    <FaBookOpen className="subscription-plan-course-icon" />
+
+                    <span className="subscription-plan-course-name">
+                      {course.name}
+                      <small>(Course ID: {course.courseId})</small>
+                    </span>
+
+                    <FaChevronDown className="subscription-plan-course-arrow" />
+                  </label>
+                );
+              })}
             </div>
 
             {!form.courseIds.length && (
-              <Form.Text className="text-danger">
+              <Form.Text className="subscription-plan-course-error">
                 Select at least one course before saving this plan.
               </Form.Text>
             )}
-          </Modal.Body>
+          </div>
 
-          <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowModal(false)}>
+          {/* FOOTER */}
+
+          <div className="subscription-plan-modal-footer">
+            <Button
+              type="button"
+              className="subscription-plan-cancel"
+              onClick={() => setShowModal(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit">Save plan</Button>
-          </Modal.Footer>
+
+            <Button type="submit" className="subscription-plan-save">
+              <FaSave />
+              Save plan
+            </Button>
+          </div>
         </Form>
       </Modal>
     </div>

@@ -13,13 +13,22 @@ import {
   Badge,
 } from "react-bootstrap";
 
-import { FaSearch, FaPlus, FaEye, FaEdit, FaTrash } from "react-icons/fa";
+import {
+  FaSearch,
+  FaPlus,
+  FaEye,
+  FaEdit,
+  FaTrash,
+  FaQuestionCircle,
+} from "react-icons/fa";
 
 import { useNavigate, useParams } from "react-router-dom";
 import { canManageContent } from "../../utils/roles";
 import { paths } from "../../routes/paths";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 import ConfirmDialog from "../../components/Common/ConfirmDialog";
+import ManagementCountTiles from "../../components/Common/ManagementCountTiles";
+import { getManagementCounts } from "../../utils/managementCounts";
 import TopicService from "../../services/TopicService";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { useToast } from "../../components/Toast/useToast";
@@ -200,6 +209,7 @@ const QuestionList = () => {
   const filteredQuestions = questions.filter((question) =>
     (question.questionText || "").toLowerCase().includes(search.toLowerCase()),
   );
+  const questionCounts = getManagementCounts(questions);
 
   // =========================================================
   // QUESTION ACTIVE CHECK
@@ -657,6 +667,12 @@ const handleFileUpload = async (e) => {
         )}
       </Row>
 
+      <ManagementCountTiles
+        label="Questions"
+        counts={questionCounts}
+        icon={FaQuestionCircle}
+      />
+
       {/* =====================================================
           SEARCH
       ====================================================== */}
@@ -706,6 +722,9 @@ const handleFileUpload = async (e) => {
                     <Badge bg="warning">{question.chapterName}</Badge>
 
                     <Badge bg="info">{question.topicName}</Badge>
+                    <Badge bg="primary">
+                      {getQuestionType(question)?.replace(/_/g, " ") || "Type not specified"}
+                    </Badge>
                   </div>
                 </Col>
 

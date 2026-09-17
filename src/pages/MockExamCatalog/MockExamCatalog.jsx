@@ -11,7 +11,7 @@ import {
 import MockExamService from "../../services/MockExamService";
 import ConfirmDialog from "../../components/Common/ConfirmDialog";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
-import { CONTENT_MANAGER_ROLES, currentRole } from "../../utils/roles";
+import { canAccessFeature, currentRole } from "../../utils/roles";
 import "./MockExamCatalog.css";
 
 // A mock exam is scoped only to a course + chapters + pass % (MockExamResponseDTO)
@@ -42,7 +42,7 @@ function MockExamCatalog() {
 
   // Edit / delete is an admin job - the same roles that can author content.
   // Students and guests only ever start a mock exam.
-  const canManage = CONTENT_MANAGER_ROLES.includes(currentRole());
+  const canManage = canAccessFeature("manageMockExams", currentRole());
 
   const del = useDeleteConfirm({
     entity: "mock exam",
@@ -168,7 +168,9 @@ function MockExamCatalog() {
       {tab === "present" && status === "ready" && exams.length === 0 && (
         <div className="mock-exam-catalog__notice">
           <h2>No mock exams yet</h2>
-          <p>New mock exams appear here as soon as your college publishes them.</p>
+          <p>
+            New mock exams appear here as soon as your college publishes them.
+          </p>
         </div>
       )}
 
@@ -290,12 +292,16 @@ function MockExamCatalog() {
         </div>
       )}
 
-      {tab === "past" && pastStatus === "ready" && pastAttempts.length === 0 && (
-        <div className="mock-exam-catalog__notice">
-          <h2>No completed mock exams yet</h2>
-          <p>Mock exams you&rsquo;ve finished will show up here for review.</p>
-        </div>
-      )}
+      {tab === "past" &&
+        pastStatus === "ready" &&
+        pastAttempts.length === 0 && (
+          <div className="mock-exam-catalog__notice">
+            <h2>No completed mock exams yet</h2>
+            <p>
+              Mock exams you&rsquo;ve finished will show up here for review.
+            </p>
+          </div>
+        )}
 
       {tab === "past" && pastStatus === "ready" && pastAttempts.length > 0 && (
         <ul className="mock-exam-catalog__grid">

@@ -108,7 +108,7 @@ function RuleEngineForm({
 
     rules: [emptyRule()],
 
-    activeRow: false,
+    activeRow: true,
     rowStatus: "",
   });
   // Edit / Reset Form Data
@@ -167,7 +167,10 @@ function RuleEngineForm({
             : [emptyRule()],
 
         activeRow:
-          selectedRuleData.activeRow || false,
+          selectedRuleData.activeRow !== false &&
+          selectedRuleData.activeRow !== "false" &&
+          selectedRuleData.activeRow !== 0 &&
+          selectedRuleData.activeRow !== "0",
 
         rowStatus:
           selectedRuleData.rowStatus || "",
@@ -182,7 +185,7 @@ function RuleEngineForm({
 
         rules: [emptyRule()],
 
-        activeRow: false,
+        activeRow: true,
         rowStatus: "",
       });
     }

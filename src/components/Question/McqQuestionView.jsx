@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Alert, Button, Card, Form } from "react-bootstrap";
 import { FaPaperPlane, FaRedo } from "react-icons/fa";
 import Header from "./Header";
-import SummaryCards from "./SummaryCards";
 import McqQuestionService from "../../services/McqQuestionService";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import QuestionService from "../../services/QuestionService";
@@ -16,7 +15,6 @@ export default function McqQuestionView({ questionId, questionType }) {
   const [question, setQuestion] = useState(null);
   const [selected, setSelected] = useState([]);
   const [result, setResult] = useState(null);
-  const [totalScore, setTotalScore] = useState(0);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [nextQuestionId, setNextQuestionId] = useState(null);
@@ -167,6 +165,32 @@ export default function McqQuestionView({ questionId, questionType }) {
         total={1}
         solved={correct ? 1 : 0}
         totalScore={totalScore}
+      />
+      <Header
+        question={{ ...metadata, ...question }}
+        questionTypeLabel={
+          multiple ? "MCQ Multiple Choice" : "MCQ Single Choice"
+        }
+        actions={
+          <>
+            <Button variant="light" size="sm" onClick={reset} disabled={busy}>
+              <FaRedo className="me-1" /> Reset
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={submit}
+              disabled={busy || !selected.length || !!result}
+            >
+              <FaPaperPlane className="me-1" />{" "}
+              {busy
+                ? "Please wait..."
+                : result
+                  ? "Answer Saved"
+                  : "Submit Answer"}
+            </Button>
+          </>
+        }
       />
       {error && <Alert variant="danger">{error}</Alert>}
       <Card className="shadow-sm">
