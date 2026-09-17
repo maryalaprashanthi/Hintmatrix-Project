@@ -111,11 +111,11 @@ function SummaryCard({ label, value, tone, icon }) {
   return (
     <div className="col-12 col-sm-6 col-xl-2">
       <div className={`performance-summary-card ${tone}`}>
-        <div className="performance-summary-card-header">
-          <div className="performance-summary-card-icon">{icon}</div>
-          <span>{label}</span>
+        <div className="performance-summary-card-icon">{icon}</div>
+        <div className="performance-summary-card-content">
+          <small>{label}</small>
+          <strong>{value}</strong>
         </div>
-        <strong>{value}</strong>
       </div>
     </div>
   );

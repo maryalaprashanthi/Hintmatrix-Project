@@ -1,5 +1,8 @@
-.dashboard-stat-card {
-  width: 100%;
+.management-stats-row {
+  margin-bottom: 30px;
+}
+
+.management-stat-card {
   height: 120px;
   padding: 22px;
   display: flex;
@@ -11,12 +14,12 @@
   transition: 0.3s;
 }
 
-.dashboard-stat-card:hover {
+.management-stat-card:hover {
   transform: translateY(-6px);
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
 }
 
-.dashboard-stat-icon {
+.management-stat-icon {
   width: 60px;
   height: 60px;
   display: flex;
@@ -27,46 +30,41 @@
   font-size: 24px;
 }
 
-.dashboard-stat-info {
-  min-width: 0;
+.management-stat-icon.blue {
+  color: #2563eb;
+  background: #eaf2ff;
 }
 
-.dashboard-stat-info h3 {
+.management-stat-icon.green {
+  color: #16a34a;
+  background: #e9fff3;
+}
+
+.management-stat-icon.red {
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+.management-stat-card h3 {
   margin: 2px 0;
   color: #111827;
   font-size: 30px;
-  line-height: 1.2;
   font-weight: 800;
 }
 
-.dashboard-stat-info small {
+.management-stat-card small {
   display: block;
   color: #64748b;
   font-size: 14px;
 }
 
-.dashboard-stat-info span {
-  display: block;
+.management-stat-card span {
   color: #94a3b8;
   font-size: 13px;
 }
 
-.dashboard-stat-progress {
-  width: 100%;
-  height: 5px;
-  margin-top: 7px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: #edf2f7;
-}
-
-.dashboard-stat-progress-fill {
-  height: 100%;
-  border-radius: 999px;
-}
-
 @media (max-width: 768px) {
-  .dashboard-stat-card {
+  .management-stat-card {
     height: auto;
     padding: 20px;
   }
