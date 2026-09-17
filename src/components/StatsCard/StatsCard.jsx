@@ -121,44 +121,36 @@ function StatsCard({ type,data }) {
   };
 
   return (
-    <div className="stats-card">
-      <div className="stats-top">
-        <div
-          className="stats-icon"
-          style={{
-            background: card.bg,
-            color: card.color,
-          }}
-        >
-          {card.icon}
-        </div>
-
-        <div className="stats-info">
-          <h4>{card.title}</h4>
-
-          <h2
-            style={{
-              color: card.color,
-            }}
-          >
-            {data==null?card.value:data}
-          </h2>
-        </div>
+    <div className="dashboard-stat-card">
+      <div
+        className="dashboard-stat-icon"
+        style={{
+          background: card.bg,
+          color: card.color,
+        }}
+      >
+        {card.icon}
       </div>
 
-      {card.progress && (
-        <div className="progress">
-          <div
-            className="progress-fill"
-            style={{
-              width: `${card.progress}%`,
-              background: card.color,
-            }}
-          ></div>
-        </div>
-      )}
+      <div className="dashboard-stat-info">
+        <small>{card.title}</small>
 
-      <p>{card.subtitle}</p>
+        <h3>{data == null ? card.value : data}</h3>
+
+        <span>{card.subtitle}</span>
+
+        {card.progress && (
+          <div className="dashboard-stat-progress">
+            <div
+              className="dashboard-stat-progress-fill"
+              style={{
+                width: `${card.progress}%`,
+                background: card.color,
+              }}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -150,30 +150,20 @@
 
 .attendance-kpi {
   min-width: 0;
-  min-height: 140px;
-
-  position: relative;
-
-  padding: 15px;
-
+  height: 120px;
+  padding: 22px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
   background: #ffffff;
-
-  border: 1px solid #dfebf7;
-  border-radius: 16px;
-
-  overflow: hidden;
-
-  box-shadow: 0 7px 22px rgba(42, 112, 170, 0.07);
-
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  border: 1px solid #edf2f7;
+  border-radius: 18px;
+  transition: 0.3s;
 }
 
 .attendance-kpi:hover {
-  transform: translateY(-2px);
-
-  box-shadow: 0 10px 28px rgba(42, 112, 170, 0.11);
+  transform: translateY(-6px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
 }
 
 /* =========================================================
@@ -181,16 +171,14 @@
 ========================================================= */
 
 .kpi-icon {
-  width: 44px;
-  height: 44px;
-
+  width: 60px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  border-radius: 15px;
-
-  font-size: 23px;
+  flex-shrink: 0;
+  border-radius: 18px;
+  font-size: 24px;
 }
 
 .total-icon {
@@ -218,23 +206,16 @@
 ========================================================= */
 
 .kpi-title {
-  margin-top: 10px;
-
-  color: #071323;
-
-  font-size: 15px;
-  line-height: 1.5;
+  color: #64748b;
+  font-size: 14px;
 }
 
 .kpi-number {
-  margin-top: 5px;
-
-  color: #111c30;
-
-  font-size: 32px;
-  font-weight: 600;
-
-  line-height: 1.2;
+  margin: 2px 0 0;
+  color: #111827;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.15;
 }
 
 /* =========================================================
