@@ -15,6 +15,7 @@ import {
   FaUniversity,
   FaCodeBranch,
   FaUsers,
+  FaBook,
 } from "react-icons/fa";
 
 import "./StudentForm.css";
@@ -27,6 +28,7 @@ function StudentForm({
   colleges = [],
   branches = [],
   sections = [],
+  courses = [],
 }) {
   const [name, setName] = useState("");
   const [studentCode, setStudentCode] = useState("");
@@ -39,6 +41,7 @@ function StudentForm({
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [address, setAddress] = useState("");
+  const [courseId, setCourseId] = useState("");
 
   useEffect(() => {
     if (selectedStudentData) {
@@ -53,6 +56,9 @@ function StudentForm({
       setPhoneNumber(selectedStudentData.phoneNumber || "");
       setPassword(selectedStudentData.password || "");
       setAddress(selectedStudentData.address || "");
+      setCourseId(
+        selectedStudentData.courseId ?? selectedStudentData.course_id ?? "",
+      );
     } else {
       setName("");
       setStudentCode("");
@@ -65,6 +71,7 @@ function StudentForm({
       setPhoneNumber("");
       setPassword("");
       setAddress("");
+      setCourseId("");
     }
   }, [selectedStudentData, show]);
 
@@ -98,6 +105,37 @@ function StudentForm({
         section.sectionName || section.name || String(section.sectionId || ""),
     }));
 
+  const courseOptions = courses
+    .filter((course) => {
+      const courseCollegeId =
+        course.collegeId ??
+        course.college_id ??
+        course.branch?.collegeId ??
+        course.branch?.college_id ??
+        null;
+
+      const courseBranchId =
+        course.branchId ??
+        course.branch_id ??
+        course.branch?.branchId ??
+        course.branch?.branch_id ??
+        null;
+
+      const matchesCollege =
+        !collegeId || Number(courseCollegeId) === Number(collegeId);
+      const matchesBranch =
+        !branchId || Number(courseBranchId) === Number(branchId);
+
+      return matchesCollege && matchesBranch;
+    })
+    .map((course) => ({
+      value: course.courseId ?? course.id,
+      label:
+        course.name ||
+        course.courseName ||
+        String(course.courseId ?? course.id ?? ""),
+    }));
+
   if (!show) return null;
 
   const handleSave = () => {
@@ -107,6 +145,7 @@ function StudentForm({
       collegeId,
       branchId,
       sectionId,
+      courseId,
       guardianName,
       guardianPhoneNumber,
       email,
@@ -130,6 +169,7 @@ function StudentForm({
       collegeId: Number(collegeId),
       branchId: Number(branchId),
       sectionId: Number(sectionId),
+      courseId: courseId ? Number(courseId) : null,
       guardianName: guardianName.trim(),
       guardianPhoneNumber: String(guardianPhoneNumber).replace(/\D/g, ""),
       email: email.trim(),
@@ -233,6 +273,7 @@ function StudentForm({
                       setCollegeId(option?.value || "");
                       setBranchId("");
                       setSectionId("");
+                      setCourseId("");
                     }}
                     placeholder="Search College"
                     isSearchable
@@ -267,12 +308,44 @@ function StudentForm({
                     onChange={(option) => {
                       setBranchId(option?.value || "");
                       setSectionId("");
+                      setCourseId("");
                     }}
                     placeholder="Search Branch"
                     isSearchable
                     isClearable
                     isDisabled={!collegeId}
                     noOptionsMessage={() => "No branch found"}
+                  />
+                </div>
+              </div>
+
+              {/* Course */}
+              <div className="form-group">
+                <label>
+                  Course <span>*</span>
+                </label>
+
+                <div className="input-box">
+                  <FaBook className="input-icon" />
+                  <Select
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                    }}
+                    options={courseOptions}
+                    value={
+                      courseOptions.find(
+                        (option) => String(option.value) === String(courseId),
+                      ) || null
+                    }
+                    onChange={(option) => setCourseId(option?.value || "")}
+                    placeholder="Search Course"
+                    isSearchable
+                    isClearable
+                    isDisabled={!branchId}
+                    noOptionsMessage={() => "No course found"}
                   />
                 </div>
               </div>
