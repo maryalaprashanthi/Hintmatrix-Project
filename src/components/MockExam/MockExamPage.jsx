@@ -268,6 +268,7 @@ const MockExamPage = () => {
         sessionById,
         examDragById,
         userId: Number(localStorage.getItem("userId")) || undefined,
+        timeTakenSeconds: EXAM_MINUTES * 60 - secondsLeft,
       });
 
       // What we're actually sending for marking. Expand the object in the
@@ -533,6 +534,12 @@ const MockExamPage = () => {
             error={submitError}
             onExit={() => navigate("/mock-exams")}
             onRetry={runSubmit}
+            onReview={
+              result?.mockExamResultId
+                ? () =>
+                    navigate(`/mock-exams/${examId}/review/${result.mockExamResultId}`)
+                : undefined
+            }
             result={result}
             state={submitState}
             total={questions.length}

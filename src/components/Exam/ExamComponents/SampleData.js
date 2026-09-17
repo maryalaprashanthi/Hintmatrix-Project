@@ -1,6 +1,6 @@
 export const data = [
   {
-    name: "Profit and Loss Account",
+    name: "Profit & Loss Account",
     headers: ["Debit Particulars", "Credit Particulars"],
   },
   {
@@ -9,6 +9,6 @@ export const data = [
   },
   {
     name: "Balance Sheet",
-    headers: ["liabilities side", "assets"],
+    headers: ["liabilities side", "Asset Side"],
   },
 ];

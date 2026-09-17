@@ -66,6 +66,7 @@ import MockExamPage from "./components/MockExam/MockExamPage";
 import ExamHub from "./pages/ExamHub/ExamHub";
 import ExamCatalog from "./pages/ExamCatalog/ExamCatalog";
 import MockExamCatalog from "./pages/MockExamCatalog/MockExamCatalog";
+import ExamReview from "./pages/ExamReview/ExamReview";
 import ExamPaper from "./pages/ExamPaper/ExamPaper";
 import PerformanceDashboard from "./pages/Performance/PerformanceDashboard";
 
@@ -433,6 +434,11 @@ function App() {
       </Route>
       <Route path="/exams/:examId" element={<ExamPage />} />
       <Route path="/mock-exams/:examId" element={<MockExamPage />} />
+      <Route path="/exams/:examId/review/:resultId" element={<ExamReview />} />
+      <Route
+        path="/mock-exams/:examId/review/:resultId"
+        element={<ExamReview />}
+      />
     </Routes>
   );
 }

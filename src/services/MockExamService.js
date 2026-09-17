@@ -74,6 +74,18 @@ class MockExamService {
       withCredentials: true,
     });
   }
+
+  // Full review payload for one completed attempt (Exam Review screen)
+  getResultReview(examId, resultId) {
+    return apiClient.get(`${BASE_URL}/${examId}/results/${resultId}`, {
+      withCredentials: true,
+    });
+  }
+
+  // Every completed mock-exam attempt for the logged-in user, newest first
+  getMyAttempts() {
+    return apiClient.get(`${BASE_URL}/results/me`, { withCredentials: true });
+  }
 }
 
 export default new MockExamService();

@@ -4,6 +4,8 @@
 // "Journal" !== "JOURNAL" and every question fell through to the drag-and-drop
 // branch. Accepts either a question object or a bare type string.
 export const questionTypeOf = (input) => {
+  console.log("this is input ksjdf", input);
+
   const raw =
     typeof input === "string"
       ? input
@@ -13,8 +15,10 @@ export const questionTypeOf = (input) => {
         input?.type?.name ??
         input?.type ??
         "");
-
-  const token = String(raw).trim().toUpperCase().replace(/[\s-]+/g, "_");
+  const token = String(raw)
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
 
   if (!token) return null;
   // Match loosely - the label may be "Dropdown", "Drop Down",
@@ -22,6 +26,10 @@ export const questionTypeOf = (input) => {
   if (token.includes("JOURNAL")) return "JOURNAL";
   if (token.includes("DRAG") && token.includes("DROP")) return "DRAG_AND_DROP";
   if (token.includes("DROP") && token.includes("DOWN")) return "DROPDOWN";
+  if (token.includes("MULTIPLE") && token.includes("CHOICE"))
+    return "MULTIPLE_CHOICE";
+  if (token.includes("SINGLE") && token.includes("CHOICE"))
+    return "SINGLE_CHOICE";
 
   return token;
 };

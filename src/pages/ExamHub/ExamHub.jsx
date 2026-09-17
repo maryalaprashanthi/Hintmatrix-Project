@@ -10,7 +10,6 @@ import {
   FaDownload,
   FaCalculator,
   FaStickyNote,
-  FaAward,
   FaLaptop,
   FaBookOpen,
   FaGraduationCap,
@@ -21,6 +20,7 @@ import { useNavigate } from "react-router-dom";
 import { canManageContent } from "../../utils/roles";
 import { getCurrentUserName } from "../../utils/user";
 import ExamService from "../../services/ExamService";
+import MockExamService from "../../services/MockExamService";
 import "./ExamHub.css";
 
 /* ================= STATS  ================= */
@@ -129,35 +129,6 @@ const formatDuration = (start, end) => {
   return `${minutes} Min`;
 };
 
-/* ================= ACTIVITIES  ================= */
-
-const activities = [
-  {
-    title: "Completed Mock Test - 14",
-    sub: "Scored 86% • 2h ago",
-    icon: <FaCheckCircle />,
-    type: "green",
-  },
-  {
-    title: "Practice Session - Journal Entries",
-    sub: "15 Questions • 1d ago",
-    icon: <FaCalendarAlt />,
-    type: "purple",
-  },
-  {
-    title: "New Badge Earned",
-    sub: "Consistent Learner • 1d ago",
-    icon: <FaAward />,
-    type: "orange",
-  },
-  {
-    title: "Attempted Quick Test",
-    sub: "Scored 75% • 2d ago",
-    icon: <FaBullseye />,
-    type: "blue",
-  },
-];
-
 /* ================= QUICK ACTIONS  ================= */
 
 const quickActions = [
@@ -189,6 +160,8 @@ function ExamHub() {
   const [schedules, setSchedules] = useState([]);
   const [scheduleLoading, setScheduleLoading] = useState(true);
   const [scheduleError, setScheduleError] = useState(false);
+
+  const [recentAttempts, setRecentAttempts] = useState([]);
 
   const [statValues, setStatValues] = useState({
     total: "00",
@@ -273,6 +246,39 @@ function ExamHub() {
     }
 
     loadExamData();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Recent Activity: the student's own completed exam + mock exam attempts,
+  // newest first. Each entry is clickable and opens that attempt's review
+  // screen instead of "starting" it again.
+  useEffect(() => {
+    let active = true;
+
+    Promise.allSettled([
+      ExamService.getMyAttempts(),
+      MockExamService.getMyAttempts(),
+    ]).then(([examResult, mockResult]) => {
+      if (!active) return;
+
+      const examAttempts =
+        examResult.status === "fulfilled" && Array.isArray(examResult.value?.data)
+          ? examResult.value.data
+          : [];
+      const mockAttempts =
+        mockResult.status === "fulfilled" && Array.isArray(mockResult.value?.data)
+          ? mockResult.value.data
+          : [];
+
+      const merged = [...examAttempts, ...mockAttempts]
+        .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt))
+        .slice(0, 4);
+
+      setRecentAttempts(merged);
+    });
+
     return () => {
       active = false;
     };
@@ -527,17 +533,38 @@ function ExamHub() {
             </div>
 
             <div className="activity-list">
-              {activities.map((item) => (
-                <div className="activity" key={item.title}>
-                  <div className={`activity-icon ${item.type}`}>
-                    {item.icon}
-                  </div>
-                  <div>
-                    <strong>{item.title}</strong>
-                    <small>{item.sub}</small>
-                  </div>
-                </div>
-              ))}
+              {recentAttempts.length === 0 ? (
+                <p className="activity-empty">
+                  Completed exams and mock exams show up here.
+                </p>
+              ) : (
+                recentAttempts.map((item) => {
+                  const isMock = item.examType === "MOCK_EXAM";
+                  const reviewPath = isMock
+                    ? `/mock-exams/${item.examId}/review/${item.resultId}`
+                    : `/exams/${item.examId}/review/${item.resultId}`;
+
+                  return (
+                    <button
+                      type="button"
+                      className="activity activity--clickable"
+                      key={`${item.examType}-${item.resultId}`}
+                      onClick={() => navigate(reviewPath)}
+                    >
+                      <div className={`activity-icon ${isMock ? "purple" : "green"}`}>
+                        <FaCheckCircle />
+                      </div>
+                      <div>
+                        <strong>Completed {item.examName}</strong>
+                        <small>
+                          Scored {Math.round(item.percentage)}% •{" "}
+                          {formatDate(item.completedAt)}
+                        </small>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>
