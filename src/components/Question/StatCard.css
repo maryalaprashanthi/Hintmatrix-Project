@@ -1,26 +1,31 @@
 .stat-card {
   display: flex;
   align-items: center;
-  min-height: 92px;
-  height: 100%;
+  height: 120px;
   box-sizing: border-box;
-  padding: 16px 18px;
-  border: 0.5px solid #c5c6d0;
-  background-color: white;
-  border-radius: 14px;
-  gap: 14px;
+  padding: 22px;
+  border: 1px solid #edf2f7;
+  background: #ffffff;
+  border-radius: 18px;
+  gap: 18px;
   overflow: hidden;
+  transition: 0.3s;
+}
+
+.stat-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
 }
 
 .stat-icon-wrapper {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: 1.35rem;
+  font-size: 24px;
   background-color: #fef3c7;
   color: #ea580c;
 }
@@ -33,14 +38,13 @@
 }
 
 .stat-title {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 2px;
+  color: #64748b;
+  font-size: 14px;
 }
 
 .stat-amount {
-  font-size: 1.4rem;
+  margin: 2px 0;
+  font-size: 26px;
   font-weight: 700;
   color: #ea580c;
   line-height: 1.2;
@@ -48,9 +52,8 @@
 }
 
 .stat-subtitle {
-  font-size: 0.75rem;
-  color: #6b7280;
-  margin-top: 4px;
+  color: #94a3b8;
+  font-size: 13px;
 }
 
 /* Right side wrapper for the progress circle */
@@ -61,37 +64,11 @@
   flex-shrink: 0;
 }
 
-/* Medium screens: cards sit 2-up, plenty of room — keep full size. */
-
-/* Large screens: cards sit 4-up and columns get narrower — scale down a
-   little and drop the subtitle so the title + amount stay fully readable. */
-@media (min-width: 992px) and (max-width: 1399.98px) {
-  .stat-card {
-    padding: 14px;
-    gap: 10px;
-    min-height: 86px;
-  }
-
-  .stat-icon-wrapper {
-    width: 40px;
-    height: 40px;
-    font-size: 1.15rem;
-  }
-
-  .stat-amount {
-    font-size: 1.2rem;
-  }
-
-  .stat-subtitle {
-    display: none;
-  }
-}
-
 /* Small screens: cards stack full width. */
-@media (max-width: 575.98px) {
+@media (max-width: 768px) {
   .stat-card {
-    min-height: 76px;
-    padding: 14px;
+    height: auto;
+    padding: 20px;
   }
 }
 

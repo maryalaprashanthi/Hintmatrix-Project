@@ -214,6 +214,51 @@
     border-color: #356bdf;
 }
 
+.table-name-status-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.table-name-status-control {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+button.table-name-status-switch {
+    width: 44px;
+    height: 24px;
+    padding: 2px;
+    border: 0;
+    border-radius: 999px;
+    background: #cbd5e1;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.table-name-status-switch span {
+    display: block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ffffff;
+    transition: transform 0.2s ease;
+}
+
+button.table-name-status-switch.active {
+    background: #2563eb;
+}
+
+.table-name-status-switch.active span {
+    transform: translateX(20px);
+}
+
+.table-name-status-label {
+    color: #334155 !important;
+    font-weight: 600;
+}
+
 /* ==========================================
    Textarea
 ========================================== */
