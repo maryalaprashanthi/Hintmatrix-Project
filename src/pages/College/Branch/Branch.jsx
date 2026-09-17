@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { FaCodeBranch } from "react-icons/fa";
+import ManagementCountTiles from "../../../components/Common/ManagementCountTiles";
 import AddBranchModal from "./AddBranchmodal";
 import "./Branch.css";
 import BranchService from "../../../services/BranchService";
@@ -14,6 +16,7 @@ function Branch() {
   const [branches, setBranches] = useState([]);
   const [selectedBranch, setSelectedBranch] = useState(null); // 🌟 ADDED: State tracking for editing items
   const [refreshTrigger, setRefreshTrigger] = useState(false);
+  const [branchCounts, setBranchCounts] = useState(null);
 
   // Open Add Branch Form Context Block
   const handleAddBranch = () => {
@@ -111,12 +114,14 @@ function Branch() {
       </div>
 
       {/* 🌟 FIXED: Replaced simple local table markup with high performance AG Grid container wrapper */}
+      <ManagementCountTiles label="Branches" counts={branchCounts} icon={FaCodeBranch} />
       <div className="card shadow-sm border-0">
         <div className="card-body">
           <BranchTable
             refresh={refreshTrigger}
             onEdit={handleEditBranch}
             onDelete={del.request}
+            onCountsChange={setBranchCounts}
           />
         </div>
       </div>
