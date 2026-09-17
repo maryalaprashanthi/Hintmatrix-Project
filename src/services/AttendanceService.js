@@ -3,6 +3,15 @@
 const BASE_URL = "/api/attendance";
 
 const AttendanceService = {
+  // Get attendance for the authenticated student
+  getMyAttendance: async () => {
+    const response = await apiClient.get(`${BASE_URL}/mine`, {
+      withCredentials: true,
+    });
+
+    return response.data;
+  },
+
   // Get all attendance
   getAllAttendance: async () => {
     const response = await apiClient.get(BASE_URL, {
@@ -66,4 +75,3 @@ const AttendanceService = {
 };
 
 export default AttendanceService;
-

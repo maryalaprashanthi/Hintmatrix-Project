@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FaChartLine, FaRedo, FaSearch, FaUsers } from "react-icons/fa";
-import { BarChart, LineChart, PieChart } from "@mui/x-charts";
+import {
+  FaCheck,
+  FaChartLine,
+  FaClipboardList,
+  FaRedo,
+  FaSearch,
+  FaTimes,
+  FaUserCheck,
+  FaUsers,
+} from "react-icons/fa";
+import { BarChart, PieChart } from "@mui/x-charts";
 
 import CourseService from "../../services/CourseService";
 import BranchService from "../../services/BranchService";
@@ -98,11 +107,14 @@ const TableEmpty = ({ colSpan, message = "No data available." }) => (
   </tr>
 );
 
-function SummaryCard({ label, value, tone }) {
+function SummaryCard({ label, value, tone, icon }) {
   return (
     <div className="col-12 col-sm-6 col-xl-2">
       <div className={`performance-summary-card ${tone}`}>
-        <span>{label}</span>
+        <div className="performance-summary-card-header">
+          <div className="performance-summary-card-icon">{icon}</div>
+          <span>{label}</span>
+        </div>
         <strong>{value}</strong>
       </div>
     </div>
@@ -218,13 +230,13 @@ function TrendChart({ trend }) {
 
   return (
     <div className="performance-chart-wrap">
-      <LineChart
+      <BarChart
         className="performance-chart"
         xAxis={[
           {
-            scaleType: "point",
+            scaleType: "band",
             data: labels,
-            tickLabelStyle: { fontSize: 11 },
+            tickLabelStyle: { fill: "#94a3b8", fontSize: 11 },
           },
         ]}
         yAxis={[
@@ -232,6 +244,7 @@ function TrendChart({ trend }) {
             min: 0,
             max: 100,
             tickNumber: 5,
+            tickLabelStyle: { fill: "#94a3b8", fontSize: 11 },
             valueFormatter: (value) => `${value}%`,
           },
         ]}
@@ -239,15 +252,13 @@ function TrendChart({ trend }) {
           {
             data: values,
             label: "Average percentage",
-            area: true,
-            showMark: true,
             valueFormatter: (value) => formatPercentage(value),
+            color: "#22c55e",
           },
         ]}
-        grid={{ horizontal: true }}
+        grid={{ horizontal: true, vertical: false }}
         height={280}
-        margin={{ left: 58, right: 24, top: 24, bottom: 48 }}
-        colors={["#2563eb"]}
+        margin={{ left: 52, right: 20, top: 18, bottom: 52 }}
         slotProps={{ legend: { hidden: true } }}
       />
     </div>
@@ -272,20 +283,23 @@ function ResultPieChart({ passed, failed }) {
               { id: 0, value: passedValue, label: "Passed" },
               { id: 1, value: failedValue, label: "Failed" },
             ],
-            innerRadius: 48,
+            innerRadius: 56,
             outerRadius: 92,
             paddingAngle: 2,
-            cornerRadius: 4,
+            cornerRadius: 8,
             valueFormatter: ({ value }) => formatNumber(value),
           },
         ]}
-        colors={["#16a34a", "#dc2626"]}
+        colors={["#22c55e", "#ef4444"]}
         height={250}
-        margin={{ top: 12, right: 12, bottom: 12, left: 12 }}
+        margin={{ top: 8, right: 8, bottom: 28, left: 8 }}
         slotProps={{
           legend: {
             direction: "row",
             position: { vertical: "bottom", horizontal: "middle" },
+            itemMarkWidth: 10,
+            itemMarkHeight: 10,
+            labelStyle: { fontSize: 12, fill: "#475569" },
           },
         }}
       />
@@ -754,37 +768,43 @@ function PerformanceDashboard() {
               label="Total Students"
               value={formatNumber(data.totalStudents)}
               tone="blue"
+              icon={<FaUsers />}
             />
             <SummaryCard
               label="Exams Conducted"
               value={formatNumber(data.examsConducted)}
               tone="purple"
+              icon={<FaClipboardList />}
             />
             <SummaryCard
               label="Average Percentage"
               value={formatPercentage(data.averagePercentage)}
               tone="teal"
+              icon={<FaChartLine />}
             />
             <SummaryCard
               label="Pass Rate"
               value={formatPercentage(data.passRate)}
               tone="green"
+              icon={<FaUserCheck />}
             />
             <SummaryCard
               label="Passed"
               value={formatNumber(data.passedResults)}
               tone="orange"
+              icon={<FaCheck />}
             />
             <SummaryCard
               label="Failed"
               value={formatNumber(data.failedResults)}
               tone="red"
+              icon={<FaTimes />}
             />
           </div>
 
           <div className="row g-4 performance-charts-row">
             <div className="col-12 col-xl-8">
-              <section className="performance-panel performance-chart-panel">
+              <section className="performance-panel performance-chart-panel performance-trend-panel">
                 <div className="performance-panel-heading">
                   <div>
                     <h2>Performance Trend</h2>
@@ -796,7 +816,7 @@ function PerformanceDashboard() {
               </section>
             </div>
             <div className="col-12 col-xl-4">
-              <section className="performance-panel performance-chart-panel">
+              <section className="performance-panel performance-chart-panel performance-result-panel">
                 <div className="performance-panel-heading">
                   <div>
                     <h2>Result Summary</h2>
