@@ -582,12 +582,12 @@ function StudentAttendance() {
             <div className="kpi-icon total-icon">
               <FaUsers />
             </div>
-
-            <div className="kpi-title">
-              {isStudent ? "My Attendance Days" : "Total Students"}
+            <div className="kpi-content">
+              <div className="kpi-title">
+                {isStudent ? "My Attendance Days" : "Total Students"}
+              </div>
+              <div className="kpi-number">{totalStudents}</div>
             </div>
-
-            <div className="kpi-number">{totalStudents}</div>
           </div>
 
           {/* Present */}
@@ -596,10 +596,10 @@ function StudentAttendance() {
             <div className="kpi-icon present-icon">
               <FaCheckCircle />
             </div>
-
-            <div className="kpi-title">Present</div>
-
-            <div className="kpi-number">{presentCount}</div>
+            <div className="kpi-content">
+              <div className="kpi-title">Present</div>
+              <div className="kpi-number">{presentCount}</div>
+            </div>
           </div>
 
           {/* Absent */}
@@ -608,10 +608,10 @@ function StudentAttendance() {
             <div className="kpi-icon absent-icon">
               <FaTimesCircle />
             </div>
-
-            <div className="kpi-title">Absent</div>
-
-            <div className="kpi-number">{absentCount}</div>
+            <div className="kpi-content">
+              <div className="kpi-title">Absent</div>
+              <div className="kpi-number">{absentCount}</div>
+            </div>
           </div>
 
           {/* Percentage */}
@@ -620,10 +620,10 @@ function StudentAttendance() {
             <div className="kpi-icon attendance-icon">
               <FaChartPie />
             </div>
-
-            <div className="kpi-title">Attendance</div>
-
-            <div className="kpi-number">{attendancePercentage}%</div>
+            <div className="kpi-content">
+              <div className="kpi-title">Attendance</div>
+              <div className="kpi-number">{attendancePercentage}%</div>
+            </div>
           </div>
         </section>
 
