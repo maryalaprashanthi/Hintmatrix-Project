@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaRegCalendarAlt, FaPlay, FaRegFileAlt } from "react-icons/fa";
+import {
+  FaRegCalendarAlt,
+  FaPlay,
+  FaRegFileAlt,
+  FaClipboardList,
+} from "react-icons/fa";
 
 import ExamService from "../../services/ExamService";
 import ConfirmDialog from "../../components/Common/ConfirmDialog";
@@ -71,6 +76,13 @@ function ExamCatalog() {
   const [exams, setExams] = useState([]);
   const [status, setStatus] = useState("loading");
 
+  // "Present" is the existing open/upcoming/closed catalog below; "Past" is
+  // the student's own completed attempts, each opening straight into that
+  // attempt's review screen instead of the paper itself.
+  const [tab, setTab] = useState("present");
+  const [pastAttempts, setPastAttempts] = useState([]);
+  const [pastStatus, setPastStatus] = useState("loading");
+
   const canManage = MANAGER_ROLES.includes(currentRole());
 
   const del = useDeleteConfirm({
@@ -105,21 +117,69 @@ function ExamCatalog() {
 
   useEffect(() => loadExams(), [loadExams]);
 
+  const loadPastAttempts = useCallback(() => {
+    let active = true;
+    setPastStatus("loading");
+
+    ExamService.getMyAttempts()
+      .then((response) => {
+        if (!active) return;
+        setPastAttempts(Array.isArray(response.data) ? response.data : []);
+        setPastStatus("ready");
+      })
+      .catch((error) => {
+        if (!active) return;
+        console.error("Failed to load past attempts:", error);
+        setPastStatus("error");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => loadPastAttempts(), [loadPastAttempts]);
+
   const openExam = (examId) => navigate(`/exams/${examId}`);
   const editExam = (examId) => navigate(`/exam-paper/${examId}`);
+  const openReview = (examId, resultId) =>
+    navigate(`/exams/${examId}/review/${resultId}`);
 
   return (
     <div className="exam-catalog">
       <header className="exam-catalog__head">
         <h1>Choose a paper</h1>
         <p>
-          {status === "ready" && exams.length > 0
-            ? `${exams.length} ${exams.length === 1 ? "paper" : "papers"} published for you.`
-            : "Every paper your college has published shows up here."}
+          {tab === "present"
+            ? status === "ready" && exams.length > 0
+              ? `${exams.length} ${exams.length === 1 ? "paper" : "papers"} published for you.`
+              : "Every paper your college has published shows up here."
+            : "Every paper you've already completed shows up here."}
         </p>
       </header>
 
-      {status === "loading" && (
+      <div className="exam-catalog__tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "present"}
+          className={`exam-catalog__tab ${tab === "present" ? "is-active" : ""}`}
+          onClick={() => setTab("present")}
+        >
+          Present Exams
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "past"}
+          className={`exam-catalog__tab ${tab === "past" ? "is-active" : ""}`}
+          onClick={() => setTab("past")}
+        >
+          Past Exams
+        </button>
+      </div>
+
+      {tab === "present" && status === "loading" && (
         <ul className="exam-catalog__grid" aria-hidden="true">
           {Array.from({ length: 6 }).map((_, index) => (
             <li key={index} className="exam-card exam-card--skeleton">
@@ -132,7 +192,7 @@ function ExamCatalog() {
         </ul>
       )}
 
-      {status === "error" && (
+      {tab === "present" && status === "error" && (
         <div className="exam-catalog__notice" role="alert">
           <h2>We couldn&rsquo;t load your papers</h2>
           <p>Check your connection, then try again.</p>
@@ -142,14 +202,14 @@ function ExamCatalog() {
         </div>
       )}
 
-      {status === "ready" && exams.length === 0 && (
+      {tab === "present" && status === "ready" && exams.length === 0 && (
         <div className="exam-catalog__notice">
           <h2>No papers yet</h2>
           <p>New papers appear here as soon as your college publishes them.</p>
         </div>
       )}
 
-      {status === "ready" && exams.length > 0 && (
+      {tab === "present" && status === "ready" && exams.length > 0 && (
         <ul className="exam-catalog__grid">
           {exams.map((exam) => {
             const state = windowState(exam.startDate, exam.endDate);
@@ -261,6 +321,80 @@ function ExamCatalog() {
               </li>
             );
           })}
+        </ul>
+      )}
+
+      {tab === "past" && pastStatus === "loading" && (
+        <ul className="exam-catalog__grid" aria-hidden="true">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <li key={index} className="exam-card exam-card--skeleton">
+              <span className="exam-card__line exam-card__line--title" />
+              <span className="exam-card__line exam-card__line--sub" />
+              <span className="exam-card__rule" />
+              <span className="exam-card__line exam-card__line--foot" />
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {tab === "past" && pastStatus === "error" && (
+        <div className="exam-catalog__notice" role="alert">
+          <h2>We couldn&rsquo;t load your past exams</h2>
+          <p>Check your connection, then try again.</p>
+          <button
+            type="button"
+            className="exam-catalog__retry-btn"
+            onClick={loadPastAttempts}
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
+      {tab === "past" && pastStatus === "ready" && pastAttempts.length === 0 && (
+        <div className="exam-catalog__notice">
+          <h2>No completed exams yet</h2>
+          <p>Papers you&rsquo;ve finished will show up here for review.</p>
+        </div>
+      )}
+
+      {tab === "past" && pastStatus === "ready" && pastAttempts.length > 0 && (
+        <ul className="exam-catalog__grid">
+          {pastAttempts.map((attempt) => (
+            <li key={attempt.resultId} className="exam-catalog__cell">
+              <article className="exam-card" data-state="closed">
+                <span className="exam-card__icon" aria-hidden="true">
+                  <FaClipboardList />
+                </span>
+
+                <div className="exam-card__body">
+                  <span className="exam-card__course">Completed</span>
+                  <h2 className="exam-card__title">{attempt.examName}</h2>
+                  <p className="exam-card__desc">
+                    Scored {Math.round(attempt.percentage ?? 0)}% &middot;
+                    Completed {formatDate(attempt.completedAt)}
+                  </p>
+                </div>
+
+                <div className="exam-card__aside">
+                  <span className="exam-card__pill">Completed</span>
+
+                  <p className="exam-card__aside-note">
+                    Review what you submitted and where you went wrong.
+                  </p>
+
+                  <button
+                    type="button"
+                    className="exam-card__start exam-card__start--review"
+                    onClick={() => openReview(attempt.examId, attempt.resultId)}
+                  >
+                    <FaClipboardList aria-hidden="true" />
+                    <span>Review</span>
+                  </button>
+                </div>
+              </article>
+            </li>
+          ))}
         </ul>
       )}
 

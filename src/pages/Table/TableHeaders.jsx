@@ -8,6 +8,8 @@ import ActionIconButton from "../../components/Common/ActionIconButton";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { useToast } from "../../components/Toast/useToast";
 import { getApiErrorMessage } from "../../utils/apiError";
+import ManagementCountTiles from "../../components/Common/ManagementCountTiles";
+import { FaHeading } from "react-icons/fa";
 
 function TableHeaders() {
   const toast = useToast();
@@ -16,6 +18,12 @@ function TableHeaders() {
   const [tableHeaders, setTableHeaders] = useState([]);
   const [id, setId] = useState(null);
   const [name, setName] = useState("");
+  const [activeRow, setActiveRow] = useState(true);
+  const tableHeaderCounts = {
+    total: tableHeaders.length,
+    active: tableHeaders.filter((item) => item.activeRow !== false).length,
+    inactive: tableHeaders.filter((item) => item.activeRow === false).length,
+  };
 
   // Upload Handler
   const handleFileUpload = async (e) => {
@@ -52,6 +60,7 @@ function TableHeaders() {
       }
       setId(null);
       setName("");
+      setActiveRow(true);
       setShowModal(false);
       loadTableHeaders();
     } catch (error) {
@@ -67,6 +76,7 @@ function TableHeaders() {
       const allTableNames = data.map((obj) => ({
         name: obj.name,
         id: obj.headerId,
+        activeRow: obj.activeRow !== false,
       }));
 
       setTableHeaders(allTableNames);
@@ -85,12 +95,48 @@ function TableHeaders() {
     loadTableHeaders();
   }, []);
 
+  const handleStatusToggle = async (tableHeader) => {
+    const nextStatus = tableHeader.activeRow === false;
+
+    try {
+      await TableHeaderService.update(tableHeader.id, {
+        name: tableHeader.name,
+        activeRow: nextStatus,
+      });
+      toast.success(`Table header ${nextStatus ? "activated" : "deactivated"}.`);
+      await loadTableHeaders();
+    } catch (error) {
+      console.error("Error updating table header status:", error);
+      toast.error(getApiErrorMessage(error, "Unable to update status."));
+    }
+  };
+
   const columnDefs = [
     {
       field: "name",
       headerName: "Table Header Name",
       flex: 1,
       minWidth: 160,
+    },
+    {
+      field: "activeRow",
+      headerName: "Status",
+      width: 130,
+      cellRenderer: (params) => {
+        if (!params.data) return null;
+        const isActive = params.value !== false;
+        return (
+          <button
+            type="button"
+            className={`table-header-status ${isActive ? "active" : "inactive"}`}
+            onClick={() => handleStatusToggle(params.data)}
+            title={`Set ${params.data.name} ${isActive ? "inactive" : "active"}`}
+          >
+            <span className="table-header-status-dot" />
+            {isActive ? "Active" : "Inactive"}
+          </button>
+        );
+      },
     },
     {
       headerName: "Action",
@@ -112,6 +158,7 @@ function TableHeaders() {
               onClick={() => {
                 setId(params.data.id);
                 setName(params.data.name);
+                setActiveRow(params.data.activeRow !== false);
                 setShowModal(true);
               }}
               title="Edit table header"
@@ -161,6 +208,7 @@ function TableHeaders() {
             onClick={() => {
               setId(null);
               setName("");
+              setActiveRow(true);
               setShowModal(true);
             }}
           >
@@ -168,6 +216,12 @@ function TableHeaders() {
           </button>
         </div>
       </div>
+
+      <ManagementCountTiles
+        label="Table Headers"
+        counts={tableHeaderCounts}
+        icon={FaHeading}
+      />
 
       {/* Data Grid */}
       <div className="card shadow-sm border-0">
@@ -184,9 +238,11 @@ function TableHeaders() {
           setShowModal(false);
           setId(null);
           setName("");
+          setActiveRow(true);
         }}
         onSave={handleSave}
         Inputdata={name}
+        Inputstatus={activeRow}
       />
       <ConfirmDialog
         open={Boolean(del.pending)}

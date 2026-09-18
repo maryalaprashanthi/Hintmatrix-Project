@@ -40,6 +40,7 @@ const ExamResultDialog = ({
   total,
   onRetry,
   onExit,
+  onReview,
 }) => {
   const percentage = formatPercentage(result?.percentage);
 
@@ -105,6 +106,11 @@ const ExamResultDialog = ({
             </div>
 
             <div className={styles.timeUpActions}>
+              {onReview && (
+                <button className={styles.onDark} onClick={onReview} type="button">
+                  Review answers
+                </button>
+              )}
               <button className={styles.onDark} onClick={onExit} type="button">
                 Back to home
               </button>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./CourseLevelAccess.css";
+import "./courselevelaccess.css";
 
 const initialCourses = [
   {

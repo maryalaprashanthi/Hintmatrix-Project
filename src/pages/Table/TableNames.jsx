@@ -8,6 +8,8 @@ import ActionIconButton from "../../components/Common/ActionIconButton";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { useToast } from "../../components/Toast/useToast";
 import { getApiErrorMessage } from "../../utils/apiError";
+import ManagementCountTiles from "../../components/Common/ManagementCountTiles";
+import { FaTable } from "react-icons/fa";
 
 function TableNames() {
   const toast = useToast();
@@ -16,7 +18,13 @@ function TableNames() {
 
   const [id, setId] = useState(null);
   const [name, setName] = useState("");
+  const [activeRow, setActiveRow] = useState(true);
   const fileInputRef = useRef(null);
+  const tableNameCounts = {
+    total: tableNames.length,
+    active: tableNames.filter((item) => item.activeRow !== false).length,
+    inactive: tableNames.filter((item) => item.activeRow === false).length,
+  };
 
   // ================= SAVE =================
   const handleSave = async (newTableName) => {
@@ -31,6 +39,7 @@ function TableNames() {
 
       setId(null);
       setName("");
+      setActiveRow(true);
       setShowModal(false);
 
       loadTableNames();
@@ -51,6 +60,7 @@ function TableNames() {
       const allTableNames = data.map((obj) => ({
         name: obj.name,
         id: obj.tableNameId,
+        activeRow: obj.activeRow !== false,
       }));
 
       setTableNames(allTableNames);
@@ -97,12 +107,50 @@ function TableNames() {
     loadTableNames();
   }, []);
 
+  const handleStatusToggle = async (tableName) => {
+    const nextStatus = tableName.activeRow === false;
+
+    try {
+      await TableNameService.update(tableName.id, {
+        name: tableName.name,
+        activeRow: nextStatus,
+      });
+      toast.success(`Table name ${nextStatus ? "activated" : "deactivated"}.`);
+      await loadTableNames();
+    } catch (error) {
+      console.error("Error updating table name status:", error);
+      toast.error(getApiErrorMessage(error, "Unable to update status."));
+    }
+  };
+
   const columnDefs = [
     {
       field: "name",
       headerName: "Table Name",
       flex: 1,
       minWidth: 160,
+    },
+
+    {
+      field: "activeRow",
+      headerName: "Status",
+      width: 130,
+      cellRenderer: (params) => {
+        if (!params.data) return null;
+
+        const isActive = params.value !== false;
+        return (
+          <button
+            type="button"
+            className={`table-name-status ${isActive ? "active" : "inactive"}`}
+            onClick={() => handleStatusToggle(params.data)}
+            title={`Set ${params.data.name} ${isActive ? "inactive" : "active"}`}
+          >
+            <span className="table-name-status-dot" />
+            {isActive ? "Active" : "Inactive"}
+          </button>
+        );
+      },
     },
 
     {
@@ -127,6 +175,7 @@ function TableNames() {
               onClick={() => {
                 setId(params.data.id);
                 setName(params.data.name);
+                setActiveRow(params.data.activeRow !== false);
                 setShowModal(true);
               }}
               title="Edit table name"
@@ -180,6 +229,7 @@ function TableNames() {
             onClick={() => {
               setId(null);
               setName("");
+              setActiveRow(true);
               setShowModal(true);
             }}
           >
@@ -187,6 +237,12 @@ function TableNames() {
           </button>
         </div>
       </div>
+
+      <ManagementCountTiles
+        label="Table Names"
+        counts={tableNameCounts}
+        icon={FaTable}
+      />
 
       {/* Data Grid */}
       <div className="card shadow-sm border-0">
@@ -205,9 +261,11 @@ function TableNames() {
           setId(null);
 
           setName("");
+          setActiveRow(true);
         }}
         onSave={handleSave}
         Inputname={name}
+        Inputstatus={activeRow}
       />
       <ConfirmDialog
         open={Boolean(del.pending)}

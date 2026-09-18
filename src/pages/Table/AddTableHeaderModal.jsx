@@ -5,12 +5,14 @@ import { FaTimes, FaTable, FaSave } from "react-icons/fa";
 
 import "./AddTableHeaderModal.css";
 
-function AddTableHeaderModal({ show, onClose, onSave, Inputdata }) {
+function AddTableHeaderModal({ show, onClose, onSave, Inputdata, Inputstatus }) {
   const [name, setName] = useState("");
+  const [activeRow, setActiveRow] = useState(true);
 
   useEffect(() => {
     setName(Inputdata || "");
-  }, [Inputdata]);
+    setActiveRow(Inputstatus !== false);
+  }, [Inputdata, Inputstatus]);
 
   if (!show) return null;
 
@@ -22,6 +24,7 @@ function AddTableHeaderModal({ show, onClose, onSave, Inputdata }) {
 
     const newTableHeader = {
       name,
+      activeRow,
     };
 
     await onSave(newTableHeader);
@@ -30,6 +33,7 @@ function AddTableHeaderModal({ show, onClose, onSave, Inputdata }) {
 
   const handleClose = () => {
     setName("");
+    setActiveRow(true);
     onClose();
   };
 
@@ -82,6 +86,21 @@ function AddTableHeaderModal({ show, onClose, onSave, Inputdata }) {
                 }}
 
                   />
+                </div>
+              </div>
+
+              <div className="form-group table-header-status-field">
+                <label>Status</label>
+                <div className="form-check form-switch">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={activeRow}
+                    onChange={(e) => setActiveRow(e.target.checked)}
+                  />
+                  <label className="form-check-label">
+                    {activeRow ? "Active" : "Inactive"}
+                  </label>
                 </div>
               </div>
             </div>

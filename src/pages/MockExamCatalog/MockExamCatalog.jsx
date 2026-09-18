@@ -1,24 +1,48 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaPlay, FaRegFileAlt, FaRegCheckCircle, FaBookOpen } from "react-icons/fa";
+import {
+  FaPlay,
+  FaRegFileAlt,
+  FaRegCheckCircle,
+  FaBookOpen,
+  FaClipboardList,
+} from "react-icons/fa";
 
 import MockExamService from "../../services/MockExamService";
 import ConfirmDialog from "../../components/Common/ConfirmDialog";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
-import { CONTENT_MANAGER_ROLES, currentRole } from "../../utils/roles";
+import { canAccessFeature, currentRole } from "../../utils/roles";
 import "./MockExamCatalog.css";
 
 // A mock exam is scoped only to a course + chapters + pass % (MockExamResponseDTO)
 // - no schedule window - so every mock exam is always open to start.
+
+const formatDate = (value) => {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
 
 function MockExamCatalog() {
   const navigate = useNavigate();
   const [exams, setExams] = useState([]);
   const [status, setStatus] = useState("loading");
 
+  // "Present" is the existing catalog below; "Past" is the student's own
+  // completed attempts, each opening straight into that attempt's review
+  // screen instead of the paper itself.
+  const [tab, setTab] = useState("present");
+  const [pastAttempts, setPastAttempts] = useState([]);
+  const [pastStatus, setPastStatus] = useState("loading");
+
   // Edit / delete is an admin job - the same roles that can author content.
   // Students and guests only ever start a mock exam.
-  const canManage = CONTENT_MANAGER_ROLES.includes(currentRole());
+  const canManage = canAccessFeature("manageMockExams", currentRole());
 
   const del = useDeleteConfirm({
     entity: "mock exam",
@@ -52,21 +76,69 @@ function MockExamCatalog() {
 
   useEffect(() => loadExams(), [loadExams]);
 
+  const loadPastAttempts = useCallback(() => {
+    let active = true;
+    setPastStatus("loading");
+
+    MockExamService.getMyAttempts()
+      .then((response) => {
+        if (!active) return;
+        setPastAttempts(Array.isArray(response.data) ? response.data : []);
+        setPastStatus("ready");
+      })
+      .catch((error) => {
+        if (!active) return;
+        console.error("Failed to load past mock exams:", error);
+        setPastStatus("error");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => loadPastAttempts(), [loadPastAttempts]);
+
   const openExam = (mockExamId) => navigate(`/mock-exams/${mockExamId}`);
   const editExam = (mockExamId) => navigate(`/mock-exam-paper/${mockExamId}`);
+  const openReview = (mockExamId, resultId) =>
+    navigate(`/mock-exams/${mockExamId}/review/${resultId}`);
 
   return (
     <div className="mock-exam-catalog">
       <header className="mock-exam-catalog__head">
         <h1>Practice mock exams</h1>
         <p>
-          {status === "ready" && exams.length > 0
-            ? `${exams.length} mock ${exams.length === 1 ? "exam" : "exams"} ready for you.`
-            : "Every mock exam your college has published shows up here."}
+          {tab === "present"
+            ? status === "ready" && exams.length > 0
+              ? `${exams.length} mock ${exams.length === 1 ? "exam" : "exams"} ready for you.`
+              : "Every mock exam your college has published shows up here."
+            : "Every mock exam you've already completed shows up here."}
         </p>
       </header>
 
-      {status === "loading" && (
+      <div className="mock-exam-catalog__tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "present"}
+          className={`mock-exam-catalog__tab ${tab === "present" ? "is-active" : ""}`}
+          onClick={() => setTab("present")}
+        >
+          Present Exams
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "past"}
+          className={`mock-exam-catalog__tab ${tab === "past" ? "is-active" : ""}`}
+          onClick={() => setTab("past")}
+        >
+          Past Exams
+        </button>
+      </div>
+
+      {tab === "present" && status === "loading" && (
         <ul className="mock-exam-catalog__grid" aria-hidden="true">
           {Array.from({ length: 6 }).map((_, index) => (
             <li key={index} className="mock-exam-card mock-exam-card--skeleton">
@@ -79,7 +151,7 @@ function MockExamCatalog() {
         </ul>
       )}
 
-      {status === "error" && (
+      {tab === "present" && status === "error" && (
         <div className="mock-exam-catalog__notice" role="alert">
           <h2>We couldn&rsquo;t load your mock exams</h2>
           <p>Check your connection, then try again.</p>
@@ -93,14 +165,16 @@ function MockExamCatalog() {
         </div>
       )}
 
-      {status === "ready" && exams.length === 0 && (
+      {tab === "present" && status === "ready" && exams.length === 0 && (
         <div className="mock-exam-catalog__notice">
           <h2>No mock exams yet</h2>
-          <p>New mock exams appear here as soon as your college publishes them.</p>
+          <p>
+            New mock exams appear here as soon as your college publishes them.
+          </p>
         </div>
       )}
 
-      {status === "ready" && exams.length > 0 && (
+      {tab === "present" && status === "ready" && exams.length > 0 && (
         <ul className="mock-exam-catalog__grid">
           {exams.map((exam) => (
             <li key={exam.mockExamId} className="mock-exam-catalog__cell">
@@ -184,6 +258,90 @@ function MockExamCatalog() {
                       </button>
                     </div>
                   )}
+                </div>
+              </article>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {tab === "past" && pastStatus === "loading" && (
+        <ul className="mock-exam-catalog__grid" aria-hidden="true">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <li key={index} className="mock-exam-card mock-exam-card--skeleton">
+              <span className="mock-exam-card__line mock-exam-card__line--title" />
+              <span className="mock-exam-card__line mock-exam-card__line--sub" />
+              <span className="mock-exam-card__rule" />
+              <span className="mock-exam-card__line mock-exam-card__line--foot" />
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {tab === "past" && pastStatus === "error" && (
+        <div className="mock-exam-catalog__notice" role="alert">
+          <h2>We couldn&rsquo;t load your past mock exams</h2>
+          <p>Check your connection, then try again.</p>
+          <button
+            type="button"
+            className="mock-exam-catalog__retry-btn"
+            onClick={loadPastAttempts}
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
+      {tab === "past" &&
+        pastStatus === "ready" &&
+        pastAttempts.length === 0 && (
+          <div className="mock-exam-catalog__notice">
+            <h2>No completed mock exams yet</h2>
+            <p>
+              Mock exams you&rsquo;ve finished will show up here for review.
+            </p>
+          </div>
+        )}
+
+      {tab === "past" && pastStatus === "ready" && pastAttempts.length > 0 && (
+        <ul className="mock-exam-catalog__grid">
+          {pastAttempts.map((attempt) => (
+            <li key={attempt.resultId} className="mock-exam-catalog__cell">
+              <article className="mock-exam-card" data-state="closed">
+                <span className="mock-exam-card__icon" aria-hidden="true">
+                  <FaClipboardList />
+                </span>
+
+                <div className="mock-exam-card__body">
+                  <span className="mock-exam-card__course">Completed</span>
+                  <h2 className="mock-exam-card__title">{attempt.examName}</h2>
+
+                  <div className="mock-exam-card__meta">
+                    <span className="mock-exam-card__meta-item">
+                      <FaRegCheckCircle aria-hidden="true" />
+                      Scored {Math.round(attempt.percentage ?? 0)}%
+                    </span>
+                    <span className="mock-exam-card__meta-item">
+                      Completed {formatDate(attempt.completedAt)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mock-exam-card__aside">
+                  <span className="mock-exam-card__pill">Completed</span>
+
+                  <p className="mock-exam-card__aside-note">
+                    Review what you submitted and where you went wrong.
+                  </p>
+
+                  <button
+                    type="button"
+                    className="mock-exam-card__start mock-exam-card__start--review"
+                    onClick={() => openReview(attempt.examId, attempt.resultId)}
+                  >
+                    <FaClipboardList aria-hidden="true" />
+                    <span>Review</span>
+                  </button>
                 </div>
               </article>
             </li>

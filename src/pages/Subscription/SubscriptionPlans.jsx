@@ -20,6 +20,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import CourseService from "../../services/CourseService";
 import SubscriptionService from "../../services/SubscriptionService";
+import { canAccessFeature, currentRole } from "../../utils/roles";
 import "./SubscriptionPlans.css";
 
 const initialForm = {
@@ -38,7 +39,7 @@ const initialForm = {
 
 export default function SubscriptionPlans() {
   const navigate = useNavigate();
-
+  const canManagePlans = canAccessFeature("subscriptions", currentRole());
   const [plans, setPlans] = useState([]);
   const [courses, setCourses] = useState([]);
   const [form, setForm] = useState(initialForm);
@@ -157,6 +158,26 @@ export default function SubscriptionPlans() {
     }
   };
 
+  const handleActivate = async (plan) => {
+    const id = plan.id || plan.planId;
+
+    try {
+      await SubscriptionService.updatePlan(id, {
+        ...plan,
+        active: true,
+        courseIds:
+          plan.courseIds || plan.courses?.map((course) => course.courseId) || [],
+      });
+      setMessage({ type: "success", text: `${plan.name} is now active.` });
+      await loadData();
+    } catch (error) {
+      setMessage({
+        type: "danger",
+        text: error.response?.data?.message || "Unable to activate plan.",
+      });
+    }
+  };
+
   const updateField = (field, value) => {
     setForm((current) => ({
       ...current,
@@ -200,11 +221,13 @@ export default function SubscriptionPlans() {
       <section className="subscription-hero">
         <div className="hero-content">
           <span>SUBSCRIPTION PLANS</span>
-
-          <h1>Manage Your Learning Plans</h1>
-
+          <h1>
+            {canManagePlans ? "Manage Your Learning Plans" : "Learning Plans"}
+          </h1>
           <p>
-            Create, configure and manage subscription plans for your learners.
+            {canManagePlans
+              ? "Create, configure and manage subscription plans for your learners."
+              : "Explore the plans available for your learning journey."}
           </p>
         </div>
 
@@ -237,10 +260,11 @@ export default function SubscriptionPlans() {
           <span />
         </div>
 
-        <button type="button" className="hero-add-btn" onClick={openCreate}>
-          <FaPlus />
-          Add plan
-        </button>
+        {canManagePlans && (
+          <button className="hero-add-btn" onClick={openCreate}>
+            <FaPlus /> Add plan
+          </button>
+        )}
       </section>
 
       {/* MESSAGE */}
@@ -326,36 +350,32 @@ export default function SubscriptionPlans() {
                 </span>
               </div>
 
-              <div className="plan-actions">
-                <Button
-                  type="button"
-                  onClick={() => openEdit(plan)}
-                  variant="outline-primary"
-                >
-                  <FaEdit />
-                  Edit
-                </Button>
-
-                {plan.active === false ? (
+              {canManagePlans && (
+                <div className="plan-actions">
                   <Button
-                    type="button"
-                    className="activate-btn"
                     onClick={() => openEdit(plan)}
+                    variant="outline-primary"
                   >
-                    <FaCheck />
-                    Activate
+                    <FaEdit /> Edit
                   </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    onClick={() => handleDelete(plan)}
-                    variant="outline-danger"
-                  >
-                    <FaTrash />
-                    Deactivate
-                  </Button>
-                )}
-              </div>
+
+                  {plan.active === false ? (
+                    <Button
+                      className="activate-btn"
+                      onClick={() => openEdit(plan)}
+                    >
+                      <FaCheck /> Activate
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => handleDelete(plan)}
+                      variant="outline-danger"
+                    >
+                      <FaTrash /> Deactivate
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}

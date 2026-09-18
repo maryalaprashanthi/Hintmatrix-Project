@@ -140,10 +140,13 @@ function Header({
       <div className="d-flex justify-content-between align-items-center">
         {/* Left */}
         <div>
-          <div className="fw-bold fs-5">
+          {/* <div className="fw-bold fs-5">
             {question
               ? `Q${question.questionId}: ${question.questionText}`
               : "Loading..."}
+          </div> */}
+          <div className="fw-bold fs-5">
+            {question ? question.questionText : "Loading..."}
           </div>
 
           <small className="text-muted">
@@ -155,57 +158,59 @@ function Header({
 
         {/* Right */}
         <div className="d-flex gap-2 flex-shrink-0">
-          {actions ?? <>
-          <Button
-            variant="light"
-            size="sm"
-            style={{
-              minWidth: "95px",
-              height: "35px",
-            }}
-            onClick={handleReset}
-          >
-            <FaRedo className="me-1" />
-            Reset
-          </Button>
+          {actions ?? (
+            <>
+              <Button
+                variant="light"
+                size="sm"
+                style={{
+                  minWidth: "95px",
+                  height: "35px",
+                }}
+                onClick={handleReset}
+              >
+                <FaRedo className="me-1" />
+                Reset
+              </Button>
 
-          <Button
-            variant="warning"
-            size="sm"
-            style={{
-              minWidth: "95px",
-              height: "35px",
-            }}
-            onClick={handleCheck}
-          >
-            <FaExclamationTriangle className="me-1" />
-            Check
-          </Button>
+              <Button
+                variant="warning"
+                size="sm"
+                style={{
+                  minWidth: "95px",
+                  height: "35px",
+                }}
+                onClick={handleCheck}
+              >
+                <FaExclamationTriangle className="me-1" />
+                Check
+              </Button>
 
-          <Button
-            variant="success"
-            size="sm"
-            style={{
-              minWidth: "95px",
-              height: "35px",
-            }}
-          >
-            <FaSave className="me-1" />
-            Save
-          </Button>
+              <Button
+                variant="success"
+                size="sm"
+                style={{
+                  minWidth: "95px",
+                  height: "35px",
+                }}
+              >
+                <FaSave className="me-1" />
+                Save
+              </Button>
 
-          <Button
-            variant="primary"
-            size="sm"
-            style={{
-              minWidth: "95px",
-              height: "35px",
-            }}
-          >
-            <FaPaperPlane className="me-1" />
-            Submit
-          </Button>
-          </>}
+              <Button
+                variant="primary"
+                size="sm"
+                style={{
+                  minWidth: "95px",
+                  height: "35px",
+                }}
+              >
+                <FaPaperPlane className="me-1" />
+                Submit
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </Container>

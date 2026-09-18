@@ -5,12 +5,14 @@ import { FaTimes, FaTable, FaSave } from "react-icons/fa";
 
 import "./AddTableNameModal.css";
 
-function AddTableNameModal({ show, onClose, onSave, Inputname }) {
+function AddTableNameModal({ show, onClose, onSave, Inputname, Inputstatus }) {
   const [name, setName] = useState("");
+  const [activeRow, setActiveRow] = useState(true);
 
   useEffect(() => {
     setName(Inputname || "");
-  }, [Inputname]);
+    setActiveRow(Inputstatus !== false);
+  }, [Inputname, Inputstatus]);
 
   if (!show) return null;
 
@@ -23,6 +25,7 @@ function AddTableNameModal({ show, onClose, onSave, Inputname }) {
 
     const newTableName = {
       name,
+      activeRow,
     };
 
     await onSave(newTableName);
@@ -31,6 +34,7 @@ function AddTableNameModal({ show, onClose, onSave, Inputname }) {
 
   const handleClose = () => {
     setName("");
+    setActiveRow(true);
     onClose();
   };
 
@@ -81,6 +85,21 @@ function AddTableNameModal({ show, onClose, onSave, Inputname }) {
                value={name}
                onChange={(e) => setName(e.target.value)}
               />
+                </div>
+              </div>
+
+              <div className="form-group table-name-status-field">
+                <label>Status</label>
+                <div className="form-check form-switch">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={activeRow}
+                    onChange={(e) => setActiveRow(e.target.checked)}
+                  />
+                  <label className="form-check-label">
+                    {activeRow ? "Active" : "Inactive"}
+                  </label>
                 </div>
               </div>
             </div>
