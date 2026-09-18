@@ -500,21 +500,92 @@ const QuestionPage = () => {
   // SELECT QUESTION
   // ===========================================================
 
-  const handleSelectQuestion = (index) => {
-    if (index < 0 || index >= testQuestions.length) {
-      return;
+  const handleSelectQuestion = async (index) => {
+  if (index < 0 || index >= testQuestions.length) {
+    return;
+  }
+
+  let selected = testQuestions[index];
+
+  const type = getQuestionType(selected);
+
+  // =========================================================
+  // LOAD FILL-IN-THE-BLANKS DATA IF MISSING
+  // =========================================================
+
+  if (
+    type === "FILL_IN_THE_BLANKS" &&
+    !Array.isArray(selected?.blanks)
+  ) {
+    try {
+      const fillBlankResponse =
+        await FillInBlankQuestionService.getById(
+          selected.questionId
+        );
+
+      selected = {
+        ...selected,
+        ...fillBlankResponse.data,
+      };
+
+      // Update the question inside testQuestions
+      setTestQuestions((currentQuestions) =>
+        currentQuestions.map((question, questionIndex) =>
+          questionIndex === index
+            ? selected
+            : question
+        )
+      );
+    } catch (error) {
+      console.error(
+        "Failed to load fill-in-the-blanks data:",
+        error
+      );
     }
+  }
 
-    setCurrentQuestionIndex(index);
+  // =========================================================
+  // LOAD MATCHING DATA IF MISSING
+  // =========================================================
 
-    const selected = testQuestions[index];
+  if (
+    type === "MATCH_THE_FOLLOWING" &&
+    !Array.isArray(selected?.pairs)
+  ) {
+    try {
+      const matchingResponse =
+        await MatchingQuestionService.getById(
+          selected.questionId
+        );
 
-    setMatchingQuestion(selected);
+      selected = {
+        ...selected,
+        ...matchingResponse.data,
+      };
 
-    setQuestionType(getQuestionType(selected));
+      setTestQuestions((currentQuestions) =>
+        currentQuestions.map((question, questionIndex) =>
+          questionIndex === index
+            ? selected
+            : question
+        )
+      );
+    } catch (error) {
+      console.error(
+        "Failed to load matching pairs:",
+        error
+      );
+    }
+  }
 
-    setCurrentScore(0);
-  };
+  setCurrentQuestionIndex(index);
+
+  setMatchingQuestion(selected);
+
+  setQuestionType(type);
+
+  setCurrentScore(0);
+};
 
   // ===========================================================
   // NEXT QUESTION

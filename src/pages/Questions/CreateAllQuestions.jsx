@@ -51,10 +51,58 @@ const emptyMatchingPair = () => ({
 
 const emptyMatchingPairs = () => Array.from({ length: 4 }, emptyMatchingPair);
 
+const createBlankAnswerOption = (value = "", isCorrect = false) => ({
+  id: `${Date.now()}-${Math.random()}`,
+  value,
+  isCorrect,
+});
+
 const emptyBlank = (index) => ({
   label: `Blank ${index + 1}`,
   acceptedAnswers: "",
+  answerOptions: [createBlankAnswerOption()],
 });
+
+const normalizeBlankEntry = (blank = {}, index) => {
+  const legacyValues = Array.isArray(blank.acceptedAnswers)
+    ? blank.acceptedAnswers
+    : typeof blank.acceptedAnswers === "string"
+      ? blank.acceptedAnswers
+          .split(",")
+          .map((answer) => answer.trim())
+          .filter(Boolean)
+      : [];
+
+  const answerOptions = Array.isArray(blank.answerOptions) && blank.answerOptions.length
+    ? blank.answerOptions.map((option, optionIndex) => ({
+        id: option.id ?? `${index}-${optionIndex}`,
+        value: String(
+          option.answerText ?? option.value ?? option.text ?? "",
+        ).trim(),
+        isCorrect: Boolean(option.isCorrect ?? option.correct ?? false),
+      }))
+    : legacyValues.length
+      ? legacyValues.map((value, optionIndex) => ({
+          id: `${index}-${optionIndex}`,
+          value: String(value).trim(),
+          isCorrect: false,
+        }))
+      : [createBlankAnswerOption()];
+
+  const cleanedOptions = answerOptions.filter(
+    (option) => option.value.trim(),
+  );
+
+  return {
+    ...blank,
+    label: blank.label ?? `Blank ${index + 1}`,
+    acceptedAnswers: blank.acceptedAnswers ?? "",
+    answerOptions:
+      cleanedOptions.length > 0
+        ? cleanedOptions
+        : [createBlankAnswerOption()],
+  };
+};
 
 const emptyBlanks = () => [emptyBlank(0)];
 
@@ -393,6 +441,66 @@ function CreateAllQuestions() {
     );
   };
 
+  const updateBlankAnswerOption = (blankIndex, optionIndex, field, value) => {
+    setBlanks((current) =>
+      current.map((blank, currentIndex) => {
+        if (currentIndex !== blankIndex) {
+          return blank;
+        }
+
+        return {
+          ...blank,
+          answerOptions: blank.answerOptions.map((option, optionRowIndex) =>
+            optionRowIndex === optionIndex
+              ? {
+                  ...option,
+                  [field]: value,
+                }
+              : option,
+          ),
+        };
+      }),
+    );
+  };
+
+  const addBlankAnswerOption = (blankIndex) => {
+    setBlanks((current) =>
+      current.map((blank, currentIndex) => {
+        if (currentIndex !== blankIndex) {
+          return blank;
+        }
+
+        return {
+          ...blank,
+          answerOptions: [
+            ...(blank.answerOptions ?? []),
+            createBlankAnswerOption(),
+          ],
+        };
+      }),
+    );
+  };
+
+  const removeBlankAnswerOption = (blankIndex, optionIndex) => {
+    setBlanks((current) =>
+      current.map((blank, currentIndex) => {
+        if (currentIndex !== blankIndex) {
+          return blank;
+        }
+
+        const nextOptions = (blank.answerOptions ?? []).filter(
+          (_, itemIndex) => itemIndex !== optionIndex,
+        );
+
+        return {
+          ...blank,
+          answerOptions:
+            nextOptions.length > 0 ? nextOptions : [createBlankAnswerOption()],
+        };
+      }),
+    );
+  };
+
   const removeRow = (setter, index) => {
     setter((current) =>
       current.length <= 1
@@ -461,6 +569,7 @@ function CreateAllQuestions() {
       return {
         ...common,
         subjectId: Number(subjectId),
+        marks: Number(marks),
         pairs: matchingPairs.map((pair, index) => ({
           columnA: pair.columnA.trim(),
           columnB: pair.columnB.trim(),
@@ -472,30 +581,31 @@ function CreateAllQuestions() {
     if (isFillBlankType(selectedType)) {
       let answerOrder = 0;
 
-      const blankAnswers = blanks.flatMap((blank, blankIndex) =>
-        blank.acceptedAnswers
-          .split(",")
-          .map((answer) => answer.trim())
-          .filter(Boolean)
-          .map((answer) => ({
-            answerText: answer,
-            displayOrder: ++answerOrder,
-            blankNumber: blankIndex + 1,
-          })),
+      const normalizedBlanks = blanks.map((blank, index) => {
+        const acceptedAnswers = (blank.answerOptions ?? [])
+          .filter((option) => option.isCorrect && String(option.value).trim())
+          .map((option) => String(option.value).trim())
+          .filter(Boolean);
+
+        return {
+          blankNumber: index + 1,
+          acceptedAnswers: Array.from(new Set(acceptedAnswers)),
+        };
+      });
+
+      const blankAnswers = normalizedBlanks.flatMap((blank, blankIndex) =>
+        blank.acceptedAnswers.map((answer) => ({
+          answerText: answer,
+          displayOrder: ++answerOrder,
+          blankNumber: blankIndex + 1,
+        })),
       );
 
       return {
         ...common,
         subjectId: Number(subjectId),
-
-        blanks: blanks.map((blank, index) => ({
-          blankNumber: index + 1,
-          acceptedAnswers: blank.acceptedAnswers
-            .split(",")
-            .map((answer) => answer.trim())
-            .filter(Boolean),
-        })),
-
+        marks: Number(marks),
+        blanks: normalizedBlanks,
         answers: blankAnswers,
       };
     }
@@ -592,6 +702,10 @@ function CreateAllQuestions() {
         errors.push("Select at least one correct answer.");
       }
     } else if (isMatchingType(selectedType)) {
+      if (!marks || Number(marks) <= 0) {
+        errors.push("Marks must be greater than zero.");
+      }
+
       if (
         matchingPairs.some(
           (pair) => !pair.columnA.trim() || !pair.columnB.trim(),
@@ -600,8 +714,24 @@ function CreateAllQuestions() {
         errors.push("Complete Column A and Column B for every pair.");
       }
     } else if (isFillBlankType(selectedType)) {
-      if (blanks.some((blank) => !blank.acceptedAnswers.trim())) {
-        errors.push("Add at least one accepted answer for every blank.");
+      if (!marks || Number(marks) <= 0) {
+        errors.push("Marks must be greater than zero.");
+      }
+
+      const invalidBlank = blanks.find((blank) => {
+        const options = blank.answerOptions ?? [];
+        const validOptions = options.filter(
+          (option) => String(option.value).trim(),
+        );
+
+        return (
+          validOptions.length === 0 ||
+          !validOptions.some((option) => option.isCorrect)
+        );
+      });
+
+      if (invalidBlank) {
+        errors.push("Add at least one answer and select the correct option for each blank.");
       }
     } else if (selectedType === "DRAG_AND_DROP") {
       if (
@@ -707,7 +837,11 @@ function CreateAllQuestions() {
 
     setMatchingPairs(snapshot.matchingPairs ?? emptyMatchingPairs());
 
-    setBlanks(snapshot.blanks ?? emptyBlanks());
+    setBlanks(
+      (snapshot.blanks ?? emptyBlanks()).map((blank, index) =>
+        normalizeBlankEntry(blank, index),
+      ),
+    );
 
     setEditingDraftId(draft.id);
 
@@ -976,7 +1110,9 @@ function CreateAllQuestions() {
                 })}
               </label>
 
-              {isMcqType(selectedType) && (
+              {(isMcqType(selectedType) ||
+                isMatchingType(selectedType) ||
+                isFillBlankType(selectedType)) && (
                 <label>
                   <span className="aq-required-label">
                     Marks <em>*</em>
@@ -1357,26 +1493,57 @@ function CreateAllQuestions() {
                   <div className="aq-fill-blank-row" key={index}>
                     <b>{blank.label}</b>
 
-                    <input
-                      value={blank.acceptedAnswers}
-                      onChange={(event) =>
-                        updateRow(
-                          setBlanks,
-                          index,
-                          "acceptedAnswers",
-                          event.target.value,
-                        )
-                      }
-                      placeholder="Accepted answers, e.g. Java, java"
-                    />
+                    <div className="aq-fill-blank-options">
+                      {(blank.answerOptions ?? []).map((option, optionIndex) => (
+                        <div className="aq-fill-blank-option" key={option.id ?? optionIndex}>
+                          <input
+                            value={option.value}
+                            onChange={(event) =>
+                              updateBlankAnswerOption(
+                                index,
+                                optionIndex,
+                                "value",
+                                event.target.value,
+                              )
+                            }
+                            placeholder="Accepted answer"
+                          />
 
-                    <button
-                      type="button"
-                      onClick={() => removeRow(setBlanks, index)}
-                      disabled={blanks.length <= 1}
-                    >
-                      <FaTrash />
-                    </button>
+                          <input
+                            aria-label={`Mark answer ${optionIndex + 1} correct for blank ${index + 1}`}
+                            type="checkbox"
+                            checked={Boolean(option.isCorrect)}
+                            onChange={() =>
+                              updateBlankAnswerOption(
+                                index,
+                                optionIndex,
+                                "isCorrect",
+                                !option.isCorrect,
+                              )
+                            }
+                            title="Mark as correct answer"
+                          />
+
+                          <button
+                            type="button"
+                            onClick={() => removeBlankAnswerOption(index, optionIndex)}
+                            disabled={(blank.answerOptions ?? []).length <= 1}
+                            aria-label={`Remove answer option ${optionIndex + 1}`}
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      ))}
+
+                      <button
+                        type="button"
+                        className="aq-secondary aq-inline-button"
+                        onClick={() => addBlankAnswerOption(index)}
+                      >
+                        <FaPlus />
+                        Add option
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
