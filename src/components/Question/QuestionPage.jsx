@@ -126,28 +126,22 @@ const QuestionPage = () => {
   ].includes(questionType);
 
   const [isLoading, setIsLoading] = useState(true);
-  
 
   const [matchingQuestion, setMatchingQuestion] = useState(null);
-  
+
   // All questions for navigation
   const [testQuestions, setTestQuestions] = useState([]);
- 
 
   // Current question index
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  
 
   // Completed questions
   const [completedQuestions, setCompletedQuestions] = useState({});
- 
 
   // Timer - 30 minutes
   const [timeLeft, setTimeLeft] = useState(30 * 60);
- 
 
   const [testSubmitted, setTestSubmitted] = useState(false);
-  
 
   // ===========================================================
   // TOTAL QUESTIONS
@@ -170,7 +164,6 @@ const QuestionPage = () => {
 
   const completedCount =
     Object.values(completedQuestions).filter(Boolean).length;
-  
 
   // ===========================================================
   // PROGRESS
@@ -191,26 +184,21 @@ const QuestionPage = () => {
 
       try {
         const response = await loadQuestions(questionId);
-   
 
         if (!response?.data) {
           return;
         }
 
         let type = getQuestionType(response.data);
-      
 
         const questionTypeId =
           response.data?.questionTypeId ?? response.data?.question_type_id;
-         
 
         if (!type && questionTypeId) {
           const typeResponse =
             await QuestionTypeService.getById(questionTypeId);
-         
 
           type = getQuestionType(typeResponse?.data);
-        
         }
 
         let questionData = response.data;
@@ -223,7 +211,6 @@ const QuestionPage = () => {
             const matchingResponse = await MatchingQuestionService.getById(
               questionData.questionId ?? questionId,
             );
-          
 
             questionData = {
               ...questionData,
@@ -232,7 +219,6 @@ const QuestionPage = () => {
             setMatchingQuestion(questionData);
           } catch (matchingError) {
             console.error("Failed to load matching pairs:", matchingError);
-          
           }
         }
 
@@ -244,7 +230,6 @@ const QuestionPage = () => {
             const fillBlankResponse = await FillInBlankQuestionService.getById(
               questionData.questionId ?? questionId,
             );
-          
 
             questionData = {
               ...questionData,
@@ -265,19 +250,16 @@ const QuestionPage = () => {
         // -----------------------------------------------------
 
         await loadTestQuestions(questionData);
-     
 
         // -----------------------------------------------------
         // Restore drag/drop answers
         // -----------------------------------------------------
 
         if (type === "DRAG_AND_DROP") {
-
           await loadAnsweredQuestions();
         }
       } catch (error) {
         console.error("Failed to initialize question:", error);
-     
       } finally {
         setIsLoading(false);
       }
@@ -293,29 +275,23 @@ const QuestionPage = () => {
   const loadQuestions = async (qId) => {
     try {
       const response = await QuestionService.getQuestionById(qId || questionId);
-     
 
       const allStrings = data.flatMap((obj) =>
         obj.headers.map((header) => `${obj.name}-${header}`),
       );
 
       console.log("QUESTION RESPONSE:", response.data);
-  
 
       console.log("QUESTION PAIRS:", response.data?.pairs);
-      
 
       await setQuestions([response.data]);
 
-
       setMatchingQuestion(response.data);
-
 
       setTableData(allStrings);
 
       return response;
     } catch (error) {
-  
       console.error("Failed to load question:", error);
 
       return null;
@@ -329,16 +305,12 @@ const QuestionPage = () => {
   const loadTestQuestions = async (currentQuestionData) => {
     try {
       const courseId = currentQuestionData?.courseId;
-     
 
       const chapterId = currentQuestionData?.chapterId;
 
       const topicId =
-        currentQuestionData?.topicId ??
-    
-        currentQuestionData?.categoryId;
+        currentQuestionData?.topicId ?? currentQuestionData?.categoryId;
 
-  
       if (!courseId || !chapterId || !topicId) {
         setTestQuestions([currentQuestionData]);
 
@@ -347,14 +319,12 @@ const QuestionPage = () => {
         return;
       }
 
-     
       const response = await QuestionService.getQuestionsByMapping(
         courseId,
         chapterId,
         topicId,
       );
 
-     
       const result = Array.isArray(response?.data)
         ? response.data
         : Array.isArray(response)
@@ -365,7 +335,6 @@ const QuestionPage = () => {
       // Remove inactive questions if activeRow exists
       // -------------------------------------------------------
 
-   
       const activeQuestions = result.filter(
         (question) => question?.activeRow !== false,
       );
@@ -375,7 +344,6 @@ const QuestionPage = () => {
       // add it.
       // -------------------------------------------------------
 
-   
       const containsCurrent = activeQuestions.some(
         (question) =>
           Number(question.questionId) ===
@@ -383,11 +351,9 @@ const QuestionPage = () => {
       );
 
       let finalQuestions = activeQuestions;
-      
 
       if (!containsCurrent) {
         finalQuestions = [currentQuestionData, ...activeQuestions];
-       
       }
 
       // -------------------------------------------------------
@@ -395,14 +361,13 @@ const QuestionPage = () => {
       // -------------------------------------------------------
 
       finalQuestions = finalQuestions.slice(0, 20);
-      
+
       setTestQuestions(finalQuestions);
 
       // -------------------------------------------------------
       // Find current question
       // -------------------------------------------------------
 
-     
       const currentIndex = finalQuestions.findIndex(
         (question) =>
           Number(question.questionId) ===
@@ -410,11 +375,11 @@ const QuestionPage = () => {
       );
 
       setCurrentQuestionIndex(currentIndex >= 0 ? currentIndex : 0);
-     
+
       console.log("TEST QUESTIONS:", finalQuestions);
     } catch (error) {
       console.error("Failed to load test questions:", error);
-     
+
       setTestQuestions([currentQuestionData]);
 
       setCurrentQuestionIndex(0);
@@ -428,11 +393,11 @@ const QuestionPage = () => {
   const loadAnsweredQuestions = async () => {
     const correctAnswers =
       await QuestionAnswerService.getAnswersByQuestionId(questionId);
-
+    console.log("92iowerj20 Correct answers: ", correctAnswers);
     console.log("Completed data ", correctAnswers);
 
     const savedAnswers = Array.isArray(correctAnswers) ? correctAnswers : [];
-   
+
     if (savedAnswers.length === 0) {
       console.warn("No saved answers to restore:", correctAnswers);
 

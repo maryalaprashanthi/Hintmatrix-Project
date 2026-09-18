@@ -69,6 +69,27 @@ class ExamService {
       withCredentials: true,
     });
   }
+
+  // Full review payload for one completed attempt (Exam Review screen)
+  getResultReview(examId, resultId) {
+    return apiClient.get(`${BASE_URL}/${examId}/results/${resultId}`, {
+      withCredentials: true,
+    });
+  }
+
+  // Every completed attempt for the logged-in user, newest first
+  getMyAttempts() {
+    return apiClient.get(`${BASE_URL}/results/me`, { withCredentials: true });
+  }
+
+  // Hint + wrong answer_events for one attribute on one attempt - the
+  // "What went wrong?" panel when a trial-balance / transaction row is clicked
+  getAttributeReviewDetail(examId, resultId, questionId, attributeId) {
+    return apiClient.get(
+      `${BASE_URL}/${examId}/results/${resultId}/attributes/${attributeId}/review-detail`,
+      { params: { questionId }, withCredentials: true },
+    );
+  }
 }
 
 export default new ExamService();

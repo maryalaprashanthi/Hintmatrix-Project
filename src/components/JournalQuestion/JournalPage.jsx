@@ -199,7 +199,7 @@ const JournalPage = () => {
           questionId,
         );
 
-      console.log("Current Answers:", answerResponse);
+      console.log("Current Answers: sdfsd", answerResponse);
 
       const formattedData = {};
       const tableLookup = new Map(

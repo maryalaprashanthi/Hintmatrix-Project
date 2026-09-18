@@ -22,6 +22,10 @@ export const questionTypeOf = (input) => {
   if (token.includes("JOURNAL")) return "JOURNAL";
   if (token.includes("DRAG") && token.includes("DROP")) return "DRAG_AND_DROP";
   if (token.includes("DROP") && token.includes("DOWN")) return "DROPDOWN";
+  if (token.includes("MULTIPLE") && token.includes("CHOICE"))
+    return "MULTIPLE_CHOICE";
+  if (token.includes("SINGLE") && token.includes("CHOICE"))
+    return "SINGLE_CHOICE";
 
   return token;
 };

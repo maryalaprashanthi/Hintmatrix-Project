@@ -3,7 +3,8 @@ import ExamDropdownPage from "./ExamComponents/ExamDropdownPage";
 import ExamJournalPage from "./ExamComponents/ExamJournalPage";
 import ExamQuestionPage from "./ExamComponents/ExamQuestionPage";
 import { questionTypeOf } from "./ExamComponents/questionTypeOf";
-
+import ExamMultipleChoice from "./ExamComponents/ExamMultipleChoice";
+import ExamSingleChoice from "./ExamComponents/ExamSingleChoice";
 // The API paper (/exams/:examId) hands each question object straight through,
 // so the type comes off the payload. The sample paper (/exam-mine) has no
 // object here, so it still falls back to matching the known question ids.
@@ -22,11 +23,20 @@ const ExamQuestionRenderer = ({ questionId, question }) => {
     return <ExamQuestionPage id={questionId} question={question} />;
   }
 
+  if (questionType === "MULTIPLE_CHOICE") {
+    return <ExamMultipleChoice id={questionId} question={question} />;
+  }
+
+  if (questionType === "SINGLE_CHOICE") {
+    return <ExamSingleChoice id={questionId} question={question} />;
+  }
+
   if (question) {
-    console.warn(
-      "[ExamQuestionRenderer] unrecognised question type",
-      { raw: question?.questionType, normalized: questionType, questionId },
-    );
+    console.warn("[ExamQuestionRenderer] unrecognised question type", {
+      raw: question?.questionType,
+      normalized: questionType,
+      questionId,
+    });
   }
 
   switch (questionId) {

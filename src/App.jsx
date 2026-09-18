@@ -75,6 +75,7 @@ import MockExamPage from "./components/MockExam/MockExamPage";
 import ExamHub from "./pages/ExamHub/ExamHub";
 import ExamCatalog from "./pages/ExamCatalog/ExamCatalog";
 import MockExamCatalog from "./pages/MockExamCatalog/MockExamCatalog";
+import ExamReview from "./pages/ExamReview/ExamReview";
 import ExamPaper from "./pages/ExamPaper/ExamPaper";
 import PerformanceDashboard from "./pages/Performance/PerformanceDashboard";
 
@@ -506,10 +507,26 @@ function App() {
         }
       />
       <Route
+        path="/exams/:examId/review/:resultId"
+        element={
+          <ProtectedRoute allowedRoles={RESULT_ROLES}>
+            <ExamReview />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/mock-exams/:examId"
         element={
           <ProtectedRoute allowedRoles={ATTEMPT_ROLES}>
             <MockExamPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/mock-exams/:examId/review/:resultId"
+        element={
+          <ProtectedRoute allowedRoles={RESULT_ROLES}>
+            <ExamReview />
           </ProtectedRoute>
         }
       />
