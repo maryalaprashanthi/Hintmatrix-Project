@@ -9,7 +9,12 @@ import { attributeLookup, formatAmount } from "./readOnlyHelpers";
 // candidate to record - the same data ExamJournalQuestion/ExamDropdownQuestion
 // show while the paper is live - so review isn't just the answer with no
 // question to compare it against.
-const ReadOnlyLedgerAnswer = ({ question, answers }) => {
+const ReadOnlyLedgerAnswer = ({
+  question,
+  answers,
+  onAttributeClick,
+  selectedAttributeId,
+}) => {
   const attributes = attributeLookup(question?.questionAttributes);
   const transactions = question?.questionAttributes || [];
 
@@ -57,10 +62,19 @@ const ReadOnlyLedgerAnswer = ({ question, answers }) => {
           <span className="ro-tb-count">{transactions.length}</span>
         </div>
         {transactions.map((item) => (
-          <div className="ro-tb-row" key={item.questionAttributeId}>
+          <button
+            type="button"
+            className={`ro-tb-row ro-tb-row--clickable ${
+              String(selectedAttributeId) === String(item.attributeId)
+                ? "is-selected"
+                : ""
+            }`}
+            key={item.questionAttributeId}
+            onClick={() => onAttributeClick?.(item.attributeId)}
+          >
             <span>{item.attributeName}</span>
             <span>{formatAmount(item.amount)}</span>
-          </div>
+          </button>
         ))}
       </div>
 

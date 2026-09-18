@@ -15,6 +15,7 @@ import {
 import ExamService from "../../services/ExamService";
 import MockExamService from "../../services/MockExamService";
 import { questionTypeOf } from "../../components/Exam/ExamComponents/questionTypeOf";
+import AttributeMistakePanel from "./AttributeMistakePanel";
 import ReadOnlyDragDropAnswer from "./ReadOnlyDragDropAnswer";
 import ReadOnlyLedgerAnswer from "./ReadOnlyLedgerAnswer";
 import ReadOnlyMcqAnswer from "./ReadOnlyMcqAnswer";
@@ -53,6 +54,7 @@ function ExamReview() {
   const [questions, setQuestions] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [filter, setFilter] = useState("all");
+  const [attributeDetail, setAttributeDetail] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -125,6 +127,45 @@ function ExamReview() {
   }, [questions, filter]);
 
   const active = questions[activeIndex];
+
+  const goToIndex = (index) => {
+    setActiveIndex(index);
+    setAttributeDetail(null);
+  };
+
+  const handleAttributeClick = (attributeId) => {
+    if (attributeDetail?.attributeId === attributeId) {
+      setAttributeDetail(null);
+      return;
+    }
+
+    setAttributeDetail({ attributeId, status: "loading", hints: [], mistakes: [] });
+
+    service
+      .getAttributeReviewDetail(
+        examId,
+        resultId,
+        active.question.questionId,
+        attributeId,
+      )
+      .then((response) => {
+        setAttributeDetail({
+          attributeId,
+          status: "ready",
+          hints: response.data?.hints ?? [],
+          mistakes: response.data?.mistakes ?? [],
+        });
+      })
+      .catch((error) => {
+        console.error("Failed to load attribute review detail:", error);
+        setAttributeDetail({
+          attributeId,
+          status: "error",
+          hints: [],
+          mistakes: [],
+        });
+      });
+  };
 
   if (status === "loading") {
     return <div className="exam-review-status">Loading your review…</div>;
@@ -251,7 +292,7 @@ function ExamReview() {
                   className={`exam-review__list-item ${
                     item.index === activeIndex ? "is-active" : ""
                   } ${item.correct ? "is-correct" : "is-incorrect"}`}
-                  onClick={() => setActiveIndex(item.index)}
+                  onClick={() => goToIndex(item.index)}
                 >
                   <span className="exam-review__list-number">
                     {item.index + 1}
@@ -302,6 +343,8 @@ function ExamReview() {
               <ReadOnlyLedgerAnswer
                 question={active.question}
                 answers={active.answers}
+                onAttributeClick={handleAttributeClick}
+                selectedAttributeId={attributeDetail?.attributeId}
               />
             ) : active.questionType === "SINGLE_CHOICE" ||
               active.questionType === "MULTIPLE_CHOICE" ? (
@@ -314,16 +357,26 @@ function ExamReview() {
               <ReadOnlyDragDropAnswer
                 question={active.question}
                 answers={active.answers}
+                onAttributeClick={handleAttributeClick}
+                selectedAttributeId={attributeDetail?.attributeId}
               />
             )}
           </div>
+
+          {attributeDetail && (
+            <AttributeMistakePanel
+              status={attributeDetail.status}
+              hints={attributeDetail.hints}
+              mistakes={attributeDetail.mistakes}
+            />
+          )}
 
           <div className="exam-review__nav">
             <button
               type="button"
               className="exam-review__nav-btn"
               disabled={activeIndex === 0}
-              onClick={() => setActiveIndex((i) => Math.max(0, i - 1))}
+              onClick={() => goToIndex(Math.max(0, activeIndex - 1))}
             >
               <FaChevronLeft aria-hidden="true" /> Previous Question
             </button>
@@ -332,7 +385,7 @@ function ExamReview() {
               className="exam-review__nav-btn exam-review__nav-btn--primary"
               disabled={activeIndex >= questions.length - 1}
               onClick={() =>
-                setActiveIndex((i) => Math.min(questions.length - 1, i + 1))
+                goToIndex(Math.min(questions.length - 1, activeIndex + 1))
               }
             >
               Next Question <FaChevronRight aria-hidden="true" />

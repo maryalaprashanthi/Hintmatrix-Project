@@ -86,6 +86,15 @@ class MockExamService {
   getMyAttempts() {
     return apiClient.get(`${BASE_URL}/results/me`, { withCredentials: true });
   }
+
+  // Hint + wrong answer_events for one attribute on one attempt - the
+  // "What went wrong?" panel when a trial-balance / transaction row is clicked
+  getAttributeReviewDetail(mockExamId, resultId, questionId, attributeId) {
+    return apiClient.get(
+      `${BASE_URL}/${mockExamId}/results/${resultId}/attributes/${attributeId}/review-detail`,
+      { params: { questionId }, withCredentials: true },
+    );
+  }
 }
 
 export default new MockExamService();

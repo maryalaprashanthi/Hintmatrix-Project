@@ -77,7 +77,12 @@ const ReadOnlyLedgerSide = ({ label, rows, attributes, credit }) => {
 
 // Read-only render of a DRAG_AND_DROP question: the trial balance that was
 // given, plus the final-account tables exactly as the candidate left them.
-const ReadOnlyDragDropAnswer = ({ question, answers }) => {
+const ReadOnlyDragDropAnswer = ({
+  question,
+  answers,
+  onAttributeClick,
+  selectedAttributeId,
+}) => {
   const attributes = attributeLookup(question?.questionAttributes);
   const grouped = groupByTableAndHeader(answers);
 
@@ -112,10 +117,19 @@ const ReadOnlyDragDropAnswer = ({ question, answers }) => {
           <span>₹{formatAmount(debitTotal)}</span>
         </div>
         {debitBalances.map((item) => (
-          <div className="ro-tb-row" key={item.attributeId}>
+          <button
+            type="button"
+            className={`ro-tb-row ro-tb-row--clickable ${
+              String(selectedAttributeId) === String(item.attributeId)
+                ? "is-selected"
+                : ""
+            }`}
+            key={item.attributeId}
+            onClick={() => onAttributeClick?.(item.attributeId)}
+          >
             <span>{item.attributeName}</span>
             <span>{formatAmount(item.amount)}</span>
-          </div>
+          </button>
         ))}
 
         <div className="ro-tb-section">
@@ -123,10 +137,19 @@ const ReadOnlyDragDropAnswer = ({ question, answers }) => {
           <span>₹{formatAmount(creditTotal)}</span>
         </div>
         {creditBalances.map((item) => (
-          <div className="ro-tb-row" key={item.attributeId}>
+          <button
+            type="button"
+            className={`ro-tb-row ro-tb-row--clickable ${
+              String(selectedAttributeId) === String(item.attributeId)
+                ? "is-selected"
+                : ""
+            }`}
+            key={item.attributeId}
+            onClick={() => onAttributeClick?.(item.attributeId)}
+          >
             <span>{item.attributeName}</span>
             <span>{formatAmount(item.amount)}</span>
-          </div>
+          </button>
         ))}
       </div>
 

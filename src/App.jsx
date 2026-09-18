@@ -507,10 +507,26 @@ function App() {
         }
       />
       <Route
+        path="/exams/:examId/review/:resultId"
+        element={
+          <ProtectedRoute allowedRoles={RESULT_ROLES}>
+            <ExamReview />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/mock-exams/:examId"
         element={
           <ProtectedRoute allowedRoles={ATTEMPT_ROLES}>
             <MockExamPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/mock-exams/:examId/review/:resultId"
+        element={
+          <ProtectedRoute allowedRoles={RESULT_ROLES}>
+            <ExamReview />
           </ProtectedRoute>
         }
       />
