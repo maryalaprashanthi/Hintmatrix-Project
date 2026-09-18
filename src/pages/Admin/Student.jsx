@@ -1,6 +1,7 @@
 import CollegeService from "../../services/CollegeService";
 import BranchService from "../../services/BranchService";
 import SectionService from "../../services/SectionService";
+import CourseService from "../../services/CourseService";
 import { useEffect, useRef, useState } from "react";
 import StudentForm from "./StudentForm";
 import "./Student.css";
@@ -16,6 +17,7 @@ function Student() {
   const [colleges, setColleges] = useState([]);
   const [branches, setBranches] = useState([]);
   const [sections, setSections] = useState([]);
+  const [courses, setCourses] = useState([]);
 
   const fileInputRef = useRef(null);
 
@@ -67,11 +69,24 @@ function Student() {
     }
   };
 
+  const fetchCourses = async () => {
+    try {
+      const response = await CourseService.getAllCourses();
+
+      console.log("COURSE API RESPONSE:", response.data);
+
+      setCourses(response.data || []);
+    } catch (error) {
+      console.error("COURSE API ERROR:", error);
+    }
+  };
+
   useEffect(() => {
     fetchStudents();
     fetchColleges();
     fetchBranches();
     fetchSections();
+    fetchCourses();
   }, []);
 
   // Upload
@@ -225,8 +240,8 @@ function Student() {
         colleges={colleges}
         branches={branches}
         sections={sections}
+        courses={courses}
       />
-
     </div>
   );
 }
