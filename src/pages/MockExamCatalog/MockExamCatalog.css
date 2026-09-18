@@ -317,6 +317,11 @@
   color: var(--cat-soon);
 }
 
+.mock-exam-card[data-state="closed"] .mock-exam-card__pill {
+  background: var(--cat-closed-bg);
+  color: var(--cat-closed);
+}
+
 /* ---------- start / view button ---------- */
 
 .mock-exam-catalog .mock-exam-card__start {
@@ -352,6 +357,54 @@
 .mock-exam-catalog .mock-exam-card__start:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px color-mix(in oklab, #1e67c7 35%, transparent);
+}
+
+.mock-exam-catalog .mock-exam-card__start--review {
+  background: var(--cat-accent);
+}
+
+.mock-exam-catalog .mock-exam-card__start--review:hover {
+  background: #4338ca;
+}
+
+.mock-exam-catalog .mock-exam-card__start--review:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--cat-accent) 35%, transparent);
+}
+
+/* ---------- present / past tabs ---------- */
+
+.mock-exam-catalog__tabs {
+  display: inline-flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  padding: 4px;
+  background: var(--cat-card);
+  border: 1px solid var(--cat-rule);
+  border-radius: 12px;
+}
+
+.mock-exam-catalog .mock-exam-catalog__tab {
+  padding: 9px 18px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--cat-muted);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.mock-exam-catalog .mock-exam-catalog__tab:hover {
+  color: var(--cat-ink);
+}
+
+.mock-exam-catalog .mock-exam-catalog__tab.is-active {
+  background: var(--cat-accent);
+  color: #fff;
 }
 
 /* ---------- admin actions (staff only) ---------- */

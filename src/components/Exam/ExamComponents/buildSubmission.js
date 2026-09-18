@@ -44,6 +44,13 @@ const accountNameFromText = (particulars = "") =>
 const attributeIdFor = (attribute, questionAttributeId) =>
   attribute?.attributeId ?? Number(questionAttributeId) ?? questionAttributeId;
 
+// Mirrors the practice flow's own answerMap (QuestionPage.jsx) for just the
+// arithmetic keys an answer line ever carries. Journal/Dropdown always add.
+const OPERATION_LABEL = { add: "ADD", less: "SUBTRACT" };
+
+const describeInfo = (arithmetic, headerName, tableName) =>
+  `attempted to ${OPERATION_LABEL[arithmetic] ?? arithmetic} on ${headerName} of ${tableName}.`;
+
 // --- JOURNAL -----------------------------------------------------------------
 const journalAnswers = (entry) => {
   const attributes = entry?.question?.questionAttributes || [];
@@ -63,13 +70,18 @@ const journalAnswers = (entry) => {
           (item) => String(item.id) === String(row.tableNameId),
         );
 
+        const tableName = table?.name ?? accountNameFromText(row.particulars);
+        const headerName = HEADER_BY_SIDE[side];
+        const arithmetic = "add";
+
         return {
           answeredData: {
-            tableName: table?.name ?? accountNameFromText(row.particulars),
-            headerName: HEADER_BY_SIDE[side],
+            tableName,
+            headerName,
             attributeId: attributeIdFor(attribute, questionAttributeId),
-            arithmetic: "add",
+            arithmetic,
             amount: lineAmount(row),
+            info: describeInfo(arithmetic, headerName, tableName),
           },
         };
       });
@@ -95,17 +107,43 @@ const dropdownAnswers = (entry) => {
           (item) => String(item.id) === String(row.optionValue),
         );
 
+        const tableName = table?.name ?? accountNameFromText(row.particulars);
+        const headerName = HEADER_BY_SIDE[row.side];
+        const arithmetic = "add";
+
         return {
           answeredData: {
-            tableName: table?.name ?? accountNameFromText(row.particulars),
-            headerName: HEADER_BY_SIDE[row.side],
+            tableName,
+            headerName,
             attributeId: attributeIdFor(attribute, questionAttributeId),
-            arithmetic: "add",
+            arithmetic,
             amount: lineAmount(row),
+            info: describeInfo(arithmetic, headerName, tableName),
           },
         };
       });
   });
+};
+
+// --- MCQ ---------------------------------------------------------------
+// Selection lives in examSessionStore's answeredData under a single
+// "selected" key (an array so the exam page's generic "has this question
+// been answered" check keeps working unchanged) - one id for single-choice,
+// any number for multiple-choice.
+const mcqAnswers = (entry, multiple) => {
+  const selected = entry?.answeredData?.selected || [];
+
+  if (!selected.length) {
+    return [];
+  }
+
+  return [
+    {
+      answeredData: multiple
+        ? { selectedAnswerIds: selected }
+        : { selectedAnswerId: selected[0] },
+    },
+  ];
 };
 
 // --- DRAG_AND_DROP -------------------------------------------------------
@@ -124,6 +162,7 @@ const dragAnswers = (dragSlice) => {
         attributeId: row.id,
         arithmetic: row.operation,
         amount: Number(row.amount || 0),
+        info: describeInfo(row.operation, headerName, tableName),
       },
     }));
   });
@@ -134,6 +173,7 @@ export const buildSubmission = ({
   sessionById,
   examDragById,
   userId,
+  timeTakenSeconds,
 }) => {
   // Every question in the paper is sent, whether attempted or not. An
   // unattempted question goes out with an empty `answers` array so the
@@ -153,6 +193,10 @@ export const buildSubmission = ({
       answered = journalAnswers(entry);
     } else if (questionType === "DROPDOWN") {
       answered = dropdownAnswers(entry);
+    } else if (questionType === "MULTIPLE_CHOICE") {
+      answered = mcqAnswers(entry, true);
+    } else if (questionType === "SINGLE_CHOICE") {
+      answered = mcqAnswers(entry, false);
     } else {
       answered = dragAnswers(examDragById?.[id]);
     }
@@ -160,7 +204,7 @@ export const buildSubmission = ({
     return { questionId: id, questionType, answers: answered };
   });
 
-  return { userId, answers };
+  return { userId, answers, timeTakenSeconds };
 };
 
 export default buildSubmission;

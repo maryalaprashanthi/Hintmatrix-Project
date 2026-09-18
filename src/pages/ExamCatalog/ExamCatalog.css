@@ -53,6 +53,42 @@
   color: var(--cat-muted);
 }
 
+/* ---------- present / past tabs ---------- */
+
+.exam-catalog__tabs {
+  display: inline-flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  padding: 4px;
+  background: var(--cat-card);
+  border: 1px solid var(--cat-rule);
+  border-radius: 12px;
+}
+
+.exam-catalog .exam-catalog__tab {
+  padding: 9px 18px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--cat-muted);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.exam-catalog .exam-catalog__tab:hover {
+  color: var(--cat-ink);
+}
+
+.exam-catalog .exam-catalog__tab.is-active {
+  background: var(--cat-accent);
+  color: #fff;
+}
+
 /* ---------- list (one card per row) ---------- */
 
 .exam-catalog__grid {
@@ -253,6 +289,11 @@
   color: var(--cat-soon);
 }
 
+.exam-card[data-state="closed"] .exam-card__pill {
+  background: var(--cat-closed-bg);
+  color: var(--cat-closed);
+}
+
 /* ---------- start / view button ---------- */
 
 .exam-catalog .exam-card__start {
@@ -288,6 +329,18 @@
 .exam-catalog .exam-card__start:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px color-mix(in oklab, #1e67c7 35%, transparent);
+}
+
+.exam-catalog .exam-card__start--review {
+  background: var(--cat-accent);
+}
+
+.exam-catalog .exam-card__start--review:hover {
+  background: #4338ca;
+}
+
+.exam-catalog .exam-card__start--review:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--cat-accent) 35%, transparent);
 }
 
 /* ---------- admin actions (staff only) ---------- */
