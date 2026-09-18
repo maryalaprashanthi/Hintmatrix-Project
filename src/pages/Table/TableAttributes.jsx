@@ -8,6 +8,8 @@ import ActionIconButton from "../../components/Common/ActionIconButton";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { useToast } from "../../components/Toast/useToast";
 import { getApiErrorMessage } from "../../utils/apiError";
+import ManagementCountTiles from "../../components/Common/ManagementCountTiles";
+import { FaTags } from "react-icons/fa";
 
 function TableAttributes() {
   const toast = useToast();
@@ -15,6 +17,11 @@ function TableAttributes() {
   const [editingAttribute, setEditingAttribute] = useState(null);
   const [tableAttributes, setTableAttributes] = useState([]);
   const [id, setId] = useState(null);
+  const tableAttributeCounts = {
+    total: tableAttributes.length,
+    active: tableAttributes.filter((item) => item.activeRow !== false).length,
+    inactive: tableAttributes.filter((item) => item.activeRow === false).length,
+  };
 
   const loadTableAttributes = async () => {
     try {
@@ -27,6 +34,7 @@ function TableAttributes() {
         amount1: obj.amount1,
         amount2: obj.amount2,
         tableHeaderName: obj.tableHeaderName,
+        activeRow: obj.activeRow !== false,
       }));
 
       setTableAttributes(allTableAttributes);
@@ -68,6 +76,25 @@ function TableAttributes() {
     e.target.value = "";
   };
 
+  const handleStatusToggle = async (attribute) => {
+    const nextStatus = attribute.activeRow === false;
+
+    try {
+      await TableAttributeService.update(attribute.id, {
+        name: attribute.name,
+        tableHeaderName: attribute.tableHeaderName,
+        amount1: attribute.amount1,
+        amount2: attribute.amount2,
+        activeRow: nextStatus,
+      });
+      toast.success(`Table attribute ${nextStatus ? "activated" : "deactivated"}.`);
+      await loadTableAttributes();
+    } catch (error) {
+      console.error("Error updating table attribute status:", error);
+      toast.error(getApiErrorMessage(error, "Unable to update status."));
+    }
+  };
+
   const columnDefs = [
     { field: "name", headerName: "Table Attribute Name", flex: 1 },
     {
@@ -77,6 +104,26 @@ function TableAttributes() {
     },
     { field: "amount1", headerName: "Amount 1", flex: 1 },
     { field: "amount2", headerName: "Amount 2", flex: 1 },
+    {
+      field: "activeRow",
+      headerName: "Status",
+      width: 130,
+      cellRenderer: (params) => {
+        if (!params.data) return null;
+        const isActive = params.value !== false;
+        return (
+          <button
+            type="button"
+            className={`table-attribute-status ${isActive ? "active" : "inactive"}`}
+            onClick={() => handleStatusToggle(params.data)}
+            title={`Set ${params.data.name} ${isActive ? "inactive" : "active"}`}
+          >
+            <span className="table-attribute-status-dot" />
+            {isActive ? "Active" : "Inactive"}
+          </button>
+        );
+      },
+    },
     {
       headerName: "Action",
       flex: 1,
@@ -100,6 +147,7 @@ function TableAttributes() {
                   amount1: params.data.amount1,
                   amount2: params.data.amount2,
                   tableHeaderName: params.data.tableHeaderName,
+                  activeRow: params.data.activeRow !== false,
                 };
 
                 setEditingAttribute(editedData);
@@ -181,6 +229,12 @@ function TableAttributes() {
           </button>
         </div>
       </div>
+
+      <ManagementCountTiles
+        label="Table Attributes"
+        counts={tableAttributeCounts}
+        icon={FaTags}
+      />
 
       {/* Data Grid */}
       <div className="card shadow-sm border-0">

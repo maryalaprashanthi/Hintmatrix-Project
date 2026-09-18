@@ -11,6 +11,7 @@ function AddTableAttributeModal({ show, onClose, onSave, initialData }) {
     amount1: "",
     amount2: "",
     tableHeaderName: "",
+    activeRow: true,
   });
   const [tableHeaders, setTableHeaders] = useState([]);
 
@@ -33,6 +34,7 @@ function AddTableAttributeModal({ show, onClose, onSave, initialData }) {
         Amount1: "",
         Amount2: "",
         tableHeaderName: "",
+        activeRow: true,
       },
     );
   }, [initialData]);
@@ -50,6 +52,7 @@ function AddTableAttributeModal({ show, onClose, onSave, initialData }) {
       amount1: "",
       amount2: "",
       tableHeaderName: "",
+      activeRow: true,
     });
   };
 
@@ -59,6 +62,7 @@ function AddTableAttributeModal({ show, onClose, onSave, initialData }) {
       amount1: "",
       amount2: "",
       tableHeaderName: "",
+      activeRow: true,
     });
     onClose();
   };
@@ -145,6 +149,26 @@ function AddTableAttributeModal({ show, onClose, onSave, initialData }) {
                       </option>
                     ))}
                   </select>
+                </div>
+              </div>
+
+              <div className="form-group table-attribute-status-field">
+                <label>Status</label>
+                <div className="form-check form-switch">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={formData.activeRow !== false}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        activeRow: e.target.checked,
+                      })
+                    }
+                  />
+                  <label className="form-check-label">
+                    {formData.activeRow !== false ? "Active" : "Inactive"}
+                  </label>
                 </div>
               </div>
             </div>
