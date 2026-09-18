@@ -9,6 +9,47 @@ import "./MatchingQuestionView.css";
 const blankPattern =
   /(__+|\[\[blank(?:\s*\d+)?\]\]|\{\{blank(?:\s*\d+)?\}\})/gi;
 
+const normalizeAnswerValues = (value) => {
+  if (value == null) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => normalizeAnswerValues(item));
+  }
+
+  if (typeof value === "object") {
+    const extractedValue =
+      value.answerText ??
+      value.answer ??
+      value.text ??
+      value.value ??
+      value.name ??
+      "";
+
+    return normalizeAnswerValues(extractedValue);
+  }
+
+  return String(value)
+    .split(",")
+    .map((answer) => String(answer).trim())
+    .filter(Boolean);
+};
+
+const shuffleArray = (items) => {
+  const nextItems = [...items];
+
+  for (let index = nextItems.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [nextItems[index], nextItems[randomIndex]] = [
+      nextItems[randomIndex],
+      nextItems[index],
+    ];
+  }
+
+  return nextItems;
+};
+
 const acceptedAnswersFromBlank = (blank = {}) => {
   const value =
     blank.acceptedAnswers ??
@@ -26,22 +67,7 @@ const acceptedAnswersFromBlank = (blank = {}) => {
     blank.value ??
     "";
 
-  return (Array.isArray(value) ? value : String(value).split(","))
-    .map((answer) => {
-      if (answer && typeof answer === "object") {
-        return (
-          answer.answer ??
-          answer.answerText ??
-          answer.text ??
-          answer.value ??
-          ""
-        );
-      }
-
-      return String(answer).trim();
-    })
-    .map((answer) => String(answer).trim())
-    .filter(Boolean);
+  return normalizeAnswerValues(value);
 };
 
 /*
@@ -63,21 +89,64 @@ const acceptedAnswersFromBlank = (blank = {}) => {
  * expected by the existing component.
  */
 const getBackendBlanks = (questionRecord) => {
-  if (!Array.isArray(questionRecord.answers)) {
-    return [];
+  if (Array.isArray(questionRecord?.blanks) && questionRecord.blanks.length) {
+    return [...questionRecord.blanks]
+      .sort(
+        (first, second) =>
+          (first.blankNumber ?? 0) - (second.blankNumber ?? 0),
+      )
+      .map((blank = {}, index) => {
+        const acceptedAnswers = normalizeAnswerValues(
+          blank.acceptedAnswers ??
+            blank.acceptedAnswerList ??
+            blank.answers ??
+            blank.answer ??
+            blank.answerText ??
+            blank.correctAnswer ??
+            blank.correctAnswers ??
+            blank.expectedAnswers ??
+            blank.options ??
+            [],
+        );
+
+        return {
+          answerId: blank.answerId ?? blank.id ?? index + 1,
+          answerText: acceptedAnswers[0] ?? blank.correctAnswer ?? "",
+          displayOrder: blank.displayOrder ?? index + 1,
+          acceptedAnswers,
+          correctAnswer: blank.correctAnswer ?? acceptedAnswers[0] ?? "",
+        };
+      });
   }
 
-  return [...questionRecord.answers]
-    .sort(
-      (first, second) =>
-        (first.displayOrder ?? 0) - (second.displayOrder ?? 0),
-    )
-    .map((answer) => ({
-      answerId: answer.answerId,
-      answerText: answer.answerText,
-      displayOrder: answer.displayOrder,
-      acceptedAnswers: [answer.answerText],
-    }));
+  if (Array.isArray(questionRecord?.answers) && questionRecord.answers.length) {
+    return [...questionRecord.answers]
+      .sort(
+        (first, second) =>
+          (first.displayOrder ?? 0) - (second.displayOrder ?? 0),
+      )
+      .map((answer, index) => {
+        const acceptedAnswers = normalizeAnswerValues(
+          answer.acceptedAnswers ??
+            answer.acceptedAnswerList ??
+            answer.answerText ??
+            answer.answer ??
+            answer.text ??
+            answer.value ??
+            answer,
+        );
+
+        return {
+          answerId: answer.answerId ?? answer.id ?? index + 1,
+          answerText: acceptedAnswers[0] ?? "",
+          displayOrder: answer.displayOrder ?? index + 1,
+          acceptedAnswers,
+          correctAnswer: acceptedAnswers[0] ?? "",
+        };
+      });
+  }
+
+  return [];
 };
 
 const FillInBlankQuestionView = ({
@@ -96,15 +165,43 @@ const FillInBlankQuestionView = ({
 
   const blanks = getBackendBlanks(questionRecord);
 
-  const parts = useMemo(
-    () =>
-      String(questionRecord.questionText ?? "").split(blankPattern),
-    [questionRecord.questionText],
-  );
+  const parts = useMemo(() => {
+    const rawText = String(questionRecord.questionText ?? "");
 
-  const detectedBlankCount = Math.max(parts.length - 1, 0);
+    if (!rawText) {
+      return [""];
+    }
 
-  const blankCount = Math.max(detectedBlankCount, 1);
+    const matches = [...rawText.matchAll(blankPattern)];
+
+    if (!matches.length) {
+      return [rawText];
+    }
+
+    const result = [];
+    let previousIndex = 0;
+
+    matches.forEach((match) => {
+      const matchIndex = match.index ?? 0;
+
+      if (matchIndex > previousIndex) {
+        result.push(rawText.slice(previousIndex, matchIndex));
+      }
+
+      result.push(match[0]);
+      previousIndex = matchIndex + match[0].length;
+    });
+
+    if (previousIndex < rawText.length) {
+      result.push(rawText.slice(previousIndex));
+    }
+
+    return result;
+  }, [questionRecord.questionText]);
+
+  const detectedBlankCount = parts.filter((part, index) => index % 2 === 1).length;
+  const savedBlankCount = Math.max(blanks.length, 0);
+  const blankCount = Math.max(detectedBlankCount, savedBlankCount, 1);
 
   const [answers, setAnswers] = useState(() =>
     Array.from({ length: blankCount }, () => ""),
@@ -117,6 +214,8 @@ const FillInBlankQuestionView = ({
   const [saving, setSaving] = useState(false);
 
   const [draggedAnswer, setDraggedAnswer] = useState("");
+
+  const [displayOptions, setDisplayOptions] = useState([]);
 
   useEffect(() => {
     setAnswers(Array.from({ length: blankCount }, () => ""));
@@ -136,6 +235,38 @@ const FillInBlankQuestionView = ({
       ),
     ];
   }, [blanks]);
+
+  useEffect(() => {
+    if (!answerOptions.length) {
+      setDisplayOptions([]);
+      return undefined;
+    }
+
+    const initialOrder = shuffleArray(answerOptions);
+    setDisplayOptions(initialOrder);
+
+    const shuffleDuration = 4000;
+    const tickMs = 120;
+    const startedAt = Date.now();
+
+    const timer = setInterval(() => {
+      const elapsed = Date.now() - startedAt;
+
+      setDisplayOptions((current) => {
+        if (elapsed >= shuffleDuration) {
+          return current.length ? current : initialOrder;
+        }
+
+        return shuffleArray(current.length ? current : initialOrder);
+      });
+
+      if (elapsed >= shuffleDuration) {
+        clearInterval(timer);
+      }
+    }, tickMs);
+
+    return () => clearInterval(timer);
+  }, [answerOptions.join("|"), questionRecord.questionId]);
 
   const updateAnswer = (index, value) => {
     setAnswers((current) => {
@@ -270,7 +401,28 @@ const FillInBlankQuestionView = ({
     );
   });
 
-  if (parts.length === 1) {
+  if (parts.length === 1 && blankCount > 1) {
+    Array.from({ length: blankCount }).forEach((_, fallbackIndex) => {
+      questionContent.push(
+        <div
+          key={`blank-fallback-${fallbackIndex}`}
+          className={`fill-blank-drop-slot ${
+            submitted
+              ? answers[fallbackIndex]
+                ? "is-answered"
+                : "is-empty"
+              : ""
+          }`}
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => handleDrop(fallbackIndex, event)}
+        >
+          {answers[fallbackIndex] || `Drop answer ${fallbackIndex + 1}`}
+        </div>,
+      );
+    });
+  }
+
+  if (parts.length === 1 && blankCount === 1) {
     questionContent.push(
       <div
         key="blank-fallback"
@@ -374,7 +526,7 @@ const FillInBlankQuestionView = ({
             </strong>
 
             <div className="fill-blank-answer-options">
-              {answerOptions.map((option) => (
+              {displayOptions.map((option) => (
                 <button
                   type="button"
                   draggable={!submitted && !saving}

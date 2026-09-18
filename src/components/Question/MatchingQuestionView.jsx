@@ -699,6 +699,20 @@ const MatchingQuestionView = ({
 
               <div className="matching-column-body">
 
+                <div
+                  className={`drop-zone matching-drop-tray ${
+                    dropTargetPairId !== null ? "drop-zone-active" : ""
+                  }`}
+                  onDragOver={handleDragOver}
+                  onDrop={(event) => handleDrop(event)}
+                >
+                  <span className="drop-placeholder">
+                    {dropTargetPairId !== null
+                      ? "Drop answer here"
+                      : "Drag an answer onto a question"}
+                  </span>
+                </div>
+
                 {pairs.map(
                   (pair, index) => {
 
@@ -847,20 +861,6 @@ const MatchingQuestionView = ({
               </div>
 
               <div className="matching-column-body">
-
-                <div
-                  className={`drop-zone matching-drop-tray ${
-                    dropTargetPairId !== null ? "drop-zone-active" : ""
-                  }`}
-                  onDragOver={handleDragOver}
-                  onDrop={(event) => handleDrop(event)}
-                >
-                  <span className="drop-placeholder">
-                    {dropTargetPairId !== null
-                      ? "Drop answer here"
-                      : "Drag an answer onto a question"}
-                  </span>
-                </div>
 
                 {shuffledColumnB.map(
                   (option, index) => {

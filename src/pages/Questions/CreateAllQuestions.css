@@ -866,15 +866,49 @@
 .aq-fill-blank-row {
   display: grid;
 
-  grid-template-columns: 90px minmax(0, 1fr) 34px;
+  grid-template-columns: 90px minmax(0, 1fr);
 
   gap: 10px;
 
-  align-items: center;
+  align-items: start;
 }
 
 .aq-fill-blank-row b {
   color: #526078;
+}
+
+.aq-fill-blank-options {
+  display: grid;
+
+  gap: 8px;
+}
+
+.aq-fill-blank-option {
+  display: grid;
+
+  grid-template-columns: minmax(0, 1fr) 18px 34px;
+
+  gap: 8px;
+
+  align-items: center;
+}
+
+.aq-fill-blank-option input[type="checkbox"] {
+  width: 18px !important;
+  height: 18px;
+
+  margin: 0;
+
+  accent-color: var(--aq-blue);
+}
+
+.aq-fill-blank-option input[type="text"],
+.aq-fill-blank-option input {
+  width: 100%;
+}
+
+.aq-inline-button {
+  justify-self: flex-start;
 }
 
 /* =========================================================
