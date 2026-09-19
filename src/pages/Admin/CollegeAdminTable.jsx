@@ -4,6 +4,7 @@ import DataGrid from "../../components/DataGrid";
 import ActionIconButton from "../../components/Common/ActionIconButton";
 import ConfirmDialog from "../../components/Common/ConfirmDialog";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
+import "../Table/TableNames.css";
 
 function CollegeAdminTable({ data, onEdit, refreshData }) {
   const defaultColDef = {
@@ -18,6 +19,14 @@ function CollegeAdminTable({ data, onEdit, refreshData }) {
       UserService.deleteCollegeAdmin(admin?.userId ?? admin?.user_id),
     onDeleted: refreshData,
   });
+
+  const toggleStatus = async (admin) => {
+    await UserService.updateCollegeAdmin(admin.userId, {
+      ...admin,
+      activeRow: admin.activeRow === false,
+    });
+    await refreshData();
+  };
 
   // COLUMN DEFINITIONS
 
@@ -65,6 +74,22 @@ function CollegeAdminTable({ data, onEdit, refreshData }) {
       headerName: "Address",
       flex: 1,
       minWidth: 220,
+    },
+
+    {
+      field: "activeRow",
+      headerName: "Status",
+      width: 150,
+      cellRenderer: ({ data: admin }) => {
+        if (!admin) return null;
+        const isActive = admin.activeRow !== false;
+        return (
+          <button type="button" className={`table-name-status ${isActive ? "active" : "inactive"}`} onClick={() => toggleStatus(admin)} title={`Set ${admin.name} ${isActive ? "inactive" : "active"}`}>
+            <span className="table-name-status-dot" />
+            {isActive ? "Active" : "Inactive"}
+          </button>
+        );
+      },
     },
 
     // ACTION

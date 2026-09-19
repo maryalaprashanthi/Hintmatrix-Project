@@ -33,6 +33,7 @@ function CollegeAdminForm({ show, onClose, onSave, selectedCollegeAdminData }) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [address, setAddress] = useState("");
+  const [activeRow, setActiveRow] = useState(true);
 
   // COLLEGE STATE
 
@@ -142,6 +143,7 @@ function CollegeAdminForm({ show, onClose, onSave, selectedCollegeAdminData }) {
       setPassword("");
 
       setAddress(selectedCollegeAdminData.address || "");
+      setActiveRow(selectedCollegeAdminData.activeRow !== false);
     } else {
       resetForm();
     }
@@ -160,6 +162,7 @@ function CollegeAdminForm({ show, onClose, onSave, selectedCollegeAdminData }) {
     setPhoneNumber("");
     setPassword("");
     setAddress("");
+    setActiveRow(true);
   };
 
 
@@ -268,6 +271,7 @@ function CollegeAdminForm({ show, onClose, onSave, selectedCollegeAdminData }) {
       phoneNumber: phoneNumber.replace(/\D/g, ""),
 
       address: address.trim(),
+      activeRow,
     };
 
     /*
@@ -547,6 +551,13 @@ function CollegeAdminForm({ show, onClose, onSave, selectedCollegeAdminData }) {
                 onChange={(e) => setAddress(e.target.value)}
                 disabled={saving}
               />
+            </div>
+          </div>
+          <div className="form-card">
+            <h3 className="section-title">Status</h3>
+            <div className="form-check form-switch status-form-switch">
+              <input className="form-check-input" type="checkbox" role="switch" checked={activeRow} onChange={(e) => setActiveRow(e.target.checked)} />
+              <label className="form-check-label">{activeRow ? "Active" : "Inactive"}</label>
             </div>
           </div>
         </div>

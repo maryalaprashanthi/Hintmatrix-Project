@@ -9,7 +9,7 @@ import { useToast } from "../../components/Toast/useToast";
 import { getApiErrorMessage } from "../../utils/apiError";
 import ManagementCountTiles from "../../components/Common/ManagementCountTiles";
 import { getManagementCounts } from "../../utils/managementCounts";
-import { FaGavel } from "react-icons/fa";
+import { FaGavel, FaProjectDiagram } from "react-icons/fa";
 
 function RuleEngine() {
   const toast = useToast();
@@ -160,6 +160,11 @@ function RuleEngine() {
   };
 
   const ruleEngineCounts = getManagementCounts(ruleEngineList);
+  const relationshipTypeCount = new Set(
+    ruleEngineList
+      .map((rule) => String(rule.relationshipName ?? "").trim().toLowerCase())
+      .filter(Boolean),
+  ).size;
 
   return (
     <div className="container-fluid py-4">
@@ -211,6 +216,15 @@ function RuleEngine() {
         label="Rule Engines"
         counts={ruleEngineCounts}
         icon={FaGavel}
+        extraTiles={[
+          {
+            title: "Total Relationship Types",
+            count: relationshipTypeCount,
+            subtitle: "Unique Relationships",
+            icon: FaProjectDiagram,
+            color: "purple",
+          },
+        ]}
       />
 
       <div className="card shadow-sm border-0">

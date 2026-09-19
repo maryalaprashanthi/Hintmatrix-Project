@@ -138,6 +138,11 @@
   color: #9333ea;
 }
 
+.stat-icon.red {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
 .stat-icon.orange {
   background: #fff4e5;
   color: #ea580c;

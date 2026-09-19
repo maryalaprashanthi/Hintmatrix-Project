@@ -37,18 +37,6 @@ export default function McqQuestionView({ questionId, questionType }) {
   }, [questionId]);
 
   useEffect(() => {
-    let active = true;
-    QuestionAnswerService.getOverallMarks(1)
-      .then((score) => {
-        if (active) setTotalScore(Number(score) || 0);
-      })
-      .catch((err) => console.error("Failed to load total score:", err));
-    return () => {
-      active = false;
-    };
-  }, [questionId, result]);
-
-  useEffect(() => {
     if (!question?.courseId || !question?.chapterId || !question?.topicId)
       return;
     let active = true;
@@ -136,36 +124,6 @@ export default function McqQuestionView({ questionId, questionType }) {
 
   return (
     <div>
-      <Header
-        question={{ ...metadata, ...question }}
-        actions={
-          <>
-            <Button variant="light" size="sm" onClick={reset} disabled={busy}>
-              <FaRedo className="me-1" /> Reset
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={submit}
-              disabled={busy || !selected.length || !!result}
-            >
-              <FaPaperPlane className="me-1" />{" "}
-              {busy
-                ? "Please wait..."
-                : result
-                  ? "Answer Saved"
-                  : "Submit Answer"}
-            </Button>
-          </>
-        }
-      />
-      <SummaryCards
-        debit={0}
-        credit={0}
-        total={1}
-        solved={correct ? 1 : 0}
-        totalScore={totalScore}
-      />
       <Header
         question={{ ...metadata, ...question }}
         questionTypeLabel={
