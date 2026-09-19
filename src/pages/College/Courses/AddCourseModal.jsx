@@ -5,8 +5,6 @@ import Select from "react-select";
 import {
   FaBook,
   FaLayerGroup,
-  FaSignal,
-  FaClock,
   FaImage,
   FaSave,
   FaTimes,
@@ -19,9 +17,6 @@ import CollegeService from "../../../services/CollegeService";
 
 function AddCourseModal({ show, onClose, onSave, selectedCourseData }) {
   const [courseName, setCourseName] = useState("");
-  const [category, setCategory] = useState("Commerce");
-  const [level, setLevel] = useState("Beginner");
-  const [duration, setDuration] = useState("3 Months");
   const [description, setDescription] = useState("");
   const [thumbnail, setThumbnail] = useState(null);
 
@@ -68,9 +63,6 @@ function AddCourseModal({ show, onClose, onSave, selectedCourseData }) {
 
   const resetForm = () => {
     setCourseName("");
-    setCategory("Commerce");
-    setLevel("Beginner");
-    setDuration("3 Months");
     setDescription("");
     setThumbnail(null);
 
@@ -83,12 +75,6 @@ function AddCourseModal({ show, onClose, onSave, selectedCourseData }) {
   useEffect(() => {
     if (selectedCourseData) {
       setCourseName(selectedCourseData.name || selectedCourseData.title || "");
-
-      setCategory(selectedCourseData.category || "Commerce");
-
-      setLevel(selectedCourseData.level || "Beginner");
-
-      setDuration(selectedCourseData.duration || "3 Months");
 
       setDescription(selectedCourseData.description || "");
 
@@ -279,66 +265,6 @@ function AddCourseModal({ show, onClose, onSave, selectedCourseData }) {
                 </div>
               </div>
 
-              {/* Category */}
-
-              <div className="form-group">
-                <label>Category</label>
-
-                <div className="input-box">
-                  <FaLayerGroup className="input-icon" />
-
-                  <select
-                    className="form-select"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                  >
-                    <option value="Commerce">Commerce</option>
-
-                    <option value="Professional">Professional</option>
-
-                    <option value="School">School</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Level */}
-
-              <div className="form-group">
-                <label>Level</label>
-
-                <div className="input-box">
-                  <FaSignal className="input-icon" />
-
-                  <select
-                    className="form-select"
-                    value={level}
-                    onChange={(e) => setLevel(e.target.value)}
-                  >
-                    <option value="Beginner">Beginner</option>
-
-                    <option value="Intermediate">Intermediate</option>
-
-                    <option value="Advanced">Advanced</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Duration */}
-
-              <div className="form-group">
-                <label>Duration</label>
-
-                <div className="input-box">
-                  <FaClock className="input-icon" />
-
-                  <input
-                    type="text"
-                    placeholder="3 Months"
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
-                  />
-                </div>
-              </div>
             </div>
           </div>
 

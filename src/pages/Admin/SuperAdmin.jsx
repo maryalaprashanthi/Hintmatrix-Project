@@ -4,12 +4,16 @@ import "./SuperAdmin.css";
 import SuperAdminTable from "./SuperAdminTable";
 import SuperAdminService from "../../services/UserService";
 import { useToast } from "../../components/Toast/useToast";
+import { FaUserShield } from "react-icons/fa";
+import ManagementCountTiles from "../../components/Common/ManagementCountTiles";
+import { getManagementCounts } from "../../utils/managementCounts";
 
 function SuperAdmin() {
   const toast = useToast();
   const [showModal, setShowModal] = useState(false);
   const [superAdmins, setSuperAdmins] = useState([]);
   const [selectedSuperAdmin, setSelectedSuperAdmin] = useState(null);
+  const superAdminCounts = getManagementCounts(superAdmins);
 
   // Fetch all Super Admins
   const fetchSuperAdmins = () => {
@@ -96,6 +100,12 @@ function SuperAdmin() {
           + Add Super Admin
         </button>
       </div>
+
+      <ManagementCountTiles
+        label="Super Admins"
+        counts={superAdminCounts}
+        icon={FaUserShield}
+      />
 
       {/* Table */}
       <div className="card shadow-sm border-0">
