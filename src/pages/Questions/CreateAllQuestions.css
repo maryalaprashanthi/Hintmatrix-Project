@@ -458,6 +458,9 @@
   box-shadow: none !important;
 
   background: #fff !important;
+
+  text-align: left !important;
+  justify-content: flex-start !important;
 }
 
 .aq-select__control:hover,
@@ -489,6 +492,18 @@
 
 .aq-select__value-container {
   background: transparent !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+  padding-left: 10px !important;
+}
+
+.aq-select__single-value,
+.aq-select__placeholder,
+.aq-select__input-container,
+.aq-select__control input,
+.aq-select__control div,
+.aq-select__control span {
+  text-align: left !important;
 }
 
 .aq-select__single-value {
@@ -497,6 +512,9 @@
 
 .aq-select__placeholder {
   color: #858fa1 !important;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  justify-content: flex-start !important;
 }
 
 .aq-select__indicator {
