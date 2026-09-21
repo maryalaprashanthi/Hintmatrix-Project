@@ -16,7 +16,7 @@ import { useState } from "react";
 const QuestionTable = () => {
   const [checkMistakes, setCheckMistakes] = useState(false);
 
-  const { questions, score, resetFrontend } = useQuestionStore();
+  const { questions, score, resetFrontend, droppableData } = useQuestionStore();
 
   const { questionId } = useParams();
 
@@ -171,6 +171,12 @@ const QuestionTable = () => {
                     <Droppable
                       id={`${obj.name}-${obj.headers[0]}`}
                       isCreditSide={false}
+                      matchRowCount={Math.max(
+                        (droppableData[`${obj.name}-${obj.headers[0]}`] || [])
+                          .length,
+                        (droppableData[`${obj.name}-${obj.headers[1]}`] || [])
+                          .length,
+                      )}
                     />
                   </div>
                   <div className="col-12 col-md-6">
@@ -180,6 +186,12 @@ const QuestionTable = () => {
                     <Droppable
                       id={`${obj.name}-${obj.headers[1]}`}
                       isCreditSide={true}
+                      matchRowCount={Math.max(
+                        (droppableData[`${obj.name}-${obj.headers[0]}`] || [])
+                          .length,
+                        (droppableData[`${obj.name}-${obj.headers[1]}`] || [])
+                          .length,
+                      )}
                     />
                   </div>
                 </div>
