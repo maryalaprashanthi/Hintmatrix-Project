@@ -262,14 +262,16 @@ const FillInBlankQuestionView = ({
     return result;
   }, [questionRecord.questionText]);
 
-  const detectedBlankCount = parts.filter((part, index) => index % 2 === 1).length;
-  const savedBlankCount = Math.max(blanks.length, 0);
-  const blankCount = Math.max(detectedBlankCount, savedBlankCount, 1);
+  const detectedBlankCount = parts.filter(
+  (part, index) => index % 2 === 1,
+).length;
+
+const blankCount =
+  detectedBlankCount > 0 ? detectedBlankCount : Math.max(blanks.length, 1);
 
   const [answers, setAnswers] = useState(() =>
     Array.from({ length: blankCount }, () => ""),
   );
-
   const [submitted, setSubmitted] = useState(false);
 
   const [score, setScore] = useState(0);
