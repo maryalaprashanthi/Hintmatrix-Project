@@ -10,6 +10,7 @@ import {
   isJournalAttributeSolved,
   getUnansweredRuleConditions,
 } from "./journalAnswerStatus";
+import { getCurrentUserId } from "../../utils/user";
 
 const JournalQuestion = ({
   data = [],
@@ -46,7 +47,7 @@ const JournalQuestion = ({
 
     try {
       await QuestionAnswerService.processAnswerEvent({
-        userId: 1,
+        userId: getCurrentUserId(),
         questionId: helpRequest.item.questionId,
         attributeId: helpRequest.item.attributeId,
         answerPosition: nextCondition.condition.position ?? null,
@@ -85,7 +86,7 @@ const JournalQuestion = ({
 
           const [answerResult, eventResult] = await Promise.all([
             QuestionAnswerService.saveAnswer({
-              userId: 1,
+              userId: getCurrentUserId(),
               questionId: item.questionId,
               tableNameId: table.id,
               headerId: condition.headerId,
@@ -95,7 +96,7 @@ const JournalQuestion = ({
             }),
 
             QuestionAnswerService.processAnswerEvent({
-              userId: 1,
+              userId: getCurrentUserId(),
               questionId: item.questionId,
               attributeId: item.attributeId,
               answerPosition: condition.position ?? null,
@@ -230,7 +231,7 @@ const JournalQuestion = ({
       }
 
       const answerEventRequest = {
-        userId: 1,
+        userId: getCurrentUserId(),
         questionId: item.questionId,
         attributeId: item.attributeId,
         arithmetic: selectedArithmetic,
@@ -252,7 +253,7 @@ const JournalQuestion = ({
 
       if (isCorrect) {
         const questionAnswerRequest = {
-          userId: 1,
+          userId: getCurrentUserId(),
           questionId: item.questionId,
           tableNameId: table.id,
           headerId: selectedHeaderId,

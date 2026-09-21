@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+/* eslint-disable react/prop-types */
+import { useEffect, useMemo, useState } from "react";
 import {
   FaFileAlt,
   FaCheckCircle,
@@ -65,39 +66,36 @@ const statMeta = [
   },
 ];
 
-/* ================= EXAM TYPES  ================= */
+/* ================= TILES  ================= */
 
-const examTypes = [
-  {
-    title: "Practice Exam",
-    description: "Practice chapter-wise questions and improve concepts.",
-    button: "Start Practice",
-    type: "blue",
-    icon: <FaFileAlt />,
-  },
-  {
-    title: "Mock Test",
-    description: "Real exam simulation with timer and full syllabus.",
-    button: "Start Mock Test",
-    type: "purple",
-    icon: <FaClock />,
-    route: "/mock-exams",
-  },
-  {
-    title: "Previous Papers",
-    description: "Solve previous year question papers and test yourself.",
-    button: "View Papers",
-    type: "cyan",
-    icon: <FaFileAlt />,
-  },
-  {
-    title: "Quick Test",
-    description: "Short tests to evaluate your speed and accuracy.",
-    button: "Start Quick Test",
-    type: "green",
-    icon: <FaTrophy />,
-  },
-];
+// Both /exam and /mock-exam show the same two tiles; they differ only in which
+// catalog they open. "Previous" opens the same catalog on its Past tab.
+const buildTiles = (isMock) => {
+  const catalog = isMock ? "/mock-exams" : "/exams";
+
+  return [
+    {
+      title: "Current Exams",
+      description: isMock
+        ? "Mock exams you can start any time."
+        : "Exams that are open now or opening soon.",
+      button: "View Current Exams",
+      type: "blue",
+      icon: <FaFileAlt />,
+      route: catalog,
+    },
+    {
+      title: "Previous Exams",
+      description: "Review the exams you have already completed.",
+      button: "View Previous Exams",
+      type: "purple",
+      icon: <FaCheckCircle />,
+      route: `${catalog}?tab=past`,
+    },
+  ];
+};
+
+const pad = (count) => String(count).padStart(2, "0");
 
 /* ================= SCHEDULE  ================= */
 
@@ -152,16 +150,25 @@ const subjects = [
 
 /* ================= COMPONENT ================= */
 
-function ExamHub() {
+// One dashboard, two routes: /exam (kind="exam") and /mock-exam (kind="mock").
+// Mock exams have no schedule window, so the mock version swaps the "Upcoming"
+// stat and schedule list for "Yet to Attempt" and the published mock exams.
+function ExamHub({ kind = "exam" }) {
+  const isMock = kind === "mock";
   const userName = getCurrentUserName();
   const navigate = useNavigate();
-  const canCreateExam = canAccessFeature("manageExams", currentRole());
+  const canCreateExam = canAccessFeature(
+    isMock ? "manageMockExams" : "manageExams",
+    currentRole(),
+  );
 
   const [schedules, setSchedules] = useState([]);
   const [scheduleLoading, setScheduleLoading] = useState(true);
   const [scheduleError, setScheduleError] = useState(false);
 
-  const [recentAttempts, setRecentAttempts] = useState([]);
+  const [mockCatalog, setMockCatalog] = useState([]);
+  const [attempts, setAttempts] = useState([]);
+  const recentAttempts = attempts.slice(0, 4);
 
   const [statValues, setStatValues] = useState({
     total: "00",
@@ -177,6 +184,17 @@ function ExamHub() {
       try {
         setScheduleLoading(true);
         setScheduleError(false);
+
+        if (isMock) {
+          const mockResponse = await MockExamService.getAll();
+          const mocks = Array.isArray(mockResponse.data)
+            ? mockResponse.data
+            : [];
+          if (active) {
+            setMockCatalog(mocks.filter((mock) => mock.activeRow !== false));
+          }
+          return;
+        }
 
         const response = await ExamService.getAll();
         const exams = Array.isArray(response.data) ? response.data : [];
@@ -249,55 +267,97 @@ function ExamHub() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [isMock]);
 
-  // Recent Activity: the student's own completed exam + mock exam attempts,
-  // newest first. Each entry is clickable and opens that attempt's review
-  // screen instead of "starting" it again.
+  // Recent Activity: the student's own completed attempts for this page's kind
+  // (exams on /exam, mock exams on /mock-exam), newest first. Each entry is
+  // clickable and opens that attempt's review screen instead of "starting" it
+  // again.
   useEffect(() => {
     let active = true;
 
-    Promise.allSettled([
-      ExamService.getMyAttempts(),
-      MockExamService.getMyAttempts(),
-    ]).then(([examResult, mockResult]) => {
-      if (!active) return;
+    const service = isMock ? MockExamService : ExamService;
 
-      const examAttempts =
-        examResult.status === "fulfilled" && Array.isArray(examResult.value?.data)
-          ? examResult.value.data
-          : [];
-      const mockAttempts =
-        mockResult.status === "fulfilled" && Array.isArray(mockResult.value?.data)
-          ? mockResult.value.data
-          : [];
+    service
+      .getMyAttempts()
+      .then((response) => {
+        if (!active) return;
 
-      const merged = [...examAttempts, ...mockAttempts]
-        .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt))
-        .slice(0, 4);
-
-      setRecentAttempts(merged);
-    });
+        const list = Array.isArray(response?.data) ? response.data : [];
+        setAttempts(
+          [...list].sort(
+            (a, b) => new Date(b.completedAt) - new Date(a.completedAt),
+          ),
+        );
+      })
+      .catch((err) => {
+        console.error("Failed to load attempts:", err);
+      });
 
     return () => {
       active = false;
     };
-  }, []);
+  }, [isMock]);
+
+  // Mock stats come from the catalog + the student's own attempts: a mock exam
+  // counts as completed once they have at least one attempt on it.
+  const mockStats = useMemo(() => {
+    const total = mockCatalog.length;
+    const attemptedIds = new Set(attempts.map((attempt) => attempt.examId));
+    const completed = mockCatalog.filter((mock) =>
+      attemptedIds.has(mock.mockExamId),
+    ).length;
+
+    return {
+      total: pad(total),
+      completed: pad(completed),
+      completedPct: `${total > 0 ? ((completed / total) * 100).toFixed(1) : "0.0"}%`,
+      upcoming: pad(total - completed),
+    };
+  }, [mockCatalog, attempts]);
+
+  const mockList = useMemo(
+    () =>
+      mockCatalog.slice(0, MAX_SCHEDULE_ITEMS).map((mock, index) => ({
+        examId: mock.mockExamId,
+        title: mock.mockExamName || "Untitled Mock Exam",
+        time: `${mock.passPercentage ?? "—"}%`,
+        period: "Pass",
+        date: mock.courseName || "Mock exam",
+        duration: mock.chapterNames?.length
+          ? `${mock.chapterNames.length} ${mock.chapterNames.length === 1 ? "Chapter" : "Chapters"}`
+          : "All chapters",
+        status: "Open",
+        type: scheduleTypes[index % scheduleTypes.length],
+      })),
+    [mockCatalog],
+  );
+
+  const shownStats = isMock ? mockStats : statValues;
+  const scheduleItems = isMock ? mockList : schedules;
+  const tiles = buildTiles(isMock);
 
   // Merge dynamic values into the static stat shells
   const stats = statMeta.map((meta) => {
     if (meta.key === "total") {
-      return { ...meta, value: statValues.total };
+      return { ...meta, value: shownStats.total };
     }
     if (meta.key === "completed") {
       return {
         ...meta,
-        value: statValues.completed,
-        sub: statValues.completedPct,
+        value: shownStats.completed,
+        sub: shownStats.completedPct,
       };
     }
     if (meta.key === "upcoming") {
-      return { ...meta, value: statValues.upcoming };
+      return isMock
+        ? {
+            ...meta,
+            title: "Yet to Attempt",
+            sub: "Ready to start",
+            value: shownStats.upcoming,
+          }
+        : { ...meta, value: shownStats.upcoming };
     }
     return meta;
   });
@@ -318,9 +378,11 @@ function ExamHub() {
           <button
             type="button"
             className="create-exam-btn"
-            onClick={() => navigate("/exam-paper")}
+            onClick={() =>
+              navigate(isMock ? "/mock-exam-paper" : "/exam-paper")
+            }
           >
-            Create Exam
+            {isMock ? "Create Mock Exam" : "Create Exam"}
           </button>
         )}
       </div>
@@ -351,34 +413,30 @@ function ExamHub() {
       {/* ================= PRIMARY ================= */}
 
       <div className="main-two-column">
-        {/* EXAM TYPES */}
+        {/* CURRENT / PREVIOUS */}
 
         <div className="exam-types-section">
           <div className="section-title">
-            <h2>Choose Your Exam Type</h2>
-            <button type="button">
-              View All
-              <FaArrowRight />
-            </button>
+            <h2>{isMock ? "Mock Exams" : "Exams"}</h2>
           </div>
 
           <div className="exam-type-grid">
-            {examTypes.map((exam) => (
-              <div className={`exam-type-card ${exam.type}`} key={exam.title}>
+            {tiles.map((tile) => (
+              <div className={`exam-type-card ${tile.type}`} key={tile.title}>
                 <div className="exam-type-top">
-                  <div className="exam-type-icon">{exam.icon}</div>
+                  <div className="exam-type-icon">{tile.icon}</div>
                   <div className="exam-type-content">
-                    <h3>{exam.title}</h3>
-                    <p>{exam.description}</p>
+                    <h3>{tile.title}</h3>
+                    <p>{tile.description}</p>
                   </div>
                 </div>
 
                 <button
                   type="button"
                   className="exam-action"
-                  onClick={() => navigate(exam.route ?? "/exams")}
+                  onClick={() => navigate(tile.route)}
                 >
-                  <span>{exam.button}</span>
+                  <span>{tile.button}</span>
                   <FaArrowRight />
                 </button>
               </div>
@@ -386,35 +444,52 @@ function ExamHub() {
           </div>
         </div>
 
-        {/* SCHEDULE — shows upcoming exams, not just today */}
+        {/* SCHEDULE (exam) / AVAILABLE MOCK EXAMS (mock) */}
 
         <div className="schedule-section">
           <div className="section-title">
-            <h2>Upcoming Schedule</h2>
-            <button type="button">
-              View Calendar
-              <FaArrowRight />
-            </button>
+            <h2>{isMock ? "Available Mock Exams" : "Upcoming Schedule"}</h2>
+            {isMock ? (
+              <button type="button" onClick={() => navigate("/mock-exams")}>
+                View All
+                <FaArrowRight />
+              </button>
+            ) : (
+              <button type="button">
+                View Calendar
+                <FaArrowRight />
+              </button>
+            )}
           </div>
 
           <div className="schedule-list">
             {scheduleLoading && (
-              <p className="schedule-status">Loading upcoming exams...</p>
+              <p className="schedule-status">
+                {isMock
+                  ? "Loading mock exams..."
+                  : "Loading upcoming exams..."}
+              </p>
             )}
 
             {!scheduleLoading && scheduleError && (
               <p className="schedule-status schedule-error">
-                Couldn't load upcoming exams.
+                {isMock
+                  ? "Couldn't load mock exams."
+                  : "Couldn't load upcoming exams."}
               </p>
             )}
 
-            {!scheduleLoading && !scheduleError && schedules.length === 0 && (
-              <p className="schedule-status">No upcoming exams scheduled.</p>
+            {!scheduleLoading && !scheduleError && scheduleItems.length === 0 && (
+              <p className="schedule-status">
+                {isMock
+                  ? "No mock exams published yet."
+                  : "No upcoming exams scheduled."}
+              </p>
             )}
 
             {!scheduleLoading &&
               !scheduleError &&
-              schedules.map((item) => (
+              scheduleItems.map((item) => (
                 <div className="schedule-card" key={item.examId}>
                   <div className={`schedule-time ${item.type}`}>
                     <strong>{item.time}</strong>
@@ -425,12 +500,12 @@ function ExamHub() {
                     <h3>{item.title}</h3>
                     <div>
                       <span>
-                        <FaCalendarAlt />
+                        {isMock ? <FaBookOpen /> : <FaCalendarAlt />}
                         {item.date}
                       </span>
                       <span>•</span>
                       <span>
-                        <FaClock />
+                        {isMock ? <FaFileAlt /> : <FaClock />}
                         {item.duration}
                       </span>
                     </div>
@@ -441,10 +516,21 @@ function ExamHub() {
               ))}
           </div>
 
-          <button type="button" className="all-schedule">
-            View All Schedule
-            <FaArrowRight />
-          </button>
+          {isMock ? (
+            <button
+              type="button"
+              className="all-schedule"
+              onClick={() => navigate("/mock-exams")}
+            >
+              View All Mock Exams
+              <FaArrowRight />
+            </button>
+          ) : (
+            <button type="button" className="all-schedule">
+              View All Schedule
+              <FaArrowRight />
+            </button>
+          )}
         </div>
       </div>
 
@@ -535,11 +621,12 @@ function ExamHub() {
             <div className="activity-list">
               {recentAttempts.length === 0 ? (
                 <p className="activity-empty">
-                  Completed exams and mock exams show up here.
+                  {isMock
+                    ? "Completed mock exams show up here."
+                    : "Completed exams show up here."}
                 </p>
               ) : (
                 recentAttempts.map((item) => {
-                  const isMock = item.examType === "MOCK_EXAM";
                   const reviewPath = isMock
                     ? `/mock-exams/${item.examId}/review/${item.resultId}`
                     : `/exams/${item.examId}/review/${item.resultId}`;

@@ -1,16 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
-  FaArrowLeft,
-  FaCalendarAlt,
-  FaCheckCircle,
-  FaChevronLeft,
-  FaChevronRight,
-  FaClipboardList,
-  FaClock,
-  FaTimesCircle,
-  FaTrophy,
-} from "react-icons/fa";
+  ArrowLeft,
+  ArrowRight,
+  CalendarDays,
+  CircleCheck,
+  CircleX,
+  Clock3,
+  FileText,
+  Trophy,
+} from "lucide-react";
 
 import ExamService from "../../services/ExamService";
 import MockExamService from "../../services/MockExamService";
@@ -192,12 +191,12 @@ function ExamReview() {
           className="exam-review__back"
           onClick={() => navigate(catalogPath)}
         >
-          <FaArrowLeft aria-hidden="true" /> Back to Dashboard
+          <ArrowLeft size={16} aria-hidden="true" /> Back to Dashboard
         </button>
 
         <div className="exam-review__title">
           <div className="exam-review__title-icon">
-            <FaClipboardList aria-hidden="true" />
+            <FileText size={26} aria-hidden="true" />
           </div>
           <div>
             <h1>Exam Review</h1>
@@ -207,8 +206,8 @@ function ExamReview() {
 
         <div className="exam-review__stats">
           <div className="exam-review__stat">
-            <span className="exam-review__stat-icon exam-review__stat-icon--gold">
-              <FaTrophy aria-hidden="true" />
+            <span className="exam-review__stat-icon">
+              <Trophy size={20} aria-hidden="true" />
             </span>
             <div>
               <div className="exam-review__stat-label">Score</div>
@@ -223,8 +222,8 @@ function ExamReview() {
           </div>
 
           <div className="exam-review__stat">
-            <span className="exam-review__stat-icon exam-review__stat-icon--blue">
-              <FaClock aria-hidden="true" />
+            <span className="exam-review__stat-icon">
+              <Clock3 size={20} aria-hidden="true" />
             </span>
             <div>
               <div className="exam-review__stat-label">Time Taken</div>
@@ -235,8 +234,8 @@ function ExamReview() {
           </div>
 
           <div className="exam-review__stat">
-            <span className="exam-review__stat-icon exam-review__stat-icon--blue">
-              <FaCalendarAlt aria-hidden="true" />
+            <span className="exam-review__stat-icon">
+              <CalendarDays size={20} aria-hidden="true" />
             </span>
             <div>
               <div className="exam-review__stat-label">Completed On</div>
@@ -265,9 +264,7 @@ function ExamReview() {
               }`}
               onClick={() => setFilter("incorrect")}
             >
-              <span className="exam-review__filter-dot">
-                <FaTimesCircle aria-hidden="true" />
-              </span>
+              <CircleX size={14} aria-hidden="true" />
               Incorrect ({incorrectCount})
             </button>
             <button
@@ -277,9 +274,7 @@ function ExamReview() {
               }`}
               onClick={() => setFilter("correct")}
             >
-              <span className="exam-review__filter-dot">
-                <FaCheckCircle aria-hidden="true" />
-              </span>
+              <CircleCheck size={14} aria-hidden="true" />
               Correct ({correctCount})
             </button>
           </div>
@@ -301,6 +296,11 @@ function ExamReview() {
                     {item.question.questionText}
                   </span>
                   <span className="exam-review__list-badge">
+                    {item.correct ? (
+                      <CircleCheck size={13} aria-hidden="true" />
+                    ) : (
+                      <CircleX size={13} aria-hidden="true" />
+                    )}
                     {item.correct ? "Correct" : "Incorrect"}
                   </span>
                 </button>
@@ -321,9 +321,9 @@ function ExamReview() {
                 }`}
               >
                 {active.correct ? (
-                  <FaCheckCircle aria-hidden="true" />
+                  <CircleCheck size={14} aria-hidden="true" />
                 ) : (
-                  <FaTimesCircle aria-hidden="true" />
+                  <CircleX size={14} aria-hidden="true" />
                 )}
                 {active.correct ? "Correct" : "Incorrect"}
               </span>
@@ -378,7 +378,7 @@ function ExamReview() {
               disabled={activeIndex === 0}
               onClick={() => goToIndex(Math.max(0, activeIndex - 1))}
             >
-              <FaChevronLeft aria-hidden="true" /> Previous Question
+              <ArrowLeft size={16} aria-hidden="true" /> Previous Question
             </button>
             <button
               type="button"
@@ -388,7 +388,7 @@ function ExamReview() {
                 goToIndex(Math.min(questions.length - 1, activeIndex + 1))
               }
             >
-              Next Question <FaChevronRight aria-hidden="true" />
+              Next Question <ArrowRight size={16} aria-hidden="true" />
             </button>
           </div>
         </main>

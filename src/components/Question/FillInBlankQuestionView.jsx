@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import QuestionAnswerService from "../../services/QuestionAnswerService";
+import { getCurrentUserId } from "../../utils/user";
 
 import "./FillInBlankQuestionView.css";
 
@@ -309,7 +310,7 @@ const FillInBlankQuestionView = ({
 
         try {
           await QuestionAnswerService.processAnswerEvent({
-            userId: 1,
+            userId: getCurrentUserId(),
             questionId: questionRecord.questionId,
             attributeId: null,
             arithmetic: "FILL_IN_THE_BLANK",

@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { FaChevronUp } from "react-icons/fa";
+import { ChevronUp } from "lucide-react";
 import {
   FINAL_ACCOUNT_TABLES,
   attributeLookup,
@@ -158,7 +158,11 @@ const ReadOnlyDragDropAnswer = ({
           <div className="ro-account-card" key={table.name}>
             <div className="ro-account-card__head">
               <h3>{table.name}</h3>
-              <FaChevronUp className="ro-account-card__chevron" aria-hidden="true" />
+              <ChevronUp
+                size={18}
+                className="ro-account-card__chevron"
+                aria-hidden="true"
+              />
             </div>
             <div className="ro-account-sides">
               {table.headers.map((header, headerIndex) => (

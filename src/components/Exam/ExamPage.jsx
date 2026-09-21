@@ -373,7 +373,7 @@ const ExamPage = () => {
         <ExamStartScreen
           error={error}
           eyebrow={
-            paper ? `${paper.courseName} · ${paper.chapterName}` : "Practice exam"
+            paper ? `${paper.courseName} · ${paper.chapterName}` : "Exam"
           }
           isLoading={loading}
           meta={[
@@ -388,7 +388,7 @@ const ExamPage = () => {
             "Move freely between questions; mark any question to come back to it.",
             "Answers are kept as you go. Navigating between questions won't lose your work.",
           ]}
-          title={paper?.categoryName ?? "Practice exam"}
+          title={paper?.categoryName ?? "Exam"}
         />
       </main>
     );

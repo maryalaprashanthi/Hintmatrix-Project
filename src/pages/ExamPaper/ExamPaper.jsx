@@ -25,8 +25,13 @@ const ExamPaper = () => {
   const { examId } = useParams();
   const isEditMode = Boolean(examId);
 
-  // /mock-exam-paper/:examId edits a mock exam; /exam-paper/:examId a practice one.
-  const isMockEdit = isEditMode && pathname.startsWith("/mock-exam-paper");
+  // The route decides which form this is - there is no type picker:
+  //   /exam-paper[/:examId]       -> exam (POST /api/exams: college, branch,
+  //                                  section, subject, dates)
+  //   /mock-exam-paper[/:examId]  -> mock exam (POST /api/mock-exams: course,
+  //                                  chapters, pass %)
+  const isMock = pathname.startsWith("/mock-exam-paper");
+  const isMockEdit = isEditMode && isMock;
 
   const [currentStep, setCurrentStep] = useState(1);
   const [createdExamId, setCreatedExamId] = useState(examId ?? null);
@@ -34,12 +39,6 @@ const ExamPaper = () => {
   const [loadingExam, setLoadingExam] = useState(isEditMode);
 
   // EXAM DETAILS
-
-  // "practice" -> POST /api/exams (needs college/branch/section/subject/dates)
-  // "mock"     -> POST /api/mock-exams (course + chapters + pass % only)
-  // Only offered while creating; edit mode always stays on the practice path.
-  const [examType, setExamType] = useState("practice");
-  const isMock = isMockEdit || (!isEditMode && examType === "mock");
 
   const [passPercentage, setPassPercentage] = useState(35);
   const [examName, setExamName] = useState("");
@@ -504,25 +503,6 @@ const ExamPaper = () => {
     setChapters([]);
   };
 
-  // EXAM TYPE CHANGE
-
-  // The two types need different fields, so clear the whole cascade to stop a
-  // stale college/branch/date selection leaking across a switch.
-  const handleExamTypeChange = (value) => {
-    setExamType(value);
-
-    setCollege(null);
-    setBranch(null);
-    setCourse(null);
-    setSection(null);
-    setSubject(null);
-    setChapters([]);
-    setStartDate("");
-    setStartTime("");
-    setEndDate("");
-    setEndTime("");
-  };
-
   // NEXT BUTTON
 
   const handleNext = () => {
@@ -688,7 +668,9 @@ const ExamPaper = () => {
               ? "Edit Mock Exam"
               : isEditMode
                 ? "Edit Exam Paper"
-                : "Exam Paper"}
+                : isMock
+                  ? "Mock Exam Paper"
+                  : "Exam Paper"}
           </h2>
 
           <button
@@ -707,7 +689,9 @@ const ExamPaper = () => {
             <div className="exam-paper-step exam-paper-step-active">
               <div className="exam-paper-step-circle">1</div>
 
-              <div className="exam-paper-step-label">Create Exam Paper</div>
+              <div className="exam-paper-step-label">
+                {isMock ? "Create Mock Exam Paper" : "Create Exam Paper"}
+              </div>
             </div>
 
             <div className="exam-paper-step-line">
@@ -730,36 +714,10 @@ const ExamPaper = () => {
                   ? loadingExam
                     ? "Loading exam details…"
                     : "Update the details of this exam paper"
-                  : "Enter the details to create a new exam paper"}
+                  : isMock
+                    ? "Enter the details to create a new mock exam paper"
+                    : "Enter the details to create a new exam paper"}
               </h3>
-
-              {/* EXAM TYPE - create only; edit always stays a practice exam */}
-              {!isEditMode && (
-                <Form.Group className="exam-paper-form-group exam-paper-examtype-group">
-                  <Form.Label>
-                    Exam Type <span className="exam-paper-required">*</span>
-                  </Form.Label>
-
-                  <div className="exam-paper-examtype-options">
-                    <Form.Check
-                      type="radio"
-                      id="exam-type-practice"
-                      name="examType"
-                      label="Practice Exam"
-                      checked={examType === "practice"}
-                      onChange={() => handleExamTypeChange("practice")}
-                    />
-                    <Form.Check
-                      type="radio"
-                      id="exam-type-mock"
-                      name="examType"
-                      label="Mock Exam"
-                      checked={examType === "mock"}
-                      onChange={() => handleExamTypeChange("mock")}
-                    />
-                  </div>
-                </Form.Group>
-              )}
 
               <div className="exam-paper-form-grid">
                 {/* EXAM NAME */}

@@ -78,6 +78,7 @@ import MockExamCatalog from "./pages/MockExamCatalog/MockExamCatalog";
 import ExamReview from "./pages/ExamReview/ExamReview";
 import ExamPaper from "./pages/ExamPaper/ExamPaper";
 import PerformanceDashboard from "./pages/Performance/PerformanceDashboard";
+import PracticePerformance from "./pages/PracticePerformance/PracticePerformance";
 
 function App() {
   const navigate = useNavigate();
@@ -193,6 +194,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={ATTEMPT_ROLES}>
               <PerformanceDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/practice-performance"
+          element={
+            <ProtectedRoute allowedRoles={ATTEMPT_ROLES}>
+              <PracticePerformance />
             </ProtectedRoute>
           }
         />
@@ -413,7 +422,7 @@ function App() {
         {/* Learning */}
         <Route path="/practice" element={<Practice />} />
         <Route
-          path="/Exam"
+          path="/exam-list"
           element={
             <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
               <ExamList />
@@ -430,10 +439,18 @@ function App() {
         <Route path="/course-subscribe" element={<CourseSubscribe />} />
         <Route path="/course-subscription" element={<CourseSubscribe />} />
         <Route
-          path="/exam-hub"
+          path="/exam"
           element={
             <ProtectedRoute allowedRoles={ATTEMPT_ROLES}>
-              <ExamHub />
+              <ExamHub key="exam" kind="exam" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mock-exam"
+          element={
+            <ProtectedRoute allowedRoles={ATTEMPT_ROLES}>
+              <ExamHub key="mock" kind="mock" />
             </ProtectedRoute>
           }
         />
@@ -453,11 +470,13 @@ function App() {
             </ProtectedRoute>
           }
         />
+        {/* ExamPaper reads exam vs mock from the path; the keys stop a
+            half-filled form leaking between the two. */}
         <Route
           path="/exam-paper"
           element={
             <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
-              <ExamPaper />
+              <ExamPaper key="exam-create" />
             </ProtectedRoute>
           }
         />
@@ -465,7 +484,15 @@ function App() {
           path="/exam-paper/:examId"
           element={
             <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
-              <ExamPaper />
+              <ExamPaper key="exam-edit" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mock-exam-paper"
+          element={
+            <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
+              <ExamPaper key="mock-create" />
             </ProtectedRoute>
           }
         />
@@ -473,7 +500,7 @@ function App() {
           path="/mock-exam-paper/:examId"
           element={
             <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
-              <ExamPaper />
+              <ExamPaper key="mock-edit" />
             </ProtectedRoute>
           }
         />
