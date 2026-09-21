@@ -14,12 +14,7 @@
 
   box-sizing: border-box;
 
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
-  column-gap: 20px;
-  row-gap: 16px;
-
-  align-items: start;
+  display: block;
 
   background: var(--aq-bg);
 }
@@ -37,30 +32,8 @@
   box-sizing: border-box;
 }
 
-.aq-back {
-  display: inline-flex;
-  align-items: center;
-
-  border: 0;
-  background: transparent;
-
-  padding: 0;
-  margin: 0 0 14px;
-
-  color: #2457e6;
-
-  font-size: 14px;
-  font-weight: 600;
-
-  cursor: pointer;
-}
-
-.aq-back:hover {
-  text-decoration: underline;
-}
-
 .aq-header-left {
-  width: calc(100% - 400px);
+  width: 100%;
 
   min-width: 0;
 
@@ -77,15 +50,16 @@
 
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  flex-wrap: wrap;
 
-  gap: 24px;
+  gap: 18px;
 }
 
 .aq-title-content {
   min-width: 0;
 
-  flex: 1;
+  flex: 0 1 auto;
 }
 
 .aq-title-row h1 {
@@ -128,15 +102,26 @@
 .aq-step {
   display: inline-flex;
   align-items: center;
-
   gap: 8px;
-
   white-space: nowrap;
-
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
   color: #718096;
-
+  font: inherit;
   font-size: 13px;
   font-weight: 600;
+  cursor: pointer;
+}
+
+.aq-step:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.aq-step:not(:disabled):hover {
+  color: var(--aq-blue);
 }
 
 .aq-step b {
@@ -166,22 +151,8 @@
 
 .aq-step.active b {
   border-color: var(--aq-blue);
-
   background: var(--aq-blue);
-
   color: #fff;
-}
-
-.aq-step.active-soft {
-  color: var(--aq-blue);
-}
-
-.aq-step.active-soft b {
-  border-color: #cbd9fb;
-
-  background: #edf3ff;
-
-  color: var(--aq-blue);
 }
 
 .aq-stepper > i {
@@ -195,14 +166,26 @@
   background: #dfe5ef;
 }
 
+/* Keep React Select usable above the form and inside tables. */
+.all-question-create .aq-search-select {
+  width: 100%;
+  min-width: 0;
+}
+
+.all-question-create .aq-select__control {
+  min-height: 52px;
+  cursor: pointer;
+}
+
+.all-question-create .aq-select__menu-portal {
+  z-index: 9999;
+}
+
 /* =========================================================
    FORM
 ========================================================= */
 
 .all-question-create > form {
-  grid-column: 1;
-  grid-row: 2;
-
   width: 100%;
   min-width: 0;
 
@@ -489,14 +472,18 @@
 
 .aq-select__value-container {
   background: transparent !important;
+  padding-left: 10px !important;
+  text-align: left !important;
 }
 
 .aq-select__single-value {
   color: var(--aq-ink) !important;
+  text-align: left !important;
 }
 
 .aq-select__placeholder {
   color: #858fa1 !important;
+  text-align: left !important;
 }
 
 .aq-select__indicator {
@@ -849,7 +836,27 @@
   min-width: 0;
 }
 
-.aq-table-wrap td:last-child {
+/* FIX (table column width): with table-layout: fixed, unspecified
+   columns were sizing off the first row's rendered content instead of
+   filling the row, leaving a gap before the delete icon.
+
+   This rule works for ANY number of columns (3-column "Transaction /
+   Amount 1 / Amount 2" tables, 4-column "Debit / Debit amount / Credit /
+   Credit amount" tables, etc.):
+   - first column (the search/select field) gets more width, since it
+     holds the longest content
+   - last column stays fixed at 46px for the delete icon
+   - any middle column(s) are left unset — under table-layout: fixed,
+     browsers automatically split remaining space evenly across columns
+     with no explicit width, so this adapts to 1, 2, or more middle
+     columns without needing separate rules per table shape */
+.aq-table-wrap th:first-child,
+.aq-table-wrap td:first-child {
+  width: 46%;
+}
+
+.aq-table-wrap td:last-child,
+.aq-table-wrap th:last-child {
   width: 46px;
 }
 
@@ -866,49 +873,15 @@
 .aq-fill-blank-row {
   display: grid;
 
-  grid-template-columns: 90px minmax(0, 1fr);
+  grid-template-columns: 90px minmax(0, 1fr) 34px;
 
   gap: 10px;
-
-  align-items: start;
-}
-
-.aq-fill-blank-row b {
-  color: #526078;
-}
-
-.aq-fill-blank-options {
-  display: grid;
-
-  gap: 8px;
-}
-
-.aq-fill-blank-option {
-  display: grid;
-
-  grid-template-columns: minmax(0, 1fr) 18px 34px;
-
-  gap: 8px;
 
   align-items: center;
 }
 
-.aq-fill-blank-option input[type="checkbox"] {
-  width: 18px !important;
-  height: 18px;
-
-  margin: 0;
-
-  accent-color: var(--aq-blue);
-}
-
-.aq-fill-blank-option input[type="text"],
-.aq-fill-blank-option input {
-  width: 100%;
-}
-
-.aq-inline-button {
-  justify-self: flex-start;
+.aq-fill-blank-row b {
+  color: #526078;
 }
 
 /* =========================================================
@@ -916,15 +889,11 @@
 ========================================================= */
 
 .aq-preview {
-  grid-column: 2;
-  grid-row: 2;
-
   width: 100%;
   min-width: 0;
 
   margin: 0;
-
-  padding: 18px;
+  padding: 24px;
 
   box-sizing: border-box;
 
@@ -934,18 +903,6 @@
   background: #f8faff;
 
   box-shadow: 0 8px 24px rgba(26, 39, 71, 0.06);
-
-  position: sticky;
-
-  top: 20px;
-
-  align-self: start;
-
-  height: auto;
-
-  max-height: none;
-
-  overflow: visible;
 }
 
 /* =========================================================
@@ -977,96 +934,11 @@
 }
 
 .aq-preview-heading h2 {
-  max-width: 220px;
-
-  margin: 0 0 3px;
+  margin: 3px 0 0;
 
   color: var(--aq-ink);
 
   font-size: 18px;
-}
-
-/* =========================================================
-   FULLSCREEN BUTTON
-========================================================= */
-
-.aq-fullscreen {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  gap: 6px;
-
-  padding: 7px 9px;
-
-  border: 1px solid #cbd8f5;
-  border-radius: 8px;
-
-  background: #fff;
-
-  color: #365a9c;
-
-  cursor: pointer;
-
-  font-weight: 700;
-
-  white-space: nowrap;
-}
-
-.aq-fullscreen:hover {
-  background: #eef3ff;
-}
-
-/* =========================================================
-   FULLSCREEN PREVIEW
-========================================================= */
-
-.aq-preview-fullscreen {
-  position: fixed !important;
-
-  inset: 8px !important;
-
-  z-index: 10000;
-
-  width: auto !important;
-
-  max-width: none !important;
-
-  height: auto !important;
-
-  max-height: calc(100vh - 16px) !important;
-
-  overflow: auto !important;
-
-  margin: 0 !important;
-
-  padding: 14px !important;
-
-  box-sizing: border-box !important;
-
-  background: #f8faff !important;
-
-  box-shadow: 0 24px 70px rgba(26, 39, 71, 0.25);
-}
-
-.aq-preview-fullscreen .aq-live-card {
-  width: 100%;
-
-  max-width: 900px;
-
-  margin: 0 auto;
-}
-
-.aq-preview-fullscreen::before {
-  content: "";
-
-  position: fixed;
-
-  inset: 0;
-
-  z-index: -1;
-
-  background: rgba(15, 23, 42, 0.35);
 }
 
 /* =========================================================
@@ -1251,21 +1123,41 @@
   border-radius: 9px;
 }
 
+.aq-preview-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.aq-preview-actions .aq-primary {
+  min-width: 150px;
+}
+
+.aq-preview-actions .aq-clear {
+  min-width: 120px;
+}
+
 /* =========================================================
    BOTTOM ACTIONS
 ========================================================= */
 
 .aq-bottom-actions {
+  /* FIX (footer overlap): was position: sticky; bottom: 0; z-index: 20;
+     Sticky elements float over the viewport and don't reserve space in
+     normal flow, which is what caused the overlap regardless of the
+     surrounding markup. Static positioning makes overlap impossible —
+     the bar simply flows after the last card, like any other block. */
+  position: static;
+
   width: 100%;
   min-width: 0;
 
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
 
-  gap: 16px;
-
-  margin-top: 4px;
+  margin-top: 20px;
 
   padding: 14px 16px;
 
@@ -1277,52 +1169,6 @@
   background: #fff;
 
   box-shadow: 0 8px 24px rgba(26, 39, 71, 0.05);
-}
-
-/* =========================================================
-   DRAFT SAVED
-========================================================= */
-
-.aq-draft-status {
-  display: flex;
-  align-items: center;
-
-  gap: 10px;
-
-  flex: 1;
-
-  min-width: 220px;
-}
-
-.aq-status-dot {
-  width: 8px;
-  height: 8px;
-
-  flex-shrink: 0;
-
-  border-radius: 50%;
-
-  background: #31a36b;
-}
-
-.aq-draft-status div {
-  display: grid;
-
-  gap: 2px;
-
-  min-width: 0;
-}
-
-.aq-draft-status strong {
-  color: #536078;
-
-  font-size: 13px;
-}
-
-.aq-draft-status small {
-  color: var(--aq-muted);
-
-  font-size: 11px;
 }
 
 /* =========================================================
@@ -1341,162 +1187,217 @@
 }
 
 .aq-bottom-buttons .aq-clear {
-  background: transparent;
-
-  border-color: transparent;
-}
-
-.aq-bottom-buttons .aq-secondary {
   background: #fff;
 }
 
-/* =========================================================
-   DRAFTS
-========================================================= */
-
-.aq-drafts {
-  display: grid;
-
-  grid-template-columns: 1fr;
-
-  gap: 14px;
-
-  width: 100%;
-  min-width: 0;
+.aq-bottom-buttons .aq-save-question {
+  min-width: 150px;
+  color: #fff !important;
+  background: var(--aq-blue) !important;
+  border-color: var(--aq-blue) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
-.aq-drafts article {
-  width: 100%;
-  min-width: 0;
+.aq-bottom-buttons .aq-save-question:hover:not(:disabled) {
+  color: #fff !important;
+  background: #1945bd !important;
+  border-color: #1945bd !important;
+}
 
-  padding: 18px;
+/* =========================================================
+   MATCHING / FILL PREVIEW
+========================================================= */
 
-  box-sizing: border-box;
+.aq-live-matching,
+.aq-live-fill {
+  display: grid;
+  gap: 8px;
+}
 
-  border: 1px solid var(--aq-line);
-  border-radius: 12px;
-
+.aq-live-match-row,
+.aq-live-fill-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 9px;
+  border: 1px solid #e1e6ee;
+  border-radius: 8px;
   background: #fff;
 }
 
-.aq-drafts h3 {
-  margin: 14px 0 7px;
-
-  color: var(--aq-ink);
-
-  font-size: 17px;
-}
-
-.aq-drafts article > p {
-  color: var(--aq-muted);
-
-  font-size: 13px;
-}
-
-.aq-drafts ul {
-  display: grid;
-
-  gap: 5px;
-
-  margin: 12px 0 0;
-
-  padding: 0;
-
-  list-style: none;
-}
-
-.aq-drafts li.correct {
-  color: #167344;
-
-  font-weight: 700;
-}
-
-/* =========================================================
-   DRAFT TOP
-========================================================= */
-
-.aq-draft-top {
-  display: flex;
-
-  justify-content: space-between;
-
-  gap: 12px;
-}
-
-.aq-draft-top > span {
+.aq-live-match-row b {
+  text-align: center;
   color: var(--aq-blue);
-
-  font-size: 12px;
-
-  font-weight: 800;
-
-  letter-spacing: 0.04em;
 }
 
-.aq-draft-top > div {
-  display: flex;
-
-  gap: 7px;
+.aq-live-fill-row {
+  grid-template-columns: 90px minmax(0, 1fr);
 }
 
-.aq-draft-top button {
-  padding: 6px 9px;
-
-  border: 0;
-
-  background: #eef2f8;
-
-  color: #445067;
-
-  font-size: 12px;
-}
-
-.aq-draft-top button:hover {
-  background: #e2e7ef;
+.aq-live-fill-row span {
+  min-width: 0;
+  padding: 7px 9px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 7px;
+  color: #526078;
+  background: #f8fafc;
 }
 
 /* =========================================================
-   FINAL SAVE
+   RESPONSIVE
 ========================================================= */
 
-.aq-submit {
-  width: 100%;
+@media (max-width: 1100px) {
+  .all-question-create {
+    grid-template-columns: minmax(0, 1fr);
+  }
 
-  margin-top: 18px;
+  .aq-header {
+    grid-column: 1;
+  }
 
-  padding: 14px;
+  .all-question-create > form {
+    grid-column: 1;
+    grid-row: 2;
+  }
 
-  border: 1px solid var(--aq-blue);
+  .aq-preview {
+    grid-column: 1;
+    grid-row: 3;
+    position: static;
+  }
 
-  background: var(--aq-blue);
+  .aq-title-row {
+    align-items: center;
+  }
 
-  color: #fff;
-
-  font-size: 15px;
+  .aq-stepper {
+    width: auto;
+  }
 }
 
-.aq-submit:hover:not(:disabled) {
-  background: #1945bd;
+@media (max-width: 760px) {
+  .all-question-create {
+    padding: 16px;
+    row-gap: 12px;
+  }
 
+  .aq-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .aq-grid-six {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .aq-section-heading {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .aq-section-heading .aq-secondary {
+    margin-left: 52px;
+  }
+
+  .aq-bottom-actions {
+    padding: 12px;
+  }
+
+  .aq-bottom-buttons {
+    width: 100%;
+  }
+
+  .aq-bottom-buttons button {
+    flex: 1 1 0;
+  }
+
+  .aq-option {
+    grid-template-columns: 36px minmax(0, 1fr) 28px 34px;
+  }
+
+  .aq-fill-blank-row {
+    grid-template-columns: 1fr;
+  }
+
+  .aq-live-match-row {
+    grid-template-columns: 1fr;
+  }
+
+  .aq-live-match-row b {
+    transform: rotate(90deg);
+  }
+}
+
+@media (max-width: 520px) {
+  .all-question-create {
+    padding: 12px;
+  }
+
+  .aq-title-row h1 {
+    font-size: 24px;
+  }
+
+  .aq-title-row p {
+    font-size: 13px;
+  }
+
+  .aq-grid-six {
+    grid-template-columns: 1fr;
+  }
+
+  .aq-stepper {
+    gap: 6px;
+  }
+
+  .aq-step b {
+    width: 30px;
+    height: 30px;
+  }
+
+  .aq-card {
+    padding: 14px;
+  }
+
+  .aq-section-heading .aq-secondary {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .aq-bottom-buttons {
+    flex-direction: column;
+  }
+
+  .aq-bottom-buttons button {
+    width: 100%;
+  }
+
+  .aq-table-wrap {
+    margin-right: -2px;
+  }
+}
+
+/* =========================================================
+   CREATE QUESTION ACTION BUTTONS — PAGE SCOPED
+========================================================= */
+.all-question-create .aq-primary {
+  background: var(--aq-blue);
+  border-color: var(--aq-blue);
+  color: #fff;
+  opacity: 1;
+  visibility: visible;
+}
+
+.all-question-create .aq-primary:hover:not(:disabled) {
+  background: #1945bd;
   border-color: #1945bd;
 }
 
-.aq-submit:disabled {
-  border-color: #a7b5d8;
-
-  background: #a7b5d8;
-
-  opacity: 0.8;
-
-  cursor: not-allowed;
-}
-
-.aq-submit-help {
-  margin: 8px 0 0;
-
-  color: var(--aq-muted);
-
-  font-size: 12px;
-
-  text-align: center;
+.all-question-create .aq-primary:disabled {
+  background: var(--aq-blue);
+  border-color: var(--aq-blue);
+  color: #fff;
+  opacity: 0.55;
 }

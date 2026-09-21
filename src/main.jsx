@@ -5,6 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import ToastProvider from "./components/Toast/ToastProvider";
 import "./index.css";
+import "./styles/commonDropdown.css";
 
 // 1. Load Bootstrap CSS locally
 import "bootstrap/dist/css/bootstrap.min.css";

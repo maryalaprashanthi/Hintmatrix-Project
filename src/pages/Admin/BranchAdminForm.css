@@ -210,7 +210,7 @@
 /* ==========================================
    Inputs
 ========================================== */
-
+/* 
 .input-box input,
 .input-box select {
   width: 100%;
@@ -238,8 +238,139 @@
   border-color: #2563eb;
 
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+} */
+
+/* ==========================================
+   College Dropdown
+   Same style as Create All Questions
+========================================== */
+
+.input-box select {
+  width: 100%;
+  min-height: 43px;
+  height: 43px;
+
+  border: 1px solid #ccd4e0;
+  border-radius: 9px;
+
+  padding-left: 42px;
+  padding-right: 15px;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  color: #17223b;
+  background: #fff;
+
+  outline: none;
+
+  cursor: pointer;
+
+  box-shadow: none;
+
+  transition: 0.3s;
 }
 
+.input-box select:hover {
+  border-color: #2457e6;
+}
+
+.input-box select:focus {
+  border-color: #2457e6;
+
+  box-shadow: 0 0 0 3px rgba(36, 87, 230, 0.1);
+}
+
+.input-box select:disabled {
+  background: #f8fafc;
+  cursor: not-allowed;
+}
+
+.select-box {
+  position: relative;
+  width: 100%;
+}
+
+.select-box .select-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  color: #667085;
+  pointer-events: none;
+  font-size: 16px;
+}
+
+.select-box .aq-search-select {
+  width: 100%;
+}
+
+.select-box .aq-search-select .aq-select__control {
+  height: 45px !important;
+  min-height: 45px !important;
+  border: 1px solid #dbe4f0 !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  padding-left: 0 !important;
+  background: #fff !important;
+  font-size: 15px;
+}
+
+.select-box .aq-search-select .aq-select__control:hover,
+.select-box .aq-search-select .aq-select__control--is-focused {
+  border-color: #356bdf !important;
+  box-shadow: 0 0 0 3px rgba(53, 107, 223, 0.12) !important;
+}
+
+.select-box .aq-search-select .aq-select__value-container {
+  padding: 0 8px 0 42px !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+}
+
+.select-box .aq-search-select .aq-select__placeholder,
+.select-box .aq-search-select .aq-select__single-value,
+.select-box .aq-search-select .aq-select__input-container {
+  margin-left: 0 !important;
+  text-align: left !important;
+  padding-left: 0 !important;
+}
+
+.select-box .aq-search-select .aq-select__placeholder {
+  color: #858fa1 !important;
+}
+
+.select-box .aq-search-select .aq-select__single-value {
+  color: #17223b !important;
+}
+
+.select-box .aq-search-select .aq-select__indicator {
+  color: #667085 !important;
+  padding: 0 8px;
+}
+
+.select-box .aq-search-select .aq-select__menu {
+  z-index: 99999 !important;
+}
+
+/* College icon */
+.input-box .input-icon {
+  position: absolute;
+
+  left: 14px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  z-index: 2;
+
+  color: #667085;
+
+  pointer-events: none;
+
+  font-size: 16px;
+}
 /* ==========================================
    Textarea
 ========================================== */

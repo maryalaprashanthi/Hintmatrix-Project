@@ -249,7 +249,9 @@ const ExamPaper = () => {
     const scoped = isMock
       ? active
       : branch
-        ? active.filter((item) => String(item.branchId) === String(branch.value))
+        ? active.filter(
+            (item) => String(item.branchId) === String(branch.value),
+          )
         : [];
 
     return scoped.map((item) => ({
@@ -743,6 +745,13 @@ const ExamPaper = () => {
                     </Form.Label>
 
                     <Select
+                      className="aq-search-select"
+                      classNamePrefix="aq-select"
+                      menuPlacement="bottom"
+                      menuPortalTarget={document.body}
+                      styles={{
+                        menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                      }}
                       options={collegeOptions}
                       value={college}
                       onChange={handleCollegeChange}
@@ -754,7 +763,6 @@ const ExamPaper = () => {
                       isSearchable
                       isClearable
                       isLoading={loadingColleges}
-                      classNamePrefix="exam-paper-select"
                     />
                   </Form.Group>
                 )}
@@ -765,6 +773,13 @@ const ExamPaper = () => {
                     <Form.Label>Branch</Form.Label>
 
                     <Select
+                      className="aq-search-select"
+                      classNamePrefix="aq-select"
+                      menuPlacement="bottom"
+                      menuPortalTarget={document.body}
+                      styles={{
+                        menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                      }}
                       options={branchOptions}
                       value={branch}
                       onChange={handleBranchChange}
@@ -779,7 +794,6 @@ const ExamPaper = () => {
                       isClearable
                       isLoading={loadingBranches}
                       isDisabled={!college}
-                      classNamePrefix="exam-paper-select"
                     />
                   </Form.Group>
                 )}
@@ -791,6 +805,13 @@ const ExamPaper = () => {
                   </Form.Label>
 
                   <Select
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
+                    menuPlacement="bottom"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                    }}
                     options={courseOptions}
                     value={course}
                     onChange={handleCourseChange}
@@ -805,7 +826,6 @@ const ExamPaper = () => {
                     isClearable
                     isLoading={loadingCourses}
                     isDisabled={!isMock && !branch}
-                    classNamePrefix="exam-paper-select"
                   />
                 </Form.Group>
 
@@ -815,6 +835,13 @@ const ExamPaper = () => {
                     <Form.Label>Section</Form.Label>
 
                     <Select
+                      className="aq-search-select"
+                      classNamePrefix="aq-select"
+                      menuPlacement="bottom"
+                      menuPortalTarget={document.body}
+                      styles={{
+                        menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                      }}
                       options={sectionOptions}
                       value={section}
                       onChange={setSection}
@@ -829,7 +856,6 @@ const ExamPaper = () => {
                       isClearable
                       isLoading={loadingSections}
                       isDisabled={!course}
-                      classNamePrefix="exam-paper-select"
                     />
                   </Form.Group>
                 )}
@@ -841,6 +867,13 @@ const ExamPaper = () => {
                   </Form.Label>
 
                   <Select
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
+                    menuPlacement="bottom"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                    }}
                     options={subjectOptions}
                     value={subject}
                     onChange={handleSubjectChange}
@@ -855,7 +888,6 @@ const ExamPaper = () => {
                     isClearable
                     isLoading={loadingSubjects}
                     isDisabled={!course}
-                    classNamePrefix="exam-paper-select"
                   />
                 </Form.Group>
 
@@ -867,6 +899,13 @@ const ExamPaper = () => {
                   </Form.Label>
 
                   <Select
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
+                    menuPlacement="bottom"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                    }}
                     options={chapterOptions}
                     value={chapters}
                     onChange={(selected) => setChapters(selected || [])}
@@ -883,7 +922,6 @@ const ExamPaper = () => {
                     hideSelectedOptions={false}
                     isLoading={loadingChapters}
                     isDisabled={!subject}
-                    classNamePrefix="exam-paper-select"
                   />
                 </Form.Group>
 
@@ -984,7 +1022,9 @@ const ExamPaper = () => {
                     type="button"
                     className="exam-paper-next-btn"
                     variant="light"
-                    onClick={() => navigate(isMockEdit ? "/mock-exams" : "/exams")}
+                    onClick={() =>
+                      navigate(isMockEdit ? "/mock-exams" : "/exams")
+                    }
                   >
                     Cancel
                   </Button>

@@ -1,7 +1,6 @@
 import { Button, Container } from "react-bootstrap";
 import {
   FaRedo,
-  FaSave,
   FaPaperPlane,
   FaExclamationTriangle,
 } from "react-icons/fa";
@@ -32,9 +31,9 @@ function Header({
   console.log("Header Question:", question);
   console.log("Header Answered Data:", answeredData);
 
-  const handleCheck = async () => {
+  const openMistakes = async () => {
     try {
-      console.log("========== CHECK MISTAKES ==========");
+      console.log("========== LOAD MISTAKES ==========");
 
       if (!question) {
         alert("Question is not loaded.");
@@ -49,16 +48,37 @@ function Header({
       );
 
       console.log("Mistakes:", mistakes);
-
-      // if (!mistakes || mistakes.length === 0) {
-      //   alert("No mistakes found.");
-      //   return;
-      // }
-
-      // console.log("User mistakes:", mistakes);
       setCheckMistakes(true);
     } catch (error) {
       console.error("Failed to get mistakes:", error);
+
+      if (error.response) {
+        console.error("Backend response:", error.response.data);
+      }
+    }
+  };
+
+  const handleCheck = openMistakes;
+
+  const handleSubmit = async () => {
+    try {
+      console.log("========== SUBMIT ANSWERS ==========");
+
+      if (!question) {
+        alert("Question is not loaded.");
+        return;
+      }
+
+      const userId = 1;
+
+      await QuestionAnswerService.getMistakesByQuestionId(
+        userId,
+        question.questionId,
+      );
+
+      setCheckMistakes(true);
+    } catch (error) {
+      console.error("Failed to submit answers:", error);
 
       if (error.response) {
         console.error("Backend response:", error.response.data);
@@ -188,24 +208,13 @@ function Header({
               </Button>
 
               <Button
-                variant="success"
-                size="sm"
-                style={{
-                  minWidth: "95px",
-                  height: "35px",
-                }}
-              >
-                <FaSave className="me-1" />
-                Save
-              </Button>
-
-              <Button
                 variant="primary"
                 size="sm"
                 style={{
                   minWidth: "95px",
                   height: "35px",
                 }}
+                onClick={handleSubmit}
               >
                 <FaPaperPlane className="me-1" />
                 Submit

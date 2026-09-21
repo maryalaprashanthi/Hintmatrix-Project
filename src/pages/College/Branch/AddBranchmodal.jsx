@@ -149,8 +149,8 @@ function AddBranchModal({ show, onClose, onSave, selectedBranchData }) {
                   <FaUniversity className="select-icon" />
 
                   <Select
-                    className="react-select-container"
-                    classNamePrefix="react-select"
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
                     menuPlacement="bottom"
                     menuPortalTarget={document.body}
                     styles={{

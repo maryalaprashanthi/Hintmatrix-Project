@@ -353,93 +353,94 @@
 }
 
 /* ============================================================
-   REACT SELECT
+   REACT SELECT - SAME AS SECTION FORM / SHARED COMMON STYLE
    ============================================================ */
 
-.exam-paper-page .exam-paper-select__control {
-  width: 100% !important;
-  height: 43px !important;
+.exam-paper-page .aq-search-select {
+  width: 100%;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.exam-paper-page .aq-search-select .aq-select__control {
+  width: 100%;
   min-height: 43px !important;
-
-  margin: 0 !important;
-  padding: 0 !important;
-
-  border: 1px solid #d9dce5 !important;
-  border-radius: 7px !important;
-
-  background: #fff !important;
-
+  border: 1px solid #ccd4e0 !important;
+  border-radius: 9px !important;
   box-shadow: none !important;
-  box-sizing: border-box !important;
+  background: #fff !important;
 }
 
-.exam-paper-page .exam-paper-select__control:hover,
-.exam-paper-page .exam-paper-select__control--is-focused {
-  border-color: #5a2bc9 !important;
+.exam-paper-page .aq-search-select .aq-select__control:hover,
+.exam-paper-page .aq-search-select .aq-select__control--is-focused {
+  border-color: #2457e6 !important;
 }
 
-.exam-paper-page .exam-paper-select__value-container {
-  height: 41px !important;
-  min-height: 41px !important;
+.exam-paper-page .aq-search-select .aq-select__control--is-focused {
+  box-shadow: 0 0 0 3px rgba(36, 87, 230, 0.1) !important;
+}
 
-  padding: 0 12px !important;
-
+.exam-paper-page .aq-search-select .aq-select__value-container {
+  min-height: 43px;
+  padding-left: 12px !important;
+  padding-right: 8px !important;
   display: flex !important;
   align-items: center !important;
-
-  box-sizing: border-box !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+  gap: 0 !important;
 }
 
-.exam-paper-page .exam-paper-select__input-container {
+.exam-paper-page .aq-search-select .aq-select__single-value,
+.exam-paper-page .aq-search-select .aq-select__placeholder,
+.exam-paper-page .aq-search-select .aq-select__input-container,
+.exam-paper-page .aq-search-select .aq-select__input {
   margin: 0 !important;
   padding: 0 !important;
-}
-
-.exam-paper-page .exam-paper-select__placeholder,
-.exam-paper-page .exam-paper-select__single-value {
+  color: #17223b;
   font-size: 13px;
+  text-align: left !important;
+  justify-content: flex-start !important;
 }
 
-.exam-paper-page .exam-paper-select__placeholder {
-  color: #858ca0;
+.exam-paper-page .aq-search-select .aq-select__placeholder {
+  color: #858fa1 !important;
 }
 
-.exam-paper-page .exam-paper-select__single-value {
-  color: #293149;
+.exam-paper-page .aq-search-select .aq-select__control {
+  padding-left: 0 !important;
 }
 
-.exam-paper-page .exam-paper-select__indicators {
-  height: 41px !important;
-
-  display: flex !important;
-  align-items: center !important;
+.exam-paper-page .aq-search-select__control,
+.exam-paper-page .aq-search-select__value-container,
+.exam-paper-page .aq-search-select__placeholder,
+.exam-paper-page .aq-search-select__single-value,
+.exam-paper-page .aq-search-select__input-container {
+  text-align: left !important;
+  justify-content: flex-start !important;
 }
 
-.exam-paper-page .exam-paper-select__indicator {
-  padding: 8px !important;
-  color: #737b91;
+.exam-paper-page .aq-search-select .aq-select__indicator {
+  color: #667085 !important;
 }
 
-.exam-paper-page .exam-paper-select__indicator:hover {
-  color: #4d24c5;
+.exam-paper-page .aq-search-select .aq-select__menu {
+  z-index: 9999;
+  font-weight: 500;
 }
 
-.exam-paper-page .exam-paper-select__menu {
-  z-index: 100;
+.exam-paper-page .aq-search-select .aq-select__option {
+  cursor: pointer;
 }
 
-.exam-paper-page .exam-paper-select__option {
-  font-size: 13px;
+.exam-paper-page .aq-search-select .aq-select__option--is-focused {
+  background: #edf2ff !important;
 }
 
-.exam-paper-page .exam-paper-select__option--is-focused {
-  background: #f3efff;
-  color: #293149;
-}
-
-.exam-paper-page .exam-paper-select__option--is-selected {
-  background: #5427c7;
-  color: #fff;
+.exam-paper-page .aq-search-select .aq-select__option--is-selected {
+  background: #2457e6 !important;
+  color: #fff !important;
 }
 
 /* ============================================================

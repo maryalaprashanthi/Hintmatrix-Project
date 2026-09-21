@@ -90,7 +90,10 @@ const acceptedAnswersFromBlank = (blank = {}) => {
  * expected by the existing component.
  */
 const getBackendBlanks = (questionRecord) => {
-  if (Array.isArray(questionRecord?.blanks) && questionRecord.blanks.length) {
+  if (
+    Array.isArray(questionRecord?.blanks) &&
+    questionRecord.blanks.length
+  ) {
     return [...questionRecord.blanks]
       .sort(
         (first, second) =>
@@ -115,36 +118,96 @@ const getBackendBlanks = (questionRecord) => {
           answerText: acceptedAnswers[0] ?? blank.correctAnswer ?? "",
           displayOrder: blank.displayOrder ?? index + 1,
           acceptedAnswers,
-          correctAnswer: blank.correctAnswer ?? acceptedAnswers[0] ?? "",
+          correctAnswer:
+            blank.correctAnswer ?? acceptedAnswers[0] ?? "",
+          answerOptions: [],
         };
       });
   }
 
-  if (Array.isArray(questionRecord?.answers) && questionRecord.answers.length) {
-    return [...questionRecord.answers]
-      .sort(
-        (first, second) =>
-          (first.displayOrder ?? 0) - (second.displayOrder ?? 0),
-      )
-      .map((answer, index) => {
-        const acceptedAnswers = normalizeAnswerValues(
-          answer.acceptedAnswers ??
-            answer.acceptedAnswerList ??
-            answer.answerText ??
-            answer.answer ??
-            answer.text ??
-            answer.value ??
-            answer,
-        );
+  if (
+    Array.isArray(questionRecord?.answers) &&
+    questionRecord.answers.length
+  ) {
+    const backendAnswers = [...questionRecord.answers].sort(
+      (first, second) =>
+        (first.displayOrder ?? 0) - (second.displayOrder ?? 0),
+    );
 
-        return {
-          answerId: answer.answerId ?? answer.id ?? index + 1,
-          answerText: acceptedAnswers[0] ?? "",
-          displayOrder: answer.displayOrder ?? index + 1,
-          acceptedAnswers,
-          correctAnswer: acceptedAnswers[0] ?? "",
-        };
-      });
+    /*
+     * SINGLE-BLANK QUESTION
+     *
+     * If the question contains exactly one blank and the backend
+     * provides isCorrect, all returned answers are options for
+     * the SAME blank.
+     *
+     * Only isCorrect=true answers are accepted as correct.
+     */
+    const rawQuestionText = String(
+      questionRecord.questionText ?? "",
+    );
+
+    const detectedBlankCount = [
+      ...rawQuestionText.matchAll(blankPattern),
+    ].length;
+
+    const hasCorrectFlag = backendAnswers.some(
+      (answer) =>
+        Object.prototype.hasOwnProperty.call(answer, "isCorrect"),
+    );
+
+    if (detectedBlankCount === 1 && hasCorrectFlag) {
+      const allOptions = backendAnswers
+        .map((answer) => String(answer.answerText ?? "").trim())
+        .filter(Boolean);
+
+      const correctOptions = backendAnswers
+        .filter((answer) => answer.isCorrect === true)
+        .map((answer) => String(answer.answerText ?? "").trim())
+        .filter(Boolean);
+
+      return [
+        {
+          answerId: backendAnswers[0].answerId ?? 1,
+          answerText: correctOptions[0] ?? "",
+          displayOrder: 1,
+
+          // ONLY the checked admin option is accepted.
+          acceptedAnswers: [...new Set(correctOptions)],
+
+          correctAnswer: correctOptions[0] ?? "",
+
+          // ALL options are shown in the student answer bank.
+          answerOptions: [...new Set(allOptions)],
+        },
+      ];
+    }
+
+    /*
+     * EXISTING MULTIPLE-BLANK BEHAVIOR
+     *
+     * Keep the existing behavior unchanged.
+     */
+    return backendAnswers.map((answer, index) => {
+      const acceptedAnswers = normalizeAnswerValues(
+        answer.acceptedAnswers ??
+          answer.acceptedAnswerList ??
+          answer.answerText ??
+          answer.answer ??
+          answer.text ??
+          answer.value ??
+          answer,
+      );
+
+      return {
+        answerId: answer.answerId ?? answer.id ?? index + 1,
+        answerText: acceptedAnswers[0] ?? "",
+        displayOrder: answer.displayOrder ?? index + 1,
+        acceptedAnswers,
+        correctAnswer: acceptedAnswers[0] ?? "",
+        answerOptions: [],
+      };
+    });
   }
 
   return [];
@@ -200,14 +263,16 @@ const FillInBlankQuestionView = ({
     return result;
   }, [questionRecord.questionText]);
 
-  const detectedBlankCount = parts.filter((part, index) => index % 2 === 1).length;
-  const savedBlankCount = Math.max(blanks.length, 0);
-  const blankCount = Math.max(detectedBlankCount, savedBlankCount, 1);
+  const detectedBlankCount = parts.filter(
+  (part, index) => index % 2 === 1,
+).length;
+
+const blankCount =
+  detectedBlankCount > 0 ? detectedBlankCount : Math.max(blanks.length, 1);
 
   const [answers, setAnswers] = useState(() =>
     Array.from({ length: blankCount }, () => ""),
   );
-
   const [submitted, setSubmitted] = useState(false);
 
   const [score, setScore] = useState(0);
@@ -646,83 +711,6 @@ const FillInBlankQuestionView = ({
             )}
           </div>
         </main>
-
-        <aside className="matching-question-navigator">
-          <h2>Question Navigator</h2>
-
-          <div className="matching-navigator-legend">
-            <span>
-              <i className="matching-legend-dot answered" />
-              Answered
-            </span>
-
-            <span>
-              <i className="matching-legend-dot current" />
-              Current
-            </span>
-
-            <span>
-              <i className="matching-legend-dot unanswered" />
-              Not Answered
-            </span>
-          </div>
-
-          <div className="matching-question-numbers">
-            {Array.from(
-              { length: totalQuestions },
-              (_, index) => {
-                const number = index + 1;
-
-                const actualQuestion = questions[index];
-
-                const answered =
-                  Boolean(
-                    actualQuestion &&
-                      completedQuestions[
-                        actualQuestion.questionId
-                      ],
-                  ) ||
-                  (number === questionNumber && submitted);
-
-                return (
-                  <button
-                    key={number}
-                    type="button"
-                    disabled={
-                      !actualQuestion || !onQuestionSelect
-                    }
-                    onClick={() =>
-                      onQuestionSelect(index)
-                    }
-                    className={`${number === questionNumber ? "current" : ""} ${
-                      answered ? "answered" : ""
-                    }`}
-                  >
-                    {number}
-                  </button>
-                );
-              },
-            )}
-          </div>
-
-          <div className="matching-navigator-summary">
-            <div>
-              <strong>{completedCount}</strong>
-              <span>Answered</span>
-            </div>
-
-            <div>
-              <strong>
-                {Math.max(
-                  totalQuestions - completedCount,
-                  0,
-                )}
-              </strong>
-
-              <span>Not Answered</span>
-            </div>
-          </div>
-        </aside>
       </div>
     </main>
   );

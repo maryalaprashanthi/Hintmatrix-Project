@@ -1,7 +1,7 @@
 import { Overlay, OverlayTrigger, Popover, Table } from "react-bootstrap";
 import "./DropdownQuestion.css";
 import Select from "react-select";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import {
   getUnansweredDropdownConditions,
@@ -29,6 +29,19 @@ const DropdownQuestion = ({
   const [openAttributeId, setOpenAttributeId] = useState(null);
 
   const attributeTargets = useRef({});
+
+  useEffect(() => {
+    const hasAnswers = Object.values(answeredData || {}).some(
+      (entries) => Array.isArray(entries) && entries.length > 0,
+    );
+
+    if (!hasAnswers) {
+      setSelections({});
+      setOpenAttributeId(null);
+      setHelpRequest(null);
+      setShowHint(false);
+    }
+  }, [answeredData, questionId]);
 
   const closeHelp = () => {
     setHelpRequest(null);
@@ -456,7 +469,7 @@ const DropdownQuestion = ({
     if (isCorrect) {
       const condition = matchingCondition.condition;
 
-      setOpenAttributeId(null);
+      setOpenAttributeId(item.questionAttributeId);
 
       const questionAnswerData = {
         userId: userId,
@@ -617,36 +630,49 @@ const DropdownQuestion = ({
 
           <tbody>
             {data.map((item) => {
-              const optionsCreditData = questionTables.map((table) => ({
-                label: `To ${table.name}`,
-                value: table.id,
-              }));
-
-              const optionsDebitData = questionTables.map((table) => ({
-                label: `${table.name} ... Dr`,
-                value: table.id,
-              }));
-
               const debitValue =
                 selections[`${item.questionAttributeId}-Debit`] || null;
 
               const creditValue =
                 selections[`${item.questionAttributeId}-Credit`] || null;
 
+              const optionsCreditData = questionTables
+                .filter(
+                  (table) =>
+                    String(table.id) !== String(debitValue?.value ?? ""),
+                )
+                .map((table) => ({
+                  label: `To ${table.name}`,
+                  value: table.id,
+                }));
+
+              const optionsDebitData = questionTables
+                .filter(
+                  (table) =>
+                    String(table.id) !== String(creditValue?.value ?? ""),
+                )
+                .map((table) => ({
+                  label: `${table.name} ... Dr`,
+                  value: table.id,
+                }));
+
               const isSolved = isDropdownAttributeSolved(
                 item.ruleConditions || [],
                 answeredData[item.questionAttributeId] || [],
               );
+
+              const hasBothSelections = Boolean(debitValue) && Boolean(creditValue);
 
               return (
                 <OverlayTrigger
                   key={item.questionAttributeId}
                   trigger={isSolved ? [] : "click"}
                   show={
-                    openAttributeId === item.questionAttributeId && !isSolved
+                    openAttributeId === item.questionAttributeId &&
+                    !isSolved &&
+                    !hasBothSelections
                   }
                   placement="right"
-                  rootClose
                   container={document.body}
                   popperConfig={{ strategy: "fixed" }}
                   onToggle={(nextShow) => {

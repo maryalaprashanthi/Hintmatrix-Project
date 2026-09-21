@@ -19,6 +19,7 @@ const Droppable = ({
   addLabel = "Particulars",
   amtLabel = "Amt (₹)",
   isCreditSide,
+  matchRowCount,
 }) => {
   const data = useQuestionStore((state) => state.droppableData[id]);
 
@@ -51,6 +52,18 @@ const Droppable = ({
   };
 
   const rows = data ?? [];
+  const targetRows = Math.max(rows.length, matchRowCount ?? rows.length);
+  const displayRows = [...rows];
+
+  while (displayRows.length < targetRows) {
+    displayRows.push({
+      id: `${id}-empty-${displayRows.length}`,
+      name: "",
+      amount: "",
+      operation: "empty",
+      isBlank: true,
+    });
+  }
 
   return (
     <div className={`q-droppable ${theme}`}>
@@ -73,24 +86,28 @@ const Droppable = ({
             </tr>
           </thead>
           <tbody>
-            {rows.map((obj) => (
-              <tr key={obj.id}>
-                <td className="particulars-cell">{obj.name}</td>
+            {displayRows.map((obj) => (
+              <tr key={obj.id} className={obj.isBlank ? "blank-row" : ""}>
+                <td className="particulars-cell">{obj.isBlank ? "" : obj.name}</td>
                 <td className="text-end amount-cell">
-                  {obj.operation === "add"
-                    ? Number(obj.amount).toLocaleString("en-IN")
-                    : obj.isPaired
-                      ? `-${Number(obj.amount).toLocaleString("en-IN")}`
-                      : ""}
+                  {obj.isBlank
+                    ? ""
+                    : obj.operation === "add"
+                      ? Number(obj.amount).toLocaleString("en-IN")
+                      : obj.isPaired
+                        ? `-${Number(obj.amount).toLocaleString("en-IN")}`
+                        : ""}
                 </td>
                 <td className="text-end amount-cell">
-                  {obj.operation === "less" && !obj.isPaired
-                    ? `-${Number(obj.amount).toLocaleString("en-IN")}`
-                    : obj.operation === "less" && obj.isPaired
-                      ? Number(calcSum(obj.id, obj.pairId)).toLocaleString(
-                          "en-IN",
-                        )
-                      : " "}
+                  {obj.isBlank
+                    ? ""
+                    : obj.operation === "less" && !obj.isPaired
+                      ? `-${Number(obj.amount).toLocaleString("en-IN")}`
+                      : obj.operation === "less" && obj.isPaired
+                        ? Number(calcSum(obj.id, obj.pairId)).toLocaleString(
+                            "en-IN",
+                          )
+                        : " "}
                 </td>
               </tr>
             ))}

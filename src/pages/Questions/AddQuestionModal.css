@@ -221,6 +221,66 @@
   border-color: #d7dbe6;
 }
 
+.input-box .react-select-container {
+  width: 100%;
+}
+
+.input-box .react-select__control {
+  width: 100%;
+  min-height: 50px !important;
+  height: 50px !important;
+  border: 1px solid #cfe0ff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 0 0 3px rgba(36, 87, 230, 0.08) !important;
+  background: #f9fbff !important;
+  padding-left: 0 !important;
+}
+
+.input-box .react-select__control:hover,
+.input-box .react-select__control--is-focused {
+  border-color: #2457e6 !important;
+  box-shadow: 0 0 0 3px rgba(36, 87, 230, 0.12) !important;
+  background: #f4f9ff !important;
+}
+
+.input-box .react-select__value-container {
+  padding-left: 45px !important;
+}
+
+.input-box .react-select__placeholder,
+.input-box .react-select__single-value {
+  margin-left: 0 !important;
+  text-align: left !important;
+  color: #64748b !important;
+}
+
+.input-box .react-select__input-container {
+  margin: 0 !important;
+  padding-left: 0 !important;
+}
+
+.input-box .react-select__indicator-separator {
+  display: none;
+}
+
+.input-box .react-select__dropdown-indicator {
+  color: #667085 !important;
+  padding-right: 12px !important;
+}
+
+.input-box .react-select__menu {
+  z-index: 99999 !important;
+}
+
+.input-box .react-select__option--is-focused {
+  background: #edf2ff !important;
+}
+
+.input-box .react-select__option--is-selected {
+  background: #2457e6 !important;
+  color: #fff !important;
+}
+
 /* ==========================================
    Textarea
 ========================================== */

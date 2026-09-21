@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import useQuestionStore from "./questionStore";
@@ -9,10 +10,7 @@ const MatchingQuestionView = ({
   questionNumber = 1,
   totalQuestions = 20,
   completedCount = 0,
-  questions = [],
-  completedQuestions = {},
   onCompleted,
-  onQuestionSelect,
   onNext,
   onPrevious,
 }) => {
@@ -188,14 +186,20 @@ const MatchingQuestionView = ({
     setDropTargetPairId(null);
   };
 
-  const handleQuestionDragOver = (event, pairId) => {
+  const handleQuestionDragOver = (
+    event,
+    pairId
+  ) => {
     if (submitted || saving) {
       return;
     }
 
     event.preventDefault();
+
     setDropTargetPairId(pairId);
-    event.dataTransfer.dropEffect = "move";
+
+    event.dataTransfer.dropEffect =
+      "move";
   };
 
   // =========================================================
@@ -227,7 +231,10 @@ const MatchingQuestionView = ({
       return;
     }
 
-    if (columnAPairId === null || columnAPairId === undefined) {
+    if (
+      columnAPairId === null ||
+      columnAPairId === undefined
+    ) {
       return;
     }
 
@@ -489,17 +496,6 @@ const MatchingQuestionView = ({
   };
 
   // =========================================================
-  // PROGRESS
-  // =========================================================
-
-  const remainingQuestionCount =
-    Math.max(
-      totalQuestions -
-        completedCount,
-      0
-    );
-
-  // =========================================================
   // NO QUESTION
   // =========================================================
 
@@ -585,7 +581,7 @@ const MatchingQuestionView = ({
             </strong>
 
             <small>
-              {remainingQuestionCount} left
+              {totalQuestions - completedCount} left
             </small>
 
           </div>
@@ -702,10 +698,16 @@ const MatchingQuestionView = ({
 
                 <div
                   className={`drop-zone matching-drop-tray ${
-                    dropTargetPairId !== null ? "drop-zone-active" : ""
+                    dropTargetPairId !== null
+                      ? "drop-zone-active"
+                      : ""
                   }`}
-                  onDragOver={handleDragOver}
-                  onDrop={(event) => handleDrop(event)}
+                  onDragOver={
+                    handleDragOver
+                  }
+                  onDrop={(event) =>
+                    handleDrop(event)
+                  }
                 >
                   <span className="drop-placeholder">
                     {dropTargetPairId !== null
@@ -715,7 +717,10 @@ const MatchingQuestionView = ({
                 </div>
 
                 {pairs.map(
-                  (pair, index) => {
+                  (
+                    pair,
+                    index
+                  ) => {
 
                     const selectedPair =
                       getSelectedAnswer(
@@ -761,11 +766,21 @@ const MatchingQuestionView = ({
                             ? "matching-row-wrong"
                             : ""
                         }`}
-                        onDragOver={(event) =>
-                          handleQuestionDragOver(event, pair.pairId)
+                        onDragOver={(
+                          event
+                        ) =>
+                          handleQuestionDragOver(
+                            event,
+                            pair.pairId
+                          )
                         }
-                        onDrop={(event) =>
-                          handleDrop(event, pair.pairId)
+                        onDrop={(
+                          event
+                        ) =>
+                          handleDrop(
+                            event,
+                            pair.pairId
+                          )
                         }
                       >
 
@@ -793,12 +808,15 @@ const MatchingQuestionView = ({
                           {selectedPair && (
                             <span className="column-a-match">
                               {selectedPair.columnB}
+
                               {!submitted && (
                                 <button
                                   type="button"
                                   className="remove-match-btn"
                                   onClick={() =>
-                                    handleRemoveMatch(pair.pairId)
+                                    handleRemoveMatch(
+                                      pair.pairId
+                                    )
                                   }
                                 >
                                   ×
@@ -864,7 +882,10 @@ const MatchingQuestionView = ({
               <div className="matching-column-body">
 
                 {shuffledColumnB.map(
-                  (option, index) => {
+                  (
+                    option,
+                    index
+                  ) => {
 
                     const used =
                       isAnswerUsed(
@@ -885,7 +906,9 @@ const MatchingQuestionView = ({
                           !saving &&
                           !used
                         }
-                        onDragStart={(event) =>
+                        onDragStart={(
+                          event
+                        ) =>
                           handleDragStart(
                             event,
                             option
@@ -972,7 +995,10 @@ const MatchingQuestionView = ({
               </div>
 
               {pairs.map(
-                (pair, index) => {
+                (
+                  pair,
+                  index
+                ) => {
 
                   const selectedPair =
                     getSelectedAnswer(
@@ -1068,7 +1094,9 @@ const MatchingQuestionView = ({
                   onClick={
                     handleSubmit
                   }
-                  disabled={saving}
+                  disabled={
+                    saving
+                  }
                 >
                   {saving
                     ? "Saving..."
@@ -1108,141 +1136,6 @@ const MatchingQuestionView = ({
           </div>
 
         </main>
-
-        {/* ===================================================
-            QUESTION NAVIGATOR
-        =================================================== */}
-
-        <aside className="matching-question-navigator">
-
-          <h2>
-            Question Navigator
-          </h2>
-
-          {/* =================================================
-              LEGEND
-          ================================================= */}
-
-          <div className="matching-navigator-legend">
-
-            <span>
-              <i className="matching-legend-dot answered" />
-              Answered
-            </span>
-
-            <span>
-              <i className="matching-legend-dot current" />
-              Current
-            </span>
-
-            <span>
-              <i className="matching-legend-dot unanswered" />
-              Not Answered
-            </span>
-
-          </div>
-
-          {/* =================================================
-              QUESTION NUMBERS
-          ================================================= */}
-
-          <div className="matching-question-numbers">
-
-            {Array.from(
-              {
-                length:
-                  totalQuestions,
-              },
-              (_, index) => {
-
-                const number =
-                  index + 1;
-
-                const isCurrent =
-                  number ===
-                  questionNumber;
-
-                const actualQuestion =
-                  questions[index];
-
-                const isAnswered =
-                  Boolean(
-                    actualQuestion &&
-                      completedQuestions[
-                        actualQuestion.questionId
-                      ]
-                  ) ||
-                  (isCurrent && submitted);
-
-                return (
-                  <button
-                    key={
-                      number
-                    }
-                    type="button"
-                    disabled={
-                      !actualQuestion ||
-                      !onQuestionSelect
-                    }
-                    onClick={() =>
-                      onQuestionSelect(
-                        index
-                      )
-                    }
-                    className={`
-                      ${
-                        isCurrent
-                          ? "current"
-                          : ""
-                      }
-                      ${
-                        isAnswered
-                          ? "answered"
-                          : ""
-                      }
-                    `}
-                  >
-                    {number}
-                  </button>
-                );
-              }
-            )}
-
-          </div>
-
-          {/* =================================================
-              SUMMARY
-          ================================================= */}
-
-          <div className="matching-navigator-summary">
-
-            <div>
-
-              <strong>
-                {completedCount}
-              </strong>
-
-              <span>
-                Answered
-              </span>
-
-            </div>
-
-            <div>
-
-              <strong>
-                {remainingQuestionCount}
-              </strong>
-
-              <span>
-                Not Answered
-              </span>
-
-            </div>
-
-          </div>
-
-        </aside>
 
       </div>
 

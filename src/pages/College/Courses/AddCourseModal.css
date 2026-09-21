@@ -29,22 +29,15 @@
 .course-modal {
   width: min(850px, 95vw);
   max-width: 95vw;
-
   background: #fff;
   border-radius: 16px;
-
   display: flex;
   flex-direction: column;
-
   height: auto;
   max-height: 90vh;
-
   overflow: hidden;
-
   margin: 0 auto;
-
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-
   animation: popup 0.3s ease;
 }
 
@@ -57,15 +50,13 @@
   justify-content: center;
   align-items: center;
   position: relative;
-
   padding: 50px 28px 22px;
-
   border-bottom: 1px solid #e5e7eb;
-
   background: #fff;
 }
 
-.modal-title {
+.modal-title,
+.modal-header > div {
   transform: translateY(15px);
   text-align: center;
   width: 100%;
@@ -73,37 +64,28 @@
 
 .modal-header h2 {
   margin: 0;
-
   font-size: 28px;
   font-weight: 700;
-
   color: #0e1323;
 }
 
 .modal-header p {
   margin-top: 6px;
-
   color: #0e1323;
 }
 
 .close-btn {
-  width: 30px;
-  height: 30px;
-
-  border: none;
-  border-radius: 50%;
-
-  background: transparent;
-
-  cursor: pointer;
-
-  font-size: 15px;
-
-  transition: 0.3s;
-
   position: absolute;
   right: 20px;
   top: 20px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  font-size: 15px;
+  transition: 0.3s;
 }
 
 .close-btn:hover {
@@ -117,36 +99,29 @@
 
 .modal-body {
   flex: 1;
-
   overflow-y: auto;
-
   padding: 25px;
-
   background: #f8fafc;
 }
 
 /* ==========================================
-   Cards
+   Card
 ========================================== */
 
-.card-box {
-  background: #fff;
-
+.card-box,
+.form-card {
+  background: white;
   border-radius: 14px;
-
   padding: 25px;
-
   margin-bottom: 20px;
-
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-.card-box h4 {
+.card-box h4,
+.section-title {
   margin-bottom: 22px;
-
   font-size: 20px;
   font-weight: 700;
-
   color: #08170b;
 }
 
@@ -156,75 +131,89 @@
 
 .form-grid {
   display: grid;
-
   grid-template-columns: repeat(2, 1fr);
-
   gap: 20px;
 }
 
 /* ==========================================
-   Labels
+   Form Group
 ========================================== */
 
 .form-group label {
   display: block;
-
   margin-bottom: 8px;
-
   font-weight: 600;
 }
 
-/* ==========================================
-   Input Icons
-========================================== */
-
-.input-box {
-  position: relative;
-}
-
-.input-icon {
-  position: absolute;
-
-  left: 15px;
-  top: 50%;
-
-  transform: translateY(-50%);
-
-  color: #64748b;
-
-  z-index: 1;
+.form-group span,
+.section-title span,
+.card-box h4 span {
+  color: red;
 }
 
 /* ==========================================
    Inputs
 ========================================== */
 
-.input-box .form-control,
-.input-box .form-select {
+.input-box,
+.select-box {
+  position: relative;
   width: 100%;
+}
 
+.input-icon,
+.select-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  z-index: 4;
+  pointer-events: none;
+  font-size: 16px;
+}
+
+.input-box .aq-search-select,
+.select-box .aq-search-select {
+  position: relative;
+  z-index: 1;
+}
+
+.aq-select__control {
+  position: relative;
+  z-index: 1;
+}
+
+.aq-select__value-container,
+.aq-select__single-value,
+.aq-select__placeholder,
+.aq-select__input-container {
+  position: relative;
+  z-index: 2;
+}
+
+.input-box input,
+.input-box .form-control,
+.input-box .form-select,
+.select-box .aq-search-select .aq-select__control {
+  width: 100%;
   height: 50px;
-
   border: 1px solid #dbe4f0;
-
   border-radius: 12px;
-
   padding-left: 45px;
   padding-right: 15px;
-
   font-size: 15px;
-
   outline: none;
-
   transition: 0.3s;
-
   background: #fff;
 }
 
+.input-box input:focus,
 .input-box .form-control:focus,
-.input-box .form-select:focus {
+.input-box .form-select:focus,
+.select-box .aq-search-select .aq-select__control:hover,
+.select-box .aq-search-select .aq-select__control--is-focused {
   border-color: #356bdf;
-
   box-shadow: 0 0 0 3px rgba(53, 107, 223, 0.12);
 }
 
@@ -232,10 +221,6 @@
   cursor: pointer;
 }
 
-input[type="file"].form-control {
-  padding-top: 12px;
-  height: auto;
-}
 /* ==========================================
    Textarea
 ========================================== */
@@ -245,39 +230,24 @@ input[type="file"].form-control {
 }
 
 .textarea-box .input-icon {
-  position: absolute;
-  left: 15px;
-  top: 20px;
-
+  top: 22px;
   transform: none;
-
-  color: #64748b;
 }
 
 .textarea-box textarea {
   width: 100%;
-
   min-height: 120px;
-
   border: 1px solid #dbe4f0;
   border-radius: 12px;
-
   padding: 18px 18px 18px 45px;
-
-  font-size: 15px;
-
   resize: vertical;
-
   outline: none;
-
-  transition: 0.3s;
-
+  font-size: 15px;
   background: #fff;
 }
 
 .textarea-box textarea:focus {
   border-color: #356bdf;
-
   box-shadow: 0 0 0 3px rgba(53, 107, 223, 0.12);
 }
 
@@ -289,29 +259,25 @@ input[type="file"].form-control {
   display: flex;
   justify-content: flex-end;
   gap: 15px;
-
   padding: 20px 25px;
-
   background: #fff;
-
   border-top: 1px solid #e5e7eb;
 }
-
-/* ==========================================
-   Buttons
-========================================== */
 
 .modal-footer .btn {
   width: 110px;
   height: 42px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   border-radius: 10px;
-
   font-size: 15px;
+  font-weight: 600;
+}
+
+.btn {
+  border-radius: 10px;
+  padding: 10px 22px;
   font-weight: 600;
 }
 
@@ -336,6 +302,96 @@ input[type="file"].form-control {
 }
 
 /* ==========================================
+   Dropdown Style
+========================================== */
+
+.aq-search-select {
+  width: 100%;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.aq-select__control {
+  min-height: 45px !important;
+  height: 45px !important;
+  border: 1px solid #dbe4f0 !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  background: #fff !important;
+  padding-left: 0 !important;
+}
+
+.aq-select__control:hover,
+.aq-select__control--is-focused {
+  border-color: #356bdf !important;
+}
+
+.aq-select__control--is-focused {
+  box-shadow: 0 0 0 3px rgba(53, 107, 223, 0.12) !important;
+}
+
+.aq-select__value-container {
+  padding: 0 8px 0 42px !important;
+  min-height: 45px !important;
+}
+
+.aq-select__input-container,
+.aq-select__single-value,
+.aq-select__placeholder {
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+  line-height: 1.2 !important;
+}
+
+.aq-select__single-value {
+  color: #17223b !important;
+}
+
+.aq-select__placeholder {
+  color: #858fa1 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.aq-select__indicator {
+  color: #667085 !important;
+  padding: 0 8px;
+}
+
+.aq-select__menu {
+  z-index: 9999;
+  font-weight: 500;
+}
+
+.aq-select__option--is-focused {
+  background: #edf2ff !important;
+}
+
+.aq-select__option--is-selected {
+  background: #2457e6 !important;
+  color: #fff !important;
+}
+
+.select-box .aq-search-select .aq-select__value-container {
+  padding-left: 42px !important;
+}
+
+.input-box .aq-search-select .aq-select__control,
+.select-box .aq-search-select .aq-select__control {
+  min-height: 45px !important;
+  height: 45px !important;
+  border-radius: 10px !important;
+}
+
+.input-box .aq-search-select .aq-select__value-container,
+.select-box .aq-search-select .aq-select__value-container {
+  padding-left: 42px !important;
+}
+
+/* ==========================================
    Animation
 ========================================== */
 
@@ -356,13 +412,13 @@ input[type="file"].form-control {
 ========================================== */
 
 @media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
   .course-modal {
     width: 95%;
     max-height: 90vh;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
   }
 
   .modal-header h2 {
@@ -373,12 +429,11 @@ input[type="file"].form-control {
     flex-direction: column;
   }
 
-  .modal-footer .btn {
+  .modal-footer .btn,
+  .btn {
     width: 100%;
   }
 }
-
-/* Small laptop screens */
 
 @media (max-height: 800px) {
   .course-modal {
@@ -390,111 +445,4 @@ input[type="file"].form-control {
   .course-modal {
     max-height: 82vh;
   }
-}
-
-/* ==========================================
-   React Select Fix
-========================================== */
-
-.react-select-container .react-select__control {
-  min-height: 50px;
-  height: 50px;
-
-  border: 1px solid #dbe4f0;
-  border-radius: 12px;
-
-  padding-left: 45px;
-
-  box-shadow: none;
-  transition: 0.3s;
-}
-
-.react-select-container .react-select__control:hover {
-  border-color: #dbe4f0;
-}
-
-.react-select-container .react-select__control--is-focused {
-  border-color: #356bdf !important;
-  box-shadow: 0 0 0 3px rgba(53, 107, 223, 0.12);
-}
-
-.react-select-container .react-select__value-container {
-  padding: 0;
-}
-
-.react-select-container .react-select__input-container {
-  margin: 0;
-  padding: 0;
-}
-.react-select-container .react-select__input-container input {
-  border: none !important;
-  border-bottom: none !important;
-  box-shadow: none !important;
-  outline: none !important;
-  background: transparent !important;
-}
-
-.react-select-container .react-select__placeholder {
-  color: #6b7280;
-}
-
-.react-select-container .react-select__single-value {
-  color: #111827;
-}
-
-.react-select-container .react-select__indicator-separator {
-  display: none;
-}
-
-.react-select-container .react-select__menu {
-  z-index: 99999;
-}
-
-/* ==========================================
-   Status Switch
-========================================== */
-
-.course-status-switch {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  height: 50px;
-
-  padding: 0 16px;
-
-  border: 1px solid #dbe4f0;
-  border-radius: 12px;
-
-  background: #fff;
-}
-
-.course-status-switch .form-check-input {
-  width: 2.7rem;
-  height: 1.4rem;
-  cursor: pointer;
-}
-
-.course-status-switch .form-check-label {
-  margin: 0;
-  font-weight: 600;
-  cursor: pointer;
-}
-/* ==========================================================
-   React Select Layout Alignment Overwrite
-========================================================== */
-
-/* 1. Strip the outer wrapper padding that pushes the component contents right */
-.react-select-container .react-select__control {
-  padding-left: 0 !important;
-}
-
-/* 2. Apply the matching 45px inset padding directly to the internal text container instead */
-.react-select-container .react-select__value-container {
-  padding-left: 45px !important;
-}
-
-/* 3. Handle baseline alignment for absolute placeholder elements inside React-Select */
-.react-select-container .react-select__placeholder {
-  margin-left: 0 !important;
 }
