@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import Select from "react-select";
 
 import { FaTimes, FaLayerGroup, FaGraduationCap, FaSave } from "react-icons/fa";
 
@@ -100,6 +101,11 @@ function SubjectForm({
     onClose();
   };
 
+  const courseOptions = courses.map((course) => ({
+    value: String(course.courseId),
+    label: course.name || course.courseName || "Course",
+  }));
+
   return createPortal(
     <div className="modal-overlay">
       <div className="chapter-modal">
@@ -125,21 +131,29 @@ function SubjectForm({
                   Course <span>*</span>
                 </label>
 
-                <div className="input-box">
-                  <FaGraduationCap className="input-icon" />
+                <div className="select-box">
+                  <FaGraduationCap className="select-icon" />
 
-                  <select
-                    value={courseId}
-                    onChange={(e) => setCourseId(e.target.value)}
-                  >
-                    <option value="">Select Course</option>
-
-                    {courses.map((course) => (
-                      <option key={course.courseId} value={course.courseId}>
-                        {course.name}
-                      </option>
-                    ))}
-                  </select>
+                  <Select
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
+                    menuPlacement="bottom"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                    }}
+                    options={courseOptions}
+                    value={
+                      courseOptions.find(
+                        (option) => option.value === String(courseId),
+                      ) || null
+                    }
+                    onChange={(option) => setCourseId(option?.value || "")}
+                    placeholder="Select Course"
+                    isSearchable
+                    isClearable
+                    noOptionsMessage={() => "No course found"}
+                  />
                 </div>
               </div>
 
@@ -191,7 +205,11 @@ function SubjectForm({
             Cancel
           </button>
 
-          <button type="button" className="btn btn-primary" onClick={handleSave}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleSave}
+          >
             <FaSave className="me-2" />
             {isEdit ? "Update" : "Save"}
           </button>

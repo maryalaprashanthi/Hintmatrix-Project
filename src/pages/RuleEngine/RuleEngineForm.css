@@ -212,18 +212,22 @@
    Input Box
 ========================================== */
 
-.input-box {
+.input-box,
+.select-box {
   position: relative;
+  width: 100%;
 }
 
-.input-box .input-icon {
+.input-icon,
+.select-icon {
   position: absolute;
   left: 15px;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 100;
+  z-index: 2;
   pointer-events: none;
   color: #64748b;
+  font-size: 16px;
 }
 
 /* ==========================================
@@ -231,7 +235,7 @@
 ========================================== */
 
 .input-box input,
-.input-box select {
+.select-box .aq-search-select .aq-select__control {
   width: 100%;
 
   height: 48px;
@@ -253,10 +257,38 @@
 }
 
 .input-box input:focus,
-.input-box select:focus {
+.select-box .aq-search-select .aq-select__control:hover,
+.select-box .aq-search-select .aq-select__control--is-focused {
   border-color: #2563eb;
 
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.select-box .aq-search-select .aq-select__placeholder,
+.select-box .aq-search-select .aq-select__single-value,
+.select-box .aq-search-select .aq-select__input-container {
+  color: #17223b;
+}
+
+.select-box .aq-search-select .aq-select__placeholder {
+  color: #858fa1 !important;
+}
+
+.select-box .aq-search-select .aq-select__indicator {
+  color: #667085 !important;
+}
+
+.select-box .aq-search-select .aq-select__menu {
+  z-index: 9999;
+}
+
+.select-box .aq-search-select .aq-select__option--is-focused {
+  background: #edf2ff !important;
+}
+
+.select-box .aq-search-select .aq-select__option--is-selected {
+  background: #2457e6 !important;
+  color: #fff !important;
 }
 
 .input-box input::placeholder {
@@ -433,36 +465,9 @@
     max-height: 82vh;
   }
 }
-/* ==========================================
-   Typeahead
-========================================== */
-.input-box .rbt {
+.select-box .aq-search-select {
   width: 100%;
-}
-
-.input-box .rbt-input-main,
-.input-box .form-control {
-  width: 100% !important;
-  height: 48px !important;
-
-  border: 1px solid #dbe4f0 !important;
-  border-radius: 12px !important;
-
-  padding-left: 45px !important;
-  padding-right: 15px !important;
-
-  font-size: 15px;
-  box-shadow: none !important;
-}
-
-.input-box .rbt-input-main:focus,
-.input-box .form-control:focus {
-  border-color: #2563eb !important;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
-}
-
-.input-box .dropdown-menu {
-  width: 100%;
-  border-radius: 12px;
-  margin-top: 4px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
 }

@@ -23,8 +23,14 @@ import {
 
 import "./AddQuestionModal.css";
 
-const mcqType = (name) => String(name || "").trim().toUpperCase().replace(/[\s-]+/g, "_").replace(/^MCQ_/, "");
-const isMcqType = (name) => ["SINGLE_CHOICE", "MULTIPLE_CHOICE"].includes(mcqType(name));
+const mcqType = (name) =>
+  String(name || "")
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_")
+    .replace(/^MCQ_/, "");
+const isMcqType = (name) =>
+  ["SINGLE_CHOICE", "MULTIPLE_CHOICE"].includes(mcqType(name));
 
 function AddQuestionModal({
   courseId: initialCourseId,
@@ -52,7 +58,10 @@ function AddQuestionModal({
   useEffect(() => {
     if (!isMcqQuestion) return;
     if (!initialData?.questionId) {
-      setMcqOptions([{ optionText: "", isCorrect: false }, { optionText: "", isCorrect: false }]);
+      setMcqOptions([
+        { optionText: "", isCorrect: false },
+        { optionText: "", isCorrect: false },
+      ]);
       return;
     }
     let cancelled = false;
@@ -62,12 +71,28 @@ function AddQuestionModal({
       .then(({ data }) => {
         if (cancelled) return;
         setMarks(data.marks ?? 1);
-        setMcqOptions([...(data.options || [])].sort((a, b) => a.optionOrder - b.optionOrder)
-          .map((option) => ({ ...option, isCorrect: option.isCorrect === true || option.isCorrect === "true" })));
+        setMcqOptions(
+          [...(data.options || [])]
+            .sort((a, b) => a.optionOrder - b.optionOrder)
+            .map((option) => ({
+              ...option,
+              isCorrect:
+                option.isCorrect === true || option.isCorrect === "true",
+            })),
+        );
       })
-      .catch(() => { if (!cancelled) setMcqLoadError("Unable to load MCQ options. Close and reopen the edit form."); })
-      .finally(() => { if (!cancelled) setMcqLoading(false); });
-    return () => { cancelled = true; };
+      .catch(() => {
+        if (!cancelled)
+          setMcqLoadError(
+            "Unable to load MCQ options. Close and reopen the edit form.",
+          );
+      })
+      .finally(() => {
+        if (!cancelled) setMcqLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [initialData?.questionId, isMcqQuestion]);
 
   // =========================================================
@@ -123,17 +148,13 @@ function AddQuestionModal({
 
   const getData = async () => {
     try {
-      const [
-        courseResponse,
-        subjectResponse,
-        chapterResponse,
-        topicResponse,
-      ] = await Promise.all([
-        CourseService.getAllCourses(),
-        SubjectService.getAll(),
-        ChapterService.getAll(),
-        TopicService.getAll(),
-      ]);
+      const [courseResponse, subjectResponse, chapterResponse, topicResponse] =
+        await Promise.all([
+          CourseService.getAllCourses(),
+          SubjectService.getAll(),
+          ChapterService.getAll(),
+          TopicService.getAll(),
+        ]);
 
       const courseData = Array.isArray(courseResponse.data)
         ? courseResponse.data
@@ -155,7 +176,7 @@ function AddQuestionModal({
         courseData.map((item) => ({
           value: item.courseId,
           label: item.name,
-        }))
+        })),
       );
 
       setSubjectOptions(
@@ -163,7 +184,7 @@ function AddQuestionModal({
           value: item.subjectId ?? item.subject_id,
           label: item.subjectName ?? item.name,
           courseId: item.courseId ?? item.course_id,
-        }))
+        })),
       );
 
       setChapterOptions(
@@ -172,7 +193,7 @@ function AddQuestionModal({
           label: item.name,
           courseId: item.courseId ?? item.course_id,
           subjectId: item.subjectId ?? item.subject_id,
-        }))
+        })),
       );
 
       setTopicOptions(
@@ -181,7 +202,7 @@ function AddQuestionModal({
           label: item.name,
           chapterId: item.chapterId ?? item.chapter_id,
           subjectId: item.subjectId ?? item.subject_id,
-        }))
+        })),
       );
     } catch (error) {
       console.error("Error: ", error);
@@ -194,8 +215,7 @@ function AddQuestionModal({
 
   const visibleSubjectOptions = subjectOptions.filter(
     (option) =>
-      !courseId?.value ||
-      String(option.courseId) === String(courseId.value)
+      !courseId?.value || String(option.courseId) === String(courseId.value),
   );
 
   const visibleChapterOptions = chapterOptions.filter((option) => {
@@ -204,15 +224,13 @@ function AddQuestionModal({
     }
 
     return (
-      !courseId?.value ||
-      String(option.courseId) === String(courseId.value)
+      !courseId?.value || String(option.courseId) === String(courseId.value)
     );
   });
 
   const visibleTopicOptions = topicOptions.filter(
     (option) =>
-      !chapterId?.value ||
-      String(option.chapterId) === String(chapterId.value)
+      !chapterId?.value || String(option.chapterId) === String(chapterId.value),
   );
 
   // =========================================================
@@ -223,31 +241,17 @@ function AddQuestionModal({
     try {
       const response = await QuestionTypeService.getAll();
 
-      const data = Array.isArray(response.data)
-        ? response.data
-        : [];
+      const data = Array.isArray(response.data) ? response.data : [];
 
       const options = data.map((item) => ({
-        value: Number(
-          item.questionTypeId ??
-            item.question_type_id ??
-            item.id
-        ),
+        value: Number(item.questionTypeId ?? item.question_type_id ?? item.id),
 
-        label: String(
-          item.questionType ??
-            item.name ??
-            item.type ??
-            ""
-        ).trim(),
+        label: String(item.questionType ?? item.name ?? item.type ?? "").trim(),
       }));
 
       setQuestionTypeOptions(options);
     } catch (error) {
-      console.error(
-        "Failed to load question types:",
-        error
-      );
+      console.error("Failed to load question types:", error);
     }
   };
 
@@ -257,50 +261,27 @@ function AddQuestionModal({
 
   const loadTableAttributes = async () => {
     try {
-      const response =
-        await TableAttributeService.getRuleAttributes();
+      const response = await TableAttributeService.getRuleAttributes();
 
-      console.log(
-        "TABLE ATTRIBUTE API RESPONSE:",
-        response
-      );
+      console.log("TABLE ATTRIBUTE API RESPONSE:", response);
 
-      console.log(
-        "TABLE ATTRIBUTE DATA:",
-        response.data
-      );
+      console.log("TABLE ATTRIBUTE DATA:", response.data);
 
       const data = response.data.map((item) => ({
         value: item.attributeId,
         label: item.name,
-        amount:
-          item.amount ??
-          item.amount1 ??
-          item.amount2 ??
-          "",
+        amount: item.amount ?? item.amount1 ?? item.amount2 ?? "",
       }));
 
-      console.log(
-        "DROPDOWN OPTIONS:",
-        data
-      );
+      console.log("DROPDOWN OPTIONS:", data);
 
       setBalanceOptions(data);
     } catch (error) {
-      console.error(
-        "TABLE ATTRIBUTE ERROR:",
-        error
-      );
+      console.error("TABLE ATTRIBUTE ERROR:", error);
 
-      console.error(
-        "STATUS:",
-        error.response?.status
-      );
+      console.error("STATUS:", error.response?.status);
 
-      console.error(
-        "ERROR DATA:",
-        error.response?.data
-      );
+      console.error("ERROR DATA:", error.response?.data);
     }
   };
 
@@ -309,102 +290,63 @@ function AddQuestionModal({
   // =========================================================
 
   useEffect(() => {
-    const selectedCourseId =
-      initialData?.courseId ?? initialCourseId;
+    const selectedCourseId = initialData?.courseId ?? initialCourseId;
 
-    const selectedSubjectId =
-      initialData?.subjectId ?? initialSubjectId;
+    const selectedSubjectId = initialData?.subjectId ?? initialSubjectId;
 
-    const selectedChapterId =
-      initialData?.chapterId ?? initialChapterId;
+    const selectedChapterId = initialData?.chapterId ?? initialChapterId;
 
-    const selectedTopicId =
-      initialData?.topicId ?? initialTopicId;
+    const selectedTopicId = initialData?.topicId ?? initialTopicId;
 
     const selectedQuestionTypeId =
-      initialData?.questionTypeId ??
-      initialData?.question_type_id;
+      initialData?.questionTypeId ?? initialData?.question_type_id;
 
-    setQuestionText(
-      initialData?.questionText || ""
-    );
+    setQuestionText(initialData?.questionText || "");
 
-    if (
-      selectedQuestionTypeId &&
-      questionTypeOptions.length > 0
-    ) {
-      const selectedQuestionType =
-        questionTypeOptions.find(
-          (option) =>
-            option.value ===
-            Number(selectedQuestionTypeId)
-        );
+    if (selectedQuestionTypeId && questionTypeOptions.length > 0) {
+      const selectedQuestionType = questionTypeOptions.find(
+        (option) => option.value === Number(selectedQuestionTypeId),
+      );
 
       if (selectedQuestionType) {
-        setQuestionTypeId(
-          selectedQuestionType
-        );
+        setQuestionTypeId(selectedQuestionType);
       }
     }
 
-    if (
-      selectedCourseId &&
-      courseOptions.length > 0
-    ) {
-      const selectedCourse =
-        courseOptions.find(
-          (option) =>
-            option.value ===
-            Number(selectedCourseId)
-        );
+    if (selectedCourseId && courseOptions.length > 0) {
+      const selectedCourse = courseOptions.find(
+        (option) => option.value === Number(selectedCourseId),
+      );
 
       if (selectedCourse) {
         setCourseId(selectedCourse);
       }
     }
 
-    if (
-      selectedSubjectId &&
-      subjectOptions.length > 0
-    ) {
-      const selectedSubject =
-        subjectOptions.find(
-          (option) =>
-            option.value ===
-            Number(selectedSubjectId)
-        );
+    if (selectedSubjectId && subjectOptions.length > 0) {
+      const selectedSubject = subjectOptions.find(
+        (option) => option.value === Number(selectedSubjectId),
+      );
 
       if (selectedSubject) {
         setSubjectId(selectedSubject);
       }
     }
 
-    if (
-      selectedChapterId &&
-      chapterOptions.length > 0
-    ) {
-      const selectedChapter =
-        chapterOptions.find(
-          (option) =>
-            option.value ===
-            Number(selectedChapterId)
-        );
+    if (selectedChapterId && chapterOptions.length > 0) {
+      const selectedChapter = chapterOptions.find(
+        (option) => option.value === Number(selectedChapterId),
+      );
 
       if (selectedChapter) {
         setChapterId(selectedChapter);
       }
     }
 
-    if (
-      selectedTopicId &&
-      topicOptions.length > 0
-    ) {
-      const selectedTopic =
-        topicOptions.find(
-          (option) =>
-            option.value ===
-            Number(selectedTopicId)
-        );
+    if (selectedTopicId && topicOptions.length > 0) {
+      const selectedTopic = topicOptions.find(
+        (option) => option.value === Number(selectedTopicId),
+      );
 
       if (selectedTopic) {
         setTopicId(selectedTopic);
@@ -458,20 +400,15 @@ function AddQuestionModal({
         // LOAD COMMON QUESTION DETAILS
         // =====================================================
 
-        const response =
-          await QuestionService.getQuestionById(
-            initialData.questionId
-          );
+        const response = await QuestionService.getQuestionById(
+          initialData.questionId,
+        );
 
-        const question =
-          response.data || initialData;
+        const question = response.data || initialData;
 
-        const questionAttributes =
-          question.questionAttributes || [];
+        const questionAttributes = question.questionAttributes || [];
 
-        const isCreditAttribute = (
-          attribute
-        ) =>
+        const isCreditAttribute = (attribute) =>
           [
             attribute.transaction,
             attribute.type,
@@ -479,44 +416,27 @@ function AddQuestionModal({
             attribute.headerName,
           ]
             .filter(Boolean)
-            .some((value) =>
-              String(value)
-                .toLowerCase()
-                .includes("credit")
-            ) ||
+            .some((value) => String(value).toLowerCase().includes("credit")) ||
           String(attribute.headerId) === "3";
 
         if (cancelled) return;
 
-        setQuestionText(
-          question.questionText || ""
-        );
+        setQuestionText(question.questionText || "");
 
         // =====================================================
         // GET QUESTION TYPE
         // =====================================================
 
         const loadedQuestionTypeId =
-          question.questionTypeId ??
-          question.question_type_id;
+          question.questionTypeId ?? question.question_type_id;
 
-        if (
-          loadedQuestionTypeId &&
-          questionTypeOptions.length > 0
-        ) {
-          const selectedQuestionType =
-            questionTypeOptions.find(
-              (option) =>
-                option.value ===
-                Number(
-                  loadedQuestionTypeId
-                )
-            );
+        if (loadedQuestionTypeId && questionTypeOptions.length > 0) {
+          const selectedQuestionType = questionTypeOptions.find(
+            (option) => option.value === Number(loadedQuestionTypeId),
+          );
 
           if (selectedQuestionType) {
-            setQuestionTypeId(
-              selectedQuestionType
-            );
+            setQuestionTypeId(selectedQuestionType);
           }
         }
 
@@ -526,44 +446,27 @@ function AddQuestionModal({
 
         if (Number(loadedQuestionTypeId) === 6) {
           try {
-            const matchingResponse =
-              await MatchingQuestionService.getById(
-                initialData.questionId
-              );
+            const matchingResponse = await MatchingQuestionService.getById(
+              initialData.questionId,
+            );
 
-            const matchingQuestion =
-              matchingResponse.data;
+            const matchingQuestion = matchingResponse.data;
 
-            if (
-              !cancelled &&
-              Array.isArray(
-                matchingQuestion?.pairs
-              )
-            ) {
+            if (!cancelled && Array.isArray(matchingQuestion?.pairs)) {
               setMatchingPairs(
-                matchingQuestion.pairs.map(
-                  (pair, index) => ({
-                    pairId:
-                      pair.pairId ?? null,
+                matchingQuestion.pairs.map((pair, index) => ({
+                  pairId: pair.pairId ?? null,
 
-                    columnA:
-                      pair.columnA ?? "",
+                  columnA: pair.columnA ?? "",
 
-                    columnB:
-                      pair.columnB ?? "",
+                  columnB: pair.columnB ?? "",
 
-                    displayOrder:
-                      pair.displayOrder ??
-                      index + 1,
-                  })
-                )
+                  displayOrder: pair.displayOrder ?? index + 1,
+                })),
               );
             }
           } catch (matchingError) {
-            console.error(
-              "Matching pairs load error:",
-              matchingError
-            );
+            console.error("Matching pairs load error:", matchingError);
           }
         }
 
@@ -574,74 +477,50 @@ function AddQuestionModal({
         setAttributes(
           questionAttributes.length > 0
             ? (() => {
-                const debitAttributes =
-                  questionAttributes.filter(
-                    (attribute) =>
-                      !isCreditAttribute(
-                        attribute
-                      )
-                  );
+                const debitAttributes = questionAttributes.filter(
+                  (attribute) => !isCreditAttribute(attribute),
+                );
 
                 const creditAttributes =
-                  questionAttributes.filter(
-                    isCreditAttribute
-                  );
+                  questionAttributes.filter(isCreditAttribute);
 
-                const rowCount =
-                  Math.max(
-                    debitAttributes.length,
-                    creditAttributes.length
-                  );
+                const rowCount = Math.max(
+                  debitAttributes.length,
+                  creditAttributes.length,
+                );
 
                 return Array.from(
                   {
                     length: rowCount,
                   },
                   (_, index) => {
-                    const debit =
-                      debitAttributes[index];
+                    const debit = debitAttributes[index];
 
-                    const credit =
-                      creditAttributes[index];
+                    const credit = creditAttributes[index];
 
                     return {
-                      debitOriginal:
-                        debit || null,
+                      debitOriginal: debit || null,
 
                       debitQuestionAttributeId:
-                        debit?.questionAttributeId ??
-                        "",
+                        debit?.questionAttributeId ?? "",
 
                       debitBalance:
-                        debit?.attributeId ??
-                        debit?.attribute_id ??
-                        "",
+                        debit?.attributeId ?? debit?.attribute_id ?? "",
 
-                      debitAttributeName:
-                        debit?.attributeName ||
-                        "",
+                      debitAttributeName: debit?.attributeName || "",
 
                       debitAmount:
-                        debit?.amount ??
-                        debit?.amount1 ??
-                        debit?.amount2 ??
-                        "",
+                        debit?.amount ?? debit?.amount1 ?? debit?.amount2 ?? "",
 
                       creditQuestionAttributeId:
-                        credit?.questionAttributeId ??
-                        "",
+                        credit?.questionAttributeId ?? "",
 
-                      creditOriginal:
-                        credit || null,
+                      creditOriginal: credit || null,
 
                       creditBalance:
-                        credit?.attributeId ??
-                        credit?.attribute_id ??
-                        "",
+                        credit?.attributeId ?? credit?.attribute_id ?? "",
 
-                      creditAttributeName:
-                        credit?.attributeName ||
-                        "",
+                      creditAttributeName: credit?.attributeName || "",
 
                       creditAmount:
                         credit?.amount ??
@@ -649,7 +528,7 @@ function AddQuestionModal({
                         credit?.amount2 ??
                         "",
                     };
-                  }
+                  },
                 );
               })()
             : [
@@ -659,13 +538,10 @@ function AddQuestionModal({
                   creditBalance: "",
                   creditAmount: "",
                 },
-              ]
+              ],
         );
       } catch (error) {
-        console.error(
-          "Question details load error:",
-          error
-        );
+        console.error("Question details load error:", error);
       }
     };
 
@@ -674,10 +550,7 @@ function AddQuestionModal({
     return () => {
       cancelled = true;
     };
-  }, [
-    initialData,
-    questionTypeOptions,
-  ]);
+  }, [initialData, questionTypeOptions]);
 
   // =========================================================
   // MATCHING QUESTION CHECK
@@ -698,18 +571,13 @@ function AddQuestionModal({
     );
   };
 
-  const isMatchingQuestion =
-    isMatchingQuestionType(questionTypeId);
+  const isMatchingQuestion = isMatchingQuestionType(questionTypeId);
 
   // =========================================================
   // NORMAL ATTRIBUTE FUNCTIONS
   // =========================================================
 
-  const handleAttributeChange = (
-    index,
-    field,
-    value
-  ) => {
+  const handleAttributeChange = (index, field, value) => {
     const updated = [...attributes];
 
     updated[index][field] = value;
@@ -732,9 +600,7 @@ function AddQuestionModal({
   const handleDeleteRow = (index) => {
     if (attributes.length === 1) return;
 
-    const updatedRows = attributes.filter(
-      (_, i) => i !== index
-    );
+    const updatedRows = attributes.filter((_, i) => i !== index);
 
     setAttributes(updatedRows);
   };
@@ -743,21 +609,16 @@ function AddQuestionModal({
   // MATCHING PAIR FUNCTIONS
   // =========================================================
 
-  const handleMatchingPairChange = (
-    index,
-    field,
-    value
-  ) => {
+  const handleMatchingPairChange = (index, field, value) => {
     setMatchingPairs((current) =>
-      current.map(
-        (pair, pairIndex) =>
-          pairIndex === index
-            ? {
-                ...pair,
-                [field]: value,
-              }
-            : pair
-      )
+      current.map((pair, pairIndex) =>
+        pairIndex === index
+          ? {
+              ...pair,
+              [field]: value,
+            }
+          : pair,
+      ),
     );
   };
 
@@ -768,30 +629,23 @@ function AddQuestionModal({
         pairId: null,
         columnA: "",
         columnB: "",
-        displayOrder:
-          current.length + 1,
+        displayOrder: current.length + 1,
       },
     ]);
   };
 
-  const handleDeleteMatchingPair = (
-    index
-  ) => {
+  const handleDeleteMatchingPair = (index) => {
     if (matchingPairs.length <= 1) {
       return;
     }
 
     setMatchingPairs((current) =>
       current
-        .filter(
-          (_, pairIndex) =>
-            pairIndex !== index
-        )
+        .filter((_, pairIndex) => pairIndex !== index)
         .map((pair, pairIndex) => ({
           ...pair,
-          displayOrder:
-            pairIndex + 1,
-        }))
+          displayOrder: pairIndex + 1,
+        })),
     );
   };
 
@@ -813,9 +667,7 @@ function AddQuestionModal({
       !questionTypeId ||
       !questionText.trim()
     ) {
-      alert(
-        "Please fill all required fields."
-      );
+      alert("Please fill all required fields.");
 
       return;
     }
@@ -826,20 +678,39 @@ function AddQuestionModal({
 
     if (isMcqQuestion) {
       if (mcqLoading || mcqLoadError) return;
-      const correctCount = mcqOptions.filter((option) => option.isCorrect).length;
-      if (mcqOptions.length < 2 || mcqOptions.some((option) => !option.optionText?.trim()) ||
-          correctCount === 0 || (!isMultipleChoice && correctCount !== 1) || !Number.isFinite(Number(marks)) || Number(marks) <= 0) {
-        alert("Enter positive marks, at least two options, and select " + (isMultipleChoice ? "at least one correct answer." : "exactly one correct answer."));
+      const correctCount = mcqOptions.filter(
+        (option) => option.isCorrect,
+      ).length;
+      if (
+        mcqOptions.length < 2 ||
+        mcqOptions.some((option) => !option.optionText?.trim()) ||
+        correctCount === 0 ||
+        (!isMultipleChoice && correctCount !== 1) ||
+        !Number.isFinite(Number(marks)) ||
+        Number(marks) <= 0
+      ) {
+        alert(
+          "Enter positive marks, at least two options, and select " +
+            (isMultipleChoice
+              ? "at least one correct answer."
+              : "exactly one correct answer."),
+        );
         return;
       }
       setMcqSaving(true);
       try {
         const payload = {
-          courseId: Number(courseId.value), chapterId: Number(chapterId.value), topicId: Number(topicId.value),
-          questionTypeId: Number(questionTypeId.value), questionText: questionText.trim(), marks: Number(marks),
+          courseId: Number(courseId.value),
+          chapterId: Number(chapterId.value),
+          topicId: Number(topicId.value),
+          questionTypeId: Number(questionTypeId.value),
+          questionText: questionText.trim(),
+          marks: Number(marks),
           options: mcqOptions.map((option, index) => ({
             ...(option.optionId ? { optionId: option.optionId } : {}),
-            optionText: option.optionText.trim(), optionOrder: index + 1, isCorrect: option.isCorrect,
+            optionText: option.optionText.trim(),
+            optionOrder: index + 1,
+            isCorrect: option.isCorrect,
           })),
         };
         const response = initialData?.questionId
@@ -856,98 +727,64 @@ function AddQuestionModal({
     }
 
     if (isMatchingQuestion) {
-      const invalidPair =
-        matchingPairs.some(
-          (pair) =>
-            !pair.columnA?.trim() ||
-            !pair.columnB?.trim()
-        );
+      const invalidPair = matchingPairs.some(
+        (pair) => !pair.columnA?.trim() || !pair.columnB?.trim(),
+      );
 
       if (invalidPair) {
-        alert(
-          "Please fill both Column A and Column B for every pair."
-        );
+        alert("Please fill both Column A and Column B for every pair.");
 
         return;
       }
 
       const matchingQuestionData = {
-        courseId:
-          Number(courseId.value),
+        courseId: Number(courseId.value),
 
-        subjectId:
-          Number(subjectId.value),
+        subjectId: Number(subjectId.value),
 
-        chapterId:
-          Number(chapterId.value),
+        chapterId: Number(chapterId.value),
 
-        topicId:
-          Number(topicId.value),
+        topicId: Number(topicId.value),
 
         questionTypeId: 6,
 
-        questionText:
-          questionText.trim(),
+        questionText: questionText.trim(),
 
-        pairs: matchingPairs.map(
-          (pair, index) => ({
-            ...(pair.pairId
-              ? {
-                  pairId:
-                    Number(
-                      pair.pairId
-                    ),
-                }
-              : {}),
+        pairs: matchingPairs.map((pair, index) => ({
+          ...(pair.pairId
+            ? {
+                pairId: Number(pair.pairId),
+              }
+            : {}),
 
-            columnA:
-              pair.columnA.trim(),
+          columnA: pair.columnA.trim(),
 
-            columnB:
-              pair.columnB.trim(),
+          columnB: pair.columnB.trim(),
 
-            displayOrder:
-              index + 1,
-          })
-        ),
+          displayOrder: index + 1,
+        })),
       };
 
-      console.log(
-        "MATCHING QUESTION REQUEST:",
-        matchingQuestionData
-      );
+      console.log("MATCHING QUESTION REQUEST:", matchingQuestionData);
 
       try {
-        const response =
-          initialData?.questionId
-            ? await MatchingQuestionService.update(
-                initialData.questionId,
-                matchingQuestionData
-              )
-            : await MatchingQuestionService.create(
-                matchingQuestionData
-              );
+        const response = initialData?.questionId
+          ? await MatchingQuestionService.update(
+              initialData.questionId,
+              matchingQuestionData,
+            )
+          : await MatchingQuestionService.create(matchingQuestionData);
 
         await onSave(response.data);
 
         handleClose();
       } catch (error) {
-        console.error(
-          "Save Matching Question Error:",
-          error
-        );
+        console.error("Save Matching Question Error:", error);
 
-        console.error(
-          "Response:",
-          error.response?.data
-        );
+        console.error("Response:", error.response?.data);
 
         alert(
-          `Failed to ${
-            initialData
-              ? "update"
-              : "create"
-          } matching question.`
+          `Failed to ${initialData ? "update" : "create"} matching question.`,
         );
       }
 
@@ -958,172 +795,114 @@ function AddQuestionModal({
     // NORMAL QUESTION ATTRIBUTES
     // =======================================================
 
-    const questionAttributes =
-      attributes.flatMap((row) => {
-        const mappedAttributes = [];
+    const questionAttributes = attributes.flatMap((row) => {
+      const mappedAttributes = [];
 
-        // =====================================================
-        // DEBIT
-        // =====================================================
+      // =====================================================
+      // DEBIT
+      // =====================================================
 
-        if (row.debitBalance) {
-          const debitAmount =
-            row.debitAmount === ""
-              ? null
-              : Number(
-                  row.debitAmount
-                );
+      if (row.debitBalance) {
+        const debitAmount =
+          row.debitAmount === "" ? null : Number(row.debitAmount);
 
-          mappedAttributes.push({
-            ...(row.debitOriginal ||
-              {}),
+        mappedAttributes.push({
+          ...(row.debitOriginal || {}),
 
-            ...(row.debitQuestionAttributeId && {
-              questionAttributeId:
-                row.debitQuestionAttributeId,
-            }),
+          ...(row.debitQuestionAttributeId && {
+            questionAttributeId: row.debitQuestionAttributeId,
+          }),
 
-            headerId: 1,
+          headerId: 1,
 
-            headerName:
-              "Debit Particulars",
+          headerName: "Debit Particulars",
 
-            attributeId:
-              Number(
-                row.debitBalance
-              ),
+          attributeId: Number(row.debitBalance),
 
-            attributeName:
-              row.debitAttributeName ||
-              undefined,
+          attributeName: row.debitAttributeName || undefined,
 
-            amount:
-              debitAmount,
+          amount: debitAmount,
 
-            amount1:
-              debitAmount,
+          amount1: debitAmount,
 
-            amount2: null,
+          amount2: null,
 
-            transaction:
-              "Debit",
-          });
-        }
+          transaction: "Debit",
+        });
+      }
 
-        // =====================================================
-        // CREDIT
-        // =====================================================
+      // =====================================================
+      // CREDIT
+      // =====================================================
 
-        if (row.creditBalance) {
-          const creditAmount =
-            row.creditAmount === ""
-              ? null
-              : Number(
-                  row.creditAmount
-                );
+      if (row.creditBalance) {
+        const creditAmount =
+          row.creditAmount === "" ? null : Number(row.creditAmount);
 
-          mappedAttributes.push({
-            ...(row.creditOriginal ||
-              {}),
+        mappedAttributes.push({
+          ...(row.creditOriginal || {}),
 
-            ...(row.creditQuestionAttributeId && {
-              questionAttributeId:
-                row.creditQuestionAttributeId,
-            }),
+          ...(row.creditQuestionAttributeId && {
+            questionAttributeId: row.creditQuestionAttributeId,
+          }),
 
-            headerId: 3,
+          headerId: 3,
 
-            headerName:
-              "Credit Particulars",
+          headerName: "Credit Particulars",
 
-            attributeId:
-              Number(
-                row.creditBalance
-              ),
+          attributeId: Number(row.creditBalance),
 
-            attributeName:
-              row.creditAttributeName ||
-              undefined,
+          attributeName: row.creditAttributeName || undefined,
 
-            amount:
-              creditAmount,
+          amount: creditAmount,
 
-            amount1:
-              creditAmount,
+          amount1: creditAmount,
 
-            amount2: null,
+          amount2: null,
 
-            transaction:
-              "Credit",
-          });
-        }
+          transaction: "Credit",
+        });
+      }
 
-        return mappedAttributes;
-      });
+      return mappedAttributes;
+    });
 
     // =======================================================
     // NORMAL QUESTION REQUEST
     // =======================================================
 
     const questionData = {
-      courseId:
-        Number(courseId.value),
+      courseId: Number(courseId.value),
 
-      subjectId:
-        Number(subjectId.value),
+      subjectId: Number(subjectId.value),
 
-      chapterId:
-        Number(chapterId.value),
+      chapterId: Number(chapterId.value),
 
-      topicId:
-        Number(topicId.value),
+      topicId: Number(topicId.value),
 
-      questionTypeId:
-        Number(questionTypeId.value),
+      questionTypeId: Number(questionTypeId.value),
 
-      questionText:
-        questionText.trim(),
+      questionText: questionText.trim(),
 
       questionAttributes,
     };
 
-    console.log(
-      "NORMAL QUESTION REQUEST:",
-      questionData
-    );
+    console.log("NORMAL QUESTION REQUEST:", questionData);
 
     try {
-      const response =
-        initialData?.questionId
-          ? await QuestionService.update(
-              initialData.questionId,
-              questionData
-            )
-          : await QuestionService.create(
-              questionData
-            );
+      const response = initialData?.questionId
+        ? await QuestionService.update(initialData.questionId, questionData)
+        : await QuestionService.create(questionData);
 
       await onSave(response.data);
 
       handleClose();
     } catch (error) {
-      console.error(
-        "Save Question Error:",
-        error
-      );
+      console.error("Save Question Error:", error);
 
-      console.error(
-        "Response:",
-        error.response?.data
-      );
+      console.error("Response:", error.response?.data);
 
-      alert(
-        `Failed to ${
-          initialData
-            ? "update"
-            : "create"
-        } question.`
-      );
+      alert(`Failed to ${initialData ? "update" : "create"} question.`);
     }
   };
 
@@ -1167,18 +946,13 @@ function AddQuestionModal({
   return createPortal(
     <div className="modal-overlay">
       <div className="table-name-modal">
-
         {/* ===================================================
             HEADER
         =================================================== */}
 
         <div className="modal-header">
           <div>
-            <h2>
-              {initialData
-                ? "Edit Question"
-                : "Add New Question"}
-            </h2>
+            <h2>{initialData ? "Edit Question" : "Add New Question"}</h2>
 
             <p>
               {initialData
@@ -1187,10 +961,7 @@ function AddQuestionModal({
             </p>
           </div>
 
-          <button
-            className="close-btn"
-            onClick={handleClose}
-          >
+          <button className="close-btn" onClick={handleClose}>
             <FaTimes />
           </button>
         </div>
@@ -1200,69 +971,47 @@ function AddQuestionModal({
         =================================================== */}
 
         <div className="modal-body">
-
           {/* =================================================
               QUESTION DETAILS
           ================================================= */}
 
           <div className="form-card">
-
-            <h3 className="section-title">
-              Question Details
-            </h3>
+            <h3 className="section-title">Question Details</h3>
 
             <div className="form-grid">
-
               {/* =============================================
                   COURSE
               ============================================= */}
 
               <div className="form-group">
                 <label>
-                  Course Name{" "}
-                  <span>*</span>
+                  Course Name <span>*</span>
                 </label>
 
-                <div className="input-box">
-                  <FaList className="input-icon" />
+                <div className="select-box">
+                  <FaList className="select-icon" />
 
                   <Select
-                    className="react-select-container"
-                    classNamePrefix="react-select"
-                    options={
-                      courseOptions
-                    }
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
+                    options={courseOptions}
                     value={courseId}
                     onChange={(option) => {
-                      setCourseId(
-                        option
-                      );
+                      setCourseId(option);
 
-                      setSubjectId(
-                        null
-                      );
+                      setSubjectId(null);
 
-                      setChapterId(
-                        null
-                      );
+                      setChapterId(null);
 
-                      setTopicId(
-                        null
-                      );
+                      setTopicId(null);
                     }}
                     placeholder="Select Course Name"
                     isSearchable
-                    isDisabled={
-                      !!initialCourseId
-                    }
-                    menuPortalTarget={
-                      document.body
-                    }
+                    isDisabled={!!initialCourseId}
+                    menuPortalTarget={document.body}
                     menuPosition="fixed"
                     styles={{
-                      menuPortal: (
-                        base
-                      ) => ({
+                      menuPortal: (base) => ({
                         ...base,
                         zIndex: 9999,
                       }),
@@ -1277,47 +1026,31 @@ function AddQuestionModal({
 
               <div className="form-group">
                 <label>
-                  Subject{" "}
-                  <span>*</span>
+                  Subject <span>*</span>
                 </label>
 
-                <div className="input-box">
-                  <FaList className="input-icon" />
+                <div className="select-box">
+                  <FaList className="select-icon" />
 
                   <Select
-                    className="react-select-container"
-                    classNamePrefix="react-select"
-                    options={
-                      visibleSubjectOptions
-                    }
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
+                    options={visibleSubjectOptions}
                     value={subjectId}
                     onChange={(option) => {
-                      setSubjectId(
-                        option
-                      );
+                      setSubjectId(option);
 
-                      setChapterId(
-                        null
-                      );
+                      setChapterId(null);
 
-                      setTopicId(
-                        null
-                      );
+                      setTopicId(null);
                     }}
                     placeholder="Select Subject"
                     isSearchable
-                    isDisabled={
-                      !!initialSubjectId ||
-                      !courseId
-                    }
-                    menuPortalTarget={
-                      document.body
-                    }
+                    isDisabled={!!initialSubjectId || !courseId}
+                    menuPortalTarget={document.body}
                     menuPosition="fixed"
                     styles={{
-                      menuPortal: (
-                        base
-                      ) => ({
+                      menuPortal: (base) => ({
                         ...base,
                         zIndex: 9999,
                       }),
@@ -1332,43 +1065,29 @@ function AddQuestionModal({
 
               <div className="form-group">
                 <label>
-                  Chapter Name{" "}
-                  <span>*</span>
+                  Chapter Name <span>*</span>
                 </label>
 
-                <div className="input-box">
-                  <FaList className="input-icon" />
+                <div className="select-box">
+                  <FaList className="select-icon" />
 
                   <Select
-                    className="react-select-container"
-                    classNamePrefix="react-select"
-                    options={
-                      visibleChapterOptions
-                    }
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
+                    options={visibleChapterOptions}
                     value={chapterId}
                     onChange={(option) => {
-                      setChapterId(
-                        option
-                      );
+                      setChapterId(option);
 
-                      setTopicId(
-                        null
-                      );
+                      setTopicId(null);
                     }}
                     placeholder="Select Chapter Name"
                     isSearchable
-                    isDisabled={
-                      !!initialChapterId ||
-                      !subjectId
-                    }
-                    menuPortalTarget={
-                      document.body
-                    }
+                    isDisabled={!!initialChapterId || !subjectId}
+                    menuPortalTarget={document.body}
                     menuPosition="fixed"
                     styles={{
-                      menuPortal: (
-                        base
-                      ) => ({
+                      menuPortal: (base) => ({
                         ...base,
                         zIndex: 9999,
                       }),
@@ -1383,37 +1102,25 @@ function AddQuestionModal({
 
               <div className="form-group">
                 <label>
-                  Topic{" "}
-                  <span>*</span>
+                  Topic <span>*</span>
                 </label>
 
-                <div className="input-box">
-                  <FaList className="input-icon" />
+                <div className="select-box">
+                  <FaList className="select-icon" />
 
                   <Select
-                    className="react-select-container"
-                    classNamePrefix="react-select"
-                    options={
-                      visibleTopicOptions
-                    }
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
+                    options={visibleTopicOptions}
                     value={topicId}
-                    onChange={
-                      setTopicId
-                    }
+                    onChange={setTopicId}
                     placeholder="Select Topic"
                     isSearchable
-                    isDisabled={
-                      !!initialTopicId ||
-                      !chapterId
-                    }
-                    menuPortalTarget={
-                      document.body
-                    }
+                    isDisabled={!!initialTopicId || !chapterId}
+                    menuPortalTarget={document.body}
                     menuPosition="fixed"
                     styles={{
-                      menuPortal: (
-                        base
-                      ) => ({
+                      menuPortal: (base) => ({
                         ...base,
                         zIndex: 9999,
                       }),
@@ -1428,54 +1135,37 @@ function AddQuestionModal({
 
               <div className="form-group">
                 <label>
-                  Question Type{" "}
-                  <span>*</span>
+                  Question Type <span>*</span>
                 </label>
 
-                <div className="input-box">
-                  <FaList className="input-icon" />
+                <div className="select-box">
+                  <FaList className="select-icon" />
 
                   <Select
-                    className="react-select-container"
-                    classNamePrefix="react-select"
-                    options={
-                      questionTypeOptions
-                    }
-                    value={
-                      questionTypeId
-                    }
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
+                    options={questionTypeOptions}
+                    value={questionTypeId}
                     onChange={(option) => {
-                      setQuestionTypeId(
-                        option
-                      );
+                      setQuestionTypeId(option);
 
                       if (isMatchingQuestionType(option)) {
-                        setMatchingPairs(
-                          [
-                            {
-                              pairId:
-                                null,
-                              columnA:
-                                "",
-                              columnB:
-                                "",
-                              displayOrder:
-                                1,
-                            },
-                          ]
-                        );
+                        setMatchingPairs([
+                          {
+                            pairId: null,
+                            columnA: "",
+                            columnB: "",
+                            displayOrder: 1,
+                          },
+                        ]);
                       }
                     }}
                     placeholder="Select Question Type"
                     isSearchable
-                    menuPortalTarget={
-                      document.body
-                    }
+                    menuPortalTarget={document.body}
                     menuPosition="fixed"
                     styles={{
-                      menuPortal: (
-                        base
-                      ) => ({
+                      menuPortal: (base) => ({
                         ...base,
                         zIndex: 9999,
                       }),
@@ -1490,28 +1180,18 @@ function AddQuestionModal({
             =============================================== */}
 
             <div className="form-group full-width">
-
               <label>
-                Question Text{" "}
-                <span>*</span>
+                Question Text <span>*</span>
               </label>
 
               <div className="textarea-box">
-
                 <FaFileAlt className="input-icon" />
 
                 <textarea
                   placeholder="Enter question text"
-                  value={
-                    questionText
-                  }
-                  onChange={(e) =>
-                    setQuestionText(
-                      e.target.value
-                    )
-                  }
+                  value={questionText}
+                  onChange={(e) => setQuestionText(e.target.value)}
                 />
-
               </div>
             </div>
           </div>
@@ -1524,149 +1204,168 @@ function AddQuestionModal({
             <div className="form-card question-attributes-section">
               <h3 className="section-title">Answer Options</h3>
               <div className="form-group">
-                <label htmlFor="mcq-edit-marks">Marks <span>*</span></label>
-                <input id="mcq-edit-marks" className="form-control" type="number" min="1" value={marks}
-                  onChange={(event) => setMarks(event.target.value)} />
+                <label htmlFor="mcq-edit-marks">
+                  Marks <span>*</span>
+                </label>
+                <input
+                  id="mcq-edit-marks"
+                  className="form-control"
+                  type="number"
+                  min="1"
+                  value={marks}
+                  onChange={(event) => setMarks(event.target.value)}
+                />
               </div>
-              <p>{isMultipleChoice ? "Select all correct answers." : "Select one correct answer."}</p>
+              <p>
+                {isMultipleChoice
+                  ? "Select all correct answers."
+                  : "Select one correct answer."}
+              </p>
               {mcqLoading && <p>Loading options...</p>}
-              {mcqLoadError && <div className="alert alert-danger">{mcqLoadError}</div>}
-              {!mcqLoading && !mcqLoadError && <>
-                {mcqOptions.map((option, index) => (
-                  <div className="d-flex align-items-center gap-3 mb-3" key={option.optionId ?? `new-${index}`}>
-                    <input type={isMultipleChoice ? "checkbox" : "radio"} name="mcq-edit-correct"
-                      aria-label={`Option ${index + 1} is correct`} checked={option.isCorrect}
-                      onChange={() => setMcqOptions((current) => current.map((item, i) => ({ ...item,
-                        isCorrect: isMultipleChoice ? (i === index ? !item.isCorrect : item.isCorrect) : i === index,
-                      })))} />
-                    <input className="form-control" aria-label={`Option ${index + 1}`} value={option.optionText}
-                      placeholder={`Option ${String.fromCharCode(65 + index)}`}
-                      onChange={(event) => setMcqOptions((current) => current.map((item, i) => i === index ? { ...item, optionText: event.target.value } : item))} />
-                    <button type="button" className="btn btn-outline-danger" aria-label={`Remove option ${index + 1}`}
-                      disabled={mcqOptions.length <= 2} onClick={() => setMcqOptions((current) => current.filter((_, i) => i !== index))}><FaTrash /></button>
-                  </div>
-                ))}
-                <button type="button" className="btn btn-outline-primary add-row-btn"
-                  onClick={() => setMcqOptions((current) => [...current, { optionText: "", isCorrect: false }])}>
-                  <FaPlus className="me-2" /> Add Option
-                </button>
-              </>}
+              {mcqLoadError && (
+                <div className="alert alert-danger">{mcqLoadError}</div>
+              )}
+              {!mcqLoading && !mcqLoadError && (
+                <>
+                  {mcqOptions.map((option, index) => (
+                    <div
+                      className="d-flex align-items-center gap-3 mb-3"
+                      key={option.optionId ?? `new-${index}`}
+                    >
+                      <input
+                        type={isMultipleChoice ? "checkbox" : "radio"}
+                        name="mcq-edit-correct"
+                        aria-label={`Option ${index + 1} is correct`}
+                        checked={option.isCorrect}
+                        onChange={() =>
+                          setMcqOptions((current) =>
+                            current.map((item, i) => ({
+                              ...item,
+                              isCorrect: isMultipleChoice
+                                ? i === index
+                                  ? !item.isCorrect
+                                  : item.isCorrect
+                                : i === index,
+                            })),
+                          )
+                        }
+                      />
+                      <input
+                        className="form-control"
+                        aria-label={`Option ${index + 1}`}
+                        value={option.optionText}
+                        placeholder={`Option ${String.fromCharCode(65 + index)}`}
+                        onChange={(event) =>
+                          setMcqOptions((current) =>
+                            current.map((item, i) =>
+                              i === index
+                                ? { ...item, optionText: event.target.value }
+                                : item,
+                            ),
+                          )
+                        }
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-outline-danger"
+                        aria-label={`Remove option ${index + 1}`}
+                        disabled={mcqOptions.length <= 2}
+                        onClick={() =>
+                          setMcqOptions((current) =>
+                            current.filter((_, i) => i !== index),
+                          )
+                        }
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    className="btn btn-outline-primary add-row-btn"
+                    onClick={() =>
+                      setMcqOptions((current) => [
+                        ...current,
+                        { optionText: "", isCorrect: false },
+                      ])
+                    }
+                  >
+                    <FaPlus className="me-2" /> Add Option
+                  </button>
+                </>
+              )}
             </div>
           ) : isMatchingQuestion ? (
             <div className="form-card question-attributes-section">
-
-              <h3 className="section-title">
-                Matching Pairs
-              </h3>
+              <h3 className="section-title">Matching Pairs</h3>
 
               <div className="question-table">
-
                 <table className="table table-bordered mt-3">
-
                   <thead>
                     <tr>
-                      <th>
-                        Column A
-                      </th>
+                      <th>Column A</th>
 
-                      <th>
-                        Column B
-                      </th>
+                      <th>Column B</th>
 
-                      <th>
-                        Action
-                      </th>
+                      <th>Action</th>
                     </tr>
                   </thead>
 
                   <tbody>
+                    {matchingPairs.map((pair, index) => (
+                      <tr key={index}>
+                        {/* COLUMN A */}
 
-                    {matchingPairs.map(
-                      (
-                        pair,
-                        index
-                      ) => (
-                        <tr
-                          key={
-                            index
-                          }
-                        >
+                        <td>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Enter Column A"
+                            value={pair.columnA}
+                            onChange={(e) =>
+                              handleMatchingPairChange(
+                                index,
+                                "columnA",
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </td>
 
-                          {/* COLUMN A */}
+                        {/* COLUMN B */}
 
-                          <td>
-                            <input
-                              type="text"
-                              className="form-control"
-                              placeholder="Enter Column A"
-                              value={
-                                pair.columnA
-                              }
-                              onChange={(
-                                e
-                              ) =>
-                                handleMatchingPairChange(
-                                  index,
-                                  "columnA",
-                                  e.target
-                                    .value
-                                )
-                              }
-                            />
-                          </td>
+                        <td>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Enter Column B"
+                            value={pair.columnB}
+                            onChange={(e) =>
+                              handleMatchingPairChange(
+                                index,
+                                "columnB",
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </td>
 
-                          {/* COLUMN B */}
+                        {/* DELETE */}
 
-                          <td>
-                            <input
-                              type="text"
-                              className="form-control"
-                              placeholder="Enter Column B"
-                              value={
-                                pair.columnB
-                              }
-                              onChange={(
-                                e
-                              ) =>
-                                handleMatchingPairChange(
-                                  index,
-                                  "columnB",
-                                  e.target
-                                    .value
-                                )
-                              }
-                            />
-                          </td>
-
-                          {/* DELETE */}
-
-                          <td className="text-center">
-
-                            <button
-                              type="button"
-                              className="btn btn-outline-danger"
-                              onClick={() =>
-                                handleDeleteMatchingPair(
-                                  index
-                                )
-                              }
-                              disabled={
-                                matchingPairs.length <=
-                                1
-                              }
-                            >
-                              <FaTrash />
-                            </button>
-
-                          </td>
-
-                        </tr>
-                      )
-                    )}
-
+                        <td className="text-center">
+                          <button
+                            type="button"
+                            className="btn btn-outline-danger"
+                            onClick={() => handleDeleteMatchingPair(index)}
+                            disabled={matchingPairs.length <= 1}
+                          >
+                            <FaTrash />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
-
               </div>
 
               {/* ADD PAIR */}
@@ -1674,310 +1373,185 @@ function AddQuestionModal({
               <button
                 type="button"
                 className="btn btn-outline-primary add-row-btn"
-                onClick={
-                  handleAddMatchingPair
-                }
+                onClick={handleAddMatchingPair}
               >
                 <FaPlus className="me-2" />
-
                 Add Pair
               </button>
-
             </div>
           ) : (
-
             /* =================================================
                NORMAL QUESTION ATTRIBUTES
             ================================================= */
 
             <div className="form-card question-attributes-section">
-
-              <h3 className="section-title">
-                Question Attributes
-              </h3>
+              <h3 className="section-title">Question Attributes</h3>
 
               <div className="question-table">
-
                 <table className="table table-bordered mt-3">
-
                   <thead>
                     <tr>
+                      <th>Debit Balance</th>
 
-                      <th>
-                        Debit Balance
-                      </th>
+                      <th>Amount</th>
 
-                      <th>
-                        Amount
-                      </th>
+                      <th>Credit Balance</th>
 
-                      <th>
-                        Credit Balance
-                      </th>
+                      <th>Amount</th>
 
-                      <th>
-                        Amount
-                      </th>
-
-                      <th>
-                        Action
-                      </th>
-
+                      <th>Action</th>
                     </tr>
                   </thead>
 
                   <tbody>
-
-                    {attributes.map(
-                      (
-                        row,
-                        index
-                      ) => (
-                        <tr
-                          key={
-                            index
-                          }
-                        >
-
-                          {/* =================================
+                    {attributes.map((row, index) => (
+                      <tr key={index}>
+                        {/* =================================
                               DEBIT BALANCE
                           ================================= */}
 
-                          <td>
+                        <td>
+                          <Select
+                            className="react-select-container"
+                            classNamePrefix="credit-select"
+                            options={balanceOptions}
+                            value={balanceOptions.find(
+                              (option) => option.value == row.debitBalance,
+                            )}
+                            onChange={(selected) =>
+                              (() => {
+                                const updated = [...attributes];
 
-                            <Select
-                              className="react-select-container"
-                              classNamePrefix="credit-select"
-                              options={
-                                balanceOptions
-                              }
-                              value={balanceOptions.find(
-                                (
-                                  option
-                                ) =>
-                                  option.value ==
-                                  row.debitBalance
-                              )}
-                              onChange={(
-                                selected
-                              ) =>
-                                (() => {
-                                  const updated =
-                                    [
-                                      ...attributes,
-                                    ];
+                                updated[index] = {
+                                  ...updated[index],
 
-                                  updated[
-                                    index
-                                  ] = {
-                                    ...updated[
-                                      index
-                                    ],
+                                  debitBalance: selected ? selected.value : "",
 
-                                    debitBalance:
-                                      selected
-                                        ? selected.value
-                                        : "",
+                                  debitAttributeName: selected?.label || "",
 
-                                    debitAttributeName:
-                                      selected?.label ||
-                                      "",
+                                  debitAmount: selected ? selected.amount : "",
+                                };
 
-                                    debitAmount:
-                                      selected
-                                        ? selected.amount
-                                        : "",
-                                  };
+                                setAttributes(updated);
+                              })()
+                            }
+                            placeholder="Enter Debit Balance"
+                            isSearchable
+                            isClearable
+                            menuPortalTarget={document.body}
+                            menuPosition="fixed"
+                            styles={{
+                              menuPortal: (base) => ({
+                                ...base,
+                                zIndex: 99999,
+                              }),
+                            }}
+                          />
+                        </td>
 
-                                  setAttributes(
-                                    updated
-                                  );
-                                })()
-                              }
-                              placeholder="Enter Debit Balance"
-                              isSearchable
-                              isClearable
-                              menuPortalTarget={
-                                document.body
-                              }
-                              menuPosition="fixed"
-                              styles={{
-                                menuPortal:
-                                  (
-                                    base
-                                  ) => ({
-                                    ...base,
-                                    zIndex: 99999,
-                                  }),
-                              }}
-                            />
-
-                          </td>
-
-                          {/* =================================
+                        {/* =================================
                               DEBIT AMOUNT
                           ================================= */}
 
-                          <td>
+                        <td>
+                          <input
+                            className="amount-input"
+                            type="number"
+                            min="0"
+                            placeholder="0"
+                            value={row.debitAmount}
+                            onChange={(e) =>
+                              handleAttributeChange(
+                                index,
+                                "debitAmount",
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </td>
 
-                            <input
-                              className="amount-input"
-                              type="number"
-                              min="0"
-                              placeholder="0"
-                              value={
-                                row.debitAmount
-                              }
-                              onChange={(
-                                e
-                              ) =>
-                                handleAttributeChange(
-                                  index,
-                                  "debitAmount",
-                                  e
-                                    .target
-                                    .value
-                                )
-                              }
-                            />
-
-                          </td>
-
-                          {/* =================================
+                        {/* =================================
                               CREDIT BALANCE
                           ================================= */}
 
-                          <td>
+                        <td>
+                          <Select
+                            className="react-select-container"
+                            classNamePrefix="credit-select"
+                            options={balanceOptions}
+                            value={balanceOptions.find(
+                              (option) => option.value === row.creditBalance,
+                            )}
+                            onChange={(selected) =>
+                              (() => {
+                                const updated = [...attributes];
 
-                            <Select
-                              className="react-select-container"
-                              classNamePrefix="credit-select"
-                              options={
-                                balanceOptions
-                              }
-                              value={balanceOptions.find(
-                                (
-                                  option
-                                ) =>
-                                  option.value ===
-                                  row.creditBalance
-                              )}
-                              onChange={(
-                                selected
-                              ) =>
-                                (() => {
-                                  const updated =
-                                    [
-                                      ...attributes,
-                                    ];
+                                updated[index] = {
+                                  ...updated[index],
 
-                                  updated[
-                                    index
-                                  ] = {
-                                    ...updated[
-                                      index
-                                    ],
+                                  creditBalance: selected ? selected.value : "",
 
-                                    creditBalance:
-                                      selected
-                                        ? selected.value
-                                        : "",
+                                  creditAttributeName: selected?.label || "",
 
-                                    creditAttributeName:
-                                      selected?.label ||
-                                      "",
+                                  creditAmount: selected ? selected.amount : "",
+                                };
 
-                                    creditAmount:
-                                      selected
-                                        ? selected.amount
-                                        : "",
-                                  };
+                                setAttributes(updated);
+                              })()
+                            }
+                            placeholder="Enter Credit Balance"
+                            isSearchable
+                            isClearable
+                            menuPortalTarget={document.body}
+                            menuPosition="fixed"
+                            styles={{
+                              menuPortal: (base) => ({
+                                ...base,
+                                zIndex: 99999,
+                              }),
+                            }}
+                          />
+                        </td>
 
-                                  setAttributes(
-                                    updated
-                                  );
-                                })()
-                              }
-                              placeholder="Enter Credit Balance"
-                              isSearchable
-                              isClearable
-                              menuPortalTarget={
-                                document.body
-                              }
-                              menuPosition="fixed"
-                              styles={{
-                                menuPortal:
-                                  (
-                                    base
-                                  ) => ({
-                                    ...base,
-                                    zIndex: 99999,
-                                  }),
-                              }}
-                            />
-
-                          </td>
-
-                          {/* =================================
+                        {/* =================================
                               CREDIT AMOUNT
                           ================================= */}
 
-                          <td>
+                        <td>
+                          <input
+                            className="amount-input"
+                            type="number"
+                            min="0"
+                            placeholder="0"
+                            value={row.creditAmount}
+                            onChange={(e) =>
+                              handleAttributeChange(
+                                index,
+                                "creditAmount",
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </td>
 
-                            <input
-                              className="amount-input"
-                              type="number"
-                              min="0"
-                              placeholder="0"
-                              value={
-                                row.creditAmount
-                              }
-                              onChange={(
-                                e
-                              ) =>
-                                handleAttributeChange(
-                                  index,
-                                  "creditAmount",
-                                  e
-                                    .target
-                                    .value
-                                )
-                              }
-                            />
-
-                          </td>
-
-                          {/* =================================
+                        {/* =================================
                               DELETE
                           ================================= */}
 
-                          <td className="text-center">
-
-                            <button
-                              type="button"
-                              className="btn btn-outline-danger"
-                              onClick={() =>
-                                handleDeleteRow(
-                                  index
-                                )
-                              }
-                              disabled={
-                                attributes.length ===
-                                1
-                              }
-                            >
-                              <FaTrash />
-                            </button>
-
-                          </td>
-
-                        </tr>
-                      )
-                    )}
-
+                        <td className="text-center">
+                          <button
+                            type="button"
+                            className="btn btn-outline-danger"
+                            onClick={() => handleDeleteRow(index)}
+                            disabled={attributes.length === 1}
+                          >
+                            <FaTrash />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
-
               </div>
 
               {/* ADD ATTRIBUTE ROW */}
@@ -1985,15 +1559,11 @@ function AddQuestionModal({
               <button
                 type="button"
                 className="btn btn-outline-primary add-row-btn"
-                onClick={
-                  handleAddRow
-                }
+                onClick={handleAddRow}
               >
                 <FaPlus className="me-2" />
-
                 Add Row
               </button>
-
             </div>
           )}
         </div>
@@ -2003,7 +1573,6 @@ function AddQuestionModal({
         =================================================== */}
 
         <div className="modal-footer">
-
           <button
             type="button"
             className="btn btn-secondary"
@@ -2016,20 +1585,18 @@ function AddQuestionModal({
             type="button"
             className="btn btn-primary"
             onClick={handleSave}
-            disabled={isMcqQuestion && (mcqLoading || !!mcqLoadError || mcqSaving)}
+            disabled={
+              isMcqQuestion && (mcqLoading || !!mcqLoadError || mcqSaving)
+            }
           >
             <FaSave className="me-2" />
 
-            {initialData
-              ? "Update"
-              : "Save"}
+            {initialData ? "Update" : "Save"}
           </button>
-
         </div>
-
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 
