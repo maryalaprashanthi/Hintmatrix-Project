@@ -1500,3 +1500,34 @@
 
   text-align: center;
 }
+
+.aq-fill-blank-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.aq-delete-blank-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #dc2626;
+  border-radius: 8px;
+  background: #fff;
+  color: #dc2626;
+  cursor: pointer;
+}
+
+.aq-delete-blank-button:hover:not(:disabled) {
+  background: #dc2626;
+  color: #fff;
+}
+
+.aq-delete-blank-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

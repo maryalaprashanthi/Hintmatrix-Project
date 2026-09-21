@@ -281,6 +281,251 @@ const handleFileUpload = async (e) => {
     console.log("Excel Question Type:", excelQuestionType);
 
     // =====================================================
+    // FILL-IN-THE-BLANKS QUESTION UPLOAD
+    // =====================================================
+
+    if (excelQuestionType === "FILL_IN_THE_BLANKS") {
+      console.log("Fill-in-the-Blanks Excel upload detected.");
+
+      // ===================================================
+      // VALIDATE REQUIRED IDs
+      // ===================================================
+
+      if (!courseId || !chapterId || !topicId) {
+        toast.error(
+          "Course ID, Chapter ID and Topic ID are required for Fill-in-the-Blanks upload.",
+        );
+
+        return;
+      }
+
+      // ===================================================
+      // FILL-IN-THE-BLANKS FORM DATA
+      // ===================================================
+
+      const formData = new FormData();
+
+      formData.append("file", file);
+
+      const request = {
+        courseId: Number(courseId),
+        chapterId: Number(chapterId),
+        topicId: Number(topicId),
+      };
+
+      formData.append(
+        "request",
+        new Blob([JSON.stringify(request)], {
+          type: "application/json",
+        }),
+      );
+
+      console.log(
+        "Fill-in-the-Blanks Upload Parameters:",
+        request,
+      );
+
+      // ===================================================
+      // FILL-IN-THE-BLANKS UPLOAD API
+      // ===================================================
+
+      const response =
+        await QuestionService.uploadFillInTheBlankExcel(
+          formData,
+        );
+
+      console.log(
+        "Fill-in-the-Blanks Excel upload response:",
+        response,
+      );
+
+      console.log(
+        "Fill-in-the-Blanks Excel upload response data:",
+        response.data,
+      );
+
+      const result = response.data;
+
+      // ===================================================
+      // GET BACKEND ERRORS
+      // ===================================================
+
+      const errors = Array.isArray(result?.errors)
+        ? result.errors
+        : [];
+
+      console.log(
+        "Fill-in-the-Blanks Upload Errors:",
+        errors,
+      );
+
+      // ===================================================
+      // IF ERRORS EXIST
+      // ===================================================
+
+      if (errors.length > 0) {
+        setUploadErrors(errors);
+
+        localStorage.setItem(
+          QUESTION_UPLOAD_ERRORS_KEY,
+          JSON.stringify(errors),
+        );
+
+        setShowUploadErrors(true);
+      }
+
+      // ===================================================
+      // IF NO ERRORS
+      // ===================================================
+
+      else {
+        toast.success(
+          result?.message ||
+            "Fill-in-the-Blanks questions uploaded.",
+        );
+
+        setUploadErrors([]);
+
+        localStorage.removeItem(
+          QUESTION_UPLOAD_ERRORS_KEY,
+        );
+
+        setShowUploadErrors(false);
+      }
+
+      // ===================================================
+      // REFRESH QUESTION LIST
+      // ===================================================
+
+      await loadQuestions();
+
+      // ===================================================
+      // IMPORTANT
+      //
+      // STOP HERE.
+      //
+      // Normal Excel upload must NOT execute.
+      // ===================================================
+
+      return;
+    }
+
+// =====================================================
+// MATCH-THE-FOLLOWING QUESTION UPLOAD
+// =====================================================
+
+if (excelQuestionType === "MATCH_THE_FOLLOWING") {
+  console.log("Match-the-Following Excel upload detected.");
+
+  // ===================================================
+  // VALIDATE REQUIRED IDs
+  // ===================================================
+
+  if (!courseId || !chapterId || !topicId) {
+    toast.error(
+      "Course ID, Chapter ID and Topic ID are required for Match-the-Following upload.",
+    );
+
+    return;
+  }
+
+  // ===================================================
+  // MATCH-THE-FOLLOWING FORM DATA
+  // ===================================================
+
+  const formData = new FormData();
+
+  formData.append("file", file);
+
+  const request = {
+    courseId: Number(courseId),
+    chapterId: Number(chapterId),
+    topicId: Number(topicId),
+  };
+
+  formData.append(
+    "request",
+    new Blob([JSON.stringify(request)], {
+      type: "application/json",
+    }),
+  );
+
+  console.log(
+    "Match-the-Following Upload Parameters:",
+    request,
+  );
+
+  // ===================================================
+  // MATCH-THE-FOLLOWING UPLOAD API
+  // ===================================================
+
+  const response =
+    await QuestionService.uploadMatchingExcel(formData);
+
+  console.log(
+    "Match-the-Following Excel upload response:",
+    response,
+  );
+
+  console.log(
+    "Match-the-Following Excel upload response data:",
+    response.data,
+  );
+
+  const result = response.data;
+
+  // ===================================================
+  // GET BACKEND ERRORS
+  // ===================================================
+
+  const errors = Array.isArray(result?.errors)
+    ? result.errors
+    : [];
+
+  if (errors.length > 0) {
+    setUploadErrors(errors);
+
+    localStorage.setItem(
+      QUESTION_UPLOAD_ERRORS_KEY,
+      JSON.stringify(errors),
+    );
+
+    setShowUploadErrors(true);
+  } else {
+    toast.success(
+      result?.message ||
+        "Match-the-Following questions uploaded.",
+    );
+
+    setUploadErrors([]);
+
+    localStorage.removeItem(
+      QUESTION_UPLOAD_ERRORS_KEY,
+    );
+
+    setShowUploadErrors(false);
+  }
+
+  // ===================================================
+  // REFRESH QUESTION LIST
+  // ===================================================
+
+  await loadQuestions();
+
+  // ===================================================
+  // STOP HERE
+  // ===================================================
+
+  return;
+}
+
+
+    // =====================================================
+    // MCQ QUESTION UPLOAD
+    // =====================================================
+
+
+    // =====================================================
     // MCQ QUESTION UPLOAD
     // =====================================================
 

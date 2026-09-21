@@ -46,16 +46,44 @@ class QuestionService {
   }
 
   uploadExcel(formData) {
-    return axios.post(`${BASE_QUESTION_URL}/upload`, formData, {
+    return apiClient.post(`${BASE_QUESTION_URL}/upload`, formData, {
       withCredentials: true,
     });
   }
 
+  uploadFillInTheBlankExcel(formData) {
+    return apiClient.post(
+      `${BASE_QUESTION_URL}/fill-blank/upload`,
+      formData,
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  // ============================================================
+  // ADDED: MATCH-THE-FOLLOWING EXCEL UPLOAD
+  // ============================================================
+
+  uploadMatchingExcel(formData) {
+    return apiClient.post(
+      `${BASE_QUESTION_URL}/matching/upload`,
+      formData,
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
   uploadMcqExcel(formData) {
-  return axios.post("http://localhost:8080/api/mcq-questions/mcq/upload", formData, {
-    withCredentials: true,
-  });
-}
+    return apiClient.post(
+      "http://localhost:8080/api/mcq-questions/mcq/upload",
+      formData,
+      {
+        withCredentials: true,
+      }
+    );
+  }
 
   getQuestionById(questionId) {
     return apiClient.get(`${BASE_URL}/${questionId}`, {
@@ -63,7 +91,9 @@ class QuestionService {
     });
   }
   deleteQuestion(id) {
-    return apiClient.delete(`${BASE_URL}/${id}`, { withCredentials: true });
+    return apiClient.delete(`${BASE_URL}/${id}`, {
+      withCredentials: true,
+    });
   }
 }
 
