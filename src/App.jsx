@@ -78,6 +78,7 @@ import MockExamCatalog from "./pages/MockExamCatalog/MockExamCatalog";
 import ExamReview from "./pages/ExamReview/ExamReview";
 import ExamPaper from "./pages/ExamPaper/ExamPaper";
 import PerformanceDashboard from "./pages/Performance/PerformanceDashboard";
+import StudentPerformanceDashboard from "./components/StudentPerformanceDashboard/StudentPerformanceDashboard.jsx";
 
 function App() {
   const navigate = useNavigate();
@@ -171,6 +172,12 @@ function App() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/oauth2/success" element={<OAuthSuccess />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
+
+      <Route
+        path="/studentperformancedashboard"
+        element={<StudentPerformanceDashboard />}
+      />
+
       <Route
         element={
           <ProtectedRoute>

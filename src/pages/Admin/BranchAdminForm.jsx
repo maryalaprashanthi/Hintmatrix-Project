@@ -266,11 +266,11 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
                   College Name <span>*</span>
                 </label>
 
-                <div className="input-box">
-                  <FaUniversity className="input-icon" />
+                <div className="select-box">
+                  <FaUniversity className="select-icon" />
                   <Select
-                    className="react-select-container"
-                    classNamePrefix="react-select"
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
                     menuPlacement="bottom"
                     menuPortalTarget={document.body}
                     styles={{
@@ -301,12 +301,17 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
                   Branch Name <span>*</span>
                 </label>
 
-                <div className="input-box">
-                  <FaCodeBranch className="input-icon" />
+                <div className="select-box">
+                  <FaCodeBranch className="select-icon" />
 
                   <Select
-                    className="react-select-container"
-                    classNamePrefix="react-select"
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
+                    menuPlacement="bottom"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                    }}
                     options={branchOptions}
                     value={
                       branchOptions.find(

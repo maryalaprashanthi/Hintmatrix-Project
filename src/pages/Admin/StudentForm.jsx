@@ -253,12 +253,12 @@ function StudentForm({
                   College <span>*</span>
                 </label>
 
-                <div className="input-box">
-                  <FaUniversity className="input-icon" />
+                <div className="select-box">
+                  <FaUniversity className="select-icon" />
 
                   <Select
-                    className="react-select-container"
-                    classNamePrefix="react-select"
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
                     menuPortalTarget={document.body}
                     styles={{
                       menuPortal: (base) => ({ ...base, zIndex: 99999 }),
@@ -289,12 +289,12 @@ function StudentForm({
                   Branch <span>*</span>
                 </label>
 
-                <div className="input-box">
-                  <FaCodeBranch className="input-icon" />
+                <div className="select-box">
+                  <FaCodeBranch className="select-icon" />
 
                   <Select
-                    className="react-select-container"
-                    classNamePrefix="react-select"
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
                     menuPortalTarget={document.body}
                     styles={{
                       menuPortal: (base) => ({ ...base, zIndex: 99999 }),
@@ -325,12 +325,12 @@ function StudentForm({
                   Course <span>*</span>
                 </label>
 
-                <div className="input-box">
-                  <FaBook className="input-icon" />
+                <div className="select-box">
+                  <FaBook className="select-icon" />
 
                   <Select
-                    className="react-select-container"
-                    classNamePrefix="react-select"
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
                     menuPortalTarget={document.body}
                     styles={{
                       menuPortal: (base) => ({ ...base, zIndex: 99999 }),
@@ -357,12 +357,12 @@ function StudentForm({
                   Section <span>*</span>
                 </label>
 
-                <div className="input-box">
-                  <FaUsers className="input-icon" />
+                <div className="select-box">
+                  <FaUsers className="select-icon" />
 
                   <Select
-                    className="react-select-container"
-                    classNamePrefix="react-select"
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
                     menuPortalTarget={document.body}
                     styles={{
                       menuPortal: (base) => ({ ...base, zIndex: 99999 }),

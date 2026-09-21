@@ -204,6 +204,74 @@
   font-size: 15px;
 }
 
+.select-box {
+  position: relative;
+  width: 100%;
+}
+
+.select-box .select-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  color: #667085;
+  pointer-events: none;
+  font-size: 16px;
+}
+
+.select-box .aq-search-select {
+  width: 100%;
+}
+
+.select-box .aq-search-select .aq-select__control {
+  height: 45px !important;
+  min-height: 45px !important;
+  border: 1px solid #dbe4f0 !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  padding-left: 0 !important;
+  background: #fff !important;
+  font-size: 15px;
+}
+
+.select-box .aq-search-select .aq-select__control:hover,
+.select-box .aq-search-select .aq-select__control--is-focused {
+  border-color: #356bdf !important;
+  box-shadow: 0 0 0 3px rgba(53, 107, 223, 0.12) !important;
+}
+
+.select-box .aq-search-select .aq-select__value-container {
+  padding: 0 8px 0 42px !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+}
+
+.select-box .aq-search-select .aq-select__placeholder,
+.select-box .aq-search-select .aq-select__single-value,
+.select-box .aq-search-select .aq-select__input-container {
+  margin-left: 0 !important;
+  text-align: left !important;
+  padding-left: 0 !important;
+}
+
+.select-box .aq-search-select .aq-select__placeholder {
+  color: #858fa1 !important;
+}
+
+.select-box .aq-search-select .aq-select__single-value {
+  color: #17223b !important;
+}
+
+.select-box .aq-search-select .aq-select__indicator {
+  color: #667085 !important;
+  padding: 0 8px;
+}
+
+.select-box .aq-search-select .aq-select__menu {
+  z-index: 99999 !important;
+}
+
 /* ==========================================
    Inputs
 ========================================== */

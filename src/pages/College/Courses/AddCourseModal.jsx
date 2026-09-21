@@ -207,8 +207,8 @@ function AddCourseModal({ show, onClose, onSave, selectedCourseData }) {
                 <div className="input-box">
                   <FaLayerGroup className="input-icon" />
                   <Select
-                    className="react-select-container"
-                    classNamePrefix="react-select"
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
                     menuPlacement="bottom"
                     menuPortalTarget={document.body}
                     styles={{
@@ -239,8 +239,13 @@ function AddCourseModal({ show, onClose, onSave, selectedCourseData }) {
                 <div className="input-box">
                   <FaLayerGroup className="input-icon" />
                   <Select
-                    className="react-select-container"
-                    classNamePrefix="react-select"
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
+                    menuPlacement="bottom"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                    }}
                     options={filteredBranchOptions}
                     value={filteredBranchOptions.find(
                       (item) => String(item.value) === String(branchId),

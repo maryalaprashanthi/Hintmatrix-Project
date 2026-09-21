@@ -167,8 +167,8 @@ function SectionForm({ selectedSectionData, onSave, onCancel }) {
             <div className="select-box">
               <FaUniversity className="select-icon" />
               <Select
-                className="react-select-container"
-                classNamePrefix="react-select"
+                className="aq-search-select"
+                classNamePrefix="aq-select"
                 menuPlacement="bottom"
                 menuPortalTarget={document.body}
                 styles={{
@@ -204,8 +204,13 @@ function SectionForm({ selectedSectionData, onSave, onCancel }) {
             <div className="select-box">
               <FaCodeBranch className="select-icon" />
               <Select
-                className="react-select-container"
-                classNamePrefix="react-select"
+                className="aq-search-select"
+                classNamePrefix="aq-select"
+                menuPlacement="bottom"
+                menuPortalTarget={document.body}
+                styles={{
+                  menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                }}
                 options={branchOptions}
                 value={
                   branchOptions.find(
@@ -236,8 +241,13 @@ function SectionForm({ selectedSectionData, onSave, onCancel }) {
             <div className="select-box">
               <FaCodeBranch className="select-icon" />
               <Select
-                className="react-select-container"
-                classNamePrefix="react-select"
+                className="aq-search-select"
+                classNamePrefix="aq-select"
+                 menuPlacement="bottom"
+                menuPortalTarget={document.body}
+                styles={{
+                  menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                }}
                 options={courseOptions}
                 value={
                   courseOptions.find(
