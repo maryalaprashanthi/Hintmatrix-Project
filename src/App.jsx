@@ -42,6 +42,7 @@ import Sessions from "./pages/Sessions";
 import Results from "./pages/Results";
 import Certificates from "./pages/Certificates";
 import Settings from "./pages/Settings";
+import Profile from "./pages/Account/Profile";
 
 // Table Pages
 import TableNames from "./pages/Table/TableNames";
@@ -424,6 +425,7 @@ function App() {
         <Route path="/results" element={<Results />} />
         <Route path="/certificates" element={<Certificates />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/profile" element={<Profile />} />
 
         <Route path="/journal/:questionId" element={<JournalPage />} />
         <Route path="/dropdown/:questionId" element={<DropdownPage />} />
