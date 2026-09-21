@@ -3,9 +3,6 @@
 const apiClient = axios.create({
   baseURL: "http://localhost:8080",
   withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
 export const clearAuthSession = () => {
@@ -27,7 +24,10 @@ export const logoutUser = (navigateFn) => {
     return;
   }
 
-  if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+  if (
+    typeof window !== "undefined" &&
+    window.location.pathname !== "/login"
+  ) {
     window.location.replace("/login");
   }
 };
@@ -39,6 +39,14 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    // Let Axios automatically set Content-Type for FormData.
+    // This is required for multipart/form-data uploads.
+    if (config.data instanceof FormData) {
+      delete config.headers["Content-Type"];
+    } else {
+      config.headers["Content-Type"] = "application/json";
     }
 
     return config;
@@ -54,7 +62,11 @@ apiClient.interceptors.response.use(
 
     if (statusCode === 401 && !isAuthRequest) {
       clearAuthSession();
-      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+
+      if (
+        typeof window !== "undefined" &&
+        window.location.pathname !== "/login"
+      ) {
         window.location.replace("/login");
       }
     }

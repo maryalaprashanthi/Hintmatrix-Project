@@ -1,28 +1,41 @@
+
 /* =========================================================
    MAIN WRAPPER
-========================================================= */
+   ========================================================= */
 
 .matching-question-wrapper {
   width: 100%;
   background: #ffffff;
   border-radius: 14px;
   padding: 24px;
+  box-sizing: border-box;
 }
 
 .matching-page {
-  max-width: 1240px;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
   padding: 10px 0 45px;
-  width: 100%;
   color: #1e293b;
+  box-sizing: border-box;
 }
 
+/* =========================================================
+   PRACTICE HEADER
+   ========================================================= */
+
 .matching-practice-header {
+  width: 100%;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
   margin-bottom: 26px;
+}
+
+.matching-header-left {
+  flex: 1;
+  min-width: 0;
 }
 
 .matching-eyebrow {
@@ -45,6 +58,10 @@
   font-size: 14px;
 }
 
+/* =========================================================
+   STAT CARDS
+   ========================================================= */
+
 .matching-stat-cards {
   display: flex;
   gap: 12px;
@@ -55,6 +72,7 @@
   min-width: 124px;
   min-height: 84px;
   padding: 14px;
+  box-sizing: border-box;
   border: 1px solid #e4e8f1;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(35, 49, 80, 0.05);
@@ -85,29 +103,39 @@
   color: #6935d5;
 }
 
-.matching-practice-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 246px;
-  gap: 16px;
-  align-items: start;
-}
+/* =========================================================
+   MAIN LAYOUT
+   Full width — navigator space removed.
+   No functionality is changed.
+   ========================================================= */
 
-.matching-question-content,
-.matching-question-navigator {
-  min-width: 0;
-  border: 1px solid #e3e8f1;
-  border-radius: 12px;
-  background: #ffffff;
+.matching-practice-layout {
+  width: 100%;
+  display: block;
+  box-sizing: border-box;
 }
 
 .matching-question-content {
-  padding: 20px;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid #e3e8f1;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 24px;
 }
 
+/* =========================================================
+   QUESTION HEADING
+   ========================================================= */
+
 .matching-question-heading {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   margin-bottom: 22px;
   color: #5d4bea;
   font-size: 13px;
@@ -115,6 +143,7 @@
 }
 
 .matching-mark-badge {
+  flex-shrink: 0;
   padding: 7px 11px;
   border-radius: 18px;
   background: #f0edff;
@@ -122,138 +151,89 @@
   font-size: 12px;
 }
 
-.matching-question-navigator {
-  padding: 18px;
-}
+/* =========================================================
+   QUESTION TITLE
+   ========================================================= */
 
-.matching-question-navigator h2 {
-  margin: 0 0 16px;
-  color: #283247;
-  font-size: 15px;
-}
-
-.matching-navigator-legend {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 9px 8px;
-  color: #718098;
-  font-size: 10px;
-}
-
-.matching-navigator-legend span:last-child {
-  grid-column: 1 / -1;
-}
-
-.matching-legend-dot {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  margin-right: 5px;
-  border-radius: 50%;
-  background: #c9d2df;
-}
-
-.matching-legend-dot.answered { background: #23b66b; }
-.matching-legend-dot.current { background: #6245e8; }
-
-.matching-question-numbers {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 20px 0;
-  padding: 18px 0;
-  border-top: 1px solid #edf0f5;
-  border-bottom: 1px solid #edf0f5;
-}
-
-.matching-question-numbers button {
-  width: 31px;
-  height: 31px;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: #718098;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.matching-question-numbers button:hover:not(:disabled) {
-  background: #f0edff;
-  color: #5a48e8;
-}
-
-.matching-question-numbers button:disabled {
-  cursor: default;
-}
-
-.matching-question-numbers button.current {
-  background: #5a48e8;
-  color: #ffffff;
-  box-shadow: 0 4px 9px rgba(90, 72, 232, 0.2);
-}
-
-.matching-question-numbers button.answered:not(.current) {
-  color: #23a864;
-}
-
-.matching-navigator-summary {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.matching-navigator-summary div {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.matching-navigator-summary strong {
-  color: #263146;
-  font-size: 14px;
-}
-
-.matching-navigator-summary span {
-  color: #718098;
-  font-size: 9px;
+.matching-question-title {
+  width: 100%;
+  margin-bottom: 22px;
+  color: #171717;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.5;
+  word-break: break-word;
 }
 
 /* =========================================================
-   QUESTION TITLE
-========================================================= */
+   INSTRUCTION
+   ========================================================= */
 
-.matching-question-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #171717;
+.matching-instruction {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  box-sizing: border-box;
   margin-bottom: 22px;
+  padding: 14px 16px;
+  border: 1px solid #e4e8f1;
+  border-radius: 10px;
+  background: #f8f9fc;
+}
+
+.matching-instruction-icon {
+  flex-shrink: 0;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.matching-instruction strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #283247;
+  font-size: 14px;
+}
+
+.matching-instruction p {
+  margin: 0;
+  color: #718098;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 /* =========================================================
    COLUMNS
-========================================================= */
+   ========================================================= */
 
 .matching-columns {
+  width: 100%;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 28px;
-  width: 100%;
+  box-sizing: border-box;
 }
 
 /* =========================================================
    COLUMN
-========================================================= */
+   ========================================================= */
 
 .matching-column {
   width: 100%;
   min-width: 0;
+  box-sizing: border-box;
   border: 1px solid #e2e4f0;
   border-radius: 10px;
   overflow: hidden;
   background: #ffffff;
 }
 
-/* Keep draggable answers on the left and questions/drop targets on the right. */
+/*
+   Keep draggable answers on the LEFT
+   and questions/drop targets on the RIGHT.
+   This preserves your existing functionality/layout.
+*/
+
 .matching-column:first-child {
   order: 2;
 }
@@ -262,7 +242,15 @@
   order: 1;
 }
 
+/* =========================================================
+   COLUMN HEADER
+   ========================================================= */
+
 .matching-column-header {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
   padding: 14px 18px;
   font-size: 15px;
   font-weight: 700;
@@ -283,20 +271,35 @@
   font-weight: bold;
 }
 
+.matching-column-header small {
+  margin-left: auto;
+  color: #718098;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* =========================================================
+   COLUMN BODY
+   ========================================================= */
+
 .matching-column-body {
+  width: 100%;
+  box-sizing: border-box;
   padding: 12px;
 }
 
 /* =========================================================
    ROW
-========================================================= */
+   ========================================================= */
 
 .matching-row {
+  width: 100%;
   display: grid;
   grid-template-columns: 1fr;
   gap: 10px;
-  margin-bottom: 12px;
   position: relative;
+  box-sizing: border-box;
+  margin-bottom: 12px;
 }
 
 .matching-row:last-child {
@@ -305,21 +308,19 @@
 
 /* =========================================================
    COLUMN A ITEM
-========================================================= */
+   ========================================================= */
 
 .column-a-item {
+  width: 100%;
   min-height: 54px;
   display: flex;
   align-items: center;
   gap: 10px;
-
+  box-sizing: border-box;
+  padding: 12px 14px;
   border: 1px solid #dfe2ed;
   border-radius: 8px;
-
-  padding: 12px 14px;
-
   background: #ffffff;
-
   font-size: 14px;
   font-weight: 600;
 }
@@ -332,6 +333,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  max-width: 50%;
   margin-left: auto;
   padding: 5px 9px;
   border: 1px solid #9fdfbf;
@@ -340,48 +342,49 @@
   color: #16865b;
   font-size: 12px;
   font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 .column-letter {
-  font-weight: 700;
+  flex-shrink: 0;
   min-width: 18px;
+  font-weight: 700;
 }
 
 .column-text {
+  flex: 1;
+  min-width: 0;
   word-break: break-word;
 }
 
 /* =========================================================
    DRAG DOTS
-========================================================= */
+   ========================================================= */
 
 .drag-dots {
+  flex-shrink: 0;
+  width: 18px;
   color: #1e2533;
   font-weight: 900;
   font-size: 17px;
   letter-spacing: -4px;
-  width: 18px;
   cursor: grab;
   user-select: none;
 }
 
 /* =========================================================
    DROP ZONE
-========================================================= */
+   ========================================================= */
 
 .drop-zone {
   min-height: 54px;
-
-  border: 1.5px dashed #25a269;
-  border-radius: 8px;
-
   display: flex;
   align-items: center;
-
+  box-sizing: border-box;
   padding: 10px 14px;
-
+  border: 1.5px dashed #25a269;
+  border-radius: 8px;
   background: #ffffff;
-
   transition:
     background 0.2s ease,
     border 0.2s ease,
@@ -395,15 +398,15 @@
 
 .drop-placeholder {
   width: 100%;
-  text-align: center;
   color: #16865b;
   font-size: 13px;
   font-weight: 600;
+  text-align: center;
 }
 
 /* =========================================================
    FILLED DROP ZONE
-========================================================= */
+   ========================================================= */
 
 .drop-zone-filled {
   border-style: solid;
@@ -426,18 +429,16 @@
 
 /* =========================================================
    SELECTED ANSWER
-========================================================= */
+   ========================================================= */
 
 .selected-answer {
   width: 100%;
-
   display: flex;
   align-items: center;
   gap: 9px;
-
+  color: #202535;
   font-size: 14px;
   font-weight: 600;
-  color: #202535;
 }
 
 .selected-answer .drag-dots {
@@ -446,19 +447,15 @@
 
 /* =========================================================
    REMOVE BUTTON
-========================================================= */
+   ========================================================= */
 
 .remove-match-btn {
   margin-left: auto;
-
   border: none;
   background: transparent;
-
   color: #8a8f9c;
-
   font-size: 21px;
   line-height: 1;
-
   cursor: pointer;
 }
 
@@ -468,29 +465,23 @@
 
 /* =========================================================
    ANSWER CARD
-========================================================= */
+   ========================================================= */
 
 .answer-card {
+  width: 100%;
   min-height: 54px;
-
   display: flex;
   align-items: center;
   gap: 9px;
-
+  box-sizing: border-box;
+  padding: 12px 14px;
+  margin-bottom: 12px;
   border: 1px solid #d7e1f1;
   border-radius: 8px;
-
   background: #f5f9ff;
-
-  padding: 12px 14px;
-
-  margin-bottom: 12px;
-
   font-size: 14px;
   font-weight: 600;
-
   cursor: grab;
-
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease,
@@ -522,17 +513,27 @@
 }
 
 .answer-number {
+  flex-shrink: 0;
   min-width: 20px;
   font-weight: 700;
 }
 
 .answer-text {
+  flex: 1;
+  min-width: 0;
   word-break: break-word;
+}
+
+.answer-used-label {
+  flex-shrink: 0;
+  color: #7b899f;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 /* =========================================================
    CORRECT / WRONG
-========================================================= */
+   ========================================================= */
 
 .drop-zone-correct {
   border-color: #18a66a;
@@ -555,33 +556,51 @@
 }
 
 /* =========================================================
+   MATCHING ROW RESULT
+   ========================================================= */
+
+.matching-row-result {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.result-correct-text {
+  color: #14794f;
+}
+
+.result-wrong-text {
+  color: #b42332;
+}
+
+/* =========================================================
    RESULT
-========================================================= */
+   ========================================================= */
 
 .matching-result {
+  width: 100%;
+  box-sizing: border-box;
   margin-top: 24px;
-
-  border-radius: 10px;
-
   padding: 20px;
-
-  background: #f0fff7;
-
   border: 1px solid #b8ecd2;
-
+  border-radius: 10px;
+  background: #f0fff7;
   text-align: center;
 }
 
 .result-title {
+  margin-bottom: 5px;
   font-size: 15px;
   font-weight: 700;
-  margin-bottom: 5px;
 }
 
 .result-score {
+  color: #16865b;
   font-size: 30px;
   font-weight: 800;
-  color: #16865b;
 }
 
 .result-message {
@@ -592,55 +611,71 @@
 
 /* =========================================================
    ANSWER REVIEW
-========================================================= */
+   ========================================================= */
 
 .answer-review {
-  margin-top: 18px;
-
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 7px;
-
+  box-sizing: border-box;
+  margin-top: 18px;
   font-size: 13px;
 }
 
+.answer-review-title {
+  margin-bottom: 5px;
+  color: #283247;
+  font-size: 15px;
+  font-weight: 700;
+}
+
 .review-correct {
-  padding: 8px 12px;
+  padding: 10px 12px;
   border-radius: 6px;
   background: #edfff6;
   color: #14794f;
 }
 
 .review-wrong {
-  padding: 8px 12px;
+  padding: 10px 12px;
   border-radius: 6px;
   background: #fff1f2;
   color: #b42332;
 }
 
+.review-check {
+  margin-left: 8px;
+  font-weight: 700;
+}
+
+.review-cross {
+  margin-left: 8px;
+  font-weight: 700;
+}
+
 /* =========================================================
    BUTTONS
-========================================================= */
+   Same functionality, full-width question layout
+   ========================================================= */
 
 .matching-actions {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-
+  gap: 12px;
+  box-sizing: border-box;
   margin-top: 24px;
 }
 
 .matching-reset-btn,
 .matching-next-btn {
   min-height: 44px;
-
   padding: 0 22px;
-
   border-radius: 8px;
-
   font-size: 14px;
   font-weight: 600;
-
   cursor: pointer;
 }
 
@@ -676,30 +711,36 @@
 
 /* =========================================================
    EMPTY
-========================================================= */
+   ========================================================= */
 
 .matching-empty {
+  width: 100%;
+  box-sizing: border-box;
   padding: 50px;
   text-align: center;
   color: #777;
 }
 
+.matching-empty-card {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 40px;
+  border: 1px solid #e3e8f1;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
 /* =========================================================
    RESPONSIVE
-========================================================= */
+   ========================================================= */
 
 @media (max-width: 900px) {
-  .matching-practice-header,
-  .matching-practice-layout {
+  .matching-practice-header {
     display: block;
   }
 
   .matching-stat-cards {
     margin-top: 18px;
-  }
-
-  .matching-question-navigator {
-    margin-top: 16px;
   }
 
   .matching-columns {
@@ -717,8 +758,16 @@
     padding: 14px;
   }
 
+  .matching-page {
+    padding: 8px 0 30px;
+  }
+
   .matching-practice-title {
     font-size: 24px;
+  }
+
+  .matching-stat-cards {
+    width: 100%;
   }
 
   .matching-stat-card {
@@ -728,6 +777,25 @@
 
   .matching-question-content {
     padding: 14px;
+  }
+
+  .matching-question-heading {
+    align-items: flex-start;
+  }
+
+  .matching-columns {
+    gap: 16px;
+  }
+
+  .column-a-item {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .column-a-match {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 28px;
   }
 
   .matching-actions {

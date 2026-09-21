@@ -442,26 +442,47 @@ function CreateAllQuestions() {
   };
 
   const updateBlankAnswerOption = (blankIndex, optionIndex, field, value) => {
-    setBlanks((current) =>
-      current.map((blank, currentIndex) => {
-        if (currentIndex !== blankIndex) {
-          return blank;
-        }
+  setBlanks((current) =>
+    current.map((blank, currentIndex) => {
+      if (currentIndex !== blankIndex) {
+        return blank;
+      }
 
-        return {
-          ...blank,
-          answerOptions: blank.answerOptions.map((option, optionRowIndex) =>
-            optionRowIndex === optionIndex
+      return {
+        ...blank,
+        answerOptions: blank.answerOptions.map((option, optionRowIndex) => {
+          if (field !== "isCorrect") {
+            return optionRowIndex === optionIndex
               ? {
                   ...option,
                   [field]: value,
                 }
-              : option,
-          ),
-        };
-      }),
-    );
-  };
+              : option;
+          }
+
+          // Single blank:
+          // Only one option can be marked as the correct answer.
+          if (current.length === 1) {
+            return {
+              ...option,
+              isCorrect: optionRowIndex === optionIndex,
+            };
+          }
+
+          // Multiple blanks:
+          // Keep the existing behavior where each blank
+          // can have its own correct answer selection.
+          return optionRowIndex === optionIndex
+            ? {
+                ...option,
+                isCorrect: value,
+              }
+            : option;
+        }),
+      };
+    }),
+  );
+};
 
   const addBlankAnswerOption = (blankIndex) => {
     setBlanks((current) =>
@@ -500,6 +521,21 @@ function CreateAllQuestions() {
       }),
     );
   };
+
+  const removeBlank = (blankIndex) => {
+  setBlanks((current) => {
+    if (current.length <= 1) {
+      return current;
+    }
+
+    return current
+      .filter((_, index) => index !== blankIndex)
+      .map((blank, index) => ({
+        ...blank,
+        label: `Blank ${index + 1}`,
+      }));
+  });
+};
 
   const removeRow = (setter, index) => {
     setter((current) =>
@@ -579,35 +615,43 @@ function CreateAllQuestions() {
     }
 
     if (isFillBlankType(selectedType)) {
-      let answerOrder = 0;
+  let answerOrder = 0;
 
-      const normalizedBlanks = blanks.map((blank, index) => {
-        const acceptedAnswers = (blank.answerOptions ?? [])
-          .filter((option) => option.isCorrect && String(option.value).trim())
-          .map((option) => String(option.value).trim())
-          .filter(Boolean);
+  const normalizedBlanks = blanks.map((blank, index) => {
+    const answerOptions = (blank.answerOptions ?? [])
+      .filter((option) => String(option.value).trim())
+      .map((option) => ({
+        answerText: String(option.value).trim(),
+        isCorrect: Boolean(option.isCorrect),
+      }));
 
-        return {
-          blankNumber: index + 1,
-          acceptedAnswers: Array.from(new Set(acceptedAnswers)),
-        };
-      });
+    const acceptedAnswers = answerOptions
+      .filter((option) => option.isCorrect)
+      .map((option) => option.answerText);
 
-      const blankAnswers = normalizedBlanks.flatMap((blank, blankIndex) =>
-        blank.acceptedAnswers.map((answer) => ({
-          answerText: answer,
-          displayOrder: ++answerOrder,
-          blankNumber: blankIndex + 1,
-        })),
-      );
+    return {
+      blankNumber: index + 1,
+      acceptedAnswers: Array.from(new Set(acceptedAnswers)),
+      answerOptions,
+    };
+  });
 
-      return {
-        ...common,
-        subjectId: Number(subjectId),
-        marks: Number(marks),
-        blanks: normalizedBlanks,
-        answers: blankAnswers,
-      };
+  const blankAnswers = normalizedBlanks.flatMap((blank) =>
+    blank.answerOptions.map((option) => ({
+      answerText: option.answerText,
+      displayOrder: ++answerOrder,
+      blankNumber: blank.blankNumber,
+      isCorrect: option.isCorrect,
+    })),
+  );
+
+  return {
+    ...common,
+    subjectId: Number(subjectId),
+    marks: Number(marks),
+    blanks: normalizedBlanks,
+    answers: blankAnswers,
+  };
     }
 
     if (isMcqType(selectedType)) {
@@ -719,20 +763,40 @@ function CreateAllQuestions() {
       }
 
       const invalidBlank = blanks.find((blank) => {
-        const options = blank.answerOptions ?? [];
-        const validOptions = options.filter(
-          (option) => String(option.value).trim(),
-        );
+  const options = blank.answerOptions ?? [];
 
-        return (
-          validOptions.length === 0 ||
-          !validOptions.some((option) => option.isCorrect)
-        );
-      });
+  const validOptions = options.filter(
+    (option) => String(option.value).trim(),
+  );
 
-      if (invalidBlank) {
-        errors.push("Add at least one answer and select the correct option for each blank.");
-      }
+  const correctOptions = validOptions.filter(
+    (option) => option.isCorrect,
+  );
+
+  if (validOptions.length === 0) {
+    return true;
+  }
+
+  // Single blank → exactly one correct answer.
+  if (blanks.length === 1) {
+    return correctOptions.length !== 1;
+  }
+
+  // Multiple blanks → existing behavior.
+  return correctOptions.length === 0;
+});
+
+if (invalidBlank) {
+  if (blanks.length === 1) {
+    errors.push(
+      "Add at least one answer and select exactly one correct option.",
+    );
+  } else {
+    errors.push(
+      "Add at least one answer and select the correct option for each blank.",
+    );
+  }
+}
     } else if (selectedType === "DRAG_AND_DROP") {
       if (
         !ledgerRows.some((row) => row.debitAttributeId || row.creditAttributeId)
@@ -1491,7 +1555,24 @@ function CreateAllQuestions() {
               <div className="aq-fill-blank-list">
                 {blanks.map((blank, index) => (
                   <div className="aq-fill-blank-row" key={index}>
-                    <b>{blank.label}</b>
+                    <div className="aq-fill-blank-row-header">
+                      <b>{blank.label}</b>
+
+                      <button
+                        type="button"
+                        className="aq-delete-blank-button"
+                        onClick={() => removeBlank(index)}
+                        disabled={blanks.length <= 1}
+                        aria-label={`Delete ${blank.label}`}
+                        title={
+                          blanks.length <= 1
+                            ? "At least one blank is required"
+                            : `Delete ${blank.label}`
+                        }
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
 
                     <div className="aq-fill-blank-options">
                       {(blank.answerOptions ?? []).map((option, optionIndex) => (
@@ -1510,19 +1591,23 @@ function CreateAllQuestions() {
                           />
 
                           <input
-                            aria-label={`Mark answer ${optionIndex + 1} correct for blank ${index + 1}`}
-                            type="checkbox"
-                            checked={Boolean(option.isCorrect)}
-                            onChange={() =>
-                              updateBlankAnswerOption(
-                                index,
-                                optionIndex,
-                                "isCorrect",
-                                !option.isCorrect,
-                              )
-                            }
-                            title="Mark as correct answer"
-                          />
+  aria-label={`Mark answer ${optionIndex + 1} correct for blank ${index + 1}`}
+  type="checkbox"
+  checked={Boolean(option.isCorrect)}
+  onChange={() =>
+    updateBlankAnswerOption(
+      index,
+      optionIndex,
+      "isCorrect",
+      !option.isCorrect,
+    )
+  }
+  title={
+    blanks.length === 1
+      ? "Mark this as the correct answer"
+      : "Mark as correct answer"
+  }
+/>
 
                           <button
                             type="button"
@@ -1534,6 +1619,8 @@ function CreateAllQuestions() {
                           </button>
                         </div>
                       ))}
+
+                      
 
                       <button
                         type="button"
