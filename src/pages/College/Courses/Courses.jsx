@@ -10,6 +10,7 @@ import {
   FaSearch,
   FaClock,
   FaUsers,
+  FaTimesCircle,
   FaLayerGroup,
   FaEdit,
   FaTrash,
@@ -145,7 +146,10 @@ function Courses() {
 
     return {
       totalChapters,
-      activeCourses: courses.filter((course) => course.activeRow).length,
+      activeCourses: courses.filter((course) => course.activeRow !== false)
+        .length,
+      inactiveCourses: courses.filter((course) => course.activeRow === false)
+        .length,
     };
   }, [courses, chapters]);
 
@@ -244,14 +248,14 @@ function Courses() {
 
         <div className="col-xl-3 col-lg-6 col-md-6">
           <div className="modern-stat-card">
-            <div className="stat-icon purple">
-              <FaUsers />
+            <div className="stat-icon red">
+              <FaTimesCircle />
             </div>
 
             <div>
-              <small>Total Students</small>
-              <h3>1290</h3>
-              <span>Across All Courses</span>
+              <small>Inactive Courses</small>
+              <h3>{totals.inactiveCourses}</h3>
+              <span>Currently Inactive</span>
             </div>
           </div>
         </div>

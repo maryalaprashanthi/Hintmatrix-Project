@@ -42,6 +42,7 @@ import Sessions from "./pages/Sessions";
 import Results from "./pages/Results";
 import Certificates from "./pages/Certificates";
 import Settings from "./pages/Settings";
+import Profile from "./pages/Account/Profile";
 
 // Table Pages
 import TableNames from "./pages/Table/TableNames";
@@ -78,6 +79,7 @@ import MockExamCatalog from "./pages/MockExamCatalog/MockExamCatalog";
 import ExamReview from "./pages/ExamReview/ExamReview";
 import ExamPaper from "./pages/ExamPaper/ExamPaper";
 import PerformanceDashboard from "./pages/Performance/PerformanceDashboard";
+import StudentPerformanceDashboard from "./components/StudentPerformanceDashboard/StudentPerformanceDashboard.jsx";
 
 function App() {
   const navigate = useNavigate();
@@ -171,6 +173,12 @@ function App() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/oauth2/success" element={<OAuthSuccess />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
+
+      <Route
+        path="/studentperformancedashboard"
+        element={<StudentPerformanceDashboard />}
+      />
+
       <Route
         element={
           <ProtectedRoute>
@@ -424,6 +432,7 @@ function App() {
         <Route path="/results" element={<Results />} />
         <Route path="/certificates" element={<Certificates />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/profile" element={<Profile />} />
 
         <Route path="/journal/:questionId" element={<JournalPage />} />
         <Route path="/dropdown/:questionId" element={<DropdownPage />} />

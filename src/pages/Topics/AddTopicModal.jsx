@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Select from "react-select";
-import { FaTimes, FaSave, FaBook, FaListAlt, FaTag, FaLayerGroup } from "react-icons/fa";
+import {
+  FaTimes,
+  FaSave,
+  FaBook,
+  FaListAlt,
+  FaTag,
+  FaLayerGroup,
+} from "react-icons/fa";
 
 import "./Topics.css";
 import TopicService from "../../services/TopicService";
@@ -51,11 +58,7 @@ function AddTopicModal({
 
     if (initialData) {
       setCourseId(
-        idOf(
-          initialData.courseId ??
-            selectedChapter?.courseId ??
-            "",
-        ),
+        idOf(initialData.courseId ?? selectedChapter?.courseId ?? ""),
       );
       setSubjectIdState(
         idOf(
@@ -65,18 +68,14 @@ function AddTopicModal({
             "",
         ),
       );
-      setChapterIdState(
-        idOf(initialData.chapterId ?? chapterId ?? ""),
-      );
+      setChapterIdState(idOf(initialData.chapterId ?? chapterId ?? ""));
       setTopicName(initialData.name || "");
       setIsActive(
         initialData.activeRow !== undefined ? initialData.activeRow : true,
       );
     } else {
       setCourseId(idOf(selectedChapter?.courseId ?? ""));
-      setSubjectIdState(
-        idOf(subjectId ?? selectedChapter?.subjectId ?? ""),
-      );
+      setSubjectIdState(idOf(subjectId ?? selectedChapter?.subjectId ?? ""));
       setChapterIdState(idOf(chapterId ?? ""));
       setTopicName("");
       setIsActive(true);
@@ -115,7 +114,8 @@ function AddTopicModal({
     })
     .map((chapter) => ({
       value: chapter.chapterId,
-      label: chapter.name || chapter.chapterName || String(chapter.chapterId || ""),
+      label:
+        chapter.name || chapter.chapterName || String(chapter.chapterId || ""),
     }));
 
   if (!show) return null;
@@ -185,11 +185,7 @@ function AddTopicModal({
           <div className="modal-title">
             <h2>{initialData ? "Edit Topic" : "Add Topic"}</h2>
 
-            <p>
-              {initialData
-                ? "Update the topic."
-                : "Create a new topic."}
-            </p>
+            <p>{initialData ? "Update the topic." : "Create a new topic."}</p>
           </div>
 
           <button type="button" className="close-btn" onClick={closeModal}>
@@ -209,12 +205,12 @@ function AddTopicModal({
                     Course <span>*</span>
                   </label>
 
-                  <div className="input-box">
-                    <FaBook className="input-icon" />
+                  <div className="select-box">
+                    <FaBook className="select-icon" />
 
                     <Select
-                      className="react-select-container"
-                      classNamePrefix="react-select"
+                      className="aq-search-select"
+                      classNamePrefix="aq-select"
                       menuPortalTarget={document.body}
                       styles={selectStyles}
                       options={courseOptions}
@@ -242,12 +238,12 @@ function AddTopicModal({
                     Subject <span>*</span>
                   </label>
 
-                  <div className="input-box">
-                    <FaLayerGroup className="input-icon" />
+                  <div className="select-box">
+                    <FaLayerGroup className="select-icon" />
 
                     <Select
-                      className="react-select-container"
-                      classNamePrefix="react-select"
+                      className="aq-search-select"
+                      classNamePrefix="aq-select"
                       menuPortalTarget={document.body}
                       styles={selectStyles}
                       options={subjectOptions}
@@ -276,12 +272,12 @@ function AddTopicModal({
                     Chapter <span>*</span>
                   </label>
 
-                  <div className="input-box">
-                    <FaListAlt className="input-icon" />
+                  <div className="select-box">
+                    <FaListAlt className="select-icon" />
 
                     <Select
-                      className="react-select-container"
-                      classNamePrefix="react-select"
+                      className="aq-search-select"
+                      classNamePrefix="aq-select"
                       menuPortalTarget={document.body}
                       styles={selectStyles}
                       options={chapterOptions}

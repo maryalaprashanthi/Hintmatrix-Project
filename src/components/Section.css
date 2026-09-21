@@ -4,7 +4,6 @@
 
 .modal-overlay {
   position: fixed;
-
   top: 82px;
   left: 0;
   right: 0;
@@ -30,22 +29,15 @@
 .section-modal {
   width: min(850px, 95vw);
   max-width: 95vw;
-
   background: #fff;
   border-radius: 16px;
-
   display: flex;
   flex-direction: column;
-
   height: auto;
   max-height: 90vh;
-
   overflow: hidden;
-
   margin: 0 auto;
-
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-
   animation: popup 0.3s ease;
 }
 
@@ -58,11 +50,8 @@
   justify-content: center;
   align-items: center;
   position: relative;
-
   padding: 50px 28px 22px;
-
   border-bottom: 1px solid #e5e7eb;
-
   background: #fff;
 }
 
@@ -84,28 +73,23 @@
   color: #0e1323;
 }
 
-/* ==========================================
-   Close Button
-========================================== */
-
 .close-btn {
+  position: absolute;
+  right: 20px;
+  top: 20px;
   width: 30px;
   height: 30px;
-
   border: none;
   border-radius: 50%;
-
   cursor: pointer;
-
   font-size: 15px;
-
   transition: 0.3s;
-
   background: transparent;
 }
 
 .close-btn:hover {
   background: #ef4444;
+  color: #fff;
 }
 
 /* ==========================================
@@ -114,11 +98,8 @@
 
 .modal-body {
   flex: 1;
-
   overflow-y: auto;
-
   padding: 25px;
-
   background: #f8fafc;
 }
 
@@ -128,13 +109,9 @@
 
 .form-card {
   background: white;
-
   border-radius: 14px;
-
   padding: 25px;
-
   margin-bottom: 20px;
-
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
@@ -144,10 +121,8 @@
 
 .section-title {
   margin-bottom: 22px;
-
   font-size: 20px;
   font-weight: 700;
-
   color: #08170b;
 }
 
@@ -157,9 +132,7 @@
 
 .form-grid {
   display: grid;
-
   grid-template-columns: repeat(2, 1fr);
-
   gap: 20px;
 }
 
@@ -169,13 +142,12 @@
 
 .form-group label {
   display: block;
-
   margin-bottom: 8px;
-
   font-weight: 600;
 }
 
-.form-group span {
+.form-group span,
+.section-title span {
   color: red;
 }
 
@@ -183,41 +155,241 @@
    Input Box
 ========================================== */
 
-.input-box {
+.input-box,
+.select-box {
+  position: relative;
+  width: 100%;
+}
+
+.input-icon,
+.select-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  z-index: 2;
+  pointer-events: none;
+  font-size: 16px;
+}
+
+.input-box input,
+.select-box .aq-search-select .aq-select__control {
+  width: 100%;
+  height: 50px;
+  border: 1px solid #dbe4f0;
+  border-radius: 12px;
+  padding-left: 45px;
+  padding-right: 15px;
+  font-size: 15px;
+  outline: none;
+  transition: 0.3s;
+  background: #fff;
+}
+
+.input-box input:focus,
+.select-box .aq-search-select .aq-select__control:hover,
+.select-box .aq-search-select .aq-select__control--is-focused {
+  border-color: #356bdf;
+  box-shadow: 0 0 0 3px rgba(53, 107, 223, 0.12);
+}
+
+/* ==========================================
+   Textarea
+========================================== */
+
+.textarea-box {
   position: relative;
 }
 
-.input-icon {
-  position: absolute;
-
-  left: 15px;
-  top: 50%;
-
-  transform: translateY(-50%);
-
-  color: #64748b;
+.textarea-box .input-icon {
+  top: 22px;
+  transform: none;
 }
 
-.input-box input {
+.textarea-box textarea {
   width: 100%;
-
-  height: 50px;
-
+  min-height: 120px;
   border: 1px solid #dbe4f0;
-
   border-radius: 12px;
-
-  padding-left: 45px;
-
-  font-size: 15px;
-
+  padding: 18px 18px 18px 45px;
+  resize: vertical;
   outline: none;
-
-  transition: 0.3s;
+  font-size: 15px;
+  background: #fff;
 }
 
-.input-box input:focus {
+.textarea-box textarea:focus {
   border-color: #356bdf;
+  box-shadow: 0 0 0 3px rgba(53, 107, 223, 0.12);
+}
+
+/* ==========================================
+   Footer / Buttons
+========================================== */
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  padding: 20px 25px;
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+}
+
+.modal-footer .btn {
+  width: 110px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.btn {
+  border-radius: 10px;
+  padding: 10px 22px;
+  font-weight: 600;
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+  color: #111827;
+  border: none;
+}
+
+.btn-secondary:hover {
+  background: #d1d5db;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+
+/* ==========================================
+   Dropdown Style
+========================================== */
+
+.aq-search-select {
+  width: 100%;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.aq-select__control {
+  min-height: 50px !important;
+  border: 1px solid #dbe4f0 !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  background: #fff !important;
+}
+
+.aq-select__control:hover,
+.aq-select__control--is-focused {
+  border-color: #356bdf !important;
+}
+
+.aq-select__control--is-focused {
+  box-shadow: 0 0 0 3px rgba(53, 107, 223, 0.12) !important;
+}
+
+.aq-select__value-container {
+  padding-left: 8px !important;
+}
+
+.aq-select__single-value {
+  color: #17223b !important;
+}
+
+.aq-select__placeholder {
+  color: #858fa1 !important;
+}
+
+.aq-select__indicator {
+  color: #667085 !important;
+}
+
+.aq-select__menu {
+  z-index: 9999;
+  font-weight: 500;
+}
+
+.aq-select__option--is-focused {
+  background: #edf2ff !important;
+}
+
+.aq-select__option--is-selected {
+  background: #2457e6 !important;
+  color: #fff !important;
+}
+
+.select-box .aq-search-select .aq-select__value-container {
+  padding-left: 42px !important;
+}
+
+/* ==========================================
+   Animation
+========================================== */
+
+@keyframes popup {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ==========================================
+   Responsive
+========================================== */
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-modal {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .modal-header h2 {
+    font-size: 22px;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+  }
+
+  .modal-footer .btn,
+  .btn {
+    width: 100%;
+  }
+}
+
+@media (max-height: 800px) {
+  .section-modal {
+    max-height: 86vh;
+  }
+}
+
+@media (max-height: 700px) {
+  .section-modal {
+    max-height: 82vh;
+  }
 }
 
 .input-box select {

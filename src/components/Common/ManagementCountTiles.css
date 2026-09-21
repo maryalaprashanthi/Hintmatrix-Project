@@ -45,6 +45,11 @@
   background: #fef2f2;
 }
 
+.management-stat-icon.purple {
+  color: #9333ea;
+  background: #f4e8ff;
+}
+
 .management-stat-card h3 {
   margin: 2px 0;
   color: #111827;

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import Select from "react-select";
 import { FaTimes, FaTable, FaTag, FaColumns, FaSave } from "react-icons/fa";
 
 import "./AddTableAttributeModal.css";
@@ -130,25 +131,39 @@ function AddTableAttributeModal({ show, onClose, onSave, initialData }) {
                   Table Header Name <span>*</span>
                 </label>
 
-                <div className="input-box">
-                  <FaColumns className="input-icon" />
+                <div className="select-box">
+                  <FaColumns className="select-icon" />
 
-                  <select
-                    value={formData.tableHeaderName}
-                    onChange={(e) =>
+                  <Select
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
+                    menuPlacement="bottom"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                    }}
+                    options={tableHeaders.map((el) => ({
+                      value: el.name,
+                      label: el.name,
+                    }))}
+                    value={
+                      tableHeaders
+                        .map((el) => ({ value: el.name, label: el.name }))
+                        .find(
+                          (option) => option.value === formData.tableHeaderName,
+                        ) || null
+                    }
+                    onChange={(option) =>
                       setFormData({
                         ...formData,
-                        tableHeaderName: e.target.value,
+                        tableHeaderName: option?.value || "",
                       })
                     }
-                  >
-                    <option value="">Select an option</option>
-                    {tableHeaders.map((el, key) => (
-                      <option value={el.name} key={key}>
-                        {el.name}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder="Search Table Header"
+                    isSearchable
+                    isClearable
+                    noOptionsMessage={() => "No table header found"}
+                  />
                 </div>
               </div>
 

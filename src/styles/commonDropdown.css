@@ -1,0 +1,73 @@
+/* =========================================================
+   COMMON DROPDOWN
+   Same style as Create All Questions
+========================================================= */
+
+.aq-search-select {
+  width: 100%;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.aq-select__control {
+  min-height: 43px !important;
+  border: 1px solid #ccd4e0 !important;
+  border-radius: 9px !important;
+  box-shadow: none !important;
+  background: #fff !important;
+}
+
+.aq-select__control:hover,
+.aq-select__control--is-focused {
+  border-color: #2457e6 !important;
+}
+
+.aq-select__control--is-focused {
+  box-shadow: 0 0 0 3px rgba(36, 87, 230, 0.1) !important;
+}
+
+.aq-select__control--is-disabled {
+  background: #fff !important;
+  opacity: 1 !important;
+}
+
+.aq-search-select .aq-select__control,
+.aq-search-select .aq-select__control:not(.aq-select__control--is-disabled),
+.aq-search-select .aq-select__control--is-disabled {
+  background: #fff !important;
+}
+
+.aq-select__value-container {
+  background: transparent !important;
+}
+
+.aq-select__single-value {
+  color: #17223b !important;
+}
+
+.aq-select__placeholder {
+  color: #858fa1 !important;
+}
+
+.aq-select__indicator {
+  color: #667085 !important;
+}
+
+.aq-select__menu {
+  z-index: 9999;
+  font-weight: 500;
+}
+
+.aq-select__option {
+  cursor: pointer;
+}
+
+.aq-select__option--is-focused {
+  background: #edf2ff !important;
+}
+
+.aq-select__option--is-selected {
+  background: #2457e6 !important;
+  color: #fff !important;
+}

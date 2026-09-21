@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import Select from "react-select";
 
 import { FaTimes, FaBook, FaGraduationCap, FaSave } from "react-icons/fa";
 
@@ -65,9 +66,7 @@ function ChapterForm({
       if (selectedChapterData) {
         setCourseId(selectedChapterData.courseId || "");
         setSubjectId(
-          selectedChapterData.subjectId ??
-            selectedChapterData.subject_id ??
-            "",
+          selectedChapterData.subjectId ?? selectedChapterData.subject_id ?? "",
         );
         setChapterName(selectedChapterData.name || "");
         setIsActive(
@@ -124,6 +123,16 @@ function ChapterForm({
     onClose();
   };
 
+  const courseOptions = courses.map((course) => ({
+    value: String(course.courseId),
+    label: course.name || course.courseName || "Course",
+  }));
+
+  const subjectDropdownOptions = subjectOptions.map((subject) => ({
+    value: String(subject.subjectId ?? subject.subject_id),
+    label: subject.subjectName ?? subject.name ?? "Subject",
+  }));
+
   return createPortal(
     <div className="modal-overlay">
       <div className="chapter-modal">
@@ -159,24 +168,32 @@ function ChapterForm({
                   Course <span>*</span>
                 </label>
 
-                <div className="input-box">
-                  <FaGraduationCap className="input-icon" />
+                <div className="select-box">
+                  <FaGraduationCap className="select-icon" />
 
-                  <select
-                    value={courseId}
-                    onChange={(e) => {
-                      setCourseId(e.target.value);
+                  <Select
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
+                    menuPlacement="bottom"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                    }}
+                    options={courseOptions}
+                    value={
+                      courseOptions.find(
+                        (option) => option.value === String(courseId),
+                      ) || null
+                    }
+                    onChange={(option) => {
+                      setCourseId(option?.value || "");
                       setSubjectId("");
                     }}
-                  >
-                    <option value="">Select Course</option>
-
-                    {courses.map((course) => (
-                      <option key={course.courseId} value={course.courseId}>
-                        {course.name}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder="Select Course"
+                    isSearchable
+                    isClearable
+                    noOptionsMessage={() => "No course found"}
+                  />
                 </div>
               </div>
 
@@ -187,46 +204,51 @@ function ChapterForm({
                   Subject <span>*</span>
                 </label>
 
-                <div className="input-box">
-                  <FaGraduationCap className="input-icon" />
+                <div className="select-box">
+                  <FaGraduationCap className="select-icon" />
 
-                  <select
-                    value={subjectId}
-                    disabled={!courseId}
-                    onChange={(e) => setSubjectId(e.target.value)}
-                  >
-                    <option value="">Select Subject</option>
-
-                    {subjectOptions.map((subject) => (
-                      <option
-                        key={subject.subjectId ?? subject.subject_id}
-                        value={subject.subjectId ?? subject.subject_id}
-                      >
-                        {subject.subjectName ?? subject.name}
-                      </option>
-                    ))}
-                  </select>
+                  <Select
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
+                    menuPlacement="bottom"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                    }}
+                    options={subjectDropdownOptions}
+                    value={
+                      subjectDropdownOptions.find(
+                        (option) => option.value === String(subjectId),
+                      ) || null
+                    }
+                    onChange={(option) => setSubjectId(option?.value || "")}
+                    placeholder="Select Subject"
+                    isSearchable
+                    isClearable
+                    isDisabled={!courseId}
+                    noOptionsMessage={() => "No subject found"}
+                  />
                 </div>
               </div>
 
               {/* Chapter Name */}
 
-             <div className="form-group">
-             <label>
-               Chapter Name <span>*</span>
-             </label>
+              <div className="form-group">
+                <label>
+                  Chapter Name <span>*</span>
+                </label>
 
-              <div className="input-box">
-              <FaBook className="input-icon" />
+                <div className="input-box">
+                  <FaBook className="input-icon" />
 
-              <input
-              type="text"
-              placeholder="Enter Chapter Name"
-              value={chapterName}
-              onChange={(e) => setChapterName(e.target.value)}
-          />
-         </div>
-       </div>
+                  <input
+                    type="text"
+                    placeholder="Enter Chapter Name"
+                    value={chapterName}
+                    onChange={(e) => setChapterName(e.target.value)}
+                  />
+                </div>
+              </div>
               <div className="form-card">
                 <h3 className="section-title">Status</h3>
 

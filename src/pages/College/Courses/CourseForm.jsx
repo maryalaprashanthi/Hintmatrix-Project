@@ -12,9 +12,6 @@ function CourseForm({ onSaveCourse }) {
   const [branchId, setBranchId] = useState("");
   const [formData, setFormData] = useState({
     title: "",
-    category: "Commerce",
-    level: "Beginner",
-    duration: "",
     instructor: "",
     price: "",
     description: "",
@@ -78,9 +75,6 @@ function CourseForm({ onSaveCourse }) {
         // Reset the form fields cleanly
         setFormData({
           title: "",
-          category: "Commerce",
-          level: "Beginner",
-          duration: "",
           instructor: "",
           price: "",
           description: "",
@@ -124,53 +118,6 @@ function CourseForm({ onSaveCourse }) {
                       onChange={handleChange}
                       className="form-control"
                       placeholder="Enter Course Name"
-                    />
-                  </div>
-
-                  <div className="col-md-6 mb-4">
-                    <label className="form-label">Category</label>
-                    <select
-                      name="category"
-                      value={formData.category}
-                      onChange={handleChange}
-                      className="form-select"
-                    >
-                      <option value="Commerce">Commerce</option>
-                      <option value="School Curriculum">
-                        School Curriculum
-                      </option>
-                      <option value="Chartered Accountancy">
-                        Chartered Accountancy
-                      </option>
-                      <option value="Integrated Program">
-                        Integrated Program
-                      </option>
-                    </select>
-                  </div>
-
-                  <div className="col-md-6 mb-4">
-                    <label className="form-label">Course Level</label>
-                    <select
-                      name="level"
-                      value={formData.level}
-                      onChange={handleChange}
-                      className="form-select"
-                    >
-                      <option value="Beginner">Beginner</option>
-                      <option value="Intermediate">Intermediate</option>
-                      <option value="Advanced">Advanced</option>
-                    </select>
-                  </div>
-
-                  <div className="col-md-6 mb-4">
-                    <label className="form-label">Duration</label>
-                    <input
-                      type="text"
-                      name="duration"
-                      value={formData.duration}
-                      onChange={handleChange}
-                      className="form-control"
-                      placeholder="Example: 30 Lessons"
                     />
                   </div>
 

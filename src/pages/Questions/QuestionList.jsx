@@ -16,10 +16,8 @@ import {
 import {
   FaSearch,
   FaPlus,
-  FaEye,
-  FaEdit,
-  FaTrash,
   FaQuestionCircle,
+  FaTimes,
 } from "react-icons/fa";
 
 import { useNavigate, useParams } from "react-router-dom";
@@ -32,6 +30,7 @@ import { getManagementCounts } from "../../utils/managementCounts";
 import TopicService from "../../services/TopicService";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { useToast } from "../../components/Toast/useToast";
+import ActionIconButton from "../../components/Common/ActionIconButton";
 import "./QuestionList.css";
 import AddQuestionModal from "./AddQuestionModal";
 import QuestionType2Modal from "./QuestionType2Modal";
@@ -51,6 +50,8 @@ const getQuestionType = (question) => {
 const QuestionList = () => {
   const toast = useToast();
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [typeFilter, setTypeFilter] = useState("ALL");
   const [showModal, setShowModal] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
 
@@ -206,10 +207,44 @@ const QuestionList = () => {
   // SEARCH
   // =========================================================
 
-  const filteredQuestions = questions.filter((question) =>
-    (question.questionText || "").toLowerCase().includes(search.toLowerCase()),
-  );
+  const availableQuestionTypes = [
+    ...new Set(questions.map(getQuestionType).filter(Boolean)),
+  ].sort();
+
+  const filteredQuestions = questions
+    .filter((question) => {
+      const searchableText = [
+        question.questionText,
+        question.courseName,
+        question.subjectName,
+        question.chapterName,
+        question.topicName,
+        getQuestionType(question),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      const searchMatch = searchableText.includes(search.trim().toLowerCase());
+      const active =
+        question.activeRow !== false && question.activeRow !== "false";
+      const statusMatch =
+        statusFilter === "ALL" ||
+        (statusFilter === "ACTIVE" && active) ||
+        (statusFilter === "INACTIVE" && !active);
+      const typeMatch =
+        typeFilter === "ALL" || getQuestionType(question) === typeFilter;
+
+      return searchMatch && statusMatch && typeMatch;
+    })
+    .sort(
+      (first, second) =>
+        Number(second.questionId || 0) - Number(first.questionId || 0),
+    );
   const questionCounts = getManagementCounts(questions);
+  const hasActiveFilters =
+    search.trim() ||
+    statusFilter !== "ALL" ||
+    typeFilter !== "ALL";
 
   // =========================================================
   // QUESTION ACTIVE CHECK
@@ -938,6 +973,50 @@ if (excelQuestionType === "MATCH_THE_FOLLOWING") {
             />
           </div>
         </div>
+
+        <Form.Select
+          className="question-filter-select"
+          aria-label="Filter questions by status"
+          value={statusFilter}
+          onChange={(event) => setStatusFilter(event.target.value)}
+        >
+          <option value="ALL">All Statuses</option>
+          <option value="ACTIVE">Active</option>
+          <option value="INACTIVE">Inactive</option>
+        </Form.Select>
+
+        <Form.Select
+          className="question-filter-select"
+          aria-label="Filter questions by type"
+          value={typeFilter}
+          onChange={(event) => setTypeFilter(event.target.value)}
+        >
+          <option value="ALL">All Types</option>
+          {availableQuestionTypes.map((type) => (
+            <option key={type} value={type}>
+              {type.replace(/_/g, " ")}
+            </option>
+          ))}
+        </Form.Select>
+
+        {hasActiveFilters && (
+          <Button
+            variant="outline-secondary"
+            className="question-clear-filters"
+            onClick={() => {
+              setSearch("");
+              setStatusFilter("ALL");
+              setTypeFilter("ALL");
+            }}
+          >
+            <FaTimes /> Clear
+          </Button>
+        )}
+      </div>
+
+      <div className="question-results-summary">
+        Showing <strong>{filteredQuestions.length}</strong> of{" "}
+        <strong>{questions.length}</strong> questions
       </div>
 
       {/* =====================================================
@@ -950,7 +1029,7 @@ if (excelQuestionType === "MATCH_THE_FOLLOWING") {
             <ListGroup.Item
               key={question.questionId}
               className={`question-item ${
-                !question.activeRow ? "disabled-question" : ""
+                !isQuestionActive(question) ? "disabled-question" : ""
               }`}
             >
               <Row className="align-items-center">
@@ -979,29 +1058,32 @@ if (excelQuestionType === "MATCH_THE_FOLLOWING") {
                 >
                   {/* VIEW */}
 
-                  <Button
-                    variant="outline-primary"
-                    size="sm"
+                  <ActionIconButton
+                    type="view"
                     disabled={!isQuestionActive(question)}
                     onClick={() => handleView(question)}
-                  >
-                    <FaEye className="me-1" />
-                    View
-                  </Button>
+                    title="View question"
+                  />
 
                   {canManage && (
                     <>
                       {/* EDIT */}
 
-                      <Button
-                        variant="outline-warning"
-                        size="sm"
+                      <ActionIconButton
+                        type="edit"
                         disabled={!isQuestionActive(question)}
                         onClick={() => handleEdit(question)}
-                      >
-                        <FaEdit className="me-1" />
-                        Edit
-                      </Button>
+                        title="Edit question"
+                      />
+
+                      {/* DELETE */}
+
+                      <ActionIconButton
+                        type="delete"
+                        disabled={!isQuestionActive(question)}
+                        onClick={() => del.request(question)}
+                        title="Delete question"
+                      />
 
                       {/* ENABLE / DISABLE */}
 
@@ -1010,20 +1092,8 @@ if (excelQuestionType === "MATCH_THE_FOLLOWING") {
                         id={`switch-${question.questionId}`}
                         checked={isQuestionActive(question)}
                         onChange={() => handleToggle(question.questionId)}
-                        label="Disable"
+                        label={isQuestionActive(question) ? "Active" : "Inactive"}
                       />
-
-                      {/* DELETE */}
-
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        disabled={!isQuestionActive(question)}
-                        onClick={() => del.request(question)}
-                      >
-                        <FaTrash className="me-1" />
-                        Delete
-                      </Button>
                     </>
                   )}
                 </Col>

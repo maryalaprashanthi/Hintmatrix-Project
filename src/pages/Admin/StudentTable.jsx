@@ -4,6 +4,7 @@ import DataGrid from "../../components/DataGrid";
 import ActionIconButton from "../../components/Common/ActionIconButton";
 import ConfirmDialog from "../../components/Common/ConfirmDialog";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
+import "../Table/TableNames.css";
 
 function StudentTable({ data, onEdit, onDeleted, refreshData }) {
   const defaultColDef = {
@@ -24,6 +25,14 @@ function StudentTable({ data, onEdit, onDeleted, refreshData }) {
       }
     },
   });
+
+  const toggleStatus = async (student) => {
+    await StudentService.updateStudent(student.userId, {
+      ...student,
+      activeRow: student.activeRow === false,
+    });
+    await refreshData();
+  };
 
   const columnDefs = [
     {
@@ -48,6 +57,21 @@ function StudentTable({ data, onEdit, onDeleted, refreshData }) {
       headerName: "Address",
       flex: 1,
       minWidth: 220,
+    },
+    {
+      field: "activeRow",
+      headerName: "Status",
+      width: 150,
+      cellRenderer: ({ data: student }) => {
+        if (!student) return null;
+        const isActive = student.activeRow !== false;
+        return (
+          <button type="button" className={`table-name-status ${isActive ? "active" : "inactive"}`} onClick={() => toggleStatus(student)} title={`Set ${student.name} ${isActive ? "inactive" : "active"}`}>
+            <span className="table-name-status-dot" />
+            {isActive ? "Active" : "Inactive"}
+          </button>
+        );
+      },
     },
     {
       headerName: "Action",

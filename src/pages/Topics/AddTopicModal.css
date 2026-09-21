@@ -188,21 +188,22 @@
    Input Box
 ========================================== */
 
-.input-box {
+.input-box,
+.select-box {
   position: relative;
+  width: 100%;
 }
 
-.input-icon {
+.input-icon,
+.select-icon {
   position: absolute;
-
   left: 15px;
   top: 50%;
-
   transform: translateY(-50%);
-
   color: #64748b;
-
-  z-index: 1;
+  z-index: 2;
+  pointer-events: none;
+  font-size: 16px;
 }
 
 .input-box input,
@@ -236,6 +237,59 @@
 
 .input-box select {
   cursor: pointer;
+}
+
+.select-box .aq-search-select {
+  width: 100%;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.select-box .aq-select__control {
+  min-height: 50px !important;
+  height: 50px !important;
+  border: 1px solid #cfe0ff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 0 0 3px rgba(36, 87, 230, 0.08) !important;
+  background: #f9fbff !important;
+  padding-left: 0 !important;
+}
+
+.select-box .aq-select__control:hover,
+.select-box .aq-select__control--is-focused {
+  border-color: #2457e6 !important;
+  box-shadow: 0 0 0 3px rgba(36, 87, 230, 0.12) !important;
+  background: #f4f9ff !important;
+}
+
+.select-box .aq-select__value-container {
+  padding-left: 45px !important;
+}
+
+.select-box .aq-select__placeholder,
+.select-box .aq-select__single-value {
+  margin-left: 0 !important;
+  text-align: left !important;
+  color: #64748b !important;
+}
+
+.select-box .aq-select__input-container {
+  margin: 0 !important;
+  padding-left: 0 !important;
+}
+
+.select-box .aq-select__indicator-separator {
+  display: none;
+}
+
+.select-box .aq-select__option--is-focused {
+  background: #edf2ff !important;
+}
+
+.select-box .aq-select__option--is-selected {
+  background: #2457e6 !important;
+  color: #fff !important;
 }
 /* ==========================================
    Status (Keep Bootstrap Switch)

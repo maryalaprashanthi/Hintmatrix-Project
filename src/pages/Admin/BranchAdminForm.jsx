@@ -31,6 +31,7 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [address, setAddress] = useState("");
+  const [activeRow, setActiveRow] = useState(true);
 
   const [collegesList, setCollegesList] = useState([]);
   const [branchesList, setBranchesList] = useState([]);
@@ -97,6 +98,7 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
       setPhoneNumber(selectedBranchAdminData.phoneNumber || "");
       setPassword(selectedBranchAdminData.password || "");
       setAddress(selectedBranchAdminData.address || "");
+      setActiveRow(selectedBranchAdminData.activeRow !== false);
     } else {
       setName("");
       setEmployeeId("");
@@ -107,6 +109,7 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
       setPhoneNumber("");
       setPassword("");
       setAddress("");
+      setActiveRow(true);
     }
   }, [selectedBranchAdminData, show]);
 
@@ -161,6 +164,7 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
       phoneNumber: String(phoneNumber).replace(/\D/g, ""),
       password: password.trim(),
       address: address.trim(),
+      activeRow,
     };
 
     onSave(branchAdminData);
@@ -266,11 +270,11 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
                   College Name <span>*</span>
                 </label>
 
-                <div className="input-box">
-                  <FaUniversity className="input-icon" />
+                <div className="select-box">
+                  <FaUniversity className="select-icon" />
                   <Select
-                    className="react-select-container"
-                    classNamePrefix="react-select"
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
                     menuPlacement="bottom"
                     menuPortalTarget={document.body}
                     styles={{
@@ -301,12 +305,17 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
                   Branch Name <span>*</span>
                 </label>
 
-                <div className="input-box">
-                  <FaCodeBranch className="input-icon" />
+                <div className="select-box">
+                  <FaCodeBranch className="select-icon" />
 
                   <Select
-                    className="react-select-container"
-                    classNamePrefix="react-select"
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
+                    menuPlacement="bottom"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                    }}
                     options={branchOptions}
                     value={
                       branchOptions.find(
@@ -398,6 +407,13 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
               />
+            </div>
+          </div>
+          <div className="form-card">
+            <h3 className="section-title">Status</h3>
+            <div className="form-check form-switch status-form-switch">
+              <input className="form-check-input" type="checkbox" role="switch" checked={activeRow} onChange={(e) => setActiveRow(e.target.checked)} />
+              <label className="form-check-label">{activeRow ? "Active" : "Inactive"}</label>
             </div>
           </div>
         </div>
