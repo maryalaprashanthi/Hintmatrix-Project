@@ -4,12 +4,16 @@ import "./BranchAdmin.css";
 import BranchAdminTable from "./BranchAdminTable";
 import BranchAdminService from "../../services/UserService";
 import { useToast } from "../../components/Toast/useToast";
+import { FaUserCog } from "react-icons/fa";
+import ManagementCountTiles from "../../components/Common/ManagementCountTiles";
+import { getManagementCounts } from "../../utils/managementCounts";
 
 function BranchAdmin() {
   const toast = useToast();
   const [showModal, setShowModal] = useState(false);
   const [branchAdmins, setBranchAdmins] = useState([]);
   const [selectedBranchAdmin, setSelectedBranchAdmin] = useState(null);
+  const branchAdminCounts = getManagementCounts(branchAdmins);
 
   // Fetch all Branch Admins
   const fetchBranchAdmins = () => {
@@ -96,6 +100,12 @@ function BranchAdmin() {
           + Add Branch Admin
         </button>
       </div>
+
+      <ManagementCountTiles
+        label="Branch Admins"
+        counts={branchAdminCounts}
+        icon={FaUserCog}
+      />
 
       {/* Table */}
       <div className="card shadow-sm border-0">

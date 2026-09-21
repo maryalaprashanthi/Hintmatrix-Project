@@ -8,6 +8,9 @@ import "./Student.css";
 import StudentTable from "./StudentTable";
 import StudentService from "../../services/UserService";
 import { useToast } from "../../components/Toast/useToast";
+import { FaUserGraduate } from "react-icons/fa";
+import ManagementCountTiles from "../../components/Common/ManagementCountTiles";
+import { getManagementCounts } from "../../utils/managementCounts";
 
 function Student() {
   const toast = useToast();
@@ -18,6 +21,7 @@ function Student() {
   const [branches, setBranches] = useState([]);
   const [sections, setSections] = useState([]);
   const [courses, setCourses] = useState([]);
+  const studentCounts = getManagementCounts(students);
 
   const fileInputRef = useRef(null);
 
@@ -214,6 +218,12 @@ function Student() {
         style={{ display: "none" }}
         accept=".xlsx,.xls,.csv"
         onChange={handleFileChange}
+      />
+
+      <ManagementCountTiles
+        label="Students"
+        counts={studentCounts}
+        icon={FaUserGraduate}
       />
 
       {/* Table */}

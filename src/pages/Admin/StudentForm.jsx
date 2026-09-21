@@ -42,6 +42,7 @@ function StudentForm({
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [address, setAddress] = useState("");
+  const [activeRow, setActiveRow] = useState(true);
 
   useEffect(() => {
     if (selectedStudentData) {
@@ -59,6 +60,7 @@ function StudentForm({
       setPhoneNumber(selectedStudentData.phoneNumber || "");
       setPassword(selectedStudentData.password || "");
       setAddress(selectedStudentData.address || "");
+      setActiveRow(selectedStudentData.activeRow !== false);
     } else {
       setName("");
       setStudentCode("");
@@ -72,6 +74,7 @@ function StudentForm({
       setPhoneNumber("");
       setPassword("");
       setAddress("");
+      setActiveRow(true);
     }
   }, [selectedStudentData, show]);
 
@@ -176,6 +179,7 @@ function StudentForm({
       phoneNumber: String(phoneNumber).replace(/\D/g, ""),
       password: password.trim(),
       address: address.trim(),
+      activeRow,
     };
 
     onSave(studentData);
@@ -499,6 +503,13 @@ function StudentForm({
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
               />
+            </div>
+          </div>
+          <div className="form-card">
+            <h3 className="section-title">Status</h3>
+            <div className="form-check form-switch status-form-switch">
+              <input className="form-check-input" type="checkbox" role="switch" checked={activeRow} onChange={(e) => setActiveRow(e.target.checked)} />
+              <label className="form-check-label">{activeRow ? "Active" : "Inactive"}</label>
             </div>
           </div>
         </div>

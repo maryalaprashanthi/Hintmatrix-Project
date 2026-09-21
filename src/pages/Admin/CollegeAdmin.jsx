@@ -4,6 +4,9 @@ import CollegeAdminTable from "./CollegeAdminTable";
 import "./BranchAdmin.css";
 import UserService from "../../services/UserService";
 import { useToast } from "../../components/Toast/useToast";
+import { FaUserGraduate } from "react-icons/fa";
+import ManagementCountTiles from "../../components/Common/ManagementCountTiles";
+import { getManagementCounts } from "../../utils/managementCounts";
 
 function CollegeAdmin() {
   const toast = useToast();
@@ -11,6 +14,7 @@ function CollegeAdmin() {
   const [collegeAdmins, setCollegeAdmins] = useState([]);
   const [selectedCollegeAdmin, setSelectedCollegeAdmin] = useState(null);
   const [loading, setLoading] = useState(false);
+  const collegeAdminCounts = getManagementCounts(collegeAdmins);
 
   // HELPER: normalize backend payloads for admin rows
 
@@ -125,6 +129,12 @@ function CollegeAdmin() {
           + Add College Admin
         </button>
       </div>
+
+      <ManagementCountTiles
+        label="College Admins"
+        counts={collegeAdminCounts}
+        icon={FaUserGraduate}
+      />
 
       {/*  TABLE */}
 

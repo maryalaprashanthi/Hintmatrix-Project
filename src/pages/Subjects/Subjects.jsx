@@ -20,6 +20,7 @@ import { getApiErrorMessage } from "../../utils/apiError";
 import { paths } from "../../routes/paths";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { useToast } from "../../components/Toast/useToast";
+import ManagementCountTiles from "../../components/Common/ManagementCountTiles";
 
 // Backend SubjectResponseDTO exposes the name as `subjectName`.
 const subjectLabel = (subject) => subject.subjectName || subject.name || "";
@@ -42,6 +43,11 @@ function Subjects() {
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const subjectCounts = {
+    total: subjects.length,
+    active: subjects.filter((subject) => subject.activeRow !== false).length,
+    inactive: subjects.filter((subject) => subject.activeRow === false).length,
+  };
 
   const filteredSubjects = subjects.filter((subject) => {
     const searchMatch = subjectLabel(subject)
@@ -158,6 +164,12 @@ function Subjects() {
           </div>
         )}
       </div>
+
+      <ManagementCountTiles
+        label="Subjects"
+        counts={subjectCounts}
+        icon={FaLayerGroup}
+      />
 
       <div className="subject-filters mb-3">
         <div className="subject-search">

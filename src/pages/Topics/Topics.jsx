@@ -2,7 +2,13 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 
-import { FaBookOpen, FaSearch, FaEdit, FaTrash, FaArrowRight } from "react-icons/fa";
+import {
+  FaBookOpen,
+  FaSearch,
+  FaEdit,
+  FaTrash,
+  FaArrowRight,
+} from "react-icons/fa";
 
 import "./Topics.css";
 import "./AddTopicModal.css";
@@ -16,6 +22,7 @@ import { getApiErrorMessage } from "../../utils/apiError";
 import { paths } from "../../routes/paths";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { useToast } from "../../components/Toast/useToast";
+import ManagementCountTiles from "../../components/Common/ManagementCountTiles";
 
 const topicIdOf = (topic) => topic.topicId ?? topic.topic_id ?? topic.id;
 
@@ -33,6 +40,11 @@ export default function Topics() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [topics, setTopics] = useState([]);
   const [selectedTopic, setSelectedTopic] = useState(null);
+  const topicCounts = {
+    total: topics.length,
+    active: topics.filter((topic) => topic.activeRow !== false).length,
+    inactive: topics.filter((topic) => topic.activeRow === false).length,
+  };
 
   // The chapter record gives the breadcrumb names and seeds the Add-topic
   // modal even when the chapter has no topics yet.
@@ -170,6 +182,12 @@ export default function Topics() {
         )}
       </div>
 
+      <ManagementCountTiles
+        label="Topics"
+        counts={topicCounts}
+        icon={FaBookOpen}
+      />
+
       <div className="category-filters mb-3">
         <div className="category-search">
           <div className="input-group shadow-sm rounded-3 overflow-hidden">
@@ -232,13 +250,17 @@ export default function Topics() {
                 <div className="updated-text">Last Updated</div>
 
                 <div className="updated-date">
-                  {(topic.updatedAt ?? topic.updated ?? "").toString().slice(0, 10)}
+                  {(topic.updatedAt ?? topic.updated ?? "")
+                    .toString()
+                    .slice(0, 10)}
                 </div>
 
                 <button
                   className="btn btn-primary view-btn"
                   disabled={!topic.activeRow}
-                  onClick={() => navigate(paths.topicQuestions(topicIdOf(topic)))}
+                  onClick={() =>
+                    navigate(paths.topicQuestions(topicIdOf(topic)))
+                  }
                 >
                   View Questions
                   <FaArrowRight className="ms-2" />

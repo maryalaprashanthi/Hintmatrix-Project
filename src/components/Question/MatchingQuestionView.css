@@ -253,6 +253,15 @@
   background: #ffffff;
 }
 
+/* Keep draggable answers on the left and questions/drop targets on the right. */
+.matching-column:first-child {
+  order: 2;
+}
+
+.matching-column:last-child {
+  order: 1;
+}
+
 .matching-column-header {
   padding: 14px 18px;
   font-size: 15px;
@@ -695,6 +704,11 @@
 
   .matching-columns {
     grid-template-columns: 1fr;
+  }
+
+  .matching-column:first-child,
+  .matching-column:last-child {
+    order: initial;
   }
 }
 

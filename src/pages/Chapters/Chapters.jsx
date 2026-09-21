@@ -21,6 +21,7 @@ import { getApiErrorMessage } from "../../utils/apiError";
 import { paths } from "../../routes/paths";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { useToast } from "../../components/Toast/useToast";
+import ManagementCountTiles from "../../components/Common/ManagementCountTiles";
 
 function Chapters() {
   // Chapters lists the chapters of one subject: /subjects/:subjectId/chapters
@@ -40,6 +41,11 @@ function Chapters() {
   const [selectedChapter, setSelectedChapter] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const chapterCounts = {
+    total: chapters.length,
+    active: chapters.filter((chapter) => chapter.activeRow !== false).length,
+    inactive: chapters.filter((chapter) => chapter.activeRow === false).length,
+  };
 
   const filteredChapters = chapters.filter((chapter) => {
     const searchMatch = chapter.name
@@ -213,6 +219,12 @@ function Chapters() {
           </div>
         )}
       </div>
+
+      <ManagementCountTiles
+        label="Chapters"
+        counts={chapterCounts}
+        icon={FaBookOpen}
+      />
 
       <div className="chapter-filters mb-3">
         <div className="chapter-search">
