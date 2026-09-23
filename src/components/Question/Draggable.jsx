@@ -8,6 +8,7 @@ import useQuestionStore from "./questionStore";
 import RuleEngineService from "../../services/RuleEngineService";
 import { useParams } from "react-router-dom";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
+import { getCurrentUserId } from "../../utils/user";
 
 const CheckIcon = () => (
   <svg
@@ -140,7 +141,7 @@ export default function Draggable({
         moveQuestion(id, obj.targetId, obj.conditionId, pairedId);
       });
       const post_body = {
-        userId: 1,
+        userId: getCurrentUserId(),
         questionId: questionId,
         attributeId: id,
         arithmetic: "add",
@@ -161,7 +162,7 @@ export default function Draggable({
 
       for (const answer of unansweredAnswers) {
         const questionBody = {
-          userId: 1,
+          userId: getCurrentUserId(),
           questionId: questionId,
           tableNameId: answer.tableNameId,
           headerId: answer.headerId,

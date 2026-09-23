@@ -7,6 +7,7 @@ import McqQuestionService from "../../services/McqQuestionService";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import QuestionService from "../../services/QuestionService";
 import useQuestionStore from "./questionStore";
+import { getCurrentUserId } from "../../utils/user";
 import "./McqQuestionView.css";
 
 export default function McqQuestionView({ questionId, questionType }) {
@@ -74,7 +75,7 @@ export default function McqQuestionView({ questionId, questionType }) {
         questionId: question.questionId,
         selectedOptionIds: selected,
       });
-      const { data } = await McqQuestionService.submit(1, {
+      const { data } = await McqQuestionService.submit(getCurrentUserId(), {
         questionId: question.questionId,
         selectedOptionIds: selected,
       });
@@ -97,11 +98,11 @@ export default function McqQuestionView({ questionId, questionType }) {
     setError("");
     try {
       await QuestionAnswerService.resetAnswersByUserAndQuestion(
-        1,
+        getCurrentUserId(),
         question.questionId,
       );
       await QuestionAnswerService.resetAnswerEventsByUserAndQuestion(
-        1,
+        getCurrentUserId(),
         question.questionId,
       );
       setSelected([]);

@@ -5,6 +5,7 @@ import ChapterService from "../../services/ChapterService";
 import TopicService from "../../services/TopicService";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import McqQuestionService from "../../services/McqQuestionService";
+import { getCurrentUserId } from "../../utils/user";
 import "./McqPractice.css";
 
 const idOf = (item, type) => item[`${type}Id`] ?? item[`${type}_id`] ?? item.id;
@@ -20,7 +21,7 @@ const nameOf = (item) =>
   item.topic_name ??
   "";
 function McqPractice() {
-  const userId = 1;
+  const userId = getCurrentUserId();
   const [courses, setCourses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [chapters, setChapters] = useState([]);

@@ -9,6 +9,7 @@ import useQuestionStore from "./questionStore";
 import QuestionService from "../../services/QuestionService";
 import { data } from "./SampleData";
 import { useParams } from "react-router-dom";
+import { getCurrentUserId } from "../../utils/user";
 
 function Header({
   question: propQuestion,
@@ -39,7 +40,7 @@ function Header({
         return;
       }
 
-      const userId = 1;
+      const userId = getCurrentUserId();
 
       const mistakes = await QuestionAnswerService.getMistakesByQuestionId(
         userId,
@@ -109,7 +110,7 @@ function Header({
         return;
       }
 
-      const userId = 1;
+      const userId = getCurrentUserId();
       const questionId = question.questionId;
 
       console.log("User ID:", userId);

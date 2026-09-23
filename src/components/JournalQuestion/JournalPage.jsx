@@ -12,6 +12,7 @@ import QuestionAnswerService from "../../services/QuestionAnswerService";
 import { isJournalAttributeSolved } from "./journalAnswerStatus";
 import MistakesModal from "../Question/MistakesModal";
 import useQuestionStore from "../Question/questionStore";
+import { getCurrentUserId } from "../../utils/user";
 
 const getRuleConditions = (rule) =>
   [1, 2, 3, 4].map((index) => {
@@ -175,7 +176,7 @@ const JournalPage = () => {
 
   const loadTotalScore = async () => {
     try {
-      const userId = 1;
+      const userId = getCurrentUserId();
 
       const score = await QuestionAnswerService.getOverallMarks(userId);
 
@@ -192,7 +193,7 @@ const JournalPage = () => {
     try {
       console.log("Loading current answers:", questionId);
 
-      const userId = 1;
+      const userId = getCurrentUserId();
       const answerResponse =
         await QuestionAnswerService.getAnswersByUserAndQuestion(
           userId,
