@@ -255,6 +255,17 @@ export default function Topics() {
                     .slice(0, 10)}
                 </div>
 
+                <div className="hierarchy-card-footer">
+                <div className="hierarchy-progress" aria-label="Topic progress 100 percent">
+                  <div className="hierarchy-progress-label">
+                    <span>Progress</span>
+                    <span>100%</span>
+                  </div>
+                  <div className="hierarchy-progress-track">
+                    <span style={{ width: "100%" }} />
+                  </div>
+                </div>
+
                 <button
                   className="btn btn-primary view-btn"
                   disabled={!topic.activeRow}
@@ -284,6 +295,7 @@ export default function Topics() {
                     </button>
                   </div>
                 )}
+                </div>
               </div>
             </div>
           </div>

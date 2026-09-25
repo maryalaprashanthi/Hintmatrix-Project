@@ -224,8 +224,8 @@
   width: 100%;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  align-items: start;
+  gap: 18px;
+  align-items: stretch;
 }
 
 /* =========================================================
@@ -235,29 +235,39 @@
 .subscription-plans-page .plan-card {
   width: 100%;
   min-width: 0;
-  min-height: 365px;
-  padding: 14px 15px;
-  border: 1px solid #dce5ef;
-  border-radius: 13px;
-  background: #fff;
+  min-height: 400px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border: 1px solid #edf2f7;
+  border-top: 3px solid #2563eb;
+  border-radius: 18px;
+  background: #ffffff;
   overflow: hidden;
-  box-shadow: 0 4px 13px rgba(28, 58, 91, 0.035);
+  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.06);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.subscription-plans-page .plan-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.1);
 }
 
 .subscription-plans-page .plan-card.free {
-  border-color: #7bb7ff;
+  border-top-color: #2563eb;
 }
 
 .subscription-plans-page .plan-card.basic {
-  border-color: #64d2b0;
+  border-top-color: #16a34a;
 }
 
 .subscription-plans-page .plan-card.standard {
-  border-color: #c39cff;
+  border-top-color: #9333ea;
 }
 
 .subscription-plans-page .plan-card.premium {
-  border-color: #ffbca7;
+  border-top-color: #ea580c;
 }
 
 /* =========================================================
@@ -266,29 +276,29 @@
 
 .subscription-plans-page .plan-header {
   width: 100%;
-  min-height: 54px;
+  min-height: 60px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
 }
 
 .subscription-plans-page .plan-title {
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 12px;
 }
 
 .subscription-plans-page .plan-icon {
-  flex: 0 0 56px;
-  width: 56px;
-  height: 39px;
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 9px;
-  font-size: 17px;
+  border-radius: 15px;
+  font-size: 20px;
 }
 
 .subscription-plans-page .plan-card.free .plan-icon {
@@ -321,9 +331,9 @@
 .subscription-plans-page .plan-title h3 {
   margin: 0 0 3px;
   overflow: hidden;
-  color: #123b68;
-  font-size: 16px;
-  line-height: 1.1;
+  color: #111827;
+  font-size: 18px;
+  line-height: 1.25;
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -331,19 +341,19 @@
 
 .subscription-plans-page .plan-title span {
   display: block;
-  color: #7b8da0;
-  font-size: 9px;
-  line-height: 1.2;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.35;
   white-space: nowrap;
 }
 
 .subscription-plans-page .plan-status {
   flex: 0 0 auto;
-  padding: 5px 9px;
+  padding: 6px 10px;
   border-radius: 999px;
   background: #dff7eb;
   color: #079969;
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1;
   font-weight: 700;
   white-space: nowrap;
@@ -359,11 +369,11 @@
 ========================================================= */
 
 .subscription-plans-page .plan-description {
-  min-height: 54px;
-  margin: 10px 0 0;
-  color: #536d86;
-  font-size: 18px;
-  line-height: 1.4;
+  min-height: 62px;
+  margin: 16px 0 0;
+  color: #475569;
+  font-size: 15px;
+  line-height: 1.5;
 }
 
 /* =========================================================
@@ -373,8 +383,8 @@
 .subscription-plans-page .plan-features {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  padding: 10px 0;
+  gap: 10px;
+  padding: 14px 0;
   border-top: 1px solid #edf1f5;
   border-bottom: 1px solid #edf1f5;
 }
@@ -382,16 +392,16 @@
 .subscription-plans-page .plan-features span {
   display: flex;
   align-items: center;
-  gap: 7px;
-  color: #314f6d;
-  font-size: 18px;
-  line-height: 1.25;
+  gap: 9px;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.35;
 }
 
 .subscription-plans-page .plan-features svg {
   flex: 0 0 auto;
   color: #12b887;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .subscription-plans-page .plan-card.standard .plan-features svg {
@@ -407,15 +417,15 @@
 ========================================================= */
 
 .subscription-plans-page .mapped-courses {
-  min-height: 58px;
-  padding-top: 10px;
+  min-height: 64px;
+  padding-top: 14px;
 }
 
 .subscription-plans-page .mapped-courses strong {
   display: block;
   margin-bottom: 4px;
-  color: #36516c;
-  font-size: 14px;
+  color: #334155;
+  font-size: 12px;
   line-height: 1.1;
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -425,8 +435,8 @@
   display: block;
   overflow: hidden;
   color: #2563eb;
-  font-size: 18px;
-  line-height: 1.2;
+  font-size: 14px;
+  line-height: 1.35;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -438,16 +448,18 @@
 .subscription-plans-page .plan-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 14px;
 }
 
 .subscription-plans-page .plan-actions .btn {
-  min-width: 90px;
-  height: 38px;
-  padding: 0 14px;
-  border-radius: 8px;
-  font-size: 14px;
+  min-width: 0;
+  height: 40px;
+  flex: 1;
+  padding: 0 12px;
+  border-radius: 9px;
+  font-size: 13px;
   font-weight: 600;
   display: inline-flex;
   align-items: center;

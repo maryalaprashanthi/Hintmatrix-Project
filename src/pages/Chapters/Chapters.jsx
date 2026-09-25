@@ -278,35 +278,50 @@ function Chapters() {
                 </span>
               </div>
 
-              {/*  MATCHED LAYOUT: Outlined buttons with icons */}
-              <button
-                className="btn btn-primary view-btn"
-                disabled={!chapter.activeRow}
-                onClick={() => openTopics(chapter)}
-              >
-                Start Learning
-                <FaArrowRight className="ms-2" />
-              </button>
-
-              {canManage && (
-                <div className="chapter-actions-row mt-3">
-                  <button
-                    className="chapter-action-btn outline-blue"
-                    onClick={() => handleEdit(chapter)}
-                  >
-                    <FaEdit className="me-1" />
-                    Edit
-                  </button>
-
-                  <button
-                    className="chapter-action-btn outline-red"
-                    onClick={() => del.request(chapter)}
-                  >
-                    <FaTrash className="me-1" />
-                    Delete
-                  </button>
+              <div className="hierarchy-card-footer">
+                <div
+                  className="hierarchy-progress"
+                  aria-label="Chapter progress 100 percent"
+                >
+                  <div className="hierarchy-progress-label">
+                    <span>Progress</span>
+                    <span>100%</span>
+                  </div>
+                  <div className="hierarchy-progress-track">
+                    <span style={{ width: "100%" }} />
+                  </div>
                 </div>
-              )}
+
+                {/*  MATCHED LAYOUT: Outlined buttons with icons */}
+                <button
+                  className="btn btn-primary view-btn"
+                  disabled={!chapter.activeRow}
+                  onClick={() => openTopics(chapter)}
+                >
+                  Start Learning
+                  <FaArrowRight className="ms-2" />
+                </button>
+
+                {canManage && (
+                  <div className="chapter-actions-row mt-3">
+                    <button
+                      className="chapter-action-btn outline-blue"
+                      onClick={() => handleEdit(chapter)}
+                    >
+                      <FaEdit className="me-1" />
+                      Edit
+                    </button>
+
+                    <button
+                      className="chapter-action-btn outline-red"
+                      onClick={() => del.request(chapter)}
+                    >
+                      <FaTrash className="me-1" />
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         ))}
