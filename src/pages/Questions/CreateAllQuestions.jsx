@@ -485,6 +485,19 @@ function CreateAllQuestions() {
     );
   };
 
+  const removeBlank = (blankIndex) => {
+    setBlanks((current) =>
+      current.length <= 1
+        ? current
+        : current
+            .filter((_, currentIndex) => currentIndex !== blankIndex)
+            .map((blank, currentIndex) => ({
+              ...blank,
+              label: `Blank ${currentIndex + 1}`,
+            })),
+    );
+  };
+
   const removeRow = (setter, index) => {
     setter((current) =>
       current.length <= 1
@@ -1489,7 +1502,20 @@ function CreateAllQuestions() {
                 <div className="aq-fill-blank-list">
                   {blanks.map((blank, index) => (
                     <div className="aq-fill-blank-row" key={index}>
-                      <b>{blank.label}</b>
+                      <div className="aq-fill-blank-label">
+                        <b>{blank.label}</b>
+
+                        <button
+                          type="button"
+                          className="aq-fill-blank-remove"
+                          onClick={() => removeBlank(index)}
+                          disabled={blanks.length <= 1}
+                          aria-label={`Remove blank ${index + 1}`}
+                          title="Remove blank"
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
 
                       <div className="aq-fill-blank-options">
                         {(blank.answerOptions ?? []).map(
