@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { FaLightbulb, FaTimesCircle } from "react-icons/fa";
+import { CircleX, Lightbulb } from "lucide-react";
 
 // Shown when a trial-balance / transaction row on the left is clicked: the
 // attribute's own Rule Engine hint text(s), plus each wrong line the
@@ -23,7 +23,7 @@ const AttributeMistakePanel = ({ status, hints, mistakes }) => {
       {hints.length > 0 && (
         <div className="attr-mistake__hint">
           <div className="attr-mistake__hint-title">
-            <FaLightbulb aria-hidden="true" /> Hint
+            <Lightbulb size={18} aria-hidden="true" /> Hint
           </div>
           {hints.map((hint, index) => (
             <p key={index}>{hint}</p>
@@ -33,7 +33,7 @@ const AttributeMistakePanel = ({ status, hints, mistakes }) => {
 
       <div className="attr-mistake__wrong">
         <div className="attr-mistake__wrong-title">
-          <FaTimesCircle aria-hidden="true" /> What went wrong?
+          <CircleX size={18} aria-hidden="true" /> What went wrong?
         </div>
         {mistakes.length === 0 ? (
           <p className="attr-mistake__empty">

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   FaRegCalendarAlt,
   FaPlay,
@@ -79,7 +79,10 @@ function ExamCatalog() {
   // "Present" is the existing open/upcoming/closed catalog below; "Past" is
   // the student's own completed attempts, each opening straight into that
   // attempt's review screen instead of the paper itself.
-  const [tab, setTab] = useState("present");
+  // The tab lives in the URL (?tab=past) so the "Previous Exams" tile on
+  // /exam and /mock-exam can deep-link straight to it.
+  const [searchParams] = useSearchParams();
+  const tab = searchParams.get("tab") === "past" ? "past" : "present";
   const [pastAttempts, setPastAttempts] = useState([]);
   const [pastStatus, setPastStatus] = useState("loading");
 
@@ -158,26 +161,6 @@ function ExamCatalog() {
         </p>
       </header>
 
-      <div className="exam-catalog__tabs" role="tablist">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === "present"}
-          className={`exam-catalog__tab ${tab === "present" ? "is-active" : ""}`}
-          onClick={() => setTab("present")}
-        >
-          Present Exams
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === "past"}
-          className={`exam-catalog__tab ${tab === "past" ? "is-active" : ""}`}
-          onClick={() => setTab("past")}
-        >
-          Past Exams
-        </button>
-      </div>
 
       {tab === "present" && status === "loading" && (
         <ul className="exam-catalog__grid" aria-hidden="true">

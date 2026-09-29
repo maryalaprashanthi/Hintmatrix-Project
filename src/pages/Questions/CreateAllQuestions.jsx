@@ -1,13 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   FaEdit,
-  FaExpand,
   FaFileAlt,
   FaListUl,
   FaPlus,
   FaSave,
   FaTrash,
-  FaTimes,
 } from "react-icons/fa";
 import Select from "react-select";
 import ChapterService from "../../services/ChapterService";
@@ -73,34 +71,31 @@ const normalizeBlankEntry = (blank = {}, index) => {
           .filter(Boolean)
       : [];
 
-  const answerOptions = Array.isArray(blank.answerOptions) && blank.answerOptions.length
-    ? blank.answerOptions.map((option, optionIndex) => ({
-        id: option.id ?? `${index}-${optionIndex}`,
-        value: String(
-          option.answerText ?? option.value ?? option.text ?? "",
-        ).trim(),
-        isCorrect: Boolean(option.isCorrect ?? option.correct ?? false),
-      }))
-    : legacyValues.length
-      ? legacyValues.map((value, optionIndex) => ({
-          id: `${index}-${optionIndex}`,
-          value: String(value).trim(),
-          isCorrect: false,
+  const answerOptions =
+    Array.isArray(blank.answerOptions) && blank.answerOptions.length
+      ? blank.answerOptions.map((option, optionIndex) => ({
+          id: option.id ?? `${index}-${optionIndex}`,
+          value: String(
+            option.answerText ?? option.value ?? option.text ?? "",
+          ).trim(),
+          isCorrect: Boolean(option.isCorrect ?? option.correct ?? false),
         }))
-      : [createBlankAnswerOption()];
+      : legacyValues.length
+        ? legacyValues.map((value, optionIndex) => ({
+            id: `${index}-${optionIndex}`,
+            value: String(value).trim(),
+            isCorrect: false,
+          }))
+        : [createBlankAnswerOption()];
 
-  const cleanedOptions = answerOptions.filter(
-    (option) => option.value.trim(),
-  );
+  const cleanedOptions = answerOptions.filter((option) => option.value.trim());
 
   return {
     ...blank,
     label: blank.label ?? `Blank ${index + 1}`,
     acceptedAnswers: blank.acceptedAnswers ?? "",
     answerOptions:
-      cleanedOptions.length > 0
-        ? cleanedOptions
-        : [createBlankAnswerOption()],
+      cleanedOptions.length > 0 ? cleanedOptions : [createBlankAnswerOption()],
   };
 };
 
@@ -253,18 +248,7 @@ function CreateAllQuestions() {
   });
 
   const [formError, setFormError] = useState("");
-  const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(false);
-  useEffect(() => {
-    if (isPreviewFullscreen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isPreviewFullscreen]);
+  const [activePage, setActivePage] = useState("details");
 
   useEffect(() => {
     const loadData = async () => {
@@ -442,47 +426,26 @@ function CreateAllQuestions() {
   };
 
   const updateBlankAnswerOption = (blankIndex, optionIndex, field, value) => {
-  setBlanks((current) =>
-    current.map((blank, currentIndex) => {
-      if (currentIndex !== blankIndex) {
-        return blank;
-      }
+    setBlanks((current) =>
+      current.map((blank, currentIndex) => {
+        if (currentIndex !== blankIndex) {
+          return blank;
+        }
 
-      return {
-        ...blank,
-        answerOptions: blank.answerOptions.map((option, optionRowIndex) => {
-          if (field !== "isCorrect") {
-            return optionRowIndex === optionIndex
+        return {
+          ...blank,
+          answerOptions: blank.answerOptions.map((option, optionRowIndex) =>
+            optionRowIndex === optionIndex
               ? {
                   ...option,
                   [field]: value,
                 }
-              : option;
-          }
-
-          // Single blank:
-          // Only one option can be marked as the correct answer.
-          if (current.length === 1) {
-            return {
-              ...option,
-              isCorrect: optionRowIndex === optionIndex,
-            };
-          }
-
-          // Multiple blanks:
-          // Keep the existing behavior where each blank
-          // can have its own correct answer selection.
-          return optionRowIndex === optionIndex
-            ? {
-                ...option,
-                isCorrect: value,
-              }
-            : option;
-        }),
-      };
-    }),
-  );
-};
+              : option,
+          ),
+        };
+      }),
+    );
+  };
 
   const addBlankAnswerOption = (blankIndex) => {
     setBlanks((current) =>
@@ -521,21 +484,6 @@ function CreateAllQuestions() {
       }),
     );
   };
-
-  const removeBlank = (blankIndex) => {
-  setBlanks((current) => {
-    if (current.length <= 1) {
-      return current;
-    }
-
-    return current
-      .filter((_, index) => index !== blankIndex)
-      .map((blank, index) => ({
-        ...blank,
-        label: `Blank ${index + 1}`,
-      }));
-  });
-};
 
   const removeRow = (setter, index) => {
     setter((current) =>
@@ -592,6 +540,14 @@ function CreateAllQuestions() {
     return headerId == null ? null : Number(headerId);
   };
 
+  const attributeLabel = (attributeId) =>
+    labelOf(
+      tableAttributes.find(
+        (item) => String(idOf(item, "attribute")) === String(attributeId),
+      ),
+      "attribute",
+    ) || "";
+
   const buildPayload = () => {
     const common = {
       courseId: Number(courseId),
@@ -615,43 +571,35 @@ function CreateAllQuestions() {
     }
 
     if (isFillBlankType(selectedType)) {
-  let answerOrder = 0;
+      let answerOrder = 0;
 
-  const normalizedBlanks = blanks.map((blank, index) => {
-    const answerOptions = (blank.answerOptions ?? [])
-      .filter((option) => String(option.value).trim())
-      .map((option) => ({
-        answerText: String(option.value).trim(),
-        isCorrect: Boolean(option.isCorrect),
-      }));
+      const normalizedBlanks = blanks.map((blank, index) => {
+        const acceptedAnswers = (blank.answerOptions ?? [])
+          .filter((option) => option.isCorrect && String(option.value).trim())
+          .map((option) => String(option.value).trim())
+          .filter(Boolean);
 
-    const acceptedAnswers = answerOptions
-      .filter((option) => option.isCorrect)
-      .map((option) => option.answerText);
+        return {
+          blankNumber: index + 1,
+          acceptedAnswers: Array.from(new Set(acceptedAnswers)),
+        };
+      });
 
-    return {
-      blankNumber: index + 1,
-      acceptedAnswers: Array.from(new Set(acceptedAnswers)),
-      answerOptions,
-    };
-  });
+      const blankAnswers = normalizedBlanks.flatMap((blank, blankIndex) =>
+        blank.acceptedAnswers.map((answer) => ({
+          answerText: answer,
+          displayOrder: ++answerOrder,
+          blankNumber: blankIndex + 1,
+        })),
+      );
 
-  const blankAnswers = normalizedBlanks.flatMap((blank) =>
-    blank.answerOptions.map((option) => ({
-      answerText: option.answerText,
-      displayOrder: ++answerOrder,
-      blankNumber: blank.blankNumber,
-      isCorrect: option.isCorrect,
-    })),
-  );
-
-  return {
-    ...common,
-    subjectId: Number(subjectId),
-    marks: Number(marks),
-    blanks: normalizedBlanks,
-    answers: blankAnswers,
-  };
+      return {
+        ...common,
+        subjectId: Number(subjectId),
+        marks: Number(marks),
+        blanks: normalizedBlanks,
+        answers: blankAnswers,
+      };
     }
 
     if (isMcqType(selectedType)) {
@@ -763,40 +711,22 @@ function CreateAllQuestions() {
       }
 
       const invalidBlank = blanks.find((blank) => {
-  const options = blank.answerOptions ?? [];
+        const options = blank.answerOptions ?? [];
+        const validOptions = options.filter((option) =>
+          String(option.value).trim(),
+        );
 
-  const validOptions = options.filter(
-    (option) => String(option.value).trim(),
-  );
+        return (
+          validOptions.length === 0 ||
+          !validOptions.some((option) => option.isCorrect)
+        );
+      });
 
-  const correctOptions = validOptions.filter(
-    (option) => option.isCorrect,
-  );
-
-  if (validOptions.length === 0) {
-    return true;
-  }
-
-  // Single blank → exactly one correct answer.
-  if (blanks.length === 1) {
-    return correctOptions.length !== 1;
-  }
-
-  // Multiple blanks → existing behavior.
-  return correctOptions.length === 0;
-});
-
-if (invalidBlank) {
-  if (blanks.length === 1) {
-    errors.push(
-      "Add at least one answer and select exactly one correct option.",
-    );
-  } else {
-    errors.push(
-      "Add at least one answer and select the correct option for each blank.",
-    );
-  }
-}
+      if (invalidBlank) {
+        errors.push(
+          "Add at least one answer and select the correct option for each blank.",
+        );
+      }
     } else if (selectedType === "DRAG_AND_DROP") {
       if (
         !ledgerRows.some((row) => row.debitAttributeId || row.creditAttributeId)
@@ -880,6 +810,8 @@ if (invalidBlank) {
     });
     setEditingDraftId(null);
     setFormError("");
+    setActivePage("preview");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const editDraft = (draft) => {
@@ -915,6 +847,8 @@ if (invalidBlank) {
       type: "",
       text: "",
     });
+
+    setActivePage("details");
 
     window.scrollTo({
       top: 0,
@@ -993,14 +927,6 @@ if (invalidBlank) {
           HEADER
           ===================================================== */}
       <header className="aq-header">
-        <button
-          type="button"
-          className="aq-back"
-          onClick={() => window.history.back()}
-        >
-          ← Back to Questions
-        </button>
-
         <div className="aq-header-left">
           <div className="aq-title-row">
             <div className="aq-title-content">
@@ -1011,30 +937,31 @@ if (invalidBlank) {
               </p>
             </div>
 
-            <div className="aq-stepper" aria-label="Question creation steps">
-              <div className="aq-step active">
+            <nav className="aq-stepper" aria-label="Question creation steps">
+              <button
+                type="button"
+                className={`aq-step ${activePage === "details" ? "active" : ""}`}
+                onClick={() => {
+                  setActivePage("details");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              >
                 <b>1</b>
                 <span>Details</span>
-              </div>
+              </button>
 
-              <i />
+              <i aria-hidden="true" />
 
-              <div
-                className={`aq-step ${
-                  isMcqType(selectedType) ? "active-soft" : ""
-                }`}
+              <button
+                type="button"
+                className={`aq-step ${activePage === "preview" ? "active" : ""}`}
+                onClick={() => questionText.trim() && setActivePage("preview")}
+                disabled={!questionText.trim()}
               >
                 <b>2</b>
-                <span>Answers</span>
-              </div>
-
-              <i />
-
-              <div className="aq-step">
-                <b>3</b>
-                <span>Review</span>
-              </div>
-            </div>
+                <span>Preview</span>
+              </button>
+            </nav>
           </div>
         </div>
       </header>
@@ -1043,608 +970,209 @@ if (invalidBlank) {
           MAIN CONTENT
           ===================================================== */}
 
-      {loading ? (
-        <div className="aq-state">Loading question form…</div>
-      ) : (
-        <form onSubmit={addToPreview}>
-          {/* Message is INSIDE form so it cannot create
+      {activePage === "details" &&
+        (loading ? (
+          <div className="aq-state">Loading question form…</div>
+        ) : (
+          <form onSubmit={addToPreview}>
+            {/* Message is INSIDE form so it cannot create
               an extra outer grid row. */}
-          {message.text && (
-            <div className={`aq-message ${message.type}`}>{message.text}</div>
-          )}
+            {message.text && (
+              <div className={`aq-message ${message.type}`}>{message.text}</div>
+            )}
 
-          {/* =================================================
+            {/* =================================================
               QUESTION DETAILS
               ================================================= */}
-          <section className="aq-card">
-            <div className="aq-section-heading">
-              <span className="aq-section-icon">
-                <FaFileAlt />
-              </span>
+            <section className="aq-card">
+              <div className="aq-section-heading">
+                <span className="aq-section-icon">
+                  <FaFileAlt />
+                </span>
 
-              <div>
-                <h2>Question details</h2>
+                <div>
+                  <h2>Question details</h2>
 
-                <p>Provide the basic information about the question.</p>
+                  <p>Provide the basic information about the question.</p>
+                </div>
               </div>
-            </div>
 
-            <div className="aq-grid aq-grid-six">
-              <label>
-                <span className="aq-required-label">
-                  Course <em>*</em>
-                </span>
-
-                {searchableSelect({
-                  items: courses,
-                  type: "course",
-                  value: courseId,
-                  placeholder: "Search course",
-
-                  onChange: (value) => {
-                    setCourseId(value);
-                    setSubjectId("");
-                    setChapterId("");
-                    setTopicId("");
-                  },
-                })}
-              </label>
-
-              <label>
-                <span className="aq-required-label">
-                  Subject <em>*</em>
-                </span>
-
-                {searchableSelect({
-                  items: filteredSubjects,
-                  type: "subject",
-                  value: subjectId,
-                  placeholder: "Search subject",
-                  disabled: !courseId,
-
-                  onChange: (value) => {
-                    setSubjectId(value);
-                    setChapterId("");
-                    setTopicId("");
-                  },
-                })}
-              </label>
-
-              <label>
-                <span className="aq-required-label">
-                  Chapter <em>*</em>
-                </span>
-
-                {searchableSelect({
-                  items: filteredChapters,
-                  type: "chapter",
-                  value: chapterId,
-                  placeholder: "Search chapter",
-                  disabled: !subjectId,
-
-                  onChange: (value) => {
-                    setChapterId(value);
-                    setTopicId("");
-                  },
-                })}
-              </label>
-
-              <label>
-                <span className="aq-required-label">
-                  Topic <em>*</em>
-                </span>
-
-                {searchableSelect({
-                  items: filteredTopics,
-                  type: "topic",
-                  value: topicId,
-                  placeholder: "Search topic",
-                  disabled: !chapterId,
-                  onChange: setTopicId,
-                })}
-              </label>
-
-              <label>
-                <span className="aq-required-label">
-                  Question type <em>*</em>
-                </span>
-
-                {searchableSelect({
-                  items: questionTypes,
-                  type: "questionType",
-                  value: questionTypeId,
-                  placeholder: "Search question type",
-
-                  getLabel: (item) =>
-                    typeLabel(normalizeType(labelOf(item, "questionType"))),
-
-                  onChange: (value) => {
-                    setQuestionTypeId(value);
-
-                    setMcqOptions(emptyMcqOptions());
-
-                    setAttributeRows([emptyAttributeRow()]);
-
-                    setLedgerRows([emptyLedgerRow()]);
-
-                    setMatchingPairs(emptyMatchingPairs());
-
-                    setBlanks(emptyBlanks());
-                  },
-                })}
-              </label>
-
-              {(isMcqType(selectedType) ||
-                isMatchingType(selectedType) ||
-                isFillBlankType(selectedType)) && (
+              <div className="aq-grid aq-grid-six">
                 <label>
                   <span className="aq-required-label">
-                    Marks <em>*</em>
+                    Course <em>*</em>
                   </span>
 
-                  <input
-                    type="number"
-                    min="0.25"
-                    step="0.25"
-                    value={marks}
-                    onChange={(event) => setMarks(event.target.value)}
-                  />
+                  {searchableSelect({
+                    items: courses,
+                    type: "course",
+                    value: courseId,
+                    placeholder: "Search course",
+
+                    onChange: (value) => {
+                      setCourseId(value);
+                      setSubjectId("");
+                      setChapterId("");
+                      setTopicId("");
+                    },
+                  })}
                 </label>
-              )}
-            </div>
 
-            <label className="aq-question-text">
-              <span className="aq-required-label">
-                Question text <em>*</em>
-              </span>
+                <label>
+                  <span className="aq-required-label">
+                    Subject <em>*</em>
+                  </span>
 
-              <div className="aq-editor">
-                <div className="aq-editor-toolbar" aria-hidden="true">
-                  <button type="button">B</button>
+                  {searchableSelect({
+                    items: filteredSubjects,
+                    type: "subject",
+                    value: subjectId,
+                    placeholder: "Search subject",
+                    disabled: !courseId,
 
-                  <button type="button">
-                    <i>I</i>
-                  </button>
+                    onChange: (value) => {
+                      setSubjectId(value);
+                      setChapterId("");
+                      setTopicId("");
+                    },
+                  })}
+                </label>
 
-                  <button type="button">
-                    <u>U</u>
-                  </button>
+                <label>
+                  <span className="aq-required-label">
+                    Chapter <em>*</em>
+                  </span>
 
-                  <button type="button">S</button>
+                  {searchableSelect({
+                    items: filteredChapters,
+                    type: "chapter",
+                    value: chapterId,
+                    placeholder: "Search chapter",
+                    disabled: !subjectId,
 
-                  <span />
+                    onChange: (value) => {
+                      setChapterId(value);
+                      setTopicId("");
+                    },
+                  })}
+                </label>
 
-                  <button type="button">≡</button>
+                <label>
+                  <span className="aq-required-label">
+                    Topic <em>*</em>
+                  </span>
 
-                  <button type="button">☷</button>
+                  {searchableSelect({
+                    items: filteredTopics,
+                    type: "topic",
+                    value: topicId,
+                    placeholder: "Search topic",
+                    disabled: !chapterId,
+                    onChange: setTopicId,
+                  })}
+                </label>
 
-                  <button type="button">☰</button>
+                <label>
+                  <span className="aq-required-label">
+                    Question type <em>*</em>
+                  </span>
 
-                  <span />
+                  {searchableSelect({
+                    items: questionTypes,
+                    type: "questionType",
+                    value: questionTypeId,
+                    placeholder: "Search question type",
 
-                  <button type="button">↗</button>
+                    getLabel: (item) =>
+                      typeLabel(normalizeType(labelOf(item, "questionType"))),
 
-                  <button type="button">▧</button>
+                    onChange: (value) => {
+                      setQuestionTypeId(value);
 
-                  <button type="button">&lt;/&gt;</button>
-                </div>
+                      setMcqOptions(emptyMcqOptions());
 
-                <textarea
-                  maxLength={500}
-                  value={questionText}
-                  onChange={(event) => setQuestionText(event.target.value)}
-                  placeholder="Enter the question"
-                />
+                      setAttributeRows([emptyAttributeRow()]);
+
+                      setLedgerRows([emptyLedgerRow()]);
+
+                      setMatchingPairs(emptyMatchingPairs());
+
+                      setBlanks(emptyBlanks());
+                    },
+                  })}
+                </label>
+
+                {(isMcqType(selectedType) ||
+                  isMatchingType(selectedType) ||
+                  isFillBlankType(selectedType)) && (
+                  <label>
+                    <span className="aq-required-label">
+                      Marks <em>*</em>
+                    </span>
+
+                    <input
+                      type="number"
+                      min="0.25"
+                      step="0.25"
+                      value={marks}
+                      onChange={(event) => setMarks(event.target.value)}
+                    />
+                  </label>
+                )}
               </div>
 
-              <small>{questionText.length} / 500</small>
-            </label>
-          </section>
+              <label className="aq-question-text">
+                <span className="aq-required-label">
+                  Question text <em>*</em>
+                </span>
 
-          {/* =================================================
+                <div className="aq-editor">
+                  <div className="aq-editor-toolbar" aria-hidden="true">
+                    <button type="button">B</button>
+
+                    <button type="button">
+                      <i>I</i>
+                    </button>
+
+                    <button type="button">
+                      <u>U</u>
+                    </button>
+
+                    <button type="button">S</button>
+
+                    <span />
+
+                    <button type="button">≡</button>
+
+                    <button type="button">☷</button>
+
+                    <button type="button">☰</button>
+
+                    <span />
+
+                    <button type="button">↗</button>
+
+                    <button type="button">▧</button>
+
+                    <button type="button">&lt;/&gt;</button>
+                  </div>
+
+                  <textarea
+                    maxLength={500}
+                    value={questionText}
+                    onChange={(event) => setQuestionText(event.target.value)}
+                    placeholder="Enter the question"
+                  />
+                </div>
+
+                <small>{questionText.length} / 500</small>
+              </label>
+            </section>
+
+            {/* =================================================
               MCQ
               ================================================= */}
-          {isMcqType(selectedType) && (
-            <section className="aq-card">
-              <div className="aq-section-heading">
-                <span className="aq-section-icon">
-                  <FaListUl />
-                </span>
-
-                <div>
-                  <h2>Answer options</h2>
-
-                  <p>
-                    {selectedType === "SINGLE_CHOICE"
-                      ? "Choose one correct answer."
-                      : "Choose every correct answer."}
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  className="aq-secondary"
-                  onClick={addMcqOption}
-                >
-                  <FaPlus />
-                  Add option
-                </button>
-              </div>
-
-              <div className="aq-option-list">
-                {mcqOptions.map((option, index) => (
-                  <div
-                    className={`aq-option ${option.isCorrect ? "correct" : ""}`}
-                    key={option.optionOrder}
-                  >
-                    <b>{option.label}</b>
-
-                    <input
-                      value={option.optionText}
-                      onChange={(event) =>
-                        updateMcqOption(index, "optionText", event.target.value)
-                      }
-                      placeholder={`Option ${option.label}`}
-                    />
-
-                    <input
-                      aria-label={`Mark option ${option.label} correct`}
-                      type={
-                        selectedType === "MULTIPLE_CHOICE"
-                          ? "checkbox"
-                          : "radio"
-                      }
-                      name="correct-option"
-                      checked={option.isCorrect}
-                      onChange={() => updateMcqOption(index, "isCorrect", true)}
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => removeMcqOption(index)}
-                      disabled={mcqOptions.length <= 2}
-                    >
-                      <FaTrash />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* =================================================
-              DRAG AND DROP
-              ================================================= */}
-          {selectedType === "DRAG_AND_DROP" && (
-            <section className="aq-card">
-              <div className="aq-section-heading">
-                <span className="aq-section-icon">
-                  <FaListUl />
-                </span>
-
-                <div>
-                  <h2>Debit and credit attributes</h2>
-
-                  <p>Build the pairs used by the drag-and-drop question.</p>
-                </div>
-
-                <button
-                  type="button"
-                  className="aq-secondary"
-                  onClick={() =>
-                    setLedgerRows((current) => [...current, emptyLedgerRow()])
-                  }
-                >
-                  <FaPlus />
-                  Add row
-                </button>
-              </div>
-
-              <div className="aq-table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Debit</th>
-                      <th>Debit amount</th>
-                      <th>Credit</th>
-                      <th>Credit amount</th>
-                      <th />
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {ledgerRows.map((row, index) => (
-                      <tr key={index}>
-                        <td>
-                          {renderAttributeSelect(
-                            row.debitAttributeId,
-                            (value) =>
-                              updateRow(
-                                setLedgerRows,
-                                index,
-                                "debitAttributeId",
-                                value,
-                              ),
-                          )}
-                        </td>
-
-                        <td>
-                          <input
-                            type="number"
-                            value={row.debitAmount}
-                            onChange={(event) =>
-                              updateRow(
-                                setLedgerRows,
-                                index,
-                                "debitAmount",
-                                event.target.value,
-                              )
-                            }
-                          />
-                        </td>
-
-                        <td>
-                          {renderAttributeSelect(
-                            row.creditAttributeId,
-                            (value) =>
-                              updateRow(
-                                setLedgerRows,
-                                index,
-                                "creditAttributeId",
-                                value,
-                              ),
-                          )}
-                        </td>
-
-                        <td>
-                          <input
-                            type="number"
-                            value={row.creditAmount}
-                            onChange={(event) =>
-                              updateRow(
-                                setLedgerRows,
-                                index,
-                                "creditAmount",
-                                event.target.value,
-                              )
-                            }
-                          />
-                        </td>
-
-                        <td>
-                          <button
-                            type="button"
-                            onClick={() => removeRow(setLedgerRows, index)}
-                            disabled={ledgerRows.length <= 1}
-                          >
-                            <FaTrash />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          )}
-
-          {/* =================================================
-              MATCHING
-              ================================================= */}
-          {isMatchingType(selectedType) && (
-            <section className="aq-card">
-              <div className="aq-section-heading">
-                <span className="aq-section-icon">
-                  <FaListUl />
-                </span>
-
-                <div>
-                  <h2>Match the following</h2>
-
-                  <p>Create the pairs that belong together.</p>
-                </div>
-
-                <button
-                  type="button"
-                  className="aq-secondary"
-                  onClick={() =>
-                    setMatchingPairs((current) => [
-                      ...current,
-                      emptyMatchingPair(),
-                    ])
-                  }
-                >
-                  <FaPlus />
-                  Add pair
-                </button>
-              </div>
-
-              <div className="aq-table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Column A</th>
-                      <th>Column B</th>
-                      <th />
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {matchingPairs.map((pair, index) => (
-                      <tr key={index}>
-                        <td>
-                          <input
-                            value={pair.columnA}
-                            onChange={(event) =>
-                              updateRow(
-                                setMatchingPairs,
-                                index,
-                                "columnA",
-                                event.target.value,
-                              )
-                            }
-                            placeholder="Enter Column A"
-                          />
-                        </td>
-
-                        <td>
-                          <input
-                            value={pair.columnB}
-                            onChange={(event) =>
-                              updateRow(
-                                setMatchingPairs,
-                                index,
-                                "columnB",
-                                event.target.value,
-                              )
-                            }
-                            placeholder="Enter Column B"
-                          />
-                        </td>
-
-                        <td>
-                          <button
-                            type="button"
-                            onClick={() => removeRow(setMatchingPairs, index)}
-                            disabled={matchingPairs.length <= 1}
-                          >
-                            <FaTrash />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          )}
-
-          {/* =================================================
-              FILL BLANK
-              ================================================= */}
-          {isFillBlankType(selectedType) && (
-            <section className="aq-card">
-              <div className="aq-section-heading">
-                <span className="aq-section-icon">
-                  <FaListUl />
-                </span>
-
-                <div>
-                  <h2>Blank answers</h2>
-
-                  <p>
-                    Add accepted answers for each blank, separated by commas.
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  className="aq-secondary"
-                  onClick={() =>
-                    setBlanks((current) => [
-                      ...current,
-                      emptyBlank(current.length),
-                    ])
-                  }
-                >
-                  <FaPlus />
-                  Add blank
-                </button>
-              </div>
-
-              <div className="aq-fill-blank-list">
-                {blanks.map((blank, index) => (
-                  <div className="aq-fill-blank-row" key={index}>
-                    <div className="aq-fill-blank-row-header">
-                      <b>{blank.label}</b>
-
-                      <button
-                        type="button"
-                        className="aq-delete-blank-button"
-                        onClick={() => removeBlank(index)}
-                        disabled={blanks.length <= 1}
-                        aria-label={`Delete ${blank.label}`}
-                        title={
-                          blanks.length <= 1
-                            ? "At least one blank is required"
-                            : `Delete ${blank.label}`
-                        }
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
-
-                    <div className="aq-fill-blank-options">
-                      {(blank.answerOptions ?? []).map((option, optionIndex) => (
-                        <div className="aq-fill-blank-option" key={option.id ?? optionIndex}>
-                          <input
-                            value={option.value}
-                            onChange={(event) =>
-                              updateBlankAnswerOption(
-                                index,
-                                optionIndex,
-                                "value",
-                                event.target.value,
-                              )
-                            }
-                            placeholder="Accepted answer"
-                          />
-
-                          <input
-  aria-label={`Mark answer ${optionIndex + 1} correct for blank ${index + 1}`}
-  type="checkbox"
-  checked={Boolean(option.isCorrect)}
-  onChange={() =>
-    updateBlankAnswerOption(
-      index,
-      optionIndex,
-      "isCorrect",
-      !option.isCorrect,
-    )
-  }
-  title={
-    blanks.length === 1
-      ? "Mark this as the correct answer"
-      : "Mark as correct answer"
-  }
-/>
-
-                          <button
-                            type="button"
-                            onClick={() => removeBlankAnswerOption(index, optionIndex)}
-                            disabled={(blank.answerOptions ?? []).length <= 1}
-                            aria-label={`Remove answer option ${optionIndex + 1}`}
-                          >
-                            <FaTrash />
-                          </button>
-                        </div>
-                      ))}
-
-                      
-
-                      <button
-                        type="button"
-                        className="aq-secondary aq-inline-button"
-                        onClick={() => addBlankAnswerOption(index)}
-                      >
-                        <FaPlus />
-                        Add option
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* =================================================
-              GENERIC ATTRIBUTES
-              ================================================= */}
-          {selectedType &&
-            !isMcqType(selectedType) &&
-            selectedType !== "DRAG_AND_DROP" &&
-            !isMatchingType(selectedType) &&
-            !isFillBlankType(selectedType) && (
+            {isMcqType(selectedType) && (
               <section className="aq-card">
                 <div className="aq-section-heading">
                   <span className="aq-section-icon">
@@ -1652,22 +1180,93 @@ if (invalidBlank) {
                   </span>
 
                   <div>
-                    <h2>Question attributes</h2>
+                    <h2>Answer options</h2>
 
                     <p>
-                      Configure the transactions and amounts for this{" "}
-                      {typeLabel(selectedType).toLowerCase()} question.
+                      {selectedType === "SINGLE_CHOICE"
+                        ? "Choose one correct answer."
+                        : "Choose every correct answer."}
                     </p>
                   </div>
 
                   <button
                     type="button"
                     className="aq-secondary"
+                    onClick={addMcqOption}
+                  >
+                    <FaPlus />
+                    Add option
+                  </button>
+                </div>
+
+                <div className="aq-option-list">
+                  {mcqOptions.map((option, index) => (
+                    <div
+                      className={`aq-option ${option.isCorrect ? "correct" : ""}`}
+                      key={option.optionOrder}
+                    >
+                      <b>{option.label}</b>
+
+                      <input
+                        value={option.optionText}
+                        onChange={(event) =>
+                          updateMcqOption(
+                            index,
+                            "optionText",
+                            event.target.value,
+                          )
+                        }
+                        placeholder={`Option ${option.label}`}
+                      />
+
+                      <input
+                        aria-label={`Mark option ${option.label} correct`}
+                        type={
+                          selectedType === "MULTIPLE_CHOICE"
+                            ? "checkbox"
+                            : "radio"
+                        }
+                        name="correct-option"
+                        checked={option.isCorrect}
+                        onChange={() =>
+                          updateMcqOption(index, "isCorrect", true)
+                        }
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => removeMcqOption(index)}
+                        disabled={mcqOptions.length <= 2}
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* =================================================
+              DRAG AND DROP
+              ================================================= */}
+            {selectedType === "DRAG_AND_DROP" && (
+              <section className="aq-card">
+                <div className="aq-section-heading">
+                  <span className="aq-section-icon">
+                    <FaListUl />
+                  </span>
+
+                  <div>
+                    <h2>Debit and credit attributes</h2>
+
+                    <p>Build the pairs used by the drag-and-drop question.</p>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="aq-secondary"
                     onClick={() =>
-                      setAttributeRows((current) => [
-                        ...current,
-                        emptyAttributeRow(),
-                      ])
+                      setLedgerRows((current) => [...current, emptyLedgerRow()])
                     }
                   >
                     <FaPlus />
@@ -1679,36 +1278,39 @@ if (invalidBlank) {
                   <table>
                     <thead>
                       <tr>
-                        <th>Transaction</th>
-                        <th>Amount 1</th>
-                        <th>Amount 2</th>
+                        <th>Debit</th>
+                        <th>Debit amount</th>
+                        <th>Credit</th>
+                        <th>Credit amount</th>
                         <th />
                       </tr>
                     </thead>
 
                     <tbody>
-                      {attributeRows.map((row, index) => (
+                      {ledgerRows.map((row, index) => (
                         <tr key={index}>
                           <td>
-                            {renderAttributeSelect(row.attributeId, (value) =>
-                              updateRow(
-                                setAttributeRows,
-                                index,
-                                "attributeId",
-                                value,
-                              ),
+                            {renderAttributeSelect(
+                              row.debitAttributeId,
+                              (value) =>
+                                updateRow(
+                                  setLedgerRows,
+                                  index,
+                                  "debitAttributeId",
+                                  value,
+                                ),
                             )}
                           </td>
 
                           <td>
                             <input
                               type="number"
-                              value={row.amount}
+                              value={row.debitAmount}
                               onChange={(event) =>
                                 updateRow(
-                                  setAttributeRows,
+                                  setLedgerRows,
                                   index,
-                                  "amount",
+                                  "debitAmount",
                                   event.target.value,
                                 )
                               }
@@ -1716,14 +1318,27 @@ if (invalidBlank) {
                           </td>
 
                           <td>
+                            {renderAttributeSelect(
+                              row.creditAttributeId,
+                              (value) =>
+                                updateRow(
+                                  setLedgerRows,
+                                  index,
+                                  "creditAttributeId",
+                                  value,
+                                ),
+                            )}
+                          </td>
+
+                          <td>
                             <input
                               type="number"
-                              value={row.amount2}
+                              value={row.creditAmount}
                               onChange={(event) =>
                                 updateRow(
-                                  setAttributeRows,
+                                  setLedgerRows,
                                   index,
-                                  "amount2",
+                                  "creditAmount",
                                   event.target.value,
                                 )
                               }
@@ -1733,8 +1348,8 @@ if (invalidBlank) {
                           <td>
                             <button
                               type="button"
-                              onClick={() => removeRow(setAttributeRows, index)}
-                              disabled={attributeRows.length <= 1}
+                              onClick={() => removeRow(setLedgerRows, index)}
+                              disabled={ledgerRows.length <= 1}
                             >
                               <FaTrash />
                             </button>
@@ -1747,170 +1362,546 @@ if (invalidBlank) {
               </section>
             )}
 
-          {/* =================================================
-              FORM ERROR
+            {/* =================================================
+              MATCHING
               ================================================= */}
-          {formError && (
-            <div className="aq-form-error" role="alert">
-              {formError}
-            </div>
-          )}
+            {isMatchingType(selectedType) && (
+              <section className="aq-card">
+                <div className="aq-section-heading">
+                  <span className="aq-section-icon">
+                    <FaListUl />
+                  </span>
 
-          {/* =================================================
-              BOTTOM ACTIONS
-              ================================================= */}
-          <div className="aq-bottom-actions">
-            <div className="aq-draft-status">
-              <span className="aq-status-dot" />
+                  <div>
+                    <h2>Match the following</h2>
 
-              <div>
-                <strong>Draft saved</strong>
+                    <p>Create the pairs that belong together.</p>
+                  </div>
 
-                <small>
-                  {drafts.length
-                    ? `${drafts.length} question${
-                        drafts.length === 1 ? "" : "s"
-                      } ready`
-                    : "Last saved just now"}
-                </small>
-              </div>
-            </div>
+                  <button
+                    type="button"
+                    className="aq-secondary"
+                    onClick={() =>
+                      setMatchingPairs((current) => [
+                        ...current,
+                        emptyMatchingPair(),
+                      ])
+                    }
+                  >
+                    <FaPlus />
+                    Add pair
+                  </button>
+                </div>
 
-            <div className="aq-bottom-buttons">
-              <button
-                type="button"
-                className="aq-clear"
-                onClick={clearQuestionFields}
-              >
-                Clear question
-              </button>
+                <div className="aq-table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Column A</th>
+                        <th>Column B</th>
+                        <th />
+                      </tr>
+                    </thead>
 
-              <button type="submit" className="aq-secondary">
-                <FaPlus />
+                    <tbody>
+                      {matchingPairs.map((pair, index) => (
+                        <tr key={index}>
+                          <td>
+                            <input
+                              value={pair.columnA}
+                              onChange={(event) =>
+                                updateRow(
+                                  setMatchingPairs,
+                                  index,
+                                  "columnA",
+                                  event.target.value,
+                                )
+                              }
+                              placeholder="Enter Column A"
+                            />
+                          </td>
 
-                {editingDraftId ? "Update preview" : "Save & Preview"}
-              </button>
+                          <td>
+                            <input
+                              value={pair.columnB}
+                              onChange={(event) =>
+                                updateRow(
+                                  setMatchingPairs,
+                                  index,
+                                  "columnB",
+                                  event.target.value,
+                                )
+                              }
+                              placeholder="Enter Column B"
+                            />
+                          </td>
 
-              <button
-                type="button"
-                className="aq-primary"
-                disabled={!drafts.length || submitting}
-                onClick={submitDrafts}
-              >
-                <FaSave />
-
-                {submitting ? "Submitting…" : "Save Question"}
-              </button>
-            </div>
-          </div>
-        </form>
-      )}
-
-      {/* =====================================================
-          LIVE PREVIEW
-          ===================================================== */}
-      <section
-        className={`aq-preview${
-          isPreviewFullscreen ? " aq-preview-fullscreen" : ""
-        }`}
-      >
-        <div className="aq-preview-heading">
-          <div>
-            <span>LIVE PREVIEW</span>
-
-            <h2>How your question will appear in the exam.</h2>
-          </div>
-
-          {isPreviewFullscreen ? (
-            <button
-              type="button"
-              className="aq-fullscreen"
-              onClick={() => setIsPreviewFullscreen(false)}
-            >
-              <FaTimes />
-              &nbsp; Close Preview
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="aq-fullscreen"
-              onClick={() => setIsPreviewFullscreen(true)}
-            >
-              <FaExpand />
-              &nbsp; View Fullscreen
-            </button>
-          )}
-        </div>
-
-        <div className="aq-live-card">
-          <div className="aq-live-meta">
-            <span>
-              {selectedType ? typeLabel(selectedType) : "Question Type"}
-            </span>
-
-            {isMcqType(selectedType) && (
-              <strong>
-                {marks || 1} Mark
-                {Number(marks) === 1 ? "" : "s"}
-              </strong>
+                          <td>
+                            <button
+                              type="button"
+                              onClick={() => removeRow(setMatchingPairs, index)}
+                              disabled={matchingPairs.length <= 1}
+                            >
+                              <FaTrash />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
             )}
-          </div>
 
-          {questionText.trim() ||
-          mcqOptions.some((option) => option.optionText.trim()) ? (
-            <>
-              <div className="aq-live-question">
-                <b>Q1.</b>
+            {/* =================================================
+              FILL BLANK
+              ================================================= */}
+            {isFillBlankType(selectedType) && (
+              <section className="aq-card">
+                <div className="aq-section-heading">
+                  <span className="aq-section-icon">
+                    <FaListUl />
+                  </span>
 
-                <p>
-                  {questionText.trim() || "Your question will appear here."}
-                </p>
-              </div>
+                  <div>
+                    <h2>Blank answers</h2>
 
-              {isMcqType(selectedType) && (
-                <div className="aq-live-options">
-                  {mcqOptions.map((option) => (
-                    <div
-                      className={`aq-live-option ${
-                        option.isCorrect ? "correct" : ""
-                      }`}
-                      key={option.optionOrder}
-                    >
-                      <span className="aq-live-radio">
-                        {option.isCorrect ? "✓" : ""}
-                      </span>
+                    <p>
+                      Add accepted answers for each blank, separated by commas.
+                    </p>
+                  </div>
 
-                      <b>{option.label}.</b>
+                  <button
+                    type="button"
+                    className="aq-secondary"
+                    onClick={() =>
+                      setBlanks((current) => [
+                        ...current,
+                        emptyBlank(current.length),
+                      ])
+                    }
+                  >
+                    <FaPlus />
+                    Add blank
+                  </button>
+                </div>
 
-                      <span>
-                        {option.optionText || `Option ${option.label}`}
-                      </span>
+                <div className="aq-fill-blank-list">
+                  {blanks.map((blank, index) => (
+                    <div className="aq-fill-blank-row" key={index}>
+                      <b>{blank.label}</b>
+
+                      <div className="aq-fill-blank-options">
+                        {(blank.answerOptions ?? []).map(
+                          (option, optionIndex) => (
+                            <div
+                              className="aq-fill-blank-option"
+                              key={option.id ?? optionIndex}
+                            >
+                              <input
+                                value={option.value}
+                                onChange={(event) =>
+                                  updateBlankAnswerOption(
+                                    index,
+                                    optionIndex,
+                                    "value",
+                                    event.target.value,
+                                  )
+                                }
+                                placeholder="Accepted answer"
+                              />
+
+                              <input
+                                aria-label={`Mark answer ${optionIndex + 1} correct for blank ${index + 1}`}
+                                type="checkbox"
+                                checked={Boolean(option.isCorrect)}
+                                onChange={() =>
+                                  updateBlankAnswerOption(
+                                    index,
+                                    optionIndex,
+                                    "isCorrect",
+                                    !option.isCorrect,
+                                  )
+                                }
+                                title="Mark as correct answer"
+                              />
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  removeBlankAnswerOption(index, optionIndex)
+                                }
+                                disabled={
+                                  (blank.answerOptions ?? []).length <= 1
+                                }
+                                aria-label={`Remove answer option ${optionIndex + 1}`}
+                              >
+                                <FaTrash />
+                              </button>
+                            </div>
+                          ),
+                        )}
+
+                        <button
+                          type="button"
+                          className="aq-secondary aq-inline-button"
+                          onClick={() => addBlankAnswerOption(index)}
+                        >
+                          <FaPlus />
+                          Add option
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
+              </section>
+            )}
+
+            {/* =================================================
+              GENERIC ATTRIBUTES
+              ================================================= */}
+            {selectedType &&
+              !isMcqType(selectedType) &&
+              selectedType !== "DRAG_AND_DROP" &&
+              !isMatchingType(selectedType) &&
+              !isFillBlankType(selectedType) && (
+                <section className="aq-card">
+                  <div className="aq-section-heading">
+                    <span className="aq-section-icon">
+                      <FaListUl />
+                    </span>
+
+                    <div>
+                      <h2>Question attributes</h2>
+
+                      <p>
+                        Configure the transactions and amounts for this{" "}
+                        {typeLabel(selectedType).toLowerCase()} question.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="aq-secondary"
+                      onClick={() =>
+                        setAttributeRows((current) => [
+                          ...current,
+                          emptyAttributeRow(),
+                        ])
+                      }
+                    >
+                      <FaPlus />
+                      Add row
+                    </button>
+                  </div>
+
+                  <div className="aq-table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Transaction</th>
+                          <th>Amount 1</th>
+                          <th>Amount 2</th>
+                          <th />
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {attributeRows.map((row, index) => (
+                          <tr key={index}>
+                            <td>
+                              {renderAttributeSelect(row.attributeId, (value) =>
+                                updateRow(
+                                  setAttributeRows,
+                                  index,
+                                  "attributeId",
+                                  value,
+                                ),
+                              )}
+                            </td>
+
+                            <td>
+                              <input
+                                type="number"
+                                value={row.amount}
+                                onChange={(event) =>
+                                  updateRow(
+                                    setAttributeRows,
+                                    index,
+                                    "amount",
+                                    event.target.value,
+                                  )
+                                }
+                              />
+                            </td>
+
+                            <td>
+                              <input
+                                type="number"
+                                value={row.amount2}
+                                onChange={(event) =>
+                                  updateRow(
+                                    setAttributeRows,
+                                    index,
+                                    "amount2",
+                                    event.target.value,
+                                  )
+                                }
+                              />
+                            </td>
+
+                            <td>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  removeRow(setAttributeRows, index)
+                                }
+                                disabled={attributeRows.length <= 1}
+                              >
+                                <FaTrash />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
               )}
 
-              {isMcqType(selectedType) &&
-                mcqOptions.some((option) => option.isCorrect) && (
-                  <div className="aq-correct-answer">
-                    <strong>●&nbsp; Correct Answer</strong>
+            {/* =================================================
+              FORM ERROR
+              ================================================= */}
+            {formError && (
+              <div className="aq-form-error" role="alert">
+                {formError}
+              </div>
+            )}
 
-                    <span>
-                      {mcqOptions
-                        .filter((option) => option.isCorrect)
-                        .map((option) => `Option ${option.label}`)
-                        .join(", ")}
-                    </span>
+            {/* =================================================
+              BOTTOM ACTIONS
+              ================================================= */}
+            <div className="aq-bottom-actions">
+              <div className="aq-bottom-buttons">
+                <button
+                  type="button"
+                  className="aq-clear"
+                  onClick={clearQuestionFields}
+                >
+                  Clear question
+                </button>
+
+                <button type="submit" className="aq-primary">
+                  <FaPlus />
+
+                  {editingDraftId ? "Update preview" : "Save & Preview"}
+                </button>
+              </div>
+            </div>
+          </form>
+        ))}
+
+      {activePage === "preview" && (
+        <section className="aq-preview" aria-label="Live question preview">
+          <div className="aq-preview-heading">
+            <div>
+              <span>LIVE PREVIEW</span>
+              <h2>How your question will appear in the exam.</h2>
+            </div>
+          </div>
+
+          <div className="aq-live-card">
+            <div className="aq-live-meta">
+              <span>
+                {selectedType ? typeLabel(selectedType) : "Question Type"}
+              </span>
+
+              {(isMcqType(selectedType) ||
+                isMatchingType(selectedType) ||
+                isFillBlankType(selectedType)) && (
+                <strong>
+                  {marks || 1} Mark
+                  {Number(marks) === 1 ? "" : "s"}
+                </strong>
+              )}
+            </div>
+
+            {questionText.trim() ||
+            mcqOptions.some((option) => option.optionText.trim()) ? (
+              <>
+                <div className="aq-live-question">
+                  <b>Q1.</b>
+
+                  <p>
+                    {questionText.trim() || "Your question will appear here."}
+                  </p>
+                </div>
+
+                {isMcqType(selectedType) && (
+                  <div className="aq-live-options">
+                    {mcqOptions.map((option) => (
+                      <div
+                        className={`aq-live-option ${
+                          option.isCorrect ? "correct" : ""
+                        }`}
+                        key={option.optionOrder}
+                      >
+                        <span className="aq-live-radio">
+                          {option.isCorrect ? "✓" : ""}
+                        </span>
+
+                        <b>{option.label}.</b>
+
+                        <span>
+                          {option.optionText || `Option ${option.label}`}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 )}
-            </>
-          ) : (
-            <div className="aq-live-empty">
-              Your question preview will appear here.
-            </div>
-          )}
-        </div>
-      </section>
+
+                {isMcqType(selectedType) &&
+                  mcqOptions.some((option) => option.isCorrect) && (
+                    <div className="aq-correct-answer">
+                      <strong>●&nbsp; Correct Answer</strong>
+
+                      <span>
+                        {mcqOptions
+                          .filter((option) => option.isCorrect)
+                          .map((option) => `Option ${option.label}`)
+                          .join(", ")}
+                      </span>
+                    </div>
+                  )}
+
+                {isMatchingType(selectedType) && (
+                  <div className="aq-live-matching">
+                    {matchingPairs.map((pair, index) => (
+                      <div className="aq-live-match-row" key={index}>
+                        <span>{pair.columnA || `Column A ${index + 1}`}</span>
+                        <b>↔</b>
+                        <span>{pair.columnB || `Column B ${index + 1}`}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {isFillBlankType(selectedType) && (
+                  <div className="aq-live-fill">
+                    {blanks.map((blank, index) => {
+                      const answers = (blank.answerOptions ?? []).filter(
+                        (option) => option.value.trim(),
+                      );
+
+                      return (
+                        <div className="aq-live-fill-row" key={index}>
+                          <b>{blank.label}</b>
+                          <span>
+                            {answers.length
+                              ? answers.map((option) => option.value).join(", ")
+                              : "Accepted answers will appear here"}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {selectedType === "DRAG_AND_DROP" && (
+                  <div className="aq-live-fill">
+                    {ledgerRows.flatMap((row, index) => {
+                      const rows = [];
+
+                      if (row.debitAttributeId) {
+                        rows.push(
+                          <div
+                            className="aq-live-fill-row"
+                            key={`debit-${index}`}
+                          >
+                            <b>Debit</b>
+                            <span>
+                              {attributeLabel(row.debitAttributeId)}
+                              {row.debitAmount ? ` - ${row.debitAmount}` : ""}
+                            </span>
+                          </div>,
+                        );
+                      }
+
+                      if (row.creditAttributeId) {
+                        rows.push(
+                          <div
+                            className="aq-live-fill-row"
+                            key={`credit-${index}`}
+                          >
+                            <b>Credit</b>
+                            <span>
+                              {attributeLabel(row.creditAttributeId)}
+                              {row.creditAmount ? ` - ${row.creditAmount}` : ""}
+                            </span>
+                          </div>,
+                        );
+                      }
+
+                      return rows;
+                    })}
+                  </div>
+                )}
+
+                {selectedType &&
+                  !isMcqType(selectedType) &&
+                  selectedType !== "DRAG_AND_DROP" &&
+                  !isMatchingType(selectedType) &&
+                  !isFillBlankType(selectedType) && (
+                    <div className="aq-live-fill">
+                      {attributeRows
+                        .filter((row) => row.attributeId)
+                        .map((row, index) => (
+                          <div className="aq-live-fill-row" key={index}>
+                            <b>{attributeLabel(row.attributeId)}</b>
+                            <span>
+                              {row.amount || row.amount2
+                                ? [row.amount, row.amount2]
+                                    .filter(Boolean)
+                                    .join(" / ")
+                                : "Amount will appear here"}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+              </>
+            ) : (
+              <div className="aq-live-empty">
+                Your question preview will appear here.
+              </div>
+            )}
+          </div>
+
+          <div className="aq-preview-actions">
+            <button
+              type="button"
+              className="aq-clear"
+              onClick={() => {
+                setActivePage("details");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              disabled={submitting}
+            >
+              Back to Edit
+            </button>
+
+            <button
+              type="button"
+              className="aq-primary"
+              disabled={!drafts.length || submitting}
+              onClick={submitDrafts}
+            >
+              <FaSave />
+              {submitting ? "Saving…" : "Save Question"}
+            </button>
+          </div>
+        </section>
+      )}
     </main>
   );
 }

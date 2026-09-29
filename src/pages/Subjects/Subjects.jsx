@@ -223,6 +223,17 @@ function Subjects() {
                 </span>
               </div>
 
+              <div className="hierarchy-card-footer">
+              <div className="hierarchy-progress" aria-label="Subject progress 100 percent">
+                <div className="hierarchy-progress-label">
+                  <span>Progress</span>
+                  <span>100%</span>
+                </div>
+                <div className="hierarchy-progress-track">
+                  <span style={{ width: "100%" }} />
+                </div>
+              </div>
+
               <button
                 className="btn btn-primary view-btn"
                 disabled={!subject.activeRow}
@@ -251,6 +262,7 @@ function Subjects() {
                   </button>
                 </div>
               )}
+              </div>
             </div>
           </div>
         ))}

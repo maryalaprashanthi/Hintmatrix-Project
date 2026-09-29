@@ -229,3 +229,112 @@ textarea:not(.form-control) {
   opacity:.5 !important;
 
 }
+
+/* Shared hierarchy card progress (Course > Subject > Chapter > Topic) */
+.hierarchy-progress {
+  width: 100%;
+  margin: 0 0 14px;
+  padding: 0;
+}
+
+.hierarchy-card-footer {
+  width: 100%;
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.hierarchy-progress-label {
+  margin-bottom: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.hierarchy-progress-track {
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dbe5f4;
+}
+
+.hierarchy-progress-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #2563eb;
+}
+
+.course-content > .course-btn,
+.subject-card > .view-btn,
+.chapter-card > .view-btn,
+.category-card .card-body > .view-btn {
+  margin-top: 0 !important;
+}
+
+.course-content > .course-details,
+.subject-card > .subject-info,
+.chapter-card > .chapter-info {
+  margin-bottom: 0 !important;
+}
+
+.subject-card,
+.chapter-card,
+.category-card .card-body {
+  height: 100%;
+}
+
+.course-actions,
+.subject-actions-row,
+.chapter-actions-row,
+.category-card .card-body > .d-flex.gap-2 {
+  min-height: 37px;
+  margin-top: 10px !important;
+  margin-bottom: 0 !important;
+  align-items: center;
+}
+
+.course-actions > button,
+.subject-actions-row > button,
+.chapter-actions-row > button,
+.category-card .card-body > .d-flex.gap-2 > button {
+  flex: 1;
+  height: 34px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.subject-card,
+.chapter-card {
+  padding: 24px;
+}
+
+.category-card .card-body {
+  padding: 22px;
+}
+
+.subject-card h4,
+.chapter-card h4 {
+  margin-bottom: 12px;
+}
+
+.category-card .updated-text {
+  margin-top: 10px;
+}
+
+html[data-theme="dark"] .hierarchy-progress-label {
+  color: var(--app-muted);
+}
+
+html[data-theme="dark"] .hierarchy-progress-track {
+  background: #3a475b;
+}
+
+html[data-theme="dark"] .hierarchy-progress-track > span {
+  background: #60a5fa;
+}

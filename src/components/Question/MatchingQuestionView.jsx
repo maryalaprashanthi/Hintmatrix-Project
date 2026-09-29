@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import useQuestionStore from "./questionStore";
+import { getCurrentUserId } from "../../utils/user";
 import "./MatchingQuestionView.css";
 
 const MatchingQuestionView = ({
@@ -406,7 +407,7 @@ const MatchingQuestionView = ({
         // ---------------------------------------------------
 
         const answerEvent = {
-          userId: 1,
+          userId: getCurrentUserId(),
 
           questionId:
             question.questionId,

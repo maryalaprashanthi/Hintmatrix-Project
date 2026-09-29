@@ -38,7 +38,7 @@ function Courses() {
   const toast = useToast();
 
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("ALL");
   const [showModal, setShowModal] = useState(false);
   const [courses, setCourses] = useState([]);
   const [chapters, setChapters] = useState([]);
@@ -160,11 +160,16 @@ function Courses() {
       .toLowerCase()
       .includes(search.toLowerCase());
 
-    const courseCategory = course.category || "Commerce";
+    const isActive =
+      course.activeRow !== false &&
+      course.activeRow !== "false" &&
+      course.activeRow !== 0;
+    const statusMatch =
+      statusFilter === "ALL" ||
+      (statusFilter === "ACTIVE" && isActive) ||
+      (statusFilter === "INACTIVE" && !isActive);
 
-    const categoryMatch = category === "All" || courseCategory === category;
-
-    return searchMatch && categoryMatch;
+    return searchMatch && statusMatch;
   });
 
   return (
@@ -295,15 +300,14 @@ function Courses() {
         </div>
 
         <select
-          className="form-select category-filter"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          className="form-select category-filter status-filter"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          aria-label="Filter courses by status"
         >
-          <option value="All">All Categories</option>
-          <option value="Commerce">Commerce</option>
-          <option value="Professional">Professional</option>
-          <option value="School">School</option>
-          <option value="Combo Course">Combo Course</option>
+          <option value="ALL">All Statuses</option>
+          <option value="ACTIVE">Active</option>
+          <option value="INACTIVE">Inactive</option>
         </select>
       </div>
 
@@ -374,6 +378,17 @@ function Courses() {
                     </div>
                   </div>
 
+                  <div className="hierarchy-card-footer">
+                  <div className="hierarchy-progress" aria-label="Course progress 100 percent">
+                    <div className="hierarchy-progress-label">
+                      <span>Progress</span>
+                      <span>100%</span>
+                    </div>
+                    <div className="hierarchy-progress-track">
+                      <span style={{ width: "100%" }} />
+                    </div>
+                  </div>
+
                   <button
                     className="course-btn mt-auto"
                     disabled={!course.activeRow}
@@ -391,7 +406,7 @@ function Courses() {
                   </button>
 
                   {canManage && (
-                    <div className="d-flex gap-2 mt-3">
+                    <div className="course-actions">
                       <button
                         className="btn btn-outline-primary btn-sm"
                         onClick={() => handleEdit(course)}
@@ -409,6 +424,7 @@ function Courses() {
                       </button>
                     </div>
                   )}
+                  </div>
                 </div>
               </div>
             </div>

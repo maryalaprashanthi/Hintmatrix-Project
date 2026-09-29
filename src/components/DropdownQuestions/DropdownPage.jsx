@@ -13,6 +13,7 @@ import QuestionAnswerService from "../../services/QuestionAnswerService";
 import { isDropdownAttributeSolved } from "./dropdownAnswerStatus";
 import MistakesModal from "../Question/MistakesModal";
 import useQuestionStore from "../Question/questionStore";
+import { getCurrentUserId } from "../../utils/user";
 
 const getRuleConditions = (rule) =>
   [1, 2, 3, 4]
@@ -64,7 +65,7 @@ const DropdownPage = () => {
    */
   const loadTotalScore = async () => {
     try {
-      const userId = 1;
+      const userId = getCurrentUserId();
 
       const score = await QuestionAnswerService.getOverallMarks(userId);
 
@@ -79,7 +80,7 @@ const DropdownPage = () => {
 
   const loadAnsweredData = async (loadedQuestion) => {
     try {
-      const userId = 1;
+      const userId = getCurrentUserId();
       const qId = loadedQuestion.questionId;
 
       console.log("========== DROPDOWN LOAD SAVED ANSWERS ==========");

@@ -1,27 +1,68 @@
 /* =========================================================
    EXAM REVIEW ONLY - every selector scoped under .exam-review.
+   Follows the "Accounting Exam Review UI" design system: clean, light,
+   professional; navy / blue chrome, green = correct, red = incorrect,
+   purple (debit) and green (credit) accounting tables.
    ========================================================= */
 
 .exam-review {
-  --er-ink: #1c2233;
-  --er-muted: #6b7392;
-  --er-canvas: #f4f5fb;
+  /* neutrals */
+  --er-page: #fefdfe;
   --er-card: #ffffff;
-  --er-rule: #e4e7f2;
-  --er-blue: #1e67c7;
-  --er-blue-bg: #e8f0fb;
-  --er-green: #15803d;
-  --er-green-bg: #dcfce7;
-  --er-red: #c0392b;
-  --er-red-bg: #fde8e8;
-  --er-gold: #b45309;
-  --er-gold-bg: #fff3e0;
+  --er-border: #e6e9ef;
+  --er-table-border: #e9ecf2;
+  --er-gray: #f5f6f8;
+  --er-circle: #eef1f5;
+  --er-disabled: #98a2b3;
+
+  /* text / primary */
+  --er-navy: #0f1f4d;
+  --er-navy-2: #233b70;
+  --er-blue: #155eef;
+  --er-blue-bright: #1677ff;
+  --er-blue-light: #e5eefe;
+  --er-text: #172b4d;
+  --er-text-2: #52658f;
+  --er-muted: #667085;
+  --er-btn-2: #f1f4f8;
+
+  /* success / correct */
+  --er-success: #00a86b;
+  --er-success-dark: #00875a;
+  --er-success-bg: #e2fdf2;
+  --er-success-border: #a7efcb;
+
+  /* error / incorrect */
+  --er-error: #e53935;
+  --er-error-dark: #d92d20;
+  --er-error-bg: #fee9ec;
+  --er-error-border: #f7bfc6;
+
+  /* accounting tables: debit = purple, credit = green */
+  --er-purple: #5b20e6;
+  --er-purple-light: #f1f4fe;
+  --er-green: #008f63;
+  --er-green-header: #ddfef2;
+
+  /* hint */
+  --er-hint-bg: #ecf4ff;
+  --er-hint-border: #d5e6ff;
+
+  --er-radius-card: 12px;
+  --er-radius-btn: 8px;
+  --er-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
 
   box-sizing: border-box;
   min-height: 100%;
-  background: var(--er-canvas);
-  color: var(--er-ink);
-  font-family: "Poppins", Arial, sans-serif;
+  background: var(--er-page);
+  color: var(--er-text);
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 }
 
 .exam-review *,
@@ -30,13 +71,18 @@
   box-sizing: border-box;
 }
 
+/* Lucide icons: outline, 2px stroke, never filled */
+.exam-review svg {
+  flex-shrink: 0;
+}
+
 .exam-review-status {
   padding: 40px;
   text-align: center;
-  color: #6b7392;
+  color: var(--er-muted, #667085);
 }
 
-/* ---------- top bar ---------- */
+/* ---------- header ---------- */
 
 .exam-review__topbar {
   display: flex;
@@ -44,230 +90,242 @@
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  padding: 20px 26px;
+  padding: 24px 36px;
   background: var(--er-card);
-  border-bottom: 1px solid var(--er-rule);
+  border-bottom: 1px solid var(--er-border);
 }
 
-.exam-review__back {
-  display: flex;
+.exam-review .exam-review__back {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
+  flex-basis: 100%;
+  margin-bottom: 2px;
+  padding: 0;
   border: none;
   background: none;
-  padding: 0;
+  font: inherit;
   font-size: 13px;
   font-weight: 600;
-  color: var(--er-muted);
+  color: var(--er-text-2);
   cursor: pointer;
-  flex-basis: 100%;
-  margin-bottom: 4px;
 }
 
-.exam-review__back:hover {
-  color: var(--er-ink);
+.exam-review .exam-review__back svg {
+  color: var(--er-blue);
+}
+
+.exam-review .exam-review__back:hover {
+  color: var(--er-navy);
 }
 
 .exam-review__title {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 
 .exam-review__title-icon {
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: var(--er-blue-bg);
-  color: var(--er-blue);
-  font-size: 18px;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--er-radius-card);
+  background: var(--er-blue-light);
+  color: var(--er-blue-bright);
   flex-shrink: 0;
 }
 
 .exam-review__title h1 {
   margin: 0;
-  font-size: 21px;
+  font-size: 30px;
   font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--er-navy);
 }
 
 .exam-review__title p {
-  margin: 2px 0 0;
-  font-size: 13px;
-  color: var(--er-muted);
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--er-text-2);
 }
 
 .exam-review__stats {
   display: flex;
-  gap: 14px;
   flex-wrap: wrap;
+  gap: 14px;
 }
 
 .exam-review__stat {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 18px;
-  border: 1px solid var(--er-rule);
-  border-radius: 12px;
+  padding: 12px 18px;
+  border: 1px solid var(--er-border);
+  border-radius: var(--er-radius-card);
   background: var(--er-card);
+  box-shadow: var(--er-shadow);
 }
 
 .exam-review__stat-icon {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
-  font-size: 15px;
+  background: var(--er-blue-light);
+  color: var(--er-blue-bright);
 }
 
-.exam-review__stat-icon--gold {
-  background: var(--er-gold-bg);
-  color: var(--er-gold);
-}
-
-.exam-review__stat-icon--blue {
-  background: var(--er-blue-bg);
-  color: var(--er-blue);
+.exam-review__stat-label {
+  margin-bottom: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--er-text-2);
 }
 
 .exam-review__stat-value {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 700;
+  color: var(--er-navy);
 }
 
 .exam-review__stat-sub {
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--er-muted);
+  color: var(--er-success);
 }
 
-.exam-review__stat-label {
-  margin-bottom: 2px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--er-muted);
-}
-
-/* ---------- body layout ---------- */
+/* ---------- body layout: question navigation + main ---------- */
 
 .exam-review__body {
   display: flex;
   align-items: flex-start;
   gap: 20px;
-  padding: 20px 26px 40px;
+  padding: 24px 36px 40px;
 }
 
 .exam-review__sidebar {
-  flex: 0 0 320px;
+  flex: 0 0 400px;
   background: var(--er-card);
-  border: 1px solid var(--er-rule);
-  border-radius: 14px;
+  border: 1px solid var(--er-border);
+  border-radius: var(--er-radius-card);
+  box-shadow: var(--er-shadow);
   overflow: hidden;
 }
 
 .exam-review__filters {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   padding: 14px;
-  border-bottom: 1px solid var(--er-rule);
-  flex-wrap: wrap;
+  border-bottom: 1px solid var(--er-border);
 }
 
-.exam-review__filters button {
+/* secondary button by default, primary (navy) when active */
+.exam-review .exam-review__filters button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 12px;
-  border: 1px solid var(--er-rule);
-  border-radius: 9px;
-  background: var(--er-card);
-  color: var(--er-ink);
+  padding: 7px 10px;
+  border: 1px solid var(--er-border);
+  border-radius: var(--er-radius-btn);
+  background: var(--er-btn-2);
+  color: var(--er-text-2);
   font: inherit;
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
 }
 
-.exam-review__filters button.is-active {
-  background: var(--er-ink);
-  border-color: var(--er-ink);
+.exam-review .exam-review__filters button:hover {
+  border-color: var(--er-text-2);
+}
+
+.exam-review .exam-review__filters .exam-review__filter--incorrect {
+  color: var(--er-error-dark);
+}
+
+.exam-review .exam-review__filters .exam-review__filter--incorrect svg {
+  color: var(--er-error);
+}
+
+.exam-review .exam-review__filters .exam-review__filter--correct {
+  color: var(--er-success-dark);
+}
+
+.exam-review .exam-review__filters .exam-review__filter--correct svg {
+  color: var(--er-success);
+}
+
+.exam-review .exam-review__filters button.is-active {
+  background: var(--er-navy);
+  border-color: var(--er-navy);
   color: #fff;
 }
 
-.exam-review__filters button.is-active .exam-review__filter-dot {
+.exam-review .exam-review__filters button.is-active svg {
   color: #fff;
-}
-
-.exam-review__filter-dot {
-  display: inline-flex;
-  font-size: 13px;
-}
-
-.exam-review__filter--incorrect {
-  color: var(--er-red);
-  border-color: color-mix(in oklab, var(--er-red) 30%, var(--er-rule));
-}
-
-.exam-review__filter--incorrect .exam-review__filter-dot {
-  color: var(--er-red);
-}
-
-.exam-review__filter--correct {
-  color: var(--er-green);
-  border-color: color-mix(in oklab, var(--er-green) 30%, var(--er-rule));
-}
-
-.exam-review__filter--correct .exam-review__filter-dot {
-  color: var(--er-green);
 }
 
 .exam-review__list {
   list-style: none;
   margin: 0;
-  padding: 8px;
+  padding: 12px;
   max-height: 70vh;
   overflow-y: auto;
 }
 
-.exam-review__list-item {
+/* correct_question: white row; incorrect_question: pink row;
+   selected_question: navy row with white text, radius 7px */
+.exam-review .exam-review__list-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
-  padding: 9px 10px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  padding: 10px 12px;
   border: none;
-  border-radius: 9px;
-  background: transparent;
+  border-radius: 7px;
+  background: var(--er-card);
   font: inherit;
   text-align: left;
   cursor: pointer;
 }
 
-.exam-review__list-item:hover {
-  background: var(--er-canvas);
+.exam-review .exam-review__list-item.is-correct:hover {
+  background: var(--er-gray);
 }
 
-.exam-review__list-item.is-active.is-correct {
-  background: var(--er-green-bg);
+.exam-review .exam-review__list-item.is-incorrect {
+  background: var(--er-error-bg);
 }
 
-.exam-review__list-item.is-active.is-incorrect {
-  background: var(--er-red-bg);
+.exam-review .exam-review__list-item.is-active,
+.exam-review .exam-review__list-item.is-active:hover {
+  background: var(--er-navy);
 }
 
 .exam-review__list-number {
+  display: grid;
+  place-items: center;
   flex-shrink: 0;
-  width: 20px;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--er-muted);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--er-circle);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--er-text);
+}
+
+.exam-review__list-item.is-active .exam-review__list-number {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
 }
 
 .exam-review__list-title {
@@ -275,24 +333,35 @@
   min-width: 0;
   font-size: 13px;
   font-weight: 600;
-  color: var(--er-ink);
+  color: var(--er-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.exam-review__list-item.is-active .exam-review__list-title {
+  color: #fff;
+}
+
 .exam-review__list-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   flex-shrink: 0;
-  font-size: 12px;
-  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
 }
 
 .exam-review__list-item.is-correct .exam-review__list-badge {
-  color: var(--er-green);
+  background: var(--er-success-bg);
+  color: var(--er-success);
 }
 
 .exam-review__list-item.is-incorrect .exam-review__list-badge {
-  color: var(--er-red);
+  background: var(--er-error-bg);
+  color: var(--er-error);
 }
 
 /* ---------- main panel ---------- */
@@ -301,9 +370,10 @@
   flex: 1;
   min-width: 0;
   background: var(--er-card);
-  border: 1px solid var(--er-rule);
-  border-radius: 14px;
-  padding: 22px 26px;
+  border: 1px solid var(--er-border);
+  border-radius: var(--er-radius-card);
+  box-shadow: var(--er-shadow);
+  padding: 24px 28px;
 }
 
 .exam-review__question-head {
@@ -323,103 +393,132 @@
 
 .exam-review__question-number {
   font-size: 13px;
-  font-weight: 700;
-  color: var(--er-muted);
+  font-weight: 600;
+  color: var(--er-text-2);
 }
 
 .exam-review__badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 12px;
-  border-radius: 999px;
-  font-size: 12.5px;
-  font-weight: 700;
-}
-
-.exam-review__badge--correct {
-  background: var(--er-green-bg);
-  color: var(--er-green);
-}
-
-.exam-review__badge--incorrect {
-  background: var(--er-red-bg);
-  color: var(--er-red);
-}
-
-.exam-review__subject {
-  padding: 5px 12px;
-  border: 1px solid var(--er-rule);
+  padding: 4px 12px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--er-muted);
+}
+
+.exam-review__badge--correct {
+  background: var(--er-success-bg);
+  color: var(--er-success);
+}
+
+.exam-review__badge--incorrect {
+  background: var(--er-error-bg);
+  color: var(--er-error);
+}
+
+.exam-review__subject {
+  padding: 4px 12px;
+  border: 1px solid var(--er-border);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--er-text-2);
 }
 
 .exam-review__question-text {
   margin: 0 0 20px;
-  font-size: 17px;
+  font-size: 20px;
   font-weight: 700;
   line-height: 1.4;
+  color: var(--er-navy);
 }
 
 .exam-review__nav {
   display: flex;
   justify-content: space-between;
+  gap: 12px;
   margin-top: 24px;
   padding-top: 18px;
-  border-top: 1px solid var(--er-rule);
+  border-top: 1px solid var(--er-border);
 }
 
+/* secondary button */
 .exam-review__nav-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 11px 18px;
-  border: 1px solid var(--er-rule);
-  border-radius: 10px;
-  background: var(--er-canvas);
-  color: var(--er-ink);
+  padding: 10px 16px;
+  border: 1px solid var(--er-border);
+  border-radius: var(--er-radius-btn);
+  background: var(--er-btn-2);
+  color: var(--er-text-2);
   font: inherit;
   font-size: 13.5px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
 }
 
+.exam-review__nav-btn:hover:not(:disabled) {
+  border-color: var(--er-text-2);
+}
+
+/* primary button */
 .exam-review__nav-btn--primary {
-  background: var(--er-ink);
-  border-color: var(--er-ink);
+  background: var(--er-navy);
+  border-color: var(--er-navy);
   color: #fff;
+}
+
+.exam-review__nav-btn--primary:hover:not(:disabled) {
+  background: var(--er-navy-2);
+  border-color: var(--er-navy-2);
 }
 
 .exam-review__nav-btn:disabled {
   opacity: 0.5;
+  color: var(--er-disabled);
   cursor: default;
+}
+
+.exam-review__nav-btn--primary:disabled {
+  color: #fff;
 }
 
 /* =========================================================
    Read-only answer views (ReadOnlyDragDropAnswer / ReadOnlyLedgerAnswer)
    ========================================================= */
 
+/* debit-style table by default: purple header + purple total */
 .exam-review .ro-table {
   width: 100%;
-  border-collapse: collapse;
-  font-size: 13.5px;
+  border: 1px solid var(--er-table-border);
+  border-radius: 10px;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  font-size: 12.5px;
+  color: var(--er-text);
   table-layout: fixed;
 }
 
 .exam-review .ro-table th,
 .exam-review .ro-table td {
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--er-rule);
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--er-table-border);
   text-align: left;
   overflow-wrap: anywhere;
 }
 
+.exam-review .ro-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
 .exam-review .ro-table thead th {
-  background: var(--er-blue-bg);
-  color: var(--er-blue);
-  font-weight: 700;
+  background: var(--er-purple-light);
+  color: var(--er-purple);
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .exam-review .ro-amt {
@@ -427,31 +526,49 @@
 }
 
 .exam-review .ro-total-row td {
-  background: var(--er-canvas);
+  border-top: 1px solid var(--er-table-border);
+  border-bottom: none;
+  background: var(--er-purple-light);
+  color: var(--er-purple);
+  font-weight: 600;
 }
 
 .exam-review .ro-empty {
+  padding: 16px;
   text-align: center;
   color: var(--er-muted);
-  padding: 16px;
 }
 
 .exam-review .ro-narration td {
-  color: var(--er-muted);
+  color: var(--er-text-2);
   font-style: italic;
 }
 
-/* --- per-attribute correct / wrong highlight --- */
+/* per-attribute correct / wrong highlight */
 
 .exam-review .ro-row--correct td {
-  background: var(--er-green-bg);
+  background: var(--er-success-bg);
 }
 
 .exam-review .ro-row--wrong td {
-  background: var(--er-red-bg);
+  background: var(--er-error-bg);
 }
 
-/* --- drag-and-drop review layout --- */
+/* journal / dropdown ledger: narrow Date + L.F., wide Particulars */
+.exam-review .ro-ledger-table th:nth-child(1) {
+  width: 64px;
+}
+
+.exam-review .ro-ledger-table th:nth-child(3) {
+  width: 56px;
+}
+
+.exam-review .ro-ledger-table th:nth-child(4),
+.exam-review .ro-ledger-table th:nth-child(5) {
+  width: 110px;
+}
+
+/* --- trial balance / transactions + final accounts layout --- */
 
 .exam-review .ro-dragdrop {
   display: grid;
@@ -461,8 +578,9 @@
 }
 
 .exam-review .ro-trial-balance {
-  border: 1px solid var(--er-rule);
-  border-radius: 12px;
+  border: 1px solid var(--er-border);
+  border-radius: var(--er-radius-card);
+  background: var(--er-card);
   overflow: hidden;
 }
 
@@ -470,13 +588,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--er-rule);
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--er-border);
 }
 
 .exam-review .ro-tb-head h3 {
   margin: 0;
-  font-size: 14.5px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--er-text);
 }
 
 .exam-review .ro-tb-count {
@@ -486,21 +606,24 @@
   height: 24px;
   padding: 0 6px;
   border-radius: 999px;
-  background: var(--er-canvas);
+  background: var(--er-circle);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
+  color: var(--er-text);
 }
 
+/* Trial Balance debit / credit header: blue on light blue */
 .exam-review .ro-tb-section {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 14px;
-  background: var(--er-blue-bg);
+  padding: 9px 16px;
+  background: var(--er-blue-light);
   color: var(--er-blue);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .exam-review .ro-tb-row {
@@ -508,18 +631,20 @@
   justify-content: space-between;
   gap: 8px;
   width: 100%;
-  padding: 9px 14px;
-  border-bottom: 1px solid var(--er-rule);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--er-table-border);
   font-size: 13px;
+  color: var(--er-text);
 }
 
 .exam-review button.ro-tb-row {
+  border-top: none;
   border-left: none;
   border-right: none;
-  border-top: none;
   background: none;
   font: inherit;
-  color: inherit;
+  font-size: 13px;
+  color: var(--er-text);
   text-align: left;
 }
 
@@ -529,23 +654,25 @@
 }
 
 .exam-review .ro-tb-row--clickable:hover {
-  background: var(--er-canvas);
+  background: var(--er-gray);
 }
 
 .exam-review .ro-tb-row--clickable.is-selected {
-  background: var(--er-blue-bg);
+  background: var(--er-hint-bg);
+  box-shadow: inset 3px 0 0 var(--er-blue);
 }
 
 .exam-review .ro-accounts {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
 .exam-review .ro-account-card {
-  border: 1px solid var(--er-rule);
-  border-radius: 12px;
-  padding: 16px;
+  border: 1px solid var(--er-border);
+  border-radius: var(--er-radius-card);
+  background: var(--er-card);
+  padding: 16px 18px;
 }
 
 .exam-review .ro-account-card__head {
@@ -557,12 +684,13 @@
 
 .exam-review .ro-account-card h3 {
   margin: 0;
-  font-size: 15.5px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--er-text);
 }
 
 .exam-review .ro-account-card__chevron {
   color: var(--er-muted);
-  font-size: 13px;
 }
 
 .exam-review .ro-account-sides {
@@ -573,25 +701,23 @@
 
 .exam-review .ro-side-label {
   margin-bottom: 6px;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--er-blue);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--er-purple);
 }
 
+/* credit_table: green header + green total */
 .exam-review .ro-side--credit .ro-side-label {
   color: var(--er-green);
 }
 
-.exam-review .ro-side--credit .ro-table thead th {
-  background: var(--er-green-bg);
+.exam-review .ro-side--credit .ro-table thead th,
+.exam-review .ro-side--credit .ro-total-row td {
+  background: var(--er-green-header);
   color: var(--er-green);
 }
 
-.exam-review .ro-total-row .ro-amt {
-  color: var(--er-blue);
-}
-
-/* --- MCQ review layout --- */
+/* --- MCQ review --- */
 
 .exam-review .ro-mcq {
   display: flex;
@@ -604,35 +730,50 @@
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
-  border: 1px solid var(--er-rule);
+  border: 1px solid var(--er-border);
   border-radius: 10px;
+  background: var(--er-card);
   font-size: 14px;
+  color: var(--er-text);
 }
 
 .exam-review .ro-mcq-option__marker {
-  font-size: 12px;
-  color: var(--er-muted);
+  display: inline-flex;
+  color: var(--er-disabled);
+}
+
+.exam-review .ro-mcq-option__text {
+  flex: 1;
+}
+
+.exam-review .ro-mcq-option__tag {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--er-circle);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--er-text-2);
 }
 
 .exam-review .ro-mcq-option--correct {
-  background: var(--er-green-bg);
-  border-color: var(--er-green);
+  background: var(--er-success-bg);
+  border-color: var(--er-success-border);
 }
 
 .exam-review .ro-mcq-option--correct .ro-mcq-option__marker {
-  color: var(--er-green);
+  color: var(--er-success);
 }
 
 .exam-review .ro-mcq-option--incorrect {
-  background: var(--er-red-bg);
-  border-color: var(--er-red);
+  background: var(--er-error-bg);
+  border-color: var(--er-error-border);
 }
 
 .exam-review .ro-mcq-option--incorrect .ro-mcq-option__marker {
-  color: var(--er-red);
+  color: var(--er-error);
 }
 
-/* --- attribute "what went wrong" panel --- */
+/* --- attribute "hint" + "what went wrong?" panel --- */
 
 .exam-review .attr-mistake {
   display: flex;
@@ -643,8 +784,8 @@
 
 .exam-review .attr-mistake--status {
   padding: 16px;
-  border: 1px solid var(--er-rule);
-  border-radius: 12px;
+  border: 1px solid var(--er-border);
+  border-radius: var(--er-radius-card);
   color: var(--er-muted);
   font-size: 13.5px;
 }
@@ -652,19 +793,16 @@
 .exam-review .attr-mistake__hint,
 .exam-review .attr-mistake__wrong {
   padding: 14px 18px;
-  border-radius: 12px;
+  border: 1px solid transparent;
+  border-radius: var(--er-radius-card);
   font-size: 13.5px;
   line-height: 1.5;
+  color: var(--er-text-2);
 }
 
 .exam-review .attr-mistake__hint {
-  background: var(--er-blue-bg);
-  color: var(--er-blue);
-}
-
-.exam-review .attr-mistake__hint p {
-  margin: 4px 0 0;
-  color: var(--er-ink);
+  background: var(--er-hint-bg);
+  border-color: var(--er-hint-border);
 }
 
 .exam-review .attr-mistake__hint-title,
@@ -672,18 +810,36 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 15px;
   font-weight: 700;
 }
 
+.exam-review .attr-mistake__hint-title {
+  color: var(--er-blue);
+}
+
+.exam-review .attr-mistake__hint p {
+  margin: 4px 0 0;
+  color: var(--er-text-2);
+}
+
 .exam-review .attr-mistake__wrong {
-  background: var(--er-red-bg);
-  color: var(--er-red);
+  background: var(--er-error-bg);
+  border-color: var(--er-error-border);
+}
+
+.exam-review .attr-mistake__wrong-title {
+  color: var(--er-error-dark);
+}
+
+.exam-review .attr-mistake__wrong-title svg {
+  color: var(--er-error);
 }
 
 .exam-review .attr-mistake__wrong ul {
   margin: 8px 0 0;
   padding-left: 18px;
-  color: var(--er-ink);
+  color: var(--er-text-2);
 }
 
 .exam-review .attr-mistake__wrong li {
@@ -692,12 +848,24 @@
 
 .exam-review .attr-mistake__empty {
   margin: 6px 0 0;
-  color: var(--er-ink);
+  color: var(--er-text-2);
 }
 
 /* ---------- responsive ---------- */
 
+@media (max-width: 1280px) {
+  .exam-review .ro-account-sides {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 960px) {
+  .exam-review__topbar,
+  .exam-review__body {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
   .exam-review__body {
     flex-direction: column;
   }
@@ -708,10 +876,6 @@
   }
 
   .exam-review .ro-dragdrop {
-    grid-template-columns: 1fr;
-  }
-
-  .exam-review .ro-account-sides {
     grid-template-columns: 1fr;
   }
 }

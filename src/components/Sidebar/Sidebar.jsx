@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { logoutUser } from "../../interceptors/axiosInterceptor";
 import "./Sidebar.css";
 import { FaCreditCard } from "react-icons/fa";
@@ -19,8 +19,10 @@ import {
   MdListAlt,
   MdOutlineEdit,
   MdAssignment,
+  MdAssignmentTurnedIn,
   MdVideoLibrary,
   MdBarChart,
+  MdInsights,
   MdWorkspacePremium,
   MdSettings,
   MdLogout,
@@ -55,6 +57,10 @@ export default function Sidebar({
   const canAccessAdminMenu = canAccessFeature("subscriptions", userRole);
   const canAccessPlans = canAccessFeature("subscriptionsPlans", userRole);
   const canAccessPerformance = canAccessFeature("performance", userRole);
+  const canAccessPracticePerformance = canAccessFeature(
+    "practicePerformance",
+    userRole,
+  );
   const canAccessCollegeMenu = canAccessFeature("colleges", userRole);
   const canAccessBranchMenu = canAccessFeature("branches", userRole);
   const canAccessCourseMenu = canAccessFeature("courses", userRole);
@@ -94,6 +100,14 @@ export default function Sidebar({
 
   const menuClass = ({ isActive }) =>
     isActive ? "menu-item active" : "menu-item";
+
+  // /exam and /mock-exam are the landing pages; their catalogs live at /exams
+  // and /mock-exams, which don't prefix-match, so keep the tab lit there too.
+  const { pathname } = useLocation();
+  const examMenuClass = ({ isActive }) =>
+    isActive || pathname === "/exams" ? "menu-item active" : "menu-item";
+  const mockExamMenuClass = ({ isActive }) =>
+    isActive || pathname === "/mock-exams" ? "menu-item active" : "menu-item";
 
   const subMenuClass = ({ isActive }) =>
     isActive ? "submenu-item active-submenu" : "submenu-item";
@@ -480,13 +494,28 @@ export default function Sidebar({
 
           {canAccessFeature("attemptExams", userRole) && (
             <NavLink
-              to="/exam-hub"
-              className={menuClass}
+              to="/exam"
+              className={examMenuClass}
               onClick={closeSidebar}
             >
               <div className="menu-left">
                 <MdAssignment className="menu-icon" />
                 <span>Exam</span>
+              </div>
+            </NavLink>
+          )}
+
+          {/* Mock Exam */}
+
+          {canAccessFeature("attemptMockExams", userRole) && (
+            <NavLink
+              to="/mock-exam"
+              className={mockExamMenuClass}
+              onClick={closeSidebar}
+            >
+              <div className="menu-left">
+                <MdAssignmentTurnedIn className="menu-icon" />
+                <span>Mock Exam</span>
               </div>
             </NavLink>
           )}
@@ -502,6 +531,19 @@ export default function Sidebar({
               <div className="menu-left">
                 <MdBarChart className="menu-icon" />
                 <span>Performance</span>
+              </div>
+            </NavLink>
+          )}
+
+          {canAccessPracticePerformance && (
+            <NavLink
+              to="/practice-performance"
+              className={menuClass}
+              onClick={closeSidebar}
+            >
+              <div className="menu-left">
+                <MdInsights className="menu-icon" />
+                <span>Practice Performance</span>
               </div>
             </NavLink>
           )}

@@ -19,6 +19,7 @@ import MatchingQuestionService from "../../services/MatchingQuestionService";
 import FillInBlankQuestionService from "../../services/FillInBlankQuestionService";
 
 import { data } from "./SampleData";
+import { getCurrentUserId } from "../../utils/user";
 
 import "./QuestionPage.css";
 
@@ -856,7 +857,7 @@ const QuestionPage = () => {
             }
 
             const body = {
-              userId: 1,
+              userId: getCurrentUserId(),
 
               questionId: questionId,
 
@@ -878,7 +879,7 @@ const QuestionPage = () => {
             await QuestionAnswerService.processAnswerEvent(body);
           } else {
             const body = {
-              userId: 1,
+              userId: getCurrentUserId(),
 
               questionId: questionId,
 
@@ -902,7 +903,7 @@ const QuestionPage = () => {
             );
 
             const questionBody = {
-              userId: 1,
+              userId: getCurrentUserId(),
 
               questionId: questionId,
 

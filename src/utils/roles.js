@@ -97,6 +97,7 @@ export const FEATURE_ACCESS = {
     ROLES.STUDENT,
   ],
   performance: ATTEMPT_ROLES,
+  practicePerformance: ATTEMPT_ROLES,
   manageSuperAdmins: [ROLES.SUPER_ADMIN],
   manageCollegeAdmins: [ROLES.SUPER_ADMIN],
   manageBranchAdmins: [ROLES.SUPER_ADMIN, ROLES.COLLEGE_ADMIN],

@@ -1,8 +1,10 @@
 /* eslint-disable react/prop-types */
+import { Circle, CircleCheck, CircleX } from "lucide-react";
+
 // Read-only render of a SINGLE_CHOICE or MULTIPLE_CHOICE question: shows the
 // paper's own options (question.options - never carries isCorrect, that only
 // ever comes from the review response's correctOptionIds) with the
-// candidate's selection marked and the correct option highlighted, mirroring
+// candidate's selection tagged and the correct option highlighted, mirroring
 // the practice flow's own McqQuestionView once it has a result.
 const ReadOnlyMcqAnswer = ({ question, answers, correctOptionIds }) => {
   const data = answers?.[0]?.answeredData || {};
@@ -28,20 +30,30 @@ const ReadOnlyMcqAnswer = ({ question, answers, correctOptionIds }) => {
           const id = String(option.optionId);
           const isSelected = selected.has(id);
           const isCorrect = correct.has(id);
+          const isWrongPick = isSelected && !isCorrect;
 
           return (
             <div
               key={option.optionId}
               className={`ro-mcq-option${
                 isCorrect ? " ro-mcq-option--correct" : ""
-              }${isSelected && !isCorrect ? " ro-mcq-option--incorrect" : ""}`}
+              }${isWrongPick ? " ro-mcq-option--incorrect" : ""}`}
             >
               <span className="ro-mcq-option__marker" aria-hidden="true">
-                {isSelected ? "●" : "○"}
+                {isCorrect ? (
+                  <CircleCheck size={18} />
+                ) : isWrongPick ? (
+                  <CircleX size={18} />
+                ) : (
+                  <Circle size={18} />
+                )}
               </span>
               <span className="ro-mcq-option__text">
                 {String.fromCharCode(65 + index)}. {option.optionText}
               </span>
+              {isSelected && (
+                <span className="ro-mcq-option__tag">Your answer</span>
+              )}
             </div>
           );
         })

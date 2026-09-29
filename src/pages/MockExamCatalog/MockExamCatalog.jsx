@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   FaPlay,
   FaRegFileAlt,
@@ -36,7 +36,10 @@ function MockExamCatalog() {
   // "Present" is the existing catalog below; "Past" is the student's own
   // completed attempts, each opening straight into that attempt's review
   // screen instead of the paper itself.
-  const [tab, setTab] = useState("present");
+  // The tab lives in the URL (?tab=past) so the "Previous Exams" tile on
+  // /exam and /mock-exam can deep-link straight to it.
+  const [searchParams] = useSearchParams();
+  const tab = searchParams.get("tab") === "past" ? "past" : "present";
   const [pastAttempts, setPastAttempts] = useState([]);
   const [pastStatus, setPastStatus] = useState("loading");
 
@@ -107,7 +110,7 @@ function MockExamCatalog() {
   return (
     <div className="mock-exam-catalog">
       <header className="mock-exam-catalog__head">
-        <h1>Practice mock exams</h1>
+        <h1>Mock exams</h1>
         <p>
           {tab === "present"
             ? status === "ready" && exams.length > 0
@@ -117,26 +120,6 @@ function MockExamCatalog() {
         </p>
       </header>
 
-      <div className="mock-exam-catalog__tabs" role="tablist">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === "present"}
-          className={`mock-exam-catalog__tab ${tab === "present" ? "is-active" : ""}`}
-          onClick={() => setTab("present")}
-        >
-          Present Exams
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === "past"}
-          className={`mock-exam-catalog__tab ${tab === "past" ? "is-active" : ""}`}
-          onClick={() => setTab("past")}
-        >
-          Past Exams
-        </button>
-      </div>
 
       {tab === "present" && status === "loading" && (
         <ul className="mock-exam-catalog__grid" aria-hidden="true">

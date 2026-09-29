@@ -7,6 +7,7 @@ import {
   getUnansweredDropdownConditions,
   isDropdownAttributeSolved,
 } from "./dropdownAnswerStatus";
+import { getCurrentUserId } from "../../utils/user";
 
 const DropdownQuestion = ({
   data,
@@ -17,7 +18,7 @@ const DropdownQuestion = ({
   loadTotalScore,
 }) => {
   // Hardcoded for now
-  const userId = 1;
+  const userId = getCurrentUserId();
 
   // Keep Debit/Credit selection separately for every attribute
   const [selections, setSelections] = useState({});
