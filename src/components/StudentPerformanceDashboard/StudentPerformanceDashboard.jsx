@@ -9,11 +9,9 @@ import {
   FaExclamationTriangle,
   FaUserGraduate,
   FaBook,
-  FaChartLine,
   FaChartBar,
   FaUniversity,
   FaBuilding,
-  FaLayerGroup,
   FaArrowUp,
   FaArrowDown,
   FaChevronRight,
@@ -88,12 +86,36 @@ const topics = [
 ];
 
 const timeByCourse = [
-  { name: "Accounting", time: "12h 20m", percentage: 26 },
-  { name: "Business Law", time: "10h 15m", percentage: 21 },
-  { name: "QA", time: "8h 40m", percentage: 18 },
-  { name: "BE", time: "7h 10m", percentage: 15 },
-  { name: "Cost Accounting", time: "5h 25m", percentage: 11 },
-  { name: "Taxation", time: "4h 30m", percentage: 9 },
+  {
+    name: "Accounting",
+    time: "12h 20m",
+    percentage: 26,
+  },
+  {
+    name: "Business Law",
+    time: "10h 15m",
+    percentage: 21,
+  },
+  {
+    name: "QA",
+    time: "8h 40m",
+    percentage: 18,
+  },
+  {
+    name: "BE",
+    time: "7h 10m",
+    percentage: 15,
+  },
+  {
+    name: "Cost Accounting",
+    time: "5h 25m",
+    percentage: 11,
+  },
+  {
+    name: "Taxation",
+    time: "4h 30m",
+    percentage: 9,
+  },
 ];
 
 const timeLogs = [
@@ -182,7 +204,9 @@ const StatCard = ({
           }`}
         >
           {decrease ? <FaArrowDown /> : <FaArrowUp />}
+
           <span>{change}</span>
+
           <small>vs. last week</small>
         </div>
       </div>
@@ -195,11 +219,17 @@ const ProgressRow = ({ name, value }) => {
     <div className="sp-progress-row">
       <div className="sp-progress-header">
         <span>{name}</span>
+
         <strong>{value}%</strong>
       </div>
 
       <div className="progress sp-progress">
-        <div className="progress-bar" style={{ width: `${value}%` }}></div>
+        <div
+          className="progress-bar"
+          style={{
+            width: `${value}%`,
+          }}
+        ></div>
       </div>
     </div>
   );
@@ -243,14 +273,19 @@ export default function StudentPerformanceDashboard() {
         <div className="sp-header-controls">
           <button className="sp-date-button">
             <FaCalendarAlt />
+
             <span>Apr 15, 2025 - Apr 21, 2025</span>
+
             <FaChevronDown />
           </button>
 
           <div className="sp-view-buttons">
             <button className="active">Student</button>
+
             <button>Branch</button>
+
             <button>College</button>
+
             <button>App</button>
           </div>
         </div>
@@ -319,7 +354,7 @@ export default function StudentPerformanceDashboard() {
 
       <div className="row g-3">
         {/* ===================================================
-            LEFT MAIN AREA
+            MAIN LEFT CONTENT
         =================================================== */}
 
         <div className="col-12 col-xl-9">
@@ -338,7 +373,9 @@ export default function StudentPerformanceDashboard() {
                     <div className="sp-donut">
                       <div className="sp-donut-center">
                         <small>Total</small>
+
                         <strong>78.6%</strong>
+
                         <small>Performance</small>
                       </div>
                     </div>
@@ -409,7 +446,9 @@ export default function StudentPerformanceDashboard() {
               </div>
             </div>
 
-            {/* TREND */}
+            {/* =================================================
+                PERFORMANCE VS TIME TREND
+            ================================================= */}
 
             <div className="col-12">
               <div className="sp-card">
@@ -438,18 +477,32 @@ export default function StudentPerformanceDashboard() {
                     <div className="sp-line-chart">
                       <svg viewBox="0 0 700 250" preserveAspectRatio="none">
                         <polyline
-                          points="20,120 130,100 240,75 350,85 460,60 570,85 680,75"
+                          points="
+                            20,120
+                            130,100
+                            240,75
+                            350,85
+                            460,60
+                            570,85
+                            680,75
+                          "
                           fill="none"
                           stroke="currentColor"
                           strokeWidth="4"
                         />
 
                         <circle cx="20" cy="120" r="5" />
+
                         <circle cx="130" cy="100" r="5" />
+
                         <circle cx="240" cy="75" r="5" />
+
                         <circle cx="350" cy="85" r="5" />
+
                         <circle cx="460" cy="60" r="5" />
+
                         <circle cx="570" cy="85" r="5" />
+
                         <circle cx="680" cy="75" r="5" />
                       </svg>
                     </div>
@@ -458,7 +511,9 @@ export default function StudentPerformanceDashboard() {
                       {[55, 72, 65, 78, 82, 64, 66].map((height, index) => (
                         <div
                           className="sp-trend-bar"
-                          style={{ height: `${height}%` }}
+                          style={{
+                            height: `${height}%`,
+                          }}
                           key={index}
                         ></div>
                       ))}
@@ -470,31 +525,37 @@ export default function StudentPerformanceDashboard() {
                         <br />
                         15 Apr
                       </span>
+
                       <span>
                         Tue
                         <br />
                         16 Apr
                       </span>
+
                       <span>
                         Wed
                         <br />
                         17 Apr
                       </span>
+
                       <span>
                         Thu
                         <br />
                         18 Apr
                       </span>
+
                       <span>
                         Fri
                         <br />
                         19 Apr
                       </span>
+
                       <span>
                         Sat
                         <br />
                         20 Apr
                       </span>
+
                       <span>
                         Sun
                         <br />
@@ -559,6 +620,7 @@ export default function StudentPerformanceDashboard() {
                   <div className="sp-small-donut">
                     <div>
                       <small>Overall</small>
+
                       <strong>78.6%</strong>
                     </div>
                   </div>
@@ -641,12 +703,19 @@ export default function StudentPerformanceDashboard() {
                       {timeLogs.map((log, index) => (
                         <tr key={index}>
                           <td>{log.date}</td>
+
                           <td>{log.student}</td>
+
                           <td>{log.course}</td>
+
                           <td>{log.subject}</td>
+
                           <td>{log.chapter}</td>
+
                           <td>{log.topic}</td>
+
                           <td>{log.time}</td>
+
                           <td>{log.activity}</td>
                         </tr>
                       ))}
@@ -676,33 +745,45 @@ export default function StudentPerformanceDashboard() {
 
                   <div className="sp-hierarchy-row">
                     <span>
-                      <FaBook /> App Level
+                      <FaBook />
+                      App Level
                     </span>
+
                     <strong>12,480 hrs</strong>
+
                     <span>100%</span>
                   </div>
 
                   <div className="sp-hierarchy-row">
                     <span>
-                      <FaUniversity /> College Level
+                      <FaUniversity />
+                      College Level
                     </span>
+
                     <strong>4,820 hrs</strong>
+
                     <span>38.6%</span>
                   </div>
 
                   <div className="sp-hierarchy-row">
                     <span>
-                      <FaBuilding /> Branch Level
+                      <FaBuilding />
+                      Branch Level
                     </span>
+
                     <strong>2,940 hrs</strong>
+
                     <span>23.5%</span>
                   </div>
 
                   <div className="sp-hierarchy-row">
                     <span>
-                      <FaUserGraduate /> Student Level
+                      <FaUserGraduate />
+                      Student Level
                     </span>
+
                     <strong>48 hrs</strong>
+
                     <span>0.4%</span>
                   </div>
                 </div>
@@ -712,7 +793,7 @@ export default function StudentPerformanceDashboard() {
         </div>
 
         {/* ===================================================
-            RIGHT FILTER / STUDENT PANEL
+            RIGHT SIDE
         =================================================== */}
 
         <div className="col-12 col-xl-3">
@@ -727,8 +808,11 @@ export default function StudentPerformanceDashboard() {
 
                 <select>
                   <option>All Courses</option>
+
                   <option>Accounting</option>
+
                   <option>Business Law</option>
+
                   <option>Quantitative Aptitude</option>
                 </select>
               </div>
@@ -738,8 +822,11 @@ export default function StudentPerformanceDashboard() {
 
                 <select>
                   <option>All Subjects</option>
+
                   <option>Financial Accounting</option>
+
                   <option>Contract Law</option>
+
                   <option>National Income</option>
                 </select>
               </div>
@@ -749,7 +836,9 @@ export default function StudentPerformanceDashboard() {
 
                 <select>
                   <option>All Branches</option>
+
                   <option>Hyderabad</option>
+
                   <option>Bangalore</option>
                 </select>
               </div>
@@ -759,7 +848,9 @@ export default function StudentPerformanceDashboard() {
 
                 <select>
                   <option>All Colleges</option>
+
                   <option>Metro College</option>
+
                   <option>ABC College</option>
                 </select>
               </div>
@@ -788,7 +879,9 @@ export default function StudentPerformanceDashboard() {
 
                 <div>
                   <strong>Rohit Sharma</strong>
+
                   <span>BSc (H) – 2nd Year</span>
+
                   <small>Metro College</small>
                 </div>
               </div>
@@ -834,6 +927,7 @@ export default function StudentPerformanceDashboard() {
                   <div className="sp-student-course-time" key={item.name}>
                     <div>
                       <span>{item.name}</span>
+
                       <strong>
                         {item.time} ({item.percentage}%)
                       </strong>
