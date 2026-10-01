@@ -873,15 +873,135 @@
 .aq-fill-blank-row {
   display: grid;
 
-  grid-template-columns: 90px minmax(0, 1fr) 34px;
+  /* FIX: the JSX renders exactly 2 direct children into this row —
+     the <b> blank label and the .aq-fill-blank-options wrapper (which
+     itself holds every accepted-answer row: input, correct-checkbox,
+     delete button, plus the "Add option" link). The old definition was
+     a 3-column grid (90px / 1fr / 34px) expecting a delete button as a
+     third direct child that never existed here, and it never styled
+     .aq-fill-blank-options or .aq-fill-blank-option at all — so those
+     inner pieces fell back to default block stacking instead of
+     sitting in a row, which is why the input, checkbox and trash icon
+     were rendering stacked vertically. */
+  grid-template-columns: 90px minmax(0, 1fr);
+
+  gap: 10px;
+
+  align-items: start;
+}
+
+/* Wraps the "Blank N" label together with its remove-blank button */
+.aq-fill-blank-label {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  padding-top: 10px;
+}
+
+.aq-fill-blank-label b {
+  color: #526078;
+}
+
+.aq-fill-blank-remove {
+  width: 26px;
+  height: 26px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  padding: 0;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: transparent;
+
+  color: #d9797a;
+
+  cursor: pointer;
+}
+
+.aq-fill-blank-remove:hover:not(:disabled) {
+  background: #fff0f0;
+
+  color: #b83b43;
+}
+
+.aq-fill-blank-remove:disabled {
+  opacity: 0.35;
+
+  cursor: not-allowed;
+}
+
+/* Holds every accepted-answer row for one blank, plus "Add option" */
+.aq-fill-blank-options {
+  display: grid;
+
+  gap: 10px;
+
+  min-width: 0;
+}
+
+/* One accepted-answer row: input, correct-checkbox, delete button */
+.aq-fill-blank-option {
+  display: grid;
+
+  grid-template-columns: minmax(0, 1fr) 30px 34px;
 
   gap: 10px;
 
   align-items: center;
 }
 
-.aq-fill-blank-row b {
-  color: #526078;
+.aq-fill-blank-option input[type="checkbox"] {
+  width: 18px !important;
+  height: 18px;
+
+  padding: 0 !important;
+  margin: 0;
+
+  accent-color: var(--aq-blue);
+
+  justify-self: center;
+}
+
+.aq-fill-blank-option button {
+  width: 34px;
+  height: 34px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: #fff0f0;
+
+  color: #b83b43;
+
+  cursor: pointer;
+}
+
+.aq-fill-blank-option button:hover {
+  background: #ffe1e3;
+}
+
+.aq-fill-blank-option button:disabled {
+  opacity: 0.4;
+
+  cursor: not-allowed;
+}
+
+.aq-inline-button {
+  justify-self: start;
 }
 
 /* =========================================================
