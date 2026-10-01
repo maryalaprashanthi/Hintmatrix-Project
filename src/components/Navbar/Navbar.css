@@ -317,7 +317,19 @@ button.notification-trigger {
 
 .notification-list {
   display: grid;
+    max-height: 420px;
+    overflow-y: auto;
 }
+.notification-state {
+    padding: 28px 18px;
+    color: #718096;
+    font-size: 13px;
+    text-align: center;
+  }
+.notification-header button:disabled {
+    color: #a0aec0;
+    cursor: default;
+  }
 .notification-item {
   width: 100%;
   padding: 14px 18px;
