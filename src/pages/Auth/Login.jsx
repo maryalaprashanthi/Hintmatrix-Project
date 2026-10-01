@@ -49,8 +49,12 @@ function Login() {
       localStorage.setItem("name", response.data.name);
       localStorage.setItem("email", response.data.email);
       localStorage.setItem("role", response.data.role);
+      localStorage.removeItem("activitySessionKey");
+      localStorage.setItem("lastUserActivityAt", String(Date.now()));
 
-      navigate(response.data.role === "GUEST" ? "/course-subscribe" : "/dashboard");
+      navigate(
+        response.data.role === "GUEST" ? "/course-subscribe" : "/dashboard",
+      );
     } catch (error) {
       console.error("Login failed:", error);
 
