@@ -14,6 +14,8 @@ function OAuthSuccess() {
     }
 
     localStorage.setItem("token", token);
+    localStorage.removeItem("activitySessionKey");
+    localStorage.setItem("lastUserActivityAt", String(Date.now()));
     navigate("/dashboard", { replace: true });
   }, [navigate, searchParams]);
 

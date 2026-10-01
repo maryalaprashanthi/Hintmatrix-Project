@@ -14,9 +14,28 @@ export const clearAuthSession = () => {
   localStorage.removeItem("email");
   localStorage.removeItem("role");
   sessionStorage.removeItem("token");
+  localStorage.removeItem("activitySessionKey");
+  localStorage.removeItem("lastUserActivityAt");
 };
 
 export const logoutUser = (navigateFn) => {
+  const token = localStorage.getItem("token");
+  const sessionKey = localStorage.getItem("activitySessionKey");
+
+  if (token && sessionKey) {
+    fetch("http://localhost:8080/api/activity-sessions/close", {
+      method: "POST",
+      keepalive: true,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ sessionKey }),
+    }).catch(() => {
+      // Logout must still succeed if the tracking endpoint is unavailable.
+    });
+  }
+
   clearAuthSession();
 
   if (navigateFn) {
@@ -24,10 +43,7 @@ export const logoutUser = (navigateFn) => {
     return;
   }
 
-  if (
-    typeof window !== "undefined" &&
-    window.location.pathname !== "/login"
-  ) {
+  if (typeof window !== "undefined" && window.location.pathname !== "/login") {
     window.location.replace("/login");
   }
 };
@@ -59,8 +75,11 @@ apiClient.interceptors.response.use(
   (error) => {
     const statusCode = error.response?.status;
     const isAuthRequest = error.config?.url?.includes("/api/auth/");
+    const isActivitySessionRequest = error.config?.url?.includes(
+      "/api/activity-sessions",
+    );
 
-    if (statusCode === 401 && !isAuthRequest) {
+    if (statusCode === 401 && !isAuthRequest && !isActivitySessionRequest) {
       clearAuthSession();
 
       if (

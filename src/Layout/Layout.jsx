@@ -3,9 +3,11 @@ import { Outlet } from "react-router-dom";
 
 import Sidebar from "../components/Sidebar/Sidebar";
 import Navbar from "../components/Navbar/Navbar";
+import useActivitySession from "../hooks/useActivitySession";
 import "./Layout.css";
 
 export default function Layout() {
+  useActivitySession();
   const [collapsed, setCollapsed] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
 
