@@ -38,7 +38,10 @@ export default function Layout() {
       />
 
       <div className={`main-layout ${collapsed ? "sidebar-collapsed" : ""}`}>
-        <Navbar />
+        <Navbar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
 
         <main className="page-content">
           <Outlet />
