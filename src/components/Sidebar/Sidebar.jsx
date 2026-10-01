@@ -83,6 +83,7 @@ export default function Sidebar({
   const canAccessRuleEngine = canAccessFeature("ruleEngine", userRole);
   const canAccessStudentAttendance = canAccessFeature("attendance", userRole);
   const canAccessPractice = canAccessFeature("practiceQuestions", userRole);
+  const canAccessErrorList = canAccessFeature("attemptExams", userRole);
   const canAccessSessions = canAccessFeature("attemptExams", userRole);
   const canAccessResults = canAccessFeature("results", userRole);
   const canAccessCertificates = canAccessFeature("certificates", userRole);
@@ -486,6 +487,15 @@ export default function Sidebar({
               <div className="menu-left">
                 <MdOutlineEdit className="menu-icon" />
                 <span>Practice</span>
+              </div>
+            </NavLink>
+          )}
+
+          {canAccessErrorList && (
+            <NavLink to="/errors" className={menuClass} onClick={closeSidebar}>
+              <div className="menu-left">
+                <MdListAlt className="menu-icon" />
+                <span>Error List</span>
               </div>
             </NavLink>
           )}
