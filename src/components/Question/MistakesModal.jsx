@@ -2,6 +2,7 @@ import React from "react";
 import CheckMistakes from "./CheckMistakes";
 import { Button, Modal } from "react-bootstrap";
 import useQuestionStore from "./questionStore";
+import { getCurrentUserId } from "../../utils/user";
 
 const MistakesModal = ({ questionId, setCheckMistakes, checkMistakes }) => {
   const handleClose = () => {
@@ -25,7 +26,7 @@ const MistakesModal = ({ questionId, setCheckMistakes, checkMistakes }) => {
         </Modal.Header>
 
         <Modal.Body>
-          <CheckMistakes userId={1} questionId={questionId} />
+          <CheckMistakes userId={getCurrentUserId()} questionId={questionId} />
         </Modal.Body>
 
         <Modal.Footer className="check-mistakes-footer">

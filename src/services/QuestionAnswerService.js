@@ -49,6 +49,14 @@ const QuestionAnswerService = {
     return response.data;
   },
 
+  getMistakesByUserId: async (userId) => {
+    const response = await apiClient.get(
+      `${ANSWER_EVENT_URL}/user/${userId}/mistakes`,
+    );
+
+    return response.data;
+  },
+
   resetAnswersByUserAndQuestion: async (userId, questionId) => {
     const response = await apiClient.put(
       `${QUESTION_ANSWER_URL}/user/${userId}/question/${questionId}/reset`,
@@ -75,4 +83,3 @@ const QuestionAnswerService = {
 };
 
 export default QuestionAnswerService;
-

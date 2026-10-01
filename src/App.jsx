@@ -81,6 +81,7 @@ import ExamPaper from "./pages/ExamPaper/ExamPaper";
 import PerformanceDashboard from "./pages/Performance/PerformanceDashboard";
 import StudentPerformanceDashboard from "./components/StudentPerformanceDashboard/StudentPerformanceDashboard.jsx";
 import PracticePerformance from "./pages/PracticePerformance/PracticePerformance";
+import ErrorList from "./pages/Errors/ErrorList";
 
 function App() {
   const navigate = useNavigate();
@@ -210,6 +211,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={ATTEMPT_ROLES}>
               <PracticePerformance />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/errors/:chapterKey?"
+          element={
+            <ProtectedRoute allowedRoles={ATTEMPT_ROLES}>
+              <ErrorList />
             </ProtectedRoute>
           }
         />
