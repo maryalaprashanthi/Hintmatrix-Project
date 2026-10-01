@@ -2,11 +2,38 @@
 
 const QUESTION_ANSWER_URL = "/api/question_answers";
 
+import PracticeResultService from "./PracticeResultService";
+
 const ANSWER_EVENT_URL = "/api/answer_events";
 
 const QuestionAnswerService = {
   processAnswerEvent: async (answerData) => {
-    const response = await apiClient.post(ANSWER_EVENT_URL, answerData);
+    // Practice-only metadata must not change the existing answer-event payload.
+    const { unitPosition } = answerData;
+    const eventData = { ...answerData };
+    delete eventData.questionAttributeId;
+    delete eventData.unitPosition;
+    const response = await apiClient.post(ANSWER_EVENT_URL, eventData);
+
+    const event = response.data;
+    if (event.answerEventId && event.isCorrect !== null &&
+        event.isCorrect !== undefined && event.eventType !== "AUTOFILL") {
+      const result = {
+        answerEventId: event.answerEventId,
+        unitPosition,
+      };
+      try {
+        await PracticeResultService.recordFromEvent(result);
+      } catch {
+        // The backend applies each saved event only once, so this retry is safe.
+        try {
+          await PracticeResultService.recordFromEvent(result);
+        } catch (practiceError) {
+          // Keep the existing saved-answer flow working if performance is unavailable.
+          console.error("Practice result could not be recorded", practiceError);
+        }
+      }
+    }
 
     return response.data;
   },

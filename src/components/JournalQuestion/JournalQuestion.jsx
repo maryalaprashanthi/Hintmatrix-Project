@@ -11,6 +11,7 @@ import {
   getUnansweredRuleConditions,
 } from "./journalAnswerStatus";
 import { getCurrentUserId } from "../../utils/user";
+import { getPracticePosition } from "../../utils/practicePosition";
 
 const JournalQuestion = ({
   data = [],
@@ -245,7 +246,14 @@ const JournalQuestion = ({
       console.log("ANSWER EVENT REQUEST:", answerEventRequest);
 
       const eventResult =
-        await QuestionAnswerService.processAnswerEvent(answerEventRequest);
+        await QuestionAnswerService.processAnswerEvent({
+          ...answerEventRequest, questionAttributeId: item.questionAttributeId,
+          unitPosition: getPracticePosition(
+            selectedCondition,
+            getUnansweredRuleConditions(item.tables, currentAnswers),
+            type,
+          ),
+        });
 
       console.log("ANSWER EVENT RESPONSE:", eventResult);
 

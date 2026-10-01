@@ -33,6 +33,7 @@ const useQuestionStore = create((set, get) => ({
         q.questionAttributes.forEach((attribute) => {
           formattedQuestions.push({
             id: attribute.attributeId,
+            questionAttributeId: attribute.questionAttributeId,
             name: attribute.attributeName,
             amount: Number(attribute.amount),
             hints: [],
