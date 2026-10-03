@@ -6,7 +6,6 @@ import ChapterService from "../../../services/ChapterService";
 import {
   FaBookOpen,
   FaPlayCircle,
-  FaPlus,
   FaSearch,
   FaClock,
   FaUsers,
@@ -24,13 +23,10 @@ import ConfirmDialog from "../../../components/Common/ConfirmDialog";
 import { useDeleteConfirm } from "../../../hooks/useDeleteConfirm";
 import { useToast } from "../../../components/Toast/useToast";
 import AddCourseModal from "./AddCourseModal";
+import HierarchyProgress from "../../../components/Common/HierarchyProgress";
+import { useHierarchyProgress } from "../../../hooks/useHierarchyProgress";
 
 import bcom from "../../../assets/courses/bcom.png.jpeg";
-import ca from "../../../assets/courses/ca-foundation.png.jpeg";
-import cbse from "../../../assets/courses/cbse11.png.jpeg";
-import jrAccountancy from "../../../assets/courses/jr-accountancy.png.jpeg";
-import combo from "../../../assets/courses/combo.png.jpeg";
-import inter from "../../../assets/courses/inter.png.jpeg";
 
 function Courses() {
   const navigate = useNavigate();
@@ -43,6 +39,7 @@ function Courses() {
   const [courses, setCourses] = useState([]);
   const [chapters, setChapters] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const courseProgress = useHierarchyProgress("course");
 
   const loadCourses = () => {
     CourseService.getAllCourses()
@@ -379,15 +376,10 @@ function Courses() {
                   </div>
 
                   <div className="hierarchy-card-footer">
-                  <div className="hierarchy-progress" aria-label="Course progress 100 percent">
-                    <div className="hierarchy-progress-label">
-                      <span>Progress</span>
-                      <span>100%</span>
-                    </div>
-                    <div className="hierarchy-progress-track">
-                      <span style={{ width: "100%" }} />
-                    </div>
-                  </div>
+                  <HierarchyProgress
+                    label="Course"
+                    value={courseProgress(courseId)}
+                  />
 
                   <button
                     className="course-btn mt-auto"

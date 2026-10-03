@@ -23,6 +23,12 @@ const PracticePerformanceService = {
       params: cleanParams(params),
     });
   },
+
+  getMyLevel(level, params = {}) {
+    return apiClient.get(`${BASE_URL}/mine/${level}`, {
+      params: cleanParams(params),
+    });
+  },
 };
 
 export default PracticePerformanceService;
