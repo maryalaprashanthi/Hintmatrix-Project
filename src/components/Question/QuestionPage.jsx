@@ -876,7 +876,9 @@ const QuestionPage = () => {
               userAnswer: `attempted to ${answerMap[third]} on ${second} of ${first}.`,
             };
 
-            await QuestionAnswerService.processAnswerEvent(body);
+            await QuestionAnswerService.processAnswerEvent({
+              ...body, questionAttributeId: myQuestion.questionAttributeId,
+            });
           } else {
             const body = {
               userId: getCurrentUserId(),
@@ -924,7 +926,9 @@ const QuestionPage = () => {
               totalAnswers: count,
             };
 
-            await QuestionAnswerService.processAnswerEvent(body);
+            await QuestionAnswerService.processAnswerEvent({
+              ...body, questionAttributeId: myQuestion.questionAttributeId,
+            });
 
             await QuestionAnswerService.saveAnswer(questionBody);
             await setCurrentScore(1);

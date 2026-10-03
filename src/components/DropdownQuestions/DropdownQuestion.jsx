@@ -8,6 +8,7 @@ import {
   isDropdownAttributeSolved,
 } from "./dropdownAnswerStatus";
 import { getCurrentUserId } from "../../utils/user";
+import { getPracticePosition } from "../../utils/practicePosition";
 
 const DropdownQuestion = ({
   data,
@@ -439,6 +440,13 @@ const DropdownQuestion = ({
     );
 
     const isCorrect = matchingCondition !== null;
+    const practicePosition = getPracticePosition(
+      matchingCondition,
+      getUnansweredDropdownConditions(
+        item.ruleConditions || [], answeredData[item.questionAttributeId] || [],
+      ),
+      type,
+    );
 
     console.log("-----------------------------------");
 
@@ -515,7 +523,10 @@ const DropdownQuestion = ({
       try {
         // 1. AnswerEvent first
         const answerEventResponse =
-          await QuestionAnswerService.processAnswerEvent(answerEventData);
+          await QuestionAnswerService.processAnswerEvent({
+            ...answerEventData, questionAttributeId: item.questionAttributeId,
+            unitPosition: practicePosition,
+          });
 
         console.log("AnswerEvent API Response:", answerEventResponse);
 
@@ -591,7 +602,10 @@ const DropdownQuestion = ({
        * ONLY AnswerEvent API
        */
       const response =
-        await QuestionAnswerService.processAnswerEvent(answerEventData);
+        await QuestionAnswerService.processAnswerEvent({
+          ...answerEventData, questionAttributeId: item.questionAttributeId,
+          unitPosition: practicePosition,
+        });
 
       console.log("Wrong AnswerEvent API Response:", response);
 

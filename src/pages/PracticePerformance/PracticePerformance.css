@@ -150,6 +150,70 @@
   color: var(--pp-muted);
 }
 
+.pp-page .pp-trend-card {
+  overflow: hidden;
+}
+
+.pp-page .pp-trend-card .pp-card__head {
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.pp-page .pp-trend-card .pp-trend-select {
+  flex: 0 1 200px;
+  width: 200px;
+  min-width: 0;
+  max-width: 200px;
+  padding: 8px 10px;
+}
+
+.pp-page .pp-trend-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.pp-page .pp-trend-chart {
+  display: block;
+  height: auto;
+  width: max(100%, var(--pp-trend-width));
+  font-family: inherit;
+}
+
+.pp-page .pp-trend-grid {
+  stroke: #e8edf5;
+  stroke-width: 1;
+}
+
+.pp-page .pp-trend-tick,
+.pp-page .pp-trend-label {
+  fill: var(--pp-muted);
+  font-size: 12px;
+}
+
+.pp-page .pp-trend-area {
+  fill: rgba(21, 94, 239, 0.1);
+}
+
+.pp-page .pp-trend-line {
+  fill: none;
+  stroke: var(--pp-blue);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pp-page .pp-trend-point {
+  fill: var(--pp-blue);
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.pp-page .pp-trend-value {
+  fill: var(--pp-navy);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .pp-page .pp-empty {
   padding: 18px 0 6px;
   color: var(--pp-muted);
@@ -884,7 +948,6 @@
     max-height: none;
     order: -1;
   }
-
 }
 
 @media (max-width: 760px) {

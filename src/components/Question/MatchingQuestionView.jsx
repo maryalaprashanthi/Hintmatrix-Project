@@ -407,6 +407,8 @@ const MatchingQuestionView = ({
         // ---------------------------------------------------
 
         const answerEvent = {
+          // Identify the source pair, including when the selected target is wrong.
+          unitPosition: Number(pair.pairId),
           userId: getCurrentUserId(),
 
           questionId:

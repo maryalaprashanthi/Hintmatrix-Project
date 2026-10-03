@@ -17,13 +17,10 @@ import {
   MdTableRows,
   MdViewHeadline,
   MdListAlt,
-  MdOutlineEdit,
   MdAssignment,
   MdAssignmentTurnedIn,
-  MdVideoLibrary,
   MdBarChart,
   MdInsights,
-  MdWorkspacePremium,
   MdSettings,
   MdLogout,
   MdKeyboardArrowDown,
@@ -82,11 +79,7 @@ export default function Sidebar({
   const canAccessTableMenu = canAccessFeature("tableMetadata", userRole);
   const canAccessRuleEngine = canAccessFeature("ruleEngine", userRole);
   const canAccessStudentAttendance = canAccessFeature("attendance", userRole);
-  const canAccessPractice = canAccessFeature("practiceQuestions", userRole);
   const canAccessErrorList = canAccessFeature("attemptExams", userRole);
-  const canAccessSessions = canAccessFeature("attemptExams", userRole);
-  const canAccessResults = canAccessFeature("results", userRole);
-  const canAccessCertificates = canAccessFeature("certificates", userRole);
   const canAccessSettings = canAccessFeature("settings", userRole);
 
   const handleLogout = () => {
@@ -282,7 +275,7 @@ export default function Sidebar({
             <NavLink to="/courses" className={menuClass} onClick={closeSidebar}>
               <div className="menu-left">
                 <MdMenuBook className="menu-icon" />
-                <span>Question Bank</span>
+                <span>Practice</span>
               </div>
             </NavLink>
           )}
@@ -377,15 +370,6 @@ export default function Sidebar({
                   </NavLink>
 
                   <NavLink
-                    to="/courses"
-                    className={subMenuClass}
-                    onClick={closeSidebar}
-                  >
-                    <MdMenuBook />
-                    <span>Question Bank</span>
-                  </NavLink>
-
-                  <NavLink
                     to="/questions"
                     end
                     className={subMenuClass}
@@ -476,21 +460,6 @@ export default function Sidebar({
             </NavLink>
           )}
 
-          {/* Practice */}
-
-          {canAccessPractice && (
-            <NavLink
-              to="/practice"
-              className={menuClass}
-              onClick={closeSidebar}
-            >
-              <div className="menu-left">
-                <MdOutlineEdit className="menu-icon" />
-                <span>Practice</span>
-              </div>
-            </NavLink>
-          )}
-
           {canAccessErrorList && (
             <NavLink to="/errors" className={menuClass} onClick={closeSidebar}>
               <div className="menu-left">
@@ -540,7 +509,7 @@ export default function Sidebar({
             >
               <div className="menu-left">
                 <MdBarChart className="menu-icon" />
-                <span>Performance</span>
+                <span>Exam Performance</span>
               </div>
             </NavLink>
           )}
@@ -554,47 +523,6 @@ export default function Sidebar({
               <div className="menu-left">
                 <MdInsights className="menu-icon" />
                 <span>Practice Performance</span>
-              </div>
-            </NavLink>
-          )}
-
-          {/* Sessions */}
-
-          {canAccessSessions && (
-            <NavLink
-              to="/sessions"
-              className={menuClass}
-              onClick={closeSidebar}
-            >
-              <div className="menu-left">
-                <MdVideoLibrary className="menu-icon" />
-                <span>Sessions</span>
-              </div>
-            </NavLink>
-          )}
-
-          {/* Results */}
-
-          {canAccessResults && (
-            <NavLink to="/results" className={menuClass} onClick={closeSidebar}>
-              <div className="menu-left">
-                <MdBarChart className="menu-icon" />
-                <span>Results</span>
-              </div>
-            </NavLink>
-          )}
-
-          {/* Certificates */}
-
-          {canAccessCertificates && (
-            <NavLink
-              to="/certificates"
-              className={menuClass}
-              onClick={closeSidebar}
-            >
-              <div className="menu-left">
-                <MdWorkspacePremium className="menu-icon" />
-                <span>Certificates</span>
               </div>
             </NavLink>
           )}

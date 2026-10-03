@@ -232,6 +232,113 @@ const UnitDonut = ({ total, attempted, correct }) => {
   );
 };
 
+const PerformanceTrendChart = ({ items }) => {
+  const data = items
+    .filter((item) => num(item.attemptedUnits) > 0)
+    .map((item) => ({
+      name: String(item.name ?? "Unnamed"),
+      value: Math.min(100, Math.max(0, num(item.accuracyPercentage))),
+    }));
+
+  if (data.length === 0) {
+    return (
+      <p className="pp-empty">
+        No completed practice results are available for this view.
+      </p>
+    );
+  }
+
+  const width = Math.max(440, data.length * 88 + 72);
+  const height = 280;
+  const left = 52;
+  const right = width - 24;
+  const top = 20;
+  const bottom = 218;
+  const plotWidth = right - left;
+  const plotHeight = bottom - top;
+  const points = data.map((item, index) => ({
+    ...item,
+    x:
+      data.length === 1
+        ? left + plotWidth / 2
+        : left + (index * plotWidth) / (data.length - 1),
+    y: bottom - (item.value / 100) * plotHeight,
+  }));
+  const linePoints = points.map(({ x, y }) => `${x},${y}`).join(" ");
+  const areaPoints = `${left},${bottom} ${linePoints} ${right},${bottom}`;
+
+  return (
+    <div className="pp-trend-scroll">
+      <svg
+        className="pp-trend-chart"
+        viewBox={`0 0 ${width} ${height}`}
+        style={{ "--pp-trend-width": `${width}px` }}
+        role="img"
+        aria-label="Average practice accuracy across the selected categories"
+      >
+        {[0, 25, 50, 75, 100].map((tick) => {
+          const y = bottom - (tick / 100) * plotHeight;
+
+          return (
+            <g key={tick}>
+              <line
+                className="pp-trend-grid"
+                x1={left}
+                x2={right}
+                y1={y}
+                y2={y}
+              />
+              <text
+                className="pp-trend-tick"
+                x={left - 10}
+                y={y + 4}
+                textAnchor="end"
+              >
+                {tick}%
+              </text>
+            </g>
+          );
+        })}
+        {points.length > 1 && (
+          <>
+            <polygon className="pp-trend-area" points={areaPoints} />
+            <polyline className="pp-trend-line" points={linePoints} />
+          </>
+        )}
+        {points.map((point, index) => (
+          <g key={`${point.name}-${index}`}>
+            <circle
+              className="pp-trend-point"
+              cx={point.x}
+              cy={point.y}
+              r="5"
+            />
+            <text
+              className="pp-trend-value"
+              x={point.x}
+              y={Math.max(top - 2, point.y - 12)}
+              textAnchor="middle"
+            >
+              {formatPct(point.value)}
+            </text>
+            <text
+              className="pp-trend-label"
+              x={point.x}
+              y={bottom + 24}
+              textAnchor="middle"
+            >
+              <title>{point.name}</title>
+              {point.name.length > 12
+                ? `${point.name.slice(0, 11)}…`
+                : point.name}
+            </text>
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
+};
+
 // One clickable row of a level list: name, the level above it, a bar of
 // accuracy and how much of it has been attempted.
 const ItemRow = ({ item, active, onSelect }) => {
@@ -307,6 +414,8 @@ const PracticePerformance = () => {
   const [levels, setLevels] = useState({});
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState("");
+  const [trendCourseId, setTrendCourseId] = useState("");
+  const [trend, setTrend] = useState({ status: "loading", items: [] });
 
   const [orgMode, setOrgMode] = useState(
     role === ROLES.SUPER_ADMIN ? "college" : "branch",
@@ -320,6 +429,32 @@ const PracticePerformance = () => {
   const scopeParams = useMemo(() => scopeToParams(scope), [scope]);
   const pathParams = useMemo(() => pathToParams(path), [path]);
   const kpiLevel = deepestLevel(path);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    setTrend({ status: "loading", items: [] });
+
+    PracticePerformanceService.getLevel(trendCourseId ? "subject" : "course", {
+      ...scopeParams,
+      ...(trendCourseId ? { courseId: trendCourseId } : {}),
+    })
+      .then((response) => {
+        if (!cancelled) {
+          setTrend({
+            status: "ready",
+            items: asArray(response.data?.items),
+          });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setTrend({ status: "error", items: [] });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [scopeParams, trendCourseId]);
 
   // ---- pick lists --------------------------------------------------------
   useEffect(() => {
@@ -411,10 +546,7 @@ const PracticePerformance = () => {
 
       setLevels(
         Object.fromEntries(
-          PRACTICE_LEVELS.map((level, index) => [
-            level,
-            responses[index].data,
-          ]),
+          PRACTICE_LEVELS.map((level, index) => [level, responses[index].data]),
         ),
       );
       setStatus("ready");
@@ -456,8 +588,7 @@ const PracticePerformance = () => {
     }));
   }, [orgMode, options.colleges, options.branches]);
 
-  const showOrg =
-    role === ROLES.SUPER_ADMIN || role === ROLES.COLLEGE_ADMIN;
+  const showOrg = role === ROLES.SUPER_ADMIN || role === ROLES.COLLEGE_ADMIN;
 
   useEffect(() => {
     if (!showOrg) return undefined;
@@ -502,9 +633,7 @@ const PracticePerformance = () => {
               },
               responses[0],
             ),
-            ...orgRows.map((row, index) =>
-              toRow(row, responses[index + 1]),
-            ),
+            ...orgRows.map((row, index) => toRow(row, responses[index + 1])),
           ],
         });
       } catch {
@@ -708,7 +837,11 @@ const PracticePerformance = () => {
     <div className="pp-page">
       <header className="pp-header">
         <div>
-          <h1>{isStudent ? "My Practice Performance" : "Practice Performance Overview"}</h1>
+          <h1>
+            {isStudent
+              ? "My Practice Performance"
+              : "Practice Performance Overview"}
+          </h1>
           <p>
             Track and analyze practice performance across courses, subjects,
             chapters and topics.
@@ -844,8 +977,8 @@ const PracticePerformance = () => {
 
             {status === "ready" && studentCount > 0 && attemptedUnits === 0 && (
               <StatusNote>
-                No practice attempts have been recorded here yet. Results
-                appear as students answer practice questions.
+                No practice attempts have been recorded here yet. Results appear
+                as students answer practice questions.
               </StatusNote>
             )}
 
@@ -881,49 +1014,41 @@ const PracticePerformance = () => {
               />
             </section>
 
-            <div className="pp-grid-2">
-              {/* ---- hierarchy tiles ---- */}
-              <section className="pp-card">
-                <h2 className="pp-card__title">
-                  <GraduationCap size={18} aria-hidden="true" /> Performance
-                  Hierarchy
-                </h2>
-                <p className="pp-card__sub">Click any level to explore details</p>
-                <ul className="pp-tiles">
-                  {PRACTICE_LEVELS.map((level) => {
-                    const meta = LEVEL_META[level];
-                    const summary = levels[level]?.summary ?? {};
-                    const Icon = meta.Icon;
-
-                    return (
-                      <li key={level}>
-                        <button
-                          type="button"
-                          className={`pp-tile${focusLevel === level ? " pp-tile--active" : ""}`}
-                          onClick={() => {
-                            setFocusLevel(level);
-                            setSelected(null);
-                          }}
-                        >
-                          <span className={`pp-tile__icon pp-tone-${meta.tone}`}>
-                            <Icon size={22} aria-hidden="true" />
-                          </span>
-                          <span className="pp-tile__body">
-                            <strong>{meta.wise}</strong>
-                            <small>Avg. accuracy</small>
-                          </span>
-                          <span className="pp-tile__value">
-                            {formatPct(summary.accuracyPercentage)}
-                          </span>
-                          <ChevronRight size={16} aria-hidden="true" />
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
+            <div className="pp-grid-2 pp-trend-breakdown">
+              <section className="pp-card pp-trend-card">
+                <div className="pp-card__head">
+                  <div>
+                    <h2 className="pp-card__title">Performance Trend</h2>
+                    <p className="pp-card__sub">
+                      Average accuracy across{" "}
+                      {trendCourseId ? "subjects" : "courses"}
+                    </p>
+                  </div>
+                  <select
+                    className="pp-select pp-trend-select"
+                    aria-label="Filter performance trend by course"
+                    value={trendCourseId}
+                    onChange={(event) => setTrendCourseId(event.target.value)}
+                  >
+                    <option value="">All Courses</option>
+                    {[...options.courses].sort(sortByName).map((course) => (
+                      <option key={course.id} value={String(course.id)}>
+                        {course.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {trend.status === "loading" ? (
+                  <p className="pp-empty">Loading trend…</p>
+                ) : trend.status === "error" ? (
+                  <p className="pp-empty" role="alert">
+                    Couldn&rsquo;t load trend data.
+                  </p>
+                ) : (
+                  <PerformanceTrendChart items={trend.items} />
+                )}
               </section>
 
-              {/* ---- unit breakdown ---- */}
               <section className="pp-card">
                 <h2 className="pp-card__title">Unit Breakdown</h2>
                 <p className="pp-card__sub">
@@ -936,6 +1061,47 @@ const PracticePerformance = () => {
                 />
               </section>
             </div>
+
+            {/* ---- hierarchy tiles ---- */}
+            <section className="pp-card">
+              <h2 className="pp-card__title">
+                <GraduationCap size={18} aria-hidden="true" /> Performance
+                Hierarchy
+              </h2>
+              <p className="pp-card__sub">Click any level to explore details</p>
+              <ul className="pp-tiles">
+                {PRACTICE_LEVELS.map((level) => {
+                  const meta = LEVEL_META[level];
+                  const summary = levels[level]?.summary ?? {};
+                  const Icon = meta.Icon;
+
+                  return (
+                    <li key={level}>
+                      <button
+                        type="button"
+                        className={`pp-tile${focusLevel === level ? " pp-tile--active" : ""}`}
+                        onClick={() => {
+                          setFocusLevel(level);
+                          setSelected(null);
+                        }}
+                      >
+                        <span className={`pp-tile__icon pp-tone-${meta.tone}`}>
+                          <Icon size={22} aria-hidden="true" />
+                        </span>
+                        <span className="pp-tile__body">
+                          <strong>{meta.wise}</strong>
+                          <small>Avg. accuracy</small>
+                        </span>
+                        <span className="pp-tile__value">
+                          {formatPct(summary.accuracyPercentage)}
+                        </span>
+                        <ChevronRight size={16} aria-hidden="true" />
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
 
             {/* ---- focused level list ---- */}
             <section className="pp-card">
@@ -1040,7 +1206,9 @@ const PracticePerformance = () => {
                           return (
                             <tr
                               key={row.key}
-                              className={row.highlight ? "is-highlight" : undefined}
+                              className={
+                                row.highlight ? "is-highlight" : undefined
+                              }
                             >
                               <td>
                                 <button
@@ -1063,7 +1231,9 @@ const PracticePerformance = () => {
                                   ? formatPct(row.summary.accuracyPercentage)
                                   : "—"}
                               </td>
-                              <td>{formatPct(row.summary.completionPercentage)}</td>
+                              <td>
+                                {formatPct(row.summary.completionPercentage)}
+                              </td>
                               <td className="pp-table__chev">
                                 <ChevronRight size={16} aria-hidden="true" />
                               </td>
@@ -1114,7 +1284,9 @@ const PracticePerformance = () => {
                         >
                           <span className="pp-revision__name">
                             {item.name}
-                            {item.parentName && <small>{item.parentName}</small>}
+                            {item.parentName && (
+                              <small>{item.parentName}</small>
+                            )}
                           </span>
                           <span className="pp-text-bad pp-revision__pct">
                             {formatPct(accuracy)}
@@ -1138,7 +1310,9 @@ const PracticePerformance = () => {
           {selected && (
             <aside className="pp-panel" aria-label="Details">
               <div className="pp-panel__head">
-                <span className={`pp-tile__icon pp-tone-${LEVEL_META[selected.level].tone}`}>
+                <span
+                  className={`pp-tile__icon pp-tone-${LEVEL_META[selected.level].tone}`}
+                >
                   {(() => {
                     const Icon = LEVEL_META[selected.level].Icon;
                     return <Icon size={20} aria-hidden="true" />;
@@ -1171,7 +1345,9 @@ const PracticePerformance = () => {
                 </div>
                 <div>
                   <span>Completion</span>
-                  <strong>{formatPct(selected.item.completionPercentage)}</strong>
+                  <strong>
+                    {formatPct(selected.item.completionPercentage)}
+                  </strong>
                 </div>
                 <div>
                   <span>Correct</span>
@@ -1219,10 +1395,13 @@ const PracticePerformance = () => {
                               <span
                                 className={`pp-text-${band(num(item.accuracyPercentage), attempted)}`}
                               >
-                                {attempted ? formatPct(item.accuracyPercentage) : "—"}
+                                {attempted
+                                  ? formatPct(item.accuracyPercentage)
+                                  : "—"}
                               </span>
                               <span className="pp-mini__count">
-                                {formatCount(attempted)}/{formatCount(item.totalUnits)}
+                                {formatCount(attempted)}/
+                                {formatCount(item.totalUnits)}
                               </span>
                             </li>
                           );
