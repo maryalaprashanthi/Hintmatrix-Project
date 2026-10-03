@@ -1,6 +1,6 @@
 import "./Chapters.css";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 
@@ -22,10 +22,14 @@ import { paths } from "../../routes/paths";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { useToast } from "../../components/Toast/useToast";
 import ManagementCountTiles from "../../components/Common/ManagementCountTiles";
+import HierarchyProgress from "../../components/Common/HierarchyProgress";
+import { useHierarchyProgress } from "../../hooks/useHierarchyProgress";
 
 function Chapters() {
   // Chapters lists the chapters of one subject: /subjects/:subjectId/chapters
   const { subjectId } = useParams();
+  const progressParams = useMemo(() => ({ subjectId }), [subjectId]);
+  const chapterProgress = useHierarchyProgress("chapter", progressParams);
 
   const navigate = useNavigate();
 
@@ -279,18 +283,10 @@ function Chapters() {
               </div>
 
               <div className="hierarchy-card-footer">
-                <div
-                  className="hierarchy-progress"
-                  aria-label="Chapter progress 100 percent"
-                >
-                  <div className="hierarchy-progress-label">
-                    <span>Progress</span>
-                    <span>100%</span>
-                  </div>
-                  <div className="hierarchy-progress-track">
-                    <span style={{ width: "100%" }} />
-                  </div>
-                </div>
+                <HierarchyProgress
+                  label="Chapter"
+                  value={chapterProgress(chapter.chapterId)}
+                />
 
                 {/*  MATCHED LAYOUT: Outlined buttons with icons */}
                 <button

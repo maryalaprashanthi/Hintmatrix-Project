@@ -1,6 +1,6 @@
 import "./Subjects.css";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 
@@ -21,6 +21,8 @@ import { paths } from "../../routes/paths";
 import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { useToast } from "../../components/Toast/useToast";
 import ManagementCountTiles from "../../components/Common/ManagementCountTiles";
+import HierarchyProgress from "../../components/Common/HierarchyProgress";
+import { useHierarchyProgress } from "../../hooks/useHierarchyProgress";
 
 // Backend SubjectResponseDTO exposes the name as `subjectName`.
 const subjectLabel = (subject) => subject.subjectName || subject.name || "";
@@ -28,6 +30,8 @@ const subjectKey = (subject) => subject.subjectId ?? subject.subject_id;
 
 function Subjects() {
   const { courseId } = useParams();
+  const progressParams = useMemo(() => ({ courseId }), [courseId]);
+  const subjectProgress = useHierarchyProgress("subject", progressParams);
 
   const navigate = useNavigate();
 
@@ -224,15 +228,10 @@ function Subjects() {
               </div>
 
               <div className="hierarchy-card-footer">
-              <div className="hierarchy-progress" aria-label="Subject progress 100 percent">
-                <div className="hierarchy-progress-label">
-                  <span>Progress</span>
-                  <span>100%</span>
-                </div>
-                <div className="hierarchy-progress-track">
-                  <span style={{ width: "100%" }} />
-                </div>
-              </div>
+              <HierarchyProgress
+                label="Subject"
+                value={subjectProgress(subjectKey(subject))}
+              />
 
               <button
                 className="btn btn-primary view-btn"
