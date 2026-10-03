@@ -69,7 +69,7 @@ function Header({
         return;
       }
 
-      const userId = 1;
+      const userId = getCurrentUserId();
 
       await QuestionAnswerService.getMistakesByQuestionId(
         userId,
