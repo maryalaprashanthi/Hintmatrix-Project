@@ -101,10 +101,6 @@ export default function McqQuestionView({ questionId, questionType }) {
         getCurrentUserId(),
         question.questionId,
       );
-      await QuestionAnswerService.resetAnswerEventsByUserAndQuestion(
-        getCurrentUserId(),
-        question.questionId,
-      );
       setSelected([]);
       setResult(null);
     } catch {

@@ -16,7 +16,7 @@ import { useState } from "react";
 const QuestionTable = () => {
   const [checkMistakes, setCheckMistakes] = useState(false);
 
-  const { questions, score, resetFrontend, droppableData } = useQuestionStore();
+  const { questions, score, droppableData } = useQuestionStore();
 
   const { questionId } = useParams();
 
@@ -66,7 +66,6 @@ const QuestionTable = () => {
     <div className="row g-4 align-items-start">
       <div>
         <Header
-          handleReset={resetFrontend}
           setCheckMistakes={setCheckMistakes}
         />
 

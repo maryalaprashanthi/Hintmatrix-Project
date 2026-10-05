@@ -92,14 +92,6 @@ const QuestionAnswerService = {
     return response.data;
   },
 
-  resetAnswerEventsByUserAndQuestion: async (userId, questionId) => {
-    const response = await apiClient.put(
-      `${ANSWER_EVENT_URL}/user/${userId}/question/${questionId}/reset`,
-    );
-
-    return response.data;
-  },
-
   getOverallMarks: async (userId) => {
     const response = await apiClient.get(
       `${ANSWER_EVENT_URL}/user/${userId}/marks`,
