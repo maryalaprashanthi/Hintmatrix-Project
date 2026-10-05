@@ -13,6 +13,7 @@ import useExamSessionStore from "./ExamComponents/examSessionStore";
 import useExamQuestionStore from "./ExamComponents/examQuestionStore";
 import { buildSubmission } from "./ExamComponents/buildSubmission";
 import { loadSampleQuestions } from "./sampleData";
+import { getCurrentUserId } from "../../utils/user";
 import "./ExamShell/examTokens.css";
 import styles from "./ExamPage.module.css";
 
@@ -267,7 +268,7 @@ const ExamPage = () => {
         questions,
         sessionById,
         examDragById,
-        userId: Number(localStorage.getItem("userId")) || undefined,
+        userId: getCurrentUserId(),
         timeTakenSeconds: EXAM_MINUTES * 60 - secondsLeft,
       });
 
