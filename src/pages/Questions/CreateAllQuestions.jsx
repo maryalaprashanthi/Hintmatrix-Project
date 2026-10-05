@@ -171,6 +171,9 @@ const typeLabel = (type) => {
   return labels[type] ?? type.replaceAll("_", " ");
 };
 
+const showMarks = (type) =>
+  isMcqType(type) || isMatchingType(type) || isFillBlankType(type);
+
 function searchableSelect({
   items,
   type,
@@ -209,6 +212,219 @@ function searchableSelect({
   );
 }
 
+/* =========================================================
+   PREVIEW CARD (one per saved draft)
+========================================================= */
+
+function QuestionPreviewCard({
+  index,
+  draft,
+  attributeLabel,
+  onEdit,
+  onRemove,
+  disabled,
+}) {
+  const { type, typeLabel: label, hierarchy, snapshot: s } = draft;
+
+  const isGeneric =
+    type &&
+    !isMcqType(type) &&
+    type !== "DRAG_AND_DROP" &&
+    !isMatchingType(type) &&
+    !isFillBlankType(type);
+
+  const ledger = (s.ledgerRows ?? []).filter(
+    (r) => r.debitAttributeId || r.creditAttributeId,
+  );
+  const attrs = (s.attributeRows ?? []).filter((r) => r.attributeId);
+
+  return (
+    <article className="aq-live-card">
+      <div className="aq-live-meta">
+        <span>{label}</span>
+        {showMarks(type) && (
+          <strong>
+            {s.marks} Mark{Number(s.marks) === 1 ? "" : "s"}
+          </strong>
+        )}
+      </div>
+
+      <p className="aq-live-path">
+        {[
+          hierarchy.course,
+          hierarchy.subject,
+          hierarchy.chapter,
+          hierarchy.topic,
+        ]
+          .filter(Boolean)
+          .join("  ›  ")}
+      </p>
+
+      <div className="aq-live-question">
+        <b>Q{index + 1}.</b>
+        <p>{s.questionText}</p>
+      </div>
+
+      {/* MCQ */}
+      {isMcqType(type) && (
+        <>
+          <div className="aq-live-options">
+            {s.mcqOptions.map((o) => (
+              <div
+                key={o.optionOrder}
+                className={`aq-live-option ${o.isCorrect ? "correct" : ""}`}
+              >
+                <span className="aq-live-radio">{o.isCorrect ? "✓" : ""}</span>
+                <b>{o.label}.</b>
+                <span>{o.optionText}</span>
+              </div>
+            ))}
+          </div>
+
+          {s.mcqOptions.some((o) => o.isCorrect) && (
+            <div className="aq-correct-answer">
+              <strong>●&nbsp; Correct Answer</strong>
+              <span>
+                {s.mcqOptions
+                  .filter((o) => o.isCorrect)
+                  .map((o) => `Option ${o.label}`)
+                  .join(", ")}
+              </span>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* MATCHING */}
+      {isMatchingType(type) && (
+        <div className="aq-live-table-wrap">
+          <table className="aq-live-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Column A</th>
+                <th>Column B</th>
+              </tr>
+            </thead>
+            <tbody>
+              {s.matchingPairs.map((p, i) => (
+                <tr key={i}>
+                  <td>{i + 1}</td>
+                  <td>{p.columnA}</td>
+                  <td>{p.columnB}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* FILL IN THE BLANK */}
+      {isFillBlankType(type) && (
+        <div className="aq-live-blanks">
+          {s.blanks.map((blank, i) => (
+            <div className="aq-live-blank" key={i}>
+              <b>{blank.label}</b>
+              <div className="aq-chip-row">
+                {(blank.answerOptions ?? [])
+                  .filter((o) => o.value.trim())
+                  .map((o, j) => (
+                    <span
+                      key={j}
+                      className={`aq-chip ${o.isCorrect ? "correct" : ""}`}
+                    >
+                      {o.isCorrect && "✓ "}
+                      {o.value}
+                    </span>
+                  ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* DRAG AND DROP - ledger table */}
+      {type === "DRAG_AND_DROP" && (
+        <div className="aq-live-table-wrap">
+          <table className="aq-live-table">
+            <thead>
+              <tr>
+                <th>Debit</th>
+                <th className="num">Amount</th>
+                <th>Credit</th>
+                <th className="num">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ledger.map((r, i) => (
+                <tr key={i}>
+                  <td>
+                    {r.debitAttributeId
+                      ? attributeLabel(r.debitAttributeId)
+                      : "—"}
+                  </td>
+                  <td className="num">{r.debitAmount || "—"}</td>
+                  <td>
+                    {r.creditAttributeId
+                      ? attributeLabel(r.creditAttributeId)
+                      : "—"}
+                  </td>
+                  <td className="num">{r.creditAmount || "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* JOURNAL / DROPDOWN / other attribute types */}
+      {isGeneric && (
+        <div className="aq-live-table-wrap">
+          <table className="aq-live-table">
+            <thead>
+              <tr>
+                <th>Transaction</th>
+                <th className="num">Amount 1</th>
+                <th className="num">Amount 2</th>
+              </tr>
+            </thead>
+            <tbody>
+              {attrs.map((r, i) => (
+                <tr key={i}>
+                  <td>{attributeLabel(r.attributeId)}</td>
+                  <td className="num">{r.amount || "—"}</td>
+                  <td className="num">{r.amount2 || "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className="aq-live-actions">
+        <button
+          type="button"
+          className="aq-clear"
+          onClick={onEdit}
+          disabled={disabled}
+        >
+          <FaEdit /> Edit
+        </button>
+        <button
+          type="button"
+          className="aq-clear"
+          onClick={onRemove}
+          disabled={disabled}
+        >
+          <FaTrash /> Remove
+        </button>
+      </div>
+    </article>
+  );
+}
+
+// MAIN COMPONENT
+
 function CreateAllQuestions() {
   const [courses, setCourses] = useState([]);
   const [subjects, setSubjects] = useState([]);
@@ -227,13 +443,9 @@ function CreateAllQuestions() {
   const [marks, setMarks] = useState("1");
 
   const [mcqOptions, setMcqOptions] = useState(emptyMcqOptions);
-
   const [attributeRows, setAttributeRows] = useState([emptyAttributeRow()]);
-
   const [ledgerRows, setLedgerRows] = useState([emptyLedgerRow()]);
-
   const [matchingPairs, setMatchingPairs] = useState(emptyMatchingPairs);
-
   const [blanks, setBlanks] = useState(emptyBlanks);
 
   const [drafts, setDrafts] = useState([]);
@@ -264,21 +476,15 @@ function CreateAllQuestions() {
         ]);
 
         setCourses(Array.isArray(responses[0].data) ? responses[0].data : []);
-
         setSubjects(Array.isArray(responses[1].data) ? responses[1].data : []);
-
         setChapters(Array.isArray(responses[2].data) ? responses[2].data : []);
-
         setTopics(Array.isArray(responses[3].data) ? responses[3].data : []);
-
         setQuestionTypes(
           Array.isArray(responses[4].data) ? responses[4].data : [],
         );
-
         setTableAttributes(
           Array.isArray(responses[5].data) ? responses[5].data : [],
         );
-
         setTableHeaders(
           Array.isArray(responses[6].data) ? responses[6].data : [],
         );
@@ -336,21 +542,18 @@ function CreateAllQuestions() {
       courses.find((item) => String(idOf(item, "course")) === String(courseId)),
       "course",
     ),
-
     subject: labelOf(
       subjects.find(
         (item) => String(idOf(item, "subject")) === String(subjectId),
       ),
       "subject",
     ),
-
     chapter: labelOf(
       chapters.find(
         (item) => String(idOf(item, "chapter")) === String(chapterId),
       ),
       "chapter",
     ),
-
     topic: labelOf(
       topics.find((item) => String(idOf(item, "topic")) === String(topicId)),
       "topic",
@@ -528,6 +731,38 @@ function CreateAllQuestions() {
       type: "",
       text: "",
     });
+  };
+
+  // Keeps hierarchy + question type, clears only the question content
+  const addAnother = () => {
+    setQuestionText("");
+    setMarks("1");
+    setMcqOptions(emptyMcqOptions());
+    setAttributeRows([emptyAttributeRow()]);
+    setLedgerRows([emptyLedgerRow()]);
+    setMatchingPairs(emptyMatchingPairs());
+    setBlanks(emptyBlanks());
+    setEditingDraftId(null);
+    setFormError("");
+    setMessage({ type: "", text: "" });
+    setActivePage("details");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const removeDraft = (id) => {
+    setDrafts((current) => {
+      const next = current.filter((draft) => draft.id !== id);
+
+      if (!next.length) {
+        setActivePage("details");
+      }
+
+      return next;
+    });
+
+    if (editingDraftId === id) {
+      setEditingDraftId(null);
+    }
   };
 
   const headerIdForAttribute = (attributeId) => {
@@ -784,17 +1019,12 @@ function CreateAllQuestions() {
 
     const draft = {
       id: editingDraftId ?? `${Date.now()}-${Math.random()}`,
-
       type: selectedType,
-
       typeLabel: typeLabel(selectedType),
-
       hierarchy: {
         ...selectedNames,
       },
-
       payload: buildPayload(),
-
       snapshot: {
         courseId,
         subjectId,
@@ -839,11 +1069,8 @@ function CreateAllQuestions() {
     setMarks(snapshot.marks);
 
     setMcqOptions(snapshot.mcqOptions);
-
     setAttributeRows(snapshot.attributeRows);
-
     setLedgerRows(snapshot.ledgerRows);
-
     setMatchingPairs(snapshot.matchingPairs ?? emptyMatchingPairs());
 
     setBlanks(
@@ -853,7 +1080,6 @@ function CreateAllQuestions() {
     );
 
     setEditingDraftId(draft.id);
-
     setFormError("");
 
     setMessage({
@@ -922,6 +1148,11 @@ function CreateAllQuestions() {
           } submitted successfully.`,
     });
 
+    if (!failed.length) {
+      // everything saved: go back to a clean form
+      setActivePage("details");
+    }
+
     setSubmitting(false);
   };
 
@@ -936,9 +1167,7 @@ function CreateAllQuestions() {
 
   return (
     <main className="all-question-create">
-      {/* =====================================================
-          HEADER
-          ===================================================== */}
+      {/* HEADER */}
       <header className="aq-header">
         <div className="aq-header-left">
           <div className="aq-title-row">
@@ -968,35 +1197,28 @@ function CreateAllQuestions() {
               <button
                 type="button"
                 className={`aq-step ${activePage === "preview" ? "active" : ""}`}
-                onClick={() => questionText.trim() && setActivePage("preview")}
-                disabled={!questionText.trim()}
+                onClick={() => drafts.length && setActivePage("preview")}
+                disabled={!drafts.length}
               >
                 <b>2</b>
-                <span>Preview</span>
+                <span>Preview{drafts.length ? ` (${drafts.length})` : ""}</span>
               </button>
             </nav>
           </div>
         </div>
       </header>
 
-      {/* =====================================================
-          MAIN CONTENT
-          ===================================================== */}
-
+      {/* DETAILS PAGE */}
       {activePage === "details" &&
         (loading ? (
           <div className="aq-state">Loading question form…</div>
         ) : (
           <form onSubmit={addToPreview}>
-            {/* Message is INSIDE form so it cannot create
-              an extra outer grid row. */}
             {message.text && (
               <div className={`aq-message ${message.type}`}>{message.text}</div>
             )}
 
-            {/* =================================================
-              QUESTION DETAILS
-              ================================================= */}
+            {/* QUESTION DETAILS */}
             <section className="aq-card">
               <div className="aq-section-heading">
                 <span className="aq-section-icon">
@@ -1005,7 +1227,6 @@ function CreateAllQuestions() {
 
                 <div>
                   <h2>Question details</h2>
-
                   <p>Provide the basic information about the question.</p>
                 </div>
               </div>
@@ -1021,7 +1242,6 @@ function CreateAllQuestions() {
                     type: "course",
                     value: courseId,
                     placeholder: "Search course",
-
                     onChange: (value) => {
                       setCourseId(value);
                       setSubjectId("");
@@ -1042,7 +1262,6 @@ function CreateAllQuestions() {
                     value: subjectId,
                     placeholder: "Search subject",
                     disabled: !courseId,
-
                     onChange: (value) => {
                       setSubjectId(value);
                       setChapterId("");
@@ -1062,7 +1281,6 @@ function CreateAllQuestions() {
                     value: chapterId,
                     placeholder: "Search chapter",
                     disabled: !subjectId,
-
                     onChange: (value) => {
                       setChapterId(value);
                       setTopicId("");
@@ -1095,29 +1313,20 @@ function CreateAllQuestions() {
                     type: "questionType",
                     value: questionTypeId,
                     placeholder: "Search question type",
-
                     getLabel: (item) =>
                       typeLabel(normalizeType(labelOf(item, "questionType"))),
-
                     onChange: (value) => {
                       setQuestionTypeId(value);
-
                       setMcqOptions(emptyMcqOptions());
-
                       setAttributeRows([emptyAttributeRow()]);
-
                       setLedgerRows([emptyLedgerRow()]);
-
                       setMatchingPairs(emptyMatchingPairs());
-
                       setBlanks(emptyBlanks());
                     },
                   })}
                 </label>
 
-                {(isMcqType(selectedType) ||
-                  isMatchingType(selectedType) ||
-                  isFillBlankType(selectedType)) && (
+                {showMarks(selectedType) && (
                   <label>
                     <span className="aq-required-label">
                       Marks <em>*</em>
@@ -1142,31 +1351,20 @@ function CreateAllQuestions() {
                 <div className="aq-editor">
                   <div className="aq-editor-toolbar" aria-hidden="true">
                     <button type="button">B</button>
-
                     <button type="button">
                       <i>I</i>
                     </button>
-
                     <button type="button">
                       <u>U</u>
                     </button>
-
                     <button type="button">S</button>
-
                     <span />
-
                     <button type="button">≡</button>
-
                     <button type="button">☷</button>
-
                     <button type="button">☰</button>
-
                     <span />
-
                     <button type="button">↗</button>
-
                     <button type="button">▧</button>
-
                     <button type="button">&lt;/&gt;</button>
                   </div>
 
@@ -1182,9 +1380,7 @@ function CreateAllQuestions() {
               </label>
             </section>
 
-            {/* =================================================
-              MCQ
-              ================================================= */}
+            {/* MCQ */}
             {isMcqType(selectedType) && (
               <section className="aq-card">
                 <div className="aq-section-heading">
@@ -1194,7 +1390,6 @@ function CreateAllQuestions() {
 
                   <div>
                     <h2>Answer options</h2>
-
                     <p>
                       {selectedType === "SINGLE_CHOICE"
                         ? "Choose one correct answer."
@@ -1259,11 +1454,9 @@ function CreateAllQuestions() {
               </section>
             )}
 
-            {/* =================================================
-              DRAG AND DROP
-              ================================================= */}
+            {/* DRAG AND DROP */}
             {selectedType === "DRAG_AND_DROP" && (
-              <section className="aq-card">
+              <section className="aq-card aq-ledger-card">
                 <div className="aq-section-heading">
                   <span className="aq-section-icon">
                     <FaListUl />
@@ -1271,7 +1464,6 @@ function CreateAllQuestions() {
 
                   <div>
                     <h2>Debit and credit attributes</h2>
-
                     <p>Build the pairs used by the drag-and-drop question.</p>
                   </div>
 
@@ -1375,9 +1567,7 @@ function CreateAllQuestions() {
               </section>
             )}
 
-            {/* =================================================
-              MATCHING
-              ================================================= */}
+            {/* MATCHING */}
             {isMatchingType(selectedType) && (
               <section className="aq-card">
                 <div className="aq-section-heading">
@@ -1387,7 +1577,6 @@ function CreateAllQuestions() {
 
                   <div>
                     <h2>Match the following</h2>
-
                     <p>Create the pairs that belong together.</p>
                   </div>
 
@@ -1466,9 +1655,7 @@ function CreateAllQuestions() {
               </section>
             )}
 
-            {/* =================================================
-              FILL BLANK
-              ================================================= */}
+            {/* FILL IN THE BLANK */}
             {isFillBlankType(selectedType) && (
               <section className="aq-card">
                 <div className="aq-section-heading">
@@ -1478,9 +1665,9 @@ function CreateAllQuestions() {
 
                   <div>
                     <h2>Blank answers</h2>
-
                     <p>
-                      Add accepted answers for each blank, separated by commas.
+                      Add the accepted answers for each blank and tick the
+                      correct ones.
                     </p>
                   </div>
 
@@ -1583,9 +1770,7 @@ function CreateAllQuestions() {
               </section>
             )}
 
-            {/* =================================================
-              GENERIC ATTRIBUTES
-              ================================================= */}
+            {/* GENERIC ATTRIBUTES (Journal, Dropdown, ...) */}
             {selectedType &&
               !isMcqType(selectedType) &&
               selectedType !== "DRAG_AND_DROP" &&
@@ -1599,7 +1784,6 @@ function CreateAllQuestions() {
 
                     <div>
                       <h2>Question attributes</h2>
-
                       <p>
                         Configure the transactions and amounts for this{" "}
                         {typeLabel(selectedType).toLowerCase()} question.
@@ -1695,18 +1879,14 @@ function CreateAllQuestions() {
                 </section>
               )}
 
-            {/* =================================================
-              FORM ERROR
-              ================================================= */}
+            {/* FORM ERROR */}
             {formError && (
               <div className="aq-form-error" role="alert">
                 {formError}
               </div>
             )}
 
-            {/* =================================================
-              BOTTOM ACTIONS
-              ================================================= */}
+            {/* BOTTOM ACTIONS */}
             <div className="aq-bottom-actions">
               <div className="aq-bottom-buttons">
                 <button
@@ -1719,7 +1899,6 @@ function CreateAllQuestions() {
 
                 <button type="submit" className="aq-primary">
                   <FaPlus />
-
                   {editingDraftId ? "Update preview" : "Save & Preview"}
                 </button>
               </div>
@@ -1727,193 +1906,44 @@ function CreateAllQuestions() {
           </form>
         ))}
 
+      {/* PREVIEW PAGE */}
       {activePage === "preview" && (
-        <section className="aq-preview" aria-label="Live question preview">
+        <section className="aq-preview" aria-label="Question preview">
           <div className="aq-preview-heading">
             <div>
               <span>LIVE PREVIEW</span>
-              <h2>How your question will appear in the exam.</h2>
+              <h2>How your questions will appear in the exam.</h2>
             </div>
           </div>
 
-          <div className="aq-live-card">
-            <div className="aq-live-meta">
-              <span>
-                {selectedType ? typeLabel(selectedType) : "Question Type"}
-              </span>
+          {message.text && (
+            <div className={`aq-message ${message.type}`}>{message.text}</div>
+          )}
 
-              {(isMcqType(selectedType) ||
-                isMatchingType(selectedType) ||
-                isFillBlankType(selectedType)) && (
-                <strong>
-                  {marks || 1} Mark
-                  {Number(marks) === 1 ? "" : "s"}
-                </strong>
-              )}
-            </div>
-
-            {questionText.trim() ||
-            mcqOptions.some((option) => option.optionText.trim()) ? (
-              <>
-                <div className="aq-live-question">
-                  <b>Q1.</b>
-
-                  <p>
-                    {questionText.trim() || "Your question will appear here."}
-                  </p>
-                </div>
-
-                {isMcqType(selectedType) && (
-                  <div className="aq-live-options">
-                    {mcqOptions.map((option) => (
-                      <div
-                        className={`aq-live-option ${
-                          option.isCorrect ? "correct" : ""
-                        }`}
-                        key={option.optionOrder}
-                      >
-                        <span className="aq-live-radio">
-                          {option.isCorrect ? "✓" : ""}
-                        </span>
-
-                        <b>{option.label}.</b>
-
-                        <span>
-                          {option.optionText || `Option ${option.label}`}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {isMcqType(selectedType) &&
-                  mcqOptions.some((option) => option.isCorrect) && (
-                    <div className="aq-correct-answer">
-                      <strong>●&nbsp; Correct Answer</strong>
-
-                      <span>
-                        {mcqOptions
-                          .filter((option) => option.isCorrect)
-                          .map((option) => `Option ${option.label}`)
-                          .join(", ")}
-                      </span>
-                    </div>
-                  )}
-
-                {isMatchingType(selectedType) && (
-                  <div className="aq-live-matching">
-                    {matchingPairs.map((pair, index) => (
-                      <div className="aq-live-match-row" key={index}>
-                        <span>{pair.columnA || `Column A ${index + 1}`}</span>
-                        <b>↔</b>
-                        <span>{pair.columnB || `Column B ${index + 1}`}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {isFillBlankType(selectedType) && (
-                  <div className="aq-live-fill">
-                    {blanks.map((blank, index) => {
-                      const answers = (blank.answerOptions ?? []).filter(
-                        (option) => option.value.trim(),
-                      );
-
-                      return (
-                        <div className="aq-live-fill-row" key={index}>
-                          <b>{blank.label}</b>
-                          <span>
-                            {answers.length
-                              ? answers.map((option) => option.value).join(", ")
-                              : "Accepted answers will appear here"}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {selectedType === "DRAG_AND_DROP" && (
-                  <div className="aq-live-fill">
-                    {ledgerRows.flatMap((row, index) => {
-                      const rows = [];
-
-                      if (row.debitAttributeId) {
-                        rows.push(
-                          <div
-                            className="aq-live-fill-row"
-                            key={`debit-${index}`}
-                          >
-                            <b>Debit</b>
-                            <span>
-                              {attributeLabel(row.debitAttributeId)}
-                              {row.debitAmount ? ` - ${row.debitAmount}` : ""}
-                            </span>
-                          </div>,
-                        );
-                      }
-
-                      if (row.creditAttributeId) {
-                        rows.push(
-                          <div
-                            className="aq-live-fill-row"
-                            key={`credit-${index}`}
-                          >
-                            <b>Credit</b>
-                            <span>
-                              {attributeLabel(row.creditAttributeId)}
-                              {row.creditAmount ? ` - ${row.creditAmount}` : ""}
-                            </span>
-                          </div>,
-                        );
-                      }
-
-                      return rows;
-                    })}
-                  </div>
-                )}
-
-                {selectedType &&
-                  !isMcqType(selectedType) &&
-                  selectedType !== "DRAG_AND_DROP" &&
-                  !isMatchingType(selectedType) &&
-                  !isFillBlankType(selectedType) && (
-                    <div className="aq-live-fill">
-                      {attributeRows
-                        .filter((row) => row.attributeId)
-                        .map((row, index) => (
-                          <div className="aq-live-fill-row" key={index}>
-                            <b>{attributeLabel(row.attributeId)}</b>
-                            <span>
-                              {row.amount || row.amount2
-                                ? [row.amount, row.amount2]
-                                    .filter(Boolean)
-                                    .join(" / ")
-                                : "Amount will appear here"}
-                            </span>
-                          </div>
-                        ))}
-                    </div>
-                  )}
-              </>
-            ) : (
-              <div className="aq-live-empty">
-                Your question preview will appear here.
-              </div>
-            )}
-          </div>
+          {drafts.length === 0 ? (
+            <div className="aq-live-empty">No questions added yet.</div>
+          ) : (
+            drafts.map((draft, index) => (
+              <QuestionPreviewCard
+                key={draft.id}
+                index={index}
+                draft={draft}
+                attributeLabel={attributeLabel}
+                disabled={submitting}
+                onEdit={() => editDraft(draft)}
+                onRemove={() => removeDraft(draft.id)}
+              />
+            ))
+          )}
 
           <div className="aq-preview-actions">
             <button
               type="button"
               className="aq-clear"
-              onClick={() => {
-                setActivePage("details");
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
+              onClick={addAnother}
               disabled={submitting}
             >
-              Back to Edit
+              <FaPlus /> Add another question
             </button>
 
             <button
@@ -1923,7 +1953,9 @@ function CreateAllQuestions() {
               onClick={submitDrafts}
             >
               <FaSave />
-              {submitting ? "Saving…" : "Save Question"}
+              {submitting
+                ? "Saving…"
+                : `Save ${drafts.length} Question${drafts.length === 1 ? "" : "s"}`}
             </button>
           </div>
         </section>
