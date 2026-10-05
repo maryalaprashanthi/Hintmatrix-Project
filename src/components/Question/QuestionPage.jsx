@@ -393,7 +393,9 @@ const QuestionPage = () => {
 
   const loadAnsweredQuestions = async () => {
     const correctAnswers =
-      await QuestionAnswerService.getAnswersByQuestionId(questionId);
+      await QuestionAnswerService.getAnswersByUserAndQuestion(
+        getCurrentUserId(), questionId,
+      );
     console.log("92iowerj20 Correct answers: ", correctAnswers);
     console.log("Completed data ", correctAnswers);
 

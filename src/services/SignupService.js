@@ -1,7 +1,7 @@
 import apiClient from "./apiClient";
 
 const BASE_URL = "/api/users/guest";
-const GOOGLE_REGISTER_URL = "http://localhost:8080/api/auth/google";
+const GOOGLE_REGISTER_URL = "/api/auth/google";
 
 class SignupService {
   register(signupData) {

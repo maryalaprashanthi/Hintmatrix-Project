@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import LoginService from "../../services/LoginService";
+import { backendUrl } from "../../config/backend";
 import "./Login.css";
 
 function Login() {
   const navigate = useNavigate();
 
   const googleLogin = () => {
-    window.location.href = "http://localhost:8080/oauth2/authorization/google";
+    window.location.href = backendUrl("/oauth2/authorization/google");
   };
 
   useEffect(() => {
@@ -39,7 +40,6 @@ function Login() {
 
       const response = await LoginService.login(loginData);
 
-      console.log("Login response:", response.data);
 
       // Save JWT
       localStorage.setItem("token", response.data.token);
@@ -55,8 +55,7 @@ function Login() {
       navigate(
         response.data.role === "GUEST" ? "/course-subscribe" : "/dashboard",
       );
-    } catch (error) {
-      console.error("Login failed:", error);
+    } catch {
 
       setError("Invalid email or password.");
     }

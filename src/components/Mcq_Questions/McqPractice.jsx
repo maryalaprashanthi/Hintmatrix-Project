@@ -181,10 +181,6 @@ function McqPractice() {
             userId,
             question.questionId,
           ),
-          QuestionAnswerService.resetAnswerEventsByUserAndQuestion(
-            userId,
-            question.questionId,
-          ),
         ]),
       );
       setAnswers({});

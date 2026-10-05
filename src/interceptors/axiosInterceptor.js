@@ -1,7 +1,9 @@
 ﻿import axios from "axios";
 
+import { BACKEND_BASE_URL, backendUrl } from "../config/backend";
+
 const apiClient = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: BACKEND_BASE_URL,
   withCredentials: true,
 });
 
@@ -23,7 +25,7 @@ export const logoutUser = (navigateFn) => {
   const sessionKey = localStorage.getItem("activitySessionKey");
 
   if (token && sessionKey) {
-    fetch("http://localhost:8080/api/activity-sessions/close", {
+    fetch(backendUrl("/api/activity-sessions/close"), {
       method: "POST",
       keepalive: true,
       headers: {
