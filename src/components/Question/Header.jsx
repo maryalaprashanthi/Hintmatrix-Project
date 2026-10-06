@@ -6,9 +6,7 @@ import {
 } from "react-icons/fa";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import useQuestionStore from "./questionStore";
-import QuestionService from "../../services/QuestionService";
-import { data } from "./SampleData";
-import { useParams } from "react-router-dom";
+import { useState } from "react";
 import { getCurrentUserId } from "../../utils/user";
 
 function Header({
@@ -21,10 +19,9 @@ function Header({
 }) {
   const {
     question: storeQuestion,
-    setQuestions,
-    setTableData,
+    resetFrontend,
   } = useQuestionStore();
-  const { questionId } = useParams();
+  const [isResetting, setIsResetting] = useState(false);
 
   const question = propQuestion || storeQuestion;
 
@@ -86,32 +83,23 @@ function Header({
     }
   };
 
-  const loadQuestions = async () => {
-    try {
-      const response = await QuestionService.getQuestionById(questionId);
-
-      let allStrings = data.flatMap((obj) =>
-        obj.headers.map((header) => `${obj.name}-${header}`),
-      );
-      // console.log("All strings are ", allStrings);
-      setQuestions([response.data]);
-      setTableData(allStrings);
-    } catch (error) {
-      console.error("Failed to load question:", error);
-    }
-  };
-
   const handleReset = async () => {
+    if (isResetting) return;
+    setIsResetting(true);
     try {
       console.log("========== RESET QUESTION ==========");
 
-      if (!question) {
+      if (!question?.questionId) {
         console.log("Question is not loaded.");
         return;
       }
 
       const userId = getCurrentUserId();
       const questionId = question.questionId;
+      if (!userId) {
+        alert("Please sign in before resetting your answers.");
+        return;
+      }
 
       console.log("User ID:", userId);
       console.log("Question ID:", questionId);
@@ -125,26 +113,13 @@ function Header({
 
       console.log("QUESTION ANSWER RESET RESPONSE:", questionAnswerResult);
 
-      // 2. Reset AnswerEvents/history for current cycle
-      const answerEventResult =
-        await QuestionAnswerService.resetAnswerEventsByUserAndQuestion(
-          userId,
-          questionId,
-        );
-
-      console.log("ANSWER EVENT RESET RESPONSE:", answerEventResult);
-
-      // 3. Clear current frontend answers
+      // Clear only current answers after the backend reset succeeds.
       if (setAnsweredData) {
         setAnsweredData({});
-        // loadQuestions(); // Reload questions after reset
+      } else {
+        resetFrontend();
       }
-      useQuestionStore.setState({
-        questions: [],
-        droppableData: {},
-      });
-
-      await loadQuestions();
+      setCheckMistakes?.(false);
 
       console.log("Frontend answered data cleared.");
     } catch (error) {
@@ -153,6 +128,9 @@ function Header({
       if (error.response) {
         console.error("Backend response:", error.response.data);
       }
+      alert("Unable to reset your answers. Please try again.");
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -189,6 +167,7 @@ function Header({
                   height: "35px",
                 }}
                 onClick={handleReset}
+                disabled={isResetting}
               >
                 <FaRedo className="me-1" />
                 Reset

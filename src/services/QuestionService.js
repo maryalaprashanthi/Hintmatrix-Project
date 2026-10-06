@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const BASE_URL = "/api/questions";
-const BASE_QUESTION_URL = "http://localhost:8080/api/questions";
+const BASE_QUESTION_URL = BASE_URL;
 
 class QuestionService {
   getAll() {
@@ -77,7 +77,7 @@ class QuestionService {
 
   uploadMcqExcel(formData) {
     return apiClient.post(
-      "http://localhost:8080/api/mcq-questions/mcq/upload",
+      "/api/mcq-questions/mcq/upload",
       formData,
       {
         withCredentials: true,

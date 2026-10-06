@@ -61,6 +61,8 @@ export default function Draggable({
   useEffect(() => {
     if (status === "wrong") {
       setShowActions(true);
+    } else if (status === "pending" && wrongAttempts === 0) {
+      setShowActions(false);
     }
   }, [status, wrongAttempts]);
 

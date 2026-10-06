@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
+import { getCurrentUserId } from "../../utils/user";
 
 const useQuestionStore = create((set, get) => ({
   questions: [],
@@ -50,7 +51,7 @@ const useQuestionStore = create((set, get) => ({
         });
       }
     });
-    const currentScore = await QuestionAnswerService.getOverallMarks(1);
+    const currentScore = await QuestionAnswerService.getOverallMarks(getCurrentUserId());
     set({
       questions: formattedQuestions,
       question: currentQuestion,
@@ -72,8 +73,20 @@ const useQuestionStore = create((set, get) => ({
       };
     }),
 
-  resetFrontend: (obj) => {
-    set({ questions: [], droppableData: {} });
+  resetFrontend: () => {
+    set((state) => ({
+      questions: state.questions.map((question) => ({
+        ...question,
+        status: "pending",
+        answered: [],
+        wrongAttempts: 0,
+        usedHint: false,
+        attemptingId: question.actualAnswers?.[0]?.conditionId ?? 1,
+      })),
+      droppableData: Object.fromEntries(
+        Object.keys(state.droppableData).map((key) => [key, []]),
+      ),
+    }));
   },
 
   setHintUsed: (id) =>

@@ -9,13 +9,9 @@
 
   width: 100%;
   min-height: 100%;
-
   padding: 22px 28px 28px;
-
   box-sizing: border-box;
-
   display: block;
-
   background: var(--aq-bg);
 }
 
@@ -25,18 +21,14 @@
 
 .aq-header {
   grid-column: 1 / -1;
-
   width: 100%;
   min-width: 0;
-
   box-sizing: border-box;
 }
 
 .aq-header-left {
   width: 100%;
-
   min-width: 0;
-
   box-sizing: border-box;
 }
 
@@ -47,38 +39,30 @@
 .aq-title-row {
   width: 100%;
   min-width: 0;
-
   display: flex;
   align-items: center;
   justify-content: flex-start;
   flex-wrap: wrap;
-
   gap: 18px;
 }
 
 .aq-title-content {
   min-width: 0;
-
   flex: 0 1 auto;
 }
 
 .aq-title-row h1 {
   margin: 0 0 5px;
-
   color: #12213d;
-
   font-size: 30px;
   line-height: 1.15;
   font-weight: 700;
-
   letter-spacing: -0.4px;
 }
 
 .aq-title-row p {
   margin: 0;
-
   color: #718096;
-
   font-size: 15px;
   line-height: 1.5;
 }
@@ -90,11 +74,8 @@
 .aq-stepper {
   display: flex;
   align-items: center;
-
   gap: 9px;
-
   flex-shrink: 0;
-
   padding: 0;
   margin: 0;
 }
@@ -127,20 +108,14 @@
 .aq-step b {
   width: 34px;
   height: 34px;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   box-sizing: border-box;
-
   border: 1px solid #d7dfed;
   border-radius: 50%;
-
   background: #fff;
-
   color: #718096;
-
   font-size: 13px;
   font-weight: 700;
 }
@@ -157,12 +132,9 @@
 
 .aq-stepper > i {
   display: block;
-
   width: 18px;
   height: 1px;
-
   flex-shrink: 0;
-
   background: #dfe5ef;
 }
 
@@ -188,11 +160,8 @@
 .all-question-create > form {
   width: 100%;
   min-width: 0;
-
   height: auto;
-
   overflow: visible;
-
   box-sizing: border-box;
 }
 
@@ -202,15 +171,10 @@
 
 .aq-message {
   width: 100%;
-
   box-sizing: border-box;
-
   padding: 12px 15px;
-
   margin: 0 0 14px;
-
   border-radius: 10px;
-
   font-size: 13px;
   font-weight: 600;
 }
@@ -232,33 +196,22 @@
 .aq-state {
   grid-column: 1 / -1;
   grid-row: 2;
-
   width: 100%;
-
   box-sizing: border-box;
-
   padding: 44px;
-
   text-align: center;
-
   color: var(--aq-muted);
-
   border: 1px dashed var(--aq-line);
   border-radius: 14px;
-
   background: #fff;
 }
 
 .aq-empty {
   padding: 44px;
-
   text-align: center;
-
   color: var(--aq-muted);
-
   border: 1px dashed var(--aq-line);
   border-radius: 14px;
-
   background: #fff;
 }
 
@@ -269,17 +222,12 @@
 .aq-card {
   width: 100%;
   min-width: 0;
-
   margin: 0 0 18px;
   padding: 22px;
-
   box-sizing: border-box;
-
   border: 1px solid var(--aq-line);
   border-radius: 16px;
-
   background: #fff;
-
   box-shadow: 0 8px 24px rgba(26, 39, 71, 0.06);
 }
 
@@ -290,27 +238,19 @@
 .aq-section-heading {
   display: flex;
   align-items: center;
-
   gap: 14px;
-
   margin-bottom: 20px;
 }
 
 .aq-section-heading > span {
   width: 38px;
   height: 38px;
-
   display: grid;
   place-items: center;
-
   flex-shrink: 0;
-
   border-radius: 10px;
-
   background: #eaf0ff;
-
   color: var(--aq-blue);
-
   font-weight: 800;
 }
 
@@ -321,9 +261,7 @@
 
 .aq-section-heading h2 {
   margin: 0 0 3px;
-
   color: var(--aq-ink);
-
   font-size: 20px;
   line-height: 1.25;
 }
@@ -338,9 +276,7 @@
 
 .aq-grid {
   display: grid;
-
   gap: 16px;
-
   min-width: 0;
 }
 
@@ -354,27 +290,17 @@
 
 .all-question-create label {
   display: grid;
-
   gap: 7px;
-
   min-width: 0;
-
   color: #39445a;
-
   font-size: 13px;
   font-weight: 700;
 }
 
-/*
-   Supports the required-label class used by the JSX.
-*/
-
 .aq-required-label,
 .aq-field-label {
   display: block;
-
   color: #39445a;
-
   font-size: 13px;
   line-height: 1.2;
   font-weight: 700;
@@ -383,9 +309,7 @@
 .aq-required-label em,
 .aq-field-label em {
   color: #d93036 !important;
-
   font-style: normal;
-
   font-weight: 800;
 }
 
@@ -396,27 +320,19 @@
 .all-question-create input:not(.aq-select__input),
 .all-question-create textarea {
   width: 100%;
-
   box-sizing: border-box;
-
   border: 1px solid #ccd4e0;
   border-radius: 9px;
-
   background: #fff;
-
   color: var(--aq-ink);
-
   padding: 11px 12px;
-
   outline: none;
-
   font-family: inherit;
 }
 
 .all-question-create input:not(.aq-select__input):focus,
 .all-question-create textarea:focus {
   border-color: var(--aq-blue);
-
   box-shadow: 0 0 0 3px rgba(36, 87, 230, 0.1);
 }
 
@@ -427,19 +343,15 @@
 .aq-search-select {
   width: 100%;
   min-width: 0;
-
   font-size: 14px;
   font-weight: 500;
 }
 
 .aq-select__control {
   min-height: 43px !important;
-
   border: 1px solid #ccd4e0 !important;
   border-radius: 9px !important;
-
   box-shadow: none !important;
-
   background: #fff !important;
 }
 
@@ -452,15 +364,9 @@
   box-shadow: 0 0 0 3px rgba(36, 87, 230, 0.1) !important;
 }
 
-/*
-   IMPORTANT:
-   Subject / Chapter / Topic should NOT have
-   a gray background even when disabled.
-*/
-
+/* Subject / Chapter / Topic should NOT have a gray background when disabled. */
 .aq-select__control--is-disabled {
   background: #fff !important;
-
   opacity: 1 !important;
 }
 
@@ -492,7 +398,6 @@
 
 .aq-select__menu {
   z-index: 50;
-
   font-weight: 500;
 }
 
@@ -506,7 +411,6 @@
 
 .aq-select__option--is-selected {
   background: var(--aq-blue) !important;
-
   color: #fff !important;
 }
 
@@ -520,19 +424,14 @@
 
 .aq-question-text textarea {
   min-height: 108px;
-
   resize: vertical;
-
   border-top: 0 !important;
-
   border-radius: 0 0 9px 9px !important;
 }
 
 .aq-question-text small {
   justify-self: end;
-
   color: var(--aq-muted);
-
   font-weight: 500;
 }
 
@@ -542,46 +441,32 @@
 
 .aq-editor {
   overflow: hidden;
-
   border: 1px solid #ccd4e0;
-
   border-radius: 9px;
-
   background: #fff;
 }
 
 .aq-editor:focus-within {
   border-color: var(--aq-blue);
-
   box-shadow: 0 0 0 3px rgba(36, 87, 230, 0.1);
 }
 
 .aq-editor-toolbar {
   min-height: 36px;
-
   display: flex;
   align-items: center;
-
   gap: 12px;
-
   padding: 0 12px;
-
   border-bottom: 1px solid #e2e7ef;
-
   background: #f8fafc;
 }
 
 .aq-editor-toolbar button {
   border: 0;
-
   background: transparent;
-
   color: #526078;
-
   padding: 4px;
-
   cursor: pointer;
-
   font-weight: 700;
 }
 
@@ -592,7 +477,6 @@
 .aq-editor-toolbar span {
   width: 1px;
   height: 18px;
-
   background: #dbe1ea;
 }
 
@@ -614,28 +498,19 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   gap: 7px;
-
   border-radius: 9px;
-
   cursor: pointer;
-
   font-family: inherit;
   font-weight: 700;
 }
 
-/* =========================================================
-   SECONDARY
-========================================================= */
+/* SECONDARY */
 
 .aq-secondary {
   padding: 9px 13px;
-
   border: 1px solid #b9c9f8;
-
   background: #eef3ff;
-
   color: var(--aq-blue);
 }
 
@@ -643,61 +518,45 @@
   background: #dfe8ff;
 }
 
-/* =========================================================
-   FORM ERROR
-========================================================= */
+/* FORM ERROR */
 
 .aq-form-error {
   margin: 18px 0 0;
-
   padding: 12px 14px;
-
   border: 1px solid #f3c2c5;
   border-radius: 10px;
-
   background: #fff0f0;
-
   color: #ad2f35;
-
   font-weight: 600;
 }
 
-/* =========================================================
-   PRIMARY / CLEAR BUTTONS
-========================================================= */
+/* PRIMARY / CLEAR */
 
 .aq-primary,
 .aq-clear {
   padding: 12px 18px;
-
   border: 1px solid transparent;
 }
 
 .aq-primary {
   border-color: var(--aq-blue);
-
   background: var(--aq-blue);
-
   color: #fff;
 }
 
 .aq-primary:hover:not(:disabled) {
   border-color: #1945bd;
-
   background: #1945bd;
 }
 
 .aq-primary:disabled {
   opacity: 0.55;
-
   cursor: not-allowed;
 }
 
 .aq-clear {
   border-color: #d5dbe5;
-
   background: #edf0f4;
-
   color: #4e596d;
 }
 
@@ -711,52 +570,38 @@
 
 .aq-option-list {
   display: grid;
-
   gap: 10px;
 }
 
 .aq-option {
   display: grid;
-
   grid-template-columns: 42px minmax(0, 1fr) 30px 40px;
-
   gap: 10px;
-
   align-items: center;
-
   padding: 9px;
-
   box-sizing: border-box;
-
   border: 1px solid var(--aq-line);
   border-radius: 11px;
-
   background: #fff;
 }
 
 .aq-option.correct {
   border-color: #54b47b;
-
   background: #f2fbf6;
 }
 
 .aq-option > b {
   width: 34px;
   height: 34px;
-
   display: grid;
   place-items: center;
-
   border-radius: 8px;
-
   background: #edf1f7;
-
   color: #46546d;
 }
 
 .aq-option.correct > b {
   background: #dff6e9;
-
   color: #15966a;
 }
 
@@ -764,11 +609,8 @@
 .aq-option input[type="checkbox"] {
   width: 18px !important;
   height: 18px;
-
   padding: 0 !important;
-
   margin: 0;
-
   accent-color: var(--aq-blue);
 }
 
@@ -776,13 +618,9 @@
 .aq-table-wrap button {
   width: 34px;
   height: 34px;
-
   padding: 0;
-
   border: 0;
-
   background: #fff0f0;
-
   color: #b83b43;
 }
 
@@ -794,62 +632,40 @@
 .aq-option button:disabled,
 .aq-table-wrap button:disabled {
   opacity: 0.4;
-
   cursor: not-allowed;
 }
 
 /* =========================================================
-   TABLES
+   FORM TABLES
 ========================================================= */
 
 .aq-table-wrap {
   width: 100%;
-
   overflow-x: auto;
 }
 
 .aq-table-wrap table {
   width: 100%;
-
   table-layout: fixed;
-
   border-collapse: collapse;
 }
 
 .aq-table-wrap th {
   padding: 10px;
-
   background: #f5f7fa;
-
   color: #606b7f;
-
   font-size: 12px;
-
   text-align: left;
 }
 
 .aq-table-wrap td {
   padding: 9px;
-
   border-bottom: 1px solid var(--aq-line);
-
   min-width: 0;
 }
 
-/* FIX (table column width): with table-layout: fixed, unspecified
-   columns were sizing off the first row's rendered content instead of
-   filling the row, leaving a gap before the delete icon.
-
-   This rule works for ANY number of columns (3-column "Transaction /
-   Amount 1 / Amount 2" tables, 4-column "Debit / Debit amount / Credit /
-   Credit amount" tables, etc.):
-   - first column (the search/select field) gets more width, since it
-     holds the longest content
-   - last column stays fixed at 46px for the delete icon
-   - any middle column(s) are left unset — under table-layout: fixed,
-     browsers automatically split remaining space evenly across columns
-     with no explicit width, so this adapts to 1, 2, or more middle
-     columns without needing separate rules per table shape */
+/* First column (select field) gets more room, last column (delete icon)
+   stays 46px, middle columns share the remaining space evenly. */
 .aq-table-wrap th:first-child,
 .aq-table-wrap td:first-child {
   width: 46%;
@@ -860,43 +676,40 @@
   width: 46px;
 }
 
+.aq-ledger-card .aq-table-wrap th:nth-child(1),
+.aq-ledger-card .aq-table-wrap td:nth-child(1),
+.aq-ledger-card .aq-table-wrap th:nth-child(3),
+.aq-ledger-card .aq-table-wrap td:nth-child(3) {
+  width: 33%;
+}
+
+.aq-ledger-card .aq-table-wrap th:nth-child(2),
+.aq-ledger-card .aq-table-wrap td:nth-child(2),
+.aq-ledger-card .aq-table-wrap th:nth-child(4),
+.aq-ledger-card .aq-table-wrap td:nth-child(4) {
+  width: 16%;
+}
+
 /* =========================================================
-   FILL IN THE BLANKS
+   FILL IN THE BLANKS (form)
 ========================================================= */
 
 .aq-fill-blank-list {
   display: grid;
-
   gap: 10px;
 }
 
 .aq-fill-blank-row {
   display: grid;
-
-  /* FIX: the JSX renders exactly 2 direct children into this row —
-     the <b> blank label and the .aq-fill-blank-options wrapper (which
-     itself holds every accepted-answer row: input, correct-checkbox,
-     delete button, plus the "Add option" link). The old definition was
-     a 3-column grid (90px / 1fr / 34px) expecting a delete button as a
-     third direct child that never existed here, and it never styled
-     .aq-fill-blank-options or .aq-fill-blank-option at all — so those
-     inner pieces fell back to default block stacking instead of
-     sitting in a row, which is why the input, checkbox and trash icon
-     were rendering stacked vertically. */
   grid-template-columns: 90px minmax(0, 1fr);
-
   gap: 10px;
-
   align-items: start;
 }
 
-/* Wraps the "Blank N" label together with its remove-blank button */
 .aq-fill-blank-label {
   display: flex;
   align-items: center;
-
   gap: 8px;
-
   padding-top: 10px;
 }
 
@@ -907,86 +720,61 @@
 .aq-fill-blank-remove {
   width: 26px;
   height: 26px;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   flex-shrink: 0;
-
   padding: 0;
-
   border: 0;
   border-radius: 7px;
-
   background: transparent;
-
   color: #d9797a;
-
   cursor: pointer;
 }
 
 .aq-fill-blank-remove:hover:not(:disabled) {
   background: #fff0f0;
-
   color: #b83b43;
 }
 
 .aq-fill-blank-remove:disabled {
   opacity: 0.35;
-
   cursor: not-allowed;
 }
 
-/* Holds every accepted-answer row for one blank, plus "Add option" */
 .aq-fill-blank-options {
   display: grid;
-
   gap: 10px;
-
   min-width: 0;
 }
 
-/* One accepted-answer row: input, correct-checkbox, delete button */
 .aq-fill-blank-option {
   display: grid;
-
   grid-template-columns: minmax(0, 1fr) 30px 34px;
-
   gap: 10px;
-
   align-items: center;
 }
 
 .aq-fill-blank-option input[type="checkbox"] {
   width: 18px !important;
   height: 18px;
-
   padding: 0 !important;
   margin: 0;
-
   accent-color: var(--aq-blue);
-
   justify-self: center;
 }
 
 .aq-fill-blank-option button {
   width: 34px;
   height: 34px;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   padding: 0;
-
   border: 0;
   border-radius: 9px;
-
   background: #fff0f0;
-
   color: #b83b43;
-
   cursor: pointer;
 }
 
@@ -996,7 +784,6 @@
 
 .aq-fill-blank-option button:disabled {
   opacity: 0.4;
-
   cursor: not-allowed;
 }
 
@@ -1005,37 +792,30 @@
 }
 
 /* =========================================================
-   LIVE PREVIEW
+   PREVIEW PAGE
 ========================================================= */
 
 .aq-preview {
   width: 100%;
   min-width: 0;
-
   margin: 0;
   padding: 24px;
-
   box-sizing: border-box;
-
   border: 1px solid var(--aq-line);
   border-radius: 16px;
-
   background: #f8faff;
-
   box-shadow: 0 8px 24px rgba(26, 39, 71, 0.06);
 }
 
-/* =========================================================
-   PREVIEW HEADING
-========================================================= */
+.aq-preview .aq-message {
+  margin-bottom: 16px;
+}
 
 .aq-preview-heading {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-
   gap: 10px;
-
   margin-bottom: 14px;
 }
 
@@ -1045,173 +825,150 @@
 
 .aq-preview-heading span {
   color: var(--aq-blue);
-
   font-size: 11px;
-
   font-weight: 800;
-
   letter-spacing: 0.12em;
 }
 
 .aq-preview-heading h2 {
   margin: 3px 0 0;
-
   color: var(--aq-ink);
-
   font-size: 18px;
 }
 
+.aq-live-empty {
+  min-height: 150px;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  box-sizing: border-box;
+  text-align: center;
+  color: var(--aq-muted);
+  border: 1px dashed #d7dfeb;
+  border-radius: 9px;
+}
+
 /* =========================================================
-   LIVE PREVIEW CARD
+   PREVIEW - QUESTION CARD
 ========================================================= */
 
 .aq-live-card {
   width: 100%;
-
   box-sizing: border-box;
-
-  padding: 14px;
-
+  padding: 18px 20px;
   border: 1px solid #e1e7f0;
-  border-radius: 10px;
-
+  border-radius: 12px;
   background: #fff;
-
   box-shadow: 0 5px 18px rgba(26, 39, 71, 0.05);
+}
+
+.aq-live-card + .aq-live-card {
+  margin-top: 16px;
 }
 
 .aq-live-meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   gap: 8px;
-
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .aq-live-meta > span {
   padding: 6px 9px;
-
   border-radius: 8px;
-
   background: #eef3ff;
-
   color: var(--aq-blue);
-
   font-size: 12px;
-
   font-weight: 700;
 }
 
 .aq-live-meta > strong {
   padding: 6px 9px;
-
   border-radius: 999px;
-
   background: #eef3ff;
-
   color: var(--aq-blue);
-
   font-size: 12px;
-
   white-space: nowrap;
+}
+
+/* hierarchy breadcrumb */
+.aq-live-path {
+  margin: 0 0 14px;
+  color: var(--aq-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  word-break: break-word;
 }
 
 .aq-live-question {
   display: flex;
-
   gap: 9px;
-
   margin-bottom: 13px;
-
   color: var(--aq-ink);
-
+  font-size: 15px;
+  font-weight: 500;
   line-height: 1.5;
 }
 
 .aq-live-question b {
   flex-shrink: 0;
-
-  color: #36598f;
+  color: var(--aq-blue);
 }
 
 .aq-live-question p {
   margin: 0;
 }
 
-/* =========================================================
-   LIVE OPTIONS
-========================================================= */
+/* ---------- MCQ options ---------- */
 
 .aq-live-options {
   display: grid;
-
   gap: 8px;
 }
 
 .aq-live-option {
   display: grid;
-
   grid-template-columns: 18px 22px minmax(0, 1fr);
-
   gap: 7px;
-
   align-items: center;
-
   min-height: 36px;
-
   padding: 7px 9px;
-
   box-sizing: border-box;
-
   border: 1px solid #e1e6ee;
   border-radius: 8px;
-
   background: #fff;
 }
 
 .aq-live-option.correct {
   border-color: #8bd8b0;
-
   background: #eefbf5;
 }
 
 .aq-live-radio {
   width: 14px;
   height: 14px;
-
   display: grid;
   place-items: center;
-
   box-sizing: border-box;
-
   border: 2px solid #c8d1df;
   border-radius: 50%;
-
   color: #fff;
-
   font-size: 9px;
 }
 
 .aq-live-option.correct .aq-live-radio {
   border-color: #15966a;
-
   background: #15966a;
 }
 
 .aq-correct-answer {
   display: grid;
-
   gap: 5px;
-
   margin-top: 14px;
-
   padding: 10px;
-
   border: 1px solid #cfe8ef;
   border-radius: 8px;
-
   background: #f2fbfd;
 }
 
@@ -1221,31 +978,140 @@
 
 .aq-correct-answer span {
   color: #15966a;
-
   font-weight: 700;
 }
 
-.aq-live-empty {
-  min-height: 150px;
+/* ---------- tables (journal, dropdown, drag & drop, matching) ---------- */
 
-  display: grid;
-  place-items: center;
-
-  padding: 16px;
-
-  box-sizing: border-box;
-
-  text-align: center;
-
-  color: var(--aq-muted);
-
-  border: 1px dashed #d7dfeb;
-  border-radius: 9px;
+.aq-live-table-wrap {
+  margin-top: 14px;
+  overflow-x: auto;
+  border: 1px solid var(--aq-line);
+  border-radius: 10px;
+  background: #fff;
 }
+
+.aq-live-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  color: var(--aq-ink);
+}
+
+.aq-live-table th,
+.aq-live-table td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--aq-line);
+  vertical-align: middle;
+}
+
+.aq-live-table th {
+  background: #f5f7fa;
+  color: #606b7f;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.aq-live-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.aq-live-table tbody tr:hover td {
+  background: var(--aq-bg);
+}
+
+.aq-live-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---------- fill in the blanks ---------- */
+
+.aq-live-blanks {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.aq-live-blank {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 9px 10px;
+  border: 1px solid #e1e6ee;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.aq-live-blank > b {
+  color: #526078;
+  font-size: 13px;
+}
+
+.aq-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.aq-chip {
+  padding: 4px 11px;
+  border: 1px solid var(--aq-line);
+  border-radius: 999px;
+  background: var(--aq-bg);
+  color: #526078;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.aq-chip.correct {
+  border-color: #8bd8b0;
+  background: #eefbf5;
+  color: #15966a;
+}
+
+/* ---------- card actions ---------- */
+
+.aq-live-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--aq-line);
+}
+
+.aq-live-actions .aq-clear {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.aq-live-actions .aq-clear:last-child {
+  color: #b83b43;
+  background: #fff0f0;
+  border-color: #f3c2c5;
+}
+
+.aq-live-actions .aq-clear:last-child:hover:not(:disabled) {
+  background: #ffe1e3;
+}
+
+.aq-live-actions .aq-clear:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- preview footer ---------- */
 
 .aq-preview-actions {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 10px;
   margin-top: 18px;
 }
@@ -1255,54 +1121,36 @@
 }
 
 .aq-preview-actions .aq-clear {
-  min-width: 120px;
+  background: #fff;
+  min-width: 0;
 }
 
 /* =========================================================
-   BOTTOM ACTIONS
+   BOTTOM ACTIONS (details page)
 ========================================================= */
 
 .aq-bottom-actions {
-  /* FIX (footer overlap): was position: sticky; bottom: 0; z-index: 20;
-     Sticky elements float over the viewport and don't reserve space in
-     normal flow, which is what caused the overlap regardless of the
-     surrounding markup. Static positioning makes overlap impossible —
-     the bar simply flows after the last card, like any other block. */
+  /* static (not sticky) so it can never overlap the last card */
   position: static;
-
   width: 100%;
   min-width: 0;
-
   display: flex;
   align-items: center;
   justify-content: flex-end;
-
   margin-top: 20px;
-
   padding: 14px 16px;
-
   box-sizing: border-box;
-
   border: 1px solid var(--aq-line);
   border-radius: 12px;
-
   background: #fff;
-
   box-shadow: 0 8px 24px rgba(26, 39, 71, 0.05);
 }
-
-/* =========================================================
-   BOTTOM BUTTONS
-========================================================= */
 
 .aq-bottom-buttons {
   display: flex;
   align-items: center;
-
   gap: 10px;
-
   flex-shrink: 0;
-
   flex-wrap: wrap;
 }
 
@@ -1310,59 +1158,28 @@
   background: #fff;
 }
 
-.aq-bottom-buttons .aq-save-question {
-  min-width: 150px;
-  color: #fff !important;
-  background: var(--aq-blue) !important;
-  border-color: var(--aq-blue) !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-.aq-bottom-buttons .aq-save-question:hover:not(:disabled) {
-  color: #fff !important;
-  background: #1945bd !important;
-  border-color: #1945bd !important;
-}
-
 /* =========================================================
-   MATCHING / FILL PREVIEW
+   PAGE SCOPED BUTTON COLORS
 ========================================================= */
 
-.aq-live-matching,
-.aq-live-fill {
-  display: grid;
-  gap: 8px;
+.all-question-create .aq-primary {
+  background: var(--aq-blue);
+  border-color: var(--aq-blue);
+  color: #fff;
+  opacity: 1;
+  visibility: visible;
 }
 
-.aq-live-match-row,
-.aq-live-fill-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr);
-  gap: 8px;
-  align-items: center;
-  padding: 9px;
-  border: 1px solid #e1e6ee;
-  border-radius: 8px;
-  background: #fff;
+.all-question-create .aq-primary:hover:not(:disabled) {
+  background: #1945bd;
+  border-color: #1945bd;
 }
 
-.aq-live-match-row b {
-  text-align: center;
-  color: var(--aq-blue);
-}
-
-.aq-live-fill-row {
-  grid-template-columns: 90px minmax(0, 1fr);
-}
-
-.aq-live-fill-row span {
-  min-width: 0;
-  padding: 7px 9px;
-  border: 1px dashed #cbd5e1;
-  border-radius: 7px;
-  color: #526078;
-  background: #f8fafc;
+.all-question-create .aq-primary:disabled {
+  background: var(--aq-blue);
+  border-color: var(--aq-blue);
+  color: #fff;
+  opacity: 0.55;
 }
 
 /* =========================================================
@@ -1370,25 +1187,6 @@
 ========================================================= */
 
 @media (max-width: 1100px) {
-  .all-question-create {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .aq-header {
-    grid-column: 1;
-  }
-
-  .all-question-create > form {
-    grid-column: 1;
-    grid-row: 2;
-  }
-
-  .aq-preview {
-    grid-column: 1;
-    grid-row: 3;
-    position: static;
-  }
-
   .aq-title-row {
     align-items: center;
   }
@@ -1401,7 +1199,6 @@
 @media (max-width: 760px) {
   .all-question-create {
     padding: 16px;
-    row-gap: 12px;
   }
 
   .aq-card {
@@ -1442,12 +1239,20 @@
     grid-template-columns: 1fr;
   }
 
-  .aq-live-match-row {
+  .aq-preview {
+    padding: 16px;
+  }
+
+  .aq-live-blank {
     grid-template-columns: 1fr;
   }
 
-  .aq-live-match-row b {
-    transform: rotate(90deg);
+  .aq-preview-actions {
+    flex-direction: column-reverse;
+  }
+
+  .aq-preview-actions button {
+    width: 100%;
   }
 }
 
@@ -1497,27 +1302,4 @@
   .aq-table-wrap {
     margin-right: -2px;
   }
-}
-
-/* =========================================================
-   CREATE QUESTION ACTION BUTTONS — PAGE SCOPED
-========================================================= */
-.all-question-create .aq-primary {
-  background: var(--aq-blue);
-  border-color: var(--aq-blue);
-  color: #fff;
-  opacity: 1;
-  visibility: visible;
-}
-
-.all-question-create .aq-primary:hover:not(:disabled) {
-  background: #1945bd;
-  border-color: #1945bd;
-}
-
-.all-question-create .aq-primary:disabled {
-  background: var(--aq-blue);
-  border-color: var(--aq-blue);
-  color: #fff;
-  opacity: 0.55;
 }
