@@ -1,8 +1,12 @@
+/* eslint-disable react/prop-types */
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
+  FaBookOpen,
   FaCheck,
   FaChartLine,
   FaClipboardList,
+  FaExternalLinkAlt,
   FaRedo,
   FaSearch,
   FaTimes,
@@ -17,6 +21,7 @@ import CollegeService from "../../services/CollegeService";
 import ExamService from "../../services/ExamService";
 import PerformanceService from "../../services/PerformanceService";
 import SectionService from "../../services/SectionService";
+import UserService from "../../services/UserService";
 import { currentRole } from "../../utils/roles";
 import { getApiErrorMessage } from "../../utils/apiError";
 import "./PerformanceDashboard.css";
@@ -218,7 +223,7 @@ function StudentPerformanceView({ data, status, onRetry }) {
   );
 }
 
-function TrendChart({ trend }) {
+function TrendChart({ trend, onBarClick }) {
   if (!trend.length) {
     return (
       <div className="performance-empty">No performance trend available.</div>
@@ -231,7 +236,7 @@ function TrendChart({ trend }) {
   return (
     <div className="performance-chart-wrap">
       <BarChart
-        className="performance-chart"
+        className="performance-chart performance-chart-clickable"
         xAxis={[
           {
             scaleType: "band",
@@ -260,7 +265,140 @@ function TrendChart({ trend }) {
         height={280}
         margin={{ left: 52, right: 20, top: 18, bottom: 52 }}
         slotProps={{ legend: { hidden: true } }}
+        onItemClick={(event, barItem) => {
+          console.log("I am clicked");
+          const item = trend[barItem?.dataIndex];
+          if (item && onBarClick) onBarClick(item);
+        }}
       />
+      <p className="performance-chart-hint">
+        Click a bar to see its chapters and marks.
+      </p>
+    </div>
+  );
+}
+
+// Opens when an admin clicks a trend bar. A bar with a resultId is one
+// student's own attempt, so it can be broken down by chapter; a bar that
+// averages several students' results has no single attempt to open.
+function ChapterBreakdownPanel({ trendItem, state, data, error, onClose }) {
+  const navigate = useNavigate();
+
+  if (!trendItem) return null;
+
+  const chapters = asArray(data?.chapters);
+  const needsStudent = !trendItem.resultId;
+
+  return (
+    <div
+      className="performance-breakdown-overlay"
+      role="presentation"
+      onClick={onClose}
+    >
+      <div
+        className="performance-breakdown-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${trendItem.examName || "Exam"} chapter breakdown`}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="performance-breakdown-head">
+          <FaBookOpen className="performance-breakdown-head-icon" />
+          <div>
+            <h2>{trendItem.examName || "Exam"}</h2>
+            <p>Chapter-by-chapter marks for this attempt.</p>
+          </div>
+          <button
+            type="button"
+            className="btn-close"
+            aria-label="Close"
+            onClick={onClose}
+          >
+            <FaTimes />
+          </button>
+        </div>
+
+        {needsStudent && (
+          <div className="performance-breakdown-notice">
+            This bar is the average of more than one student, so there is no
+            single attempt to open. Pick a student in the filters above, then
+            click this exam&apos;s bar again.
+          </div>
+        )}
+
+        {!needsStudent && state === "loading" && (
+          <div className="performance-notice" role="status">
+            <span className="spinner-border spinner-border-sm" /> Loading
+            chapter marks...
+          </div>
+        )}
+
+        {!needsStudent && state === "error" && (
+          <div
+            className="performance-notice performance-notice-error"
+            role="alert"
+          >
+            {error}
+          </div>
+        )}
+
+        {!needsStudent && state === "ready" && (
+          <>
+            <div className="performance-breakdown-summary">
+              <span>{data?.studentName || "Student"}</span>
+              <strong>
+                {formatNumber(data?.totalMarks)} /{" "}
+                {formatNumber(data?.maximumMarks)} marks
+              </strong>
+              <span>{formatPercentage(data?.percentage)}</span>
+            </div>
+
+            {chapters.length ? (
+              <ul className="performance-breakdown-chapters">
+                {chapters.map((chapter) => {
+                  const pct =
+                    numberValue(chapter.maxMarks) > 0
+                      ? (numberValue(chapter.scoredMarks) /
+                          numberValue(chapter.maxMarks)) *
+                        100
+                      : 0;
+                  return (
+                    <li key={chapter.chapterId}>
+                      <div className="performance-breakdown-chapter-row">
+                        <span>{chapter.chapterName || "Chapter"}</span>
+                        <strong>
+                          {formatNumber(chapter.scoredMarks)} /{" "}
+                          {formatNumber(chapter.maxMarks)}
+                        </strong>
+                      </div>
+                      <div className="performance-breakdown-bar">
+                        <div
+                          className="performance-breakdown-bar-fill"
+                          style={{ width: `${Math.min(100, pct)}%` }}
+                        />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <div className="performance-empty">
+                This exam has no chapters recorded against its questions.
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="btn btn-primary performance-breakdown-review-btn"
+              onClick={() =>
+                navigate(`/exams/${data.examId}/review/${data.resultId}`)
+              }
+            >
+              <FaExternalLinkAlt /> View this exam attempt
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -361,6 +499,7 @@ function PerformanceDashboard() {
     courses: [],
     sections: [],
     exams: [],
+    students: [],
   });
   const [filters, setFilters] = useState({
     collegeId: "",
@@ -368,12 +507,19 @@ function PerformanceDashboard() {
     courseId: "",
     sectionId: "",
     examId: "",
+    studentId: "",
   });
   const [activeFilters, setActiveFilters] = useState({});
   const [topPerformersSearch, setTopPerformersSearch] = useState("");
   const [attentionSearch, setAttentionSearch] = useState("");
   const [status, setStatus] = useState("loading");
   const [optionsError, setOptionsError] = useState("");
+  const [breakdown, setBreakdown] = useState({
+    trendItem: null,
+    status: "idle",
+    data: null,
+    error: "",
+  });
 
   const loadPerformance = useCallback(
     async (nextFilters = {}) => {
@@ -411,6 +557,7 @@ function PerformanceDashboard() {
       CourseService.getAllCourses(),
       SectionService.getAllSections(),
       ExamService.getAll(),
+      UserService.getAllStudents(),
     ];
     Promise.allSettled(optionRequests).then((results) => {
       if (!active) return;
@@ -422,6 +569,7 @@ function PerformanceDashboard() {
       const courses = results[offset];
       const sections = results[offset + 1];
       const exams = results[offset + 2];
+      const students = results[offset + 3];
       setOptions({
         colleges:
           colleges?.status === "fulfilled"
@@ -439,6 +587,10 @@ function PerformanceDashboard() {
             : [],
         exams:
           exams.status === "fulfilled" ? listFromResponse(exams.value) : [],
+        students:
+          students.status === "fulfilled"
+            ? listFromResponse(students.value)
+            : [],
       });
       if (results.some((result) => result.status === "rejected")) {
         setOptionsError("Some filter options could not be loaded.");
@@ -461,6 +613,7 @@ function PerformanceDashboard() {
           courseId: "",
           sectionId: "",
           examId: "",
+          studentId: "",
         };
       }
       if (name === "branchId") {
@@ -470,13 +623,20 @@ function PerformanceDashboard() {
           courseId: "",
           sectionId: "",
           examId: "",
+          studentId: "",
         };
       }
       if (name === "courseId") {
-        return { ...current, courseId: value, sectionId: "", examId: "" };
+        return {
+          ...current,
+          courseId: value,
+          sectionId: "",
+          examId: "",
+          studentId: "",
+        };
       }
       if (name === "sectionId") {
-        return { ...current, sectionId: value, examId: "" };
+        return { ...current, sectionId: value, examId: "", studentId: "" };
       }
       return { ...current, [name]: value };
     });
@@ -500,10 +660,41 @@ function PerformanceDashboard() {
       courseId: "",
       sectionId: "",
       examId: "",
+      studentId: "",
     });
     setActiveFilters({});
     loadPerformance();
   };
+
+  const openChapterBreakdown = async (trendItem) => {
+    setBreakdown({ trendItem, status: "idle", data: null, error: "" });
+
+    if (!trendItem.resultId) return;
+
+    setBreakdown((current) => ({ ...current, status: "loading" }));
+    try {
+      const response = await PerformanceService.getExamResultChapterBreakdown(
+        trendItem.resultId,
+      );
+      setBreakdown((current) => ({
+        ...current,
+        status: "ready",
+        data: response?.data || null,
+      }));
+    } catch (error) {
+      setBreakdown((current) => ({
+        ...current,
+        status: "error",
+        error: getApiErrorMessage(
+          error,
+          "We couldn't load this attempt's chapter breakdown.",
+        ),
+      }));
+    }
+  };
+
+  const closeChapterBreakdown = () =>
+    setBreakdown({ trendItem: null, status: "idle", data: null, error: "" });
 
   const coursePerformance = asArray(data.coursePerformance);
   const branchPerformance = asArray(data.branchPerformance);
@@ -571,6 +762,47 @@ function PerformanceDashboard() {
       ),
     [options.exams, filters.branchId, filters.courseId, filters.sectionId],
   );
+
+  // Optional - narrows the dashboard to one student. Picking one also turns
+  // each trend bar into that student's own result, which the chapter
+  // breakdown needs.
+  const visibleStudents = useMemo(
+    () =>
+      options.students.filter(
+        (student) =>
+          matchesParent(student, filters.collegeId, [
+            "collegeId",
+            "college_id",
+          ]) &&
+          matchesParent(student, filters.branchId, ["branchId", "branch_id"]) &&
+          matchesParent(student, filters.courseId, ["courseId", "course_id"]) &&
+          matchesParent(student, filters.sectionId, [
+            "sectionId",
+            "section_id",
+          ]),
+      ),
+    [
+      options.students,
+      filters.branchId,
+      filters.collegeId,
+      filters.courseId,
+      filters.sectionId,
+    ],
+  );
+
+  // Whose line the trend chart is showing - the applied filters, not the
+  // dropdown, so this always matches what loadPerformance actually fetched.
+  const trendStudentName = useMemo(() => {
+    if (!activeFilters.studentId) return null;
+
+    const student = options.students.find(
+      (candidate) =>
+        String(getId(candidate, ["userId", "id"])) ===
+        String(activeFilters.studentId),
+    );
+
+    return student ? getLabel(student, ["name"], "this student") : "this student";
+  }, [activeFilters.studentId, options.students]);
 
   return (
     <div className="container-fluid performance-page">
@@ -715,6 +947,31 @@ function PerformanceDashboard() {
                 })}
               </select>
             </div>
+            <div className="col-12 col-md-4 col-xl-3">
+              <label htmlFor="performance-student">Student (optional)</label>
+              <select
+                id="performance-student"
+                name="studentId"
+                value={filters.studentId}
+                onChange={handleFilterChange}
+              >
+                <option value="">All students</option>
+                {[...visibleStudents]
+                  .sort((a, b) =>
+                    String(getLabel(a, ["name"], "")).localeCompare(
+                      String(getLabel(b, ["name"], "")),
+                    ),
+                  )
+                  .map((student) => {
+                    const id = getId(student, ["userId", "id"]);
+                    return (
+                      <option key={id} value={id}>
+                        {getLabel(student, ["name"], "Student")}
+                      </option>
+                    );
+                  })}
+              </select>
+            </div>
             <div className="col-12 col-xl-3 d-flex gap-2">
               <button type="submit" className="btn btn-primary flex-grow-1">
                 <FaSearch /> Apply
@@ -808,11 +1065,15 @@ function PerformanceDashboard() {
                 <div className="performance-panel-heading">
                   <div>
                     <h2>Performance Trend</h2>
-                    <p>Average percentage across conducted exams.</p>
+                    <p>
+                      {trendStudentName
+                        ? `${trendStudentName}'s percentage across exams.`
+                        : "Average percentage across conducted exams."}
+                    </p>
                   </div>
                   <FaChartLine />
                 </div>
-                <TrendChart trend={trend} />
+                <TrendChart trend={trend} onBarClick={openChapterBreakdown} />
               </section>
             </div>
             <div className="col-12 col-xl-4">
@@ -920,6 +1181,14 @@ function PerformanceDashboard() {
           </div>
         </>
       )}
+
+      <ChapterBreakdownPanel
+        trendItem={breakdown.trendItem}
+        state={breakdown.status}
+        data={breakdown.data}
+        error={breakdown.error}
+        onClose={closeChapterBreakdown}
+      />
     </div>
   );
 }
