@@ -108,7 +108,9 @@ class UserService {
   }
 
   getAllStudents() {
-    return apiClient.get(`${BASE_URL}/students`, { withCredentials: true });
+    return apiClient.get(`${BASE_URL}/students_Guest`, {
+      withCredentials: true,
+    });
   }
 
   updateStudent(id, studentRequestDTO) {
