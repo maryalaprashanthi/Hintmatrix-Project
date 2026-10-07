@@ -20,6 +20,9 @@ const ExamQuestionTable = () => {
     state.byQuestionId[state.activeQuestionId]?.droppableData) || EMPTY_PLACEMENTS;
   const setAmountSelection = useExamQuestionStore((state) => state.setAmountSelection);
   const finalAccounts = useMemo(() => calculateFinalAccounts(droppableData), [droppableData]);
+  const rowCount = (table) => Math.max(...table.headers.map((header) =>
+    (droppableData[`${table.name}-${header}`]?.length ?? 0) +
+    finalAccounts.accounts[table.name][header].rows.length));
 
   const debitBalances = questions.filter((q) => q.type === "debit");
   const creditBalances = questions.filter((q) => q.type === "credit");
@@ -144,24 +147,26 @@ const ExamQuestionTable = () => {
               </Accordion.Header>
               <Accordion.Body>
                 <div className="row g-3">
-                  <div className="col-12 col-md-6">
+                  <div className="col-12 col-md-6 exam-account-side">
                     <div className="text-primary fw-semibold small mb-2">
                       {obj.headers[0]}
                     </div>
                     <ExamDroppable
                       id={`${obj.name}-${obj.headers[0]}`}
                       isCreditSide={false}
+                      matchRowCount={rowCount(obj)}
                       derivedRows={finalAccounts.accounts[obj.name][obj.headers[0]].rows}
                       calculatedTotal={finalAccounts.accounts[obj.name][obj.headers[0]].total}
                     />
                   </div>
-                  <div className="col-12 col-md-6">
+                  <div className="col-12 col-md-6 exam-account-side">
                     <div className="text-success fw-semibold small mb-2">
                       {obj.headers[1]}
                     </div>
                     <ExamDroppable
                       id={`${obj.name}-${obj.headers[1]}`}
                       isCreditSide={true}
+                      matchRowCount={rowCount(obj)}
                       derivedRows={finalAccounts.accounts[obj.name][obj.headers[1]].rows}
                       calculatedTotal={finalAccounts.accounts[obj.name][obj.headers[1]].total}
                     />
