@@ -16,16 +16,16 @@ const mergeRefs =
   };
 
 // One aligned table with two transparent drop targets layered over its
-// columns - the same layout as Question/Droppable.jsx, instead of the two
-// separate tables this used to render. The exam model has no pairing: an
-// "add" row shows its amount in the middle column, a "less" row shows
-// -amount in the last column, and each placed row keeps a remove control
-// rather than a correct/wrong state.
+// columns. Derived balancing/transfer rows are view-only; editable placements
+// remain the candidate's answers and never reveal correctness.
 const ExamDroppable = ({
   id,
   addLabel = "Particulars",
   amtLabel = "Amt (₹)",
   isCreditSide,
+  derivedRows = [],
+  calculatedTotal,
+  matchRowCount,
 }) => {
   const data =
     useExamQuestionStore(
@@ -33,6 +33,8 @@ const ExamDroppable = ({
         state.byQuestionId[state.activeQuestionId]?.droppableData?.[id],
     ) || [];
   const removeAnswer = useExamQuestionStore((state) => state.removeAnswer);
+  const updatePlacementAmount = useExamQuestionStore((state) => state.updatePlacementAmount);
+  const displayRows = [...data, ...derivedRows];
 
   const theme = isCreditSide ? "theme-credit" : "theme-debit";
 
@@ -51,13 +53,15 @@ const ExamDroppable = ({
     id: `${id}-less`,
   });
 
-  const addTotal = data
+  const addTotal = displayRows
     .filter((o) => o.operation === "add")
     .reduce((sum, o) => sum + Number(o.amount || 0), 0);
 
-  const subTotal = data
+  const subTotal = displayRows
     .filter((o) => o.operation === "less")
     .reduce((sum, o) => sum + Number(o.amount || 0), 0);
+
+  const blankRows = Math.max(0, (matchRowCount ?? displayRows.length) - displayRows.length);
 
   return (
     <div className={`exam-droppable ${theme}`}>
@@ -80,40 +84,54 @@ const ExamDroppable = ({
             </tr>
           </thead>
           <tbody>
-            {data.map((obj) => (
-              <tr key={obj.id} className="placed-row">
+            {displayRows.map((obj) => (
+              <tr key={`${obj.id}-${obj.operation}`} className={obj.derived ? "derived-row" : "placed-row"}>
                 <td className="particulars-cell">
                   {obj.name}
-                  <button
+                  {!obj.derived && <button
                     type="button"
                     className="remove-row-btn"
                     aria-label={`Remove ${obj.name}`}
-                    onClick={() => removeAnswer(obj.id)}
+                    onClick={() => removeAnswer(obj.id, `${id}-${obj.operation}`)}
                   >
                     ×
-                  </button>
+                  </button>}
                 </td>
                 <td className="text-end amount-cell">
-                  {obj.operation === "add"
-                    ? Number(obj.amount).toLocaleString("en-IN")
-                    : ""}
+                  {obj.operation === "add" && !obj.derived && <input type="number" min="0" step="0.01"
+                        className="ed-amount-input"
+                        aria-label={`Amount for ${obj.name} on ${id}`}
+                        value={obj.amount}
+                        onChange={(event) => updatePlacementAmount(obj.id, `${id}-${obj.operation}`, event.target.value)}
+                      />}
                 </td>
                 <td className="text-end amount-cell">
-                  {obj.operation === "less"
-                    ? `-${Number(obj.amount).toLocaleString("en-IN")}`
-                    : " "}
+                  {obj.derived
+                    ? `${obj.operation === "less" ? "-" : ""}${Number(obj.amount).toLocaleString("en-IN")}`
+                    : obj.operation === "less" && <label className="d-flex align-items-center justify-content-end">
+                        <span aria-hidden="true">−</span>
+                        <input type="number" min="0" step="0.01"
+                          className="ed-amount-input"
+                          aria-label={`Deduction for ${obj.name} on ${id}`}
+                          value={obj.amount}
+                          onChange={(event) => updatePlacementAmount(obj.id, `${id}-${obj.operation}`, event.target.value)}
+                        />
+                      </label>}
                 </td>
+              </tr>
+            ))}
+            {Array.from({ length: blankRows }, (_, index) => (
+              <tr key={`${id}-blank-${index}`} className="blank-row" aria-hidden="true">
+                <td>&nbsp;</td><td /><td />
               </tr>
             ))}
           </tbody>
           <tfoot>
             <tr className="total-row">
               <td className="fw-bold">Total</td>
+              <td />
               <td className="fw-bold text-end amount-cell">
-                {addTotal.toLocaleString("en-IN")}
-              </td>
-              <td className="fw-bold text-end amount-cell">
-                {(addTotal - subTotal).toLocaleString("en-IN")}
+                {(calculatedTotal ?? addTotal - subTotal).toLocaleString("en-IN")}
               </td>
             </tr>
           </tfoot>

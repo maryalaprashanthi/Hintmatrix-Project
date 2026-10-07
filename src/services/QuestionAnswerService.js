@@ -8,10 +8,13 @@ const ANSWER_EVENT_URL = "/api/answer_events";
 
 const QuestionAnswerService = {
   processAnswerEvent: async (answerData) => {
-    // Practice-only metadata must not change the existing answer-event payload.
+    // Other question types retain their existing payload. Final-accounts
+    // drag/drop supplies a question-row identity for backend validation.
     const { unitPosition } = answerData;
     const eventData = { ...answerData };
-    delete eventData.questionAttributeId;
+    if (answerData.finalAccounts !== true) {
+      delete eventData.questionAttributeId;
+    }
     delete eventData.unitPosition;
     const response = await apiClient.post(ANSWER_EVENT_URL, eventData);
 

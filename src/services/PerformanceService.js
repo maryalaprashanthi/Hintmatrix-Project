@@ -36,6 +36,14 @@ const PerformanceService = {
       withCredentials: true,
     });
   },
+
+  // One exam attempt's chapter-by-chapter marks - the trend chart's
+  // drill-down when an admin clicks a bar that is one student's own result.
+  getExamResultChapterBreakdown(resultId) {
+    return apiClient.get(`${BASE_URL}/exam-results/${resultId}/chapters`, {
+      withCredentials: true,
+    });
+  },
 };
 
 export default PerformanceService;

@@ -2,6 +2,9 @@
    which shares the generic .droppable-group / .qd-table class names. */
 
 .q-droppable {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid #e5e7eb;
@@ -10,11 +13,14 @@
 
 /* Positioning context for the transparent drop overlays */
 .q-droppable .qd-surface {
+  display: flex;
+  flex: 1;
   position: relative;
   width: 100%;
 }
 
 .q-droppable .qd-table {
+  height: 100%;
   width: 100%;
   table-layout: fixed;
   font-size: 0.9rem;
@@ -39,14 +45,25 @@
 }
 
 .q-droppable .qd-table tbody tr.blank-row td {
-  height: 52px;
-  min-height: 52px;
+  /* Keep empty rows at the same minimum height as populated rows. */
+  height: calc(1.5em + 21px);
   background: transparent;
   border-bottom: 1px solid #f3f4f6;
 }
 
+.acc-item .account-side {
+  display: flex;
+  flex-direction: column;
+}
+
 .q-droppable .qd-table tfoot td {
   padding: 11px 12px;
+}
+
+.q-droppable .qd-table tbody tr.derived-row td {
+  font-weight: 600;
+  background-color: #f8fafc;
+  border-top: 1px solid #e5e7eb;
 }
 
 /* Particulars column: allowed to wrap onto a second line */
@@ -124,6 +141,10 @@
   .q-droppable .qd-table tbody td,
   .q-droppable .qd-table tfoot td {
     padding: 7px;
+  }
+
+  .q-droppable .qd-table tbody tr.blank-row td {
+    height: calc(1.5em + 15px);
   }
 }
 

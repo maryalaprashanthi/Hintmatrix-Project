@@ -14,7 +14,10 @@ const { default: createResetHandler } = await loadModule(`
   export default (dependencies) => {
     const { isResetting, setIsResetting, question, getCurrentUserId,
       QuestionAnswerService, setAnsweredData, resetLocalAnswers,
-      resetFrontend, setCheckMistakes, alert } = dependencies;
+      resetFrontend, setCheckMistakes, alert, propQuestion } = dependencies;
+    const useQuestionStore = dependencies.useQuestionStore ?? { getState: () => ({
+      beginOperation: () => ({}), isOperationCurrent: () => true, endOperation: () => {},
+    }) };
     const console = { log() {}, error() {} };
     ${handler}
     return handleReset;

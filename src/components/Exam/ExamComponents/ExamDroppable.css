@@ -3,6 +3,9 @@
    Question/Droppable.css: one aligned table plus two transparent overlays. */
 
 .exam-droppable {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   border-radius: 10px;
   overflow: visible;
   border: 1px solid #e5e7eb;
@@ -11,17 +14,29 @@
 
 /* Positioning context for the transparent drop overlays */
 .exam-droppable .ed-surface {
+  display: flex;
+  flex: 1;
   position: relative;
   width: 100%;
-  min-height: clamp(120px, 18vw, 150px);
 }
 
 .exam-droppable .ed-table {
+  height: 100%;
   width: 100%;
   table-layout: fixed;
   font-size: clamp(0.72rem, 1.4vw, 0.85rem);
   margin-bottom: 0;
   background-color: #ffffff;
+}
+
+.exam-account-side {
+  display: flex;
+  flex-direction: column;
+}
+
+.exam-droppable .ed-table thead,
+.exam-droppable .ed-table tfoot {
+  height: 1px;
 }
 
 .exam-droppable .ed-table thead th {
@@ -41,6 +56,11 @@
   padding: clamp(7px, 1.5vw, 8px) clamp(8px, 2vw, 12px);
   vertical-align: middle;
   border-bottom: 1px solid #f3f4f6;
+  line-height: 1.5;
+}
+
+.exam-droppable .ed-table tbody tr {
+  height: calc(1.5em + 2 * clamp(7px, 1.5vw, 8px) + 7px);
 }
 
 .exam-droppable .ed-table tfoot td {
@@ -66,6 +86,28 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.exam-droppable .ed-amount-input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: inherit;
+  background: transparent;
+  text-align: right;
+  font: inherit;
+  padding: 2px;
+}
+
+.exam-droppable .ed-amount-input:focus {
+  outline: 2px solid #93c5fd;
+  background: #fff;
+}
+
+.exam-droppable .derived-row td {
+  font-weight: 600;
+  background: #f8fafc;
 }
 
 /* Debit / left side theme (blue) */
