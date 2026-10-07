@@ -155,11 +155,12 @@ const dragAnswers = (dragSlice) => {
     const tableName = splitAt === -1 ? key : key.slice(0, splitAt);
     const headerName = splitAt === -1 ? "" : key.slice(splitAt + 1);
 
-    return (rows || []).map((row) => ({
+    return (rows || []).filter((row) => !row.derived && !row.isDerived).map((row) => ({
       answeredData: {
         tableName,
         headerName,
-        attributeId: row.id,
+        questionAttributeId: row.questionAttributeId ?? null,
+        attributeId: row.attributeId ?? row.id,
         arithmetic: row.operation,
         amount: Number(row.amount || 0),
         info: describeInfo(row.operation, headerName, tableName),

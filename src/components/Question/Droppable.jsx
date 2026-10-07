@@ -20,8 +20,10 @@ const Droppable = ({
   amtLabel = "Amt (₹)",
   isCreditSide,
   matchRowCount,
+  derivedRows = [],
 }) => {
-  const data = useQuestionStore((state) => state.droppableData[id]);
+  const storedRows = useQuestionStore((state) => state.droppableData[id]);
+  const rows = [...(storedRows ?? []), ...derivedRows];
 
   const theme = isCreditSide ? "theme-credit" : "theme-debit";
 
@@ -35,23 +37,25 @@ const Droppable = ({
     id: `${id}-less`,
   });
 
-  const addTotal = (data || [])
+  const addTotal = rows
     .filter((o) => o.operation === "add")
     .reduce((sum, o) => sum + Number(o.amount || 0), 0);
 
-  const subTotal = (data || [])
+  const subTotal = rows
     .filter((o) => o.operation === "less")
     .reduce((sum, o) => sum + Number(o.amount || 0), 0);
 
-  const calcSum = (id, pairId) => {
-    const addObj = data.find((o) => o.id === pairId && o.operation === "add");
-    const subObj = data.find((o) => o.id === id && o.operation === "less");
-    return addObj && subObj
-      ? Number(addObj.amount || 0) - Number(subObj.amount || 0)
-      : 0;
+  const pairedSubtotal = (deduction) => {
+    const additions = rows.filter((row) => row.operation === "add" &&
+      String(row.attributeId) === String(deduction.pairId));
+    const deductions = rows.filter((row) => row.operation === "less" &&
+      row.isPaired && String(row.pairId) === String(deduction.pairId));
+    if (!additions.length || deductions.at(-1) !== deduction) return "";
+    return (additions.reduce((sum, row) => sum + Number(row.amount || 0), 0) -
+      deductions.reduce((sum, row) => sum + Number(row.amount || 0), 0))
+      .toLocaleString("en-IN");
   };
 
-  const rows = data ?? [];
   const targetRows = Math.max(rows.length, matchRowCount ?? rows.length);
   const displayRows = [...rows];
 
@@ -87,13 +91,14 @@ const Droppable = ({
           </thead>
           <tbody>
             {displayRows.map((obj) => (
-              <tr key={obj.id} className={obj.isBlank ? "blank-row" : ""}>
+              <tr key={`${obj.id}-${obj.conditionId ?? obj.operation}`}
+                className={obj.isBlank ? "blank-row" : obj.isDerived ? "derived-row" : ""}>
                 <td className="particulars-cell">{obj.isBlank ? "" : obj.name}</td>
                 <td className="text-end amount-cell">
                   {obj.isBlank
                     ? ""
                     : obj.operation === "add"
-                      ? Number(obj.amount).toLocaleString("en-IN")
+                      ? obj.isDerived || !obj.isPaired ? "" : Number(obj.amount).toLocaleString("en-IN")
                       : obj.isPaired
                         ? `-${Number(obj.amount).toLocaleString("en-IN")}`
                         : ""}
@@ -104,10 +109,10 @@ const Droppable = ({
                     : obj.operation === "less" && !obj.isPaired
                       ? `-${Number(obj.amount).toLocaleString("en-IN")}`
                       : obj.operation === "less" && obj.isPaired
-                        ? Number(calcSum(obj.id, obj.pairId)).toLocaleString(
-                            "en-IN",
-                          )
-                        : " "}
+                        ? pairedSubtotal(obj)
+                        : obj.operation === "add" && (obj.isDerived || !obj.isPaired)
+                          ? Number(obj.amount).toLocaleString("en-IN")
+                          : " "}
                 </td>
               </tr>
             ))}
