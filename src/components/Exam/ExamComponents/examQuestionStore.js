@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { getQuestionAttributeSide } from "../../../utils/questionAttributeSide";
 
 // Each question owns its trial balance and placements. Question-row ids keep
 // repeated accounts separate; one row may have effects in several accounts.
@@ -24,8 +25,7 @@ const useExamQuestionStore = create((set, get) => ({
         amount: Number(attribute.amount || 0),
         amount2: attribute.amount2 == null ? null : Number(attribute.amount2),
         amountSelection: "amount",
-        type: attribute.headerName === "Debit Particulars" ? "debit"
-          : attribute.headerName === "Credit Particulars" ? "credit" : "adjustment",
+        type: getQuestionAttributeSide(attribute) ?? "adjustment",
         status: "pending",
       })),
     );
