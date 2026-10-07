@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import { getCurrentUserId } from "../../utils/user";
+import { getQuestionAttributeSide } from "../../utils/questionAttributeSide";
 
 const useQuestionStore = create((set, get) => ({
   questions: [],
@@ -40,8 +41,7 @@ const useQuestionStore = create((set, get) => ({
             hints: [],
             usedHint: false,
             attemptingId: 1,
-            type:
-              attribute.headerName === "Debit Particulars" ? "debit" : "credit",
+            type: getQuestionAttributeSide(attribute),
             status: "pending",
             wrongAttempts: 0,
             answered: [],

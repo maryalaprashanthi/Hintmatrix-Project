@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getQuestionAttributeSide } from "../../utils/questionAttributeSide";
 import { createPortal } from "react-dom";
 import Select from "react-select";
 
@@ -408,16 +409,7 @@ function AddQuestionModal({
 
         const questionAttributes = question.questionAttributes || [];
 
-        const isCreditAttribute = (attribute) =>
-          [
-            attribute.transaction,
-            attribute.type,
-            attribute.side,
-            attribute.headerName,
-          ]
-            .filter(Boolean)
-            .some((value) => String(value).toLowerCase().includes("credit")) ||
-          String(attribute.headerId) === "3";
+        const isCreditAttribute = (attribute) => getQuestionAttributeSide(attribute) === "credit";
 
         if (cancelled) return;
 

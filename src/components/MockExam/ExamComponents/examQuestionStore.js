@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { getQuestionAttributeSide } from "../../../utils/questionAttributeSide";
 
 // Independent store for the exam drag-and-drop question type. Unlike
 // questionStore.js, this never tracks correctness (no actualAnswers, no
@@ -32,8 +33,7 @@ const useExamQuestionStore = create((set, get) => ({
           id: attribute.attributeId,
           name: attribute.attributeName,
           amount: Number(attribute.amount),
-          type:
-            attribute.headerName === "Debit Particulars" ? "debit" : "credit",
+          type: getQuestionAttributeSide(attribute),
           status: "pending",
           targetId: null,
         });
