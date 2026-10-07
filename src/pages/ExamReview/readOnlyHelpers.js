@@ -6,20 +6,9 @@
 // The drag-and-drop question type always targets this same fixed set of
 // destination tables (see ExamComponents/SampleData.js) - it isn't part of
 // the question payload, so the review screen has to know it too.
-export const FINAL_ACCOUNT_TABLES = [
-  {
-    name: "Balance Sheet",
-    headers: ["liabilities side", "Asset Side"],
-  },
-  {
-    name: "Profit & Loss Account",
-    headers: ["Debit Particulars", "Credit Particulars"],
-  },
-  {
-    name: "Trading Account",
-    headers: ["Debit Particulars", "Credit Particulars"],
-  },
-];
+import { data, normalizeFinalAccountTarget } from "../../components/Question/SampleData";
+
+export const FINAL_ACCOUNT_TABLES = data;
 
 // { [tableName]: { [headerName]: [{ attributeId, arithmetic, amount }] } }
 export const groupByTableAndHeader = (answers) => {
@@ -29,11 +18,17 @@ export const groupByTableAndHeader = (answers) => {
     const data = answer?.answeredData;
     if (!data?.tableName || !data?.headerName) return;
 
-    grouped[data.tableName] ??= {};
-    grouped[data.tableName][data.headerName] ??= [];
-    grouped[data.tableName][data.headerName].push({
+    const target = normalizeFinalAccountTarget(`${data.tableName}-${data.headerName}`);
+    const splitAt = target.lastIndexOf("-");
+    const tableName = target.slice(0, splitAt);
+    const headerName = target.slice(splitAt + 1);
+    grouped[tableName] ??= {};
+    grouped[tableName][headerName] ??= [];
+    grouped[tableName][headerName].push({
+      questionAttributeId: data.questionAttributeId,
       attributeId: data.attributeId,
-      arithmetic: data.arithmetic,
+      arithmetic: String(data.arithmetic ?? "").toLowerCase() === "subtract"
+        ? "less" : String(data.arithmetic ?? "").toLowerCase(),
       amount: Number(data.amount || 0),
       status: data.status,
     });
@@ -41,6 +36,11 @@ export const groupByTableAndHeader = (answers) => {
 
   return grouped;
 };
+
+export const questionAttributeLookup = (questionAttributes = []) => new Map(
+  questionAttributes.filter((attribute) => attribute.questionAttributeId != null)
+    .map((attribute) => [String(attribute.questionAttributeId), attribute]),
+);
 
 // Attribute id -> attribute name/amount, from the question's own trial
 // balance / ledger attributes - used to put a label on a submitted row that

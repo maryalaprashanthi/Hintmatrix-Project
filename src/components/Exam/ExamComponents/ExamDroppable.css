@@ -68,6 +68,28 @@
   text-overflow: ellipsis;
 }
 
+.exam-droppable .ed-amount-input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: inherit;
+  background: transparent;
+  text-align: right;
+  font: inherit;
+  padding: 2px;
+}
+
+.exam-droppable .ed-amount-input:focus {
+  outline: 2px solid #93c5fd;
+  background: #fff;
+}
+
+.exam-droppable .derived-row td {
+  font-weight: 600;
+  background: #f8fafc;
+}
+
 /* Debit / left side theme (blue) */
 .exam-droppable.theme-debit .ed-table thead th,
 .exam-droppable.theme-debit .total-row td {

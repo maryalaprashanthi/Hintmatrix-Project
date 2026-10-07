@@ -46,17 +46,14 @@ export default function ExamDraggable({ id, children, type, status = "pending" }
   const { ref } = useDraggable({
     id,
     type,
-    disabled: placed,
   });
 
   return (
     <div className={`drag-item ${placed ? "drag-item-placed" : ""}`}>
       <button
-        ref={placed ? undefined : ref}
+        ref={ref}
         type="button"
         className="drag-btn"
-        disabled={placed}
-        aria-disabled={placed}
       >
         <span className="drag-btn-content">{children}</span>
 

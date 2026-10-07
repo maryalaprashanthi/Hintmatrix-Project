@@ -1,10 +1,14 @@
 /* eslint-disable react/prop-types */
 import { Accordion } from "react-bootstrap";
+import { useMemo } from "react";
 import ExamDraggable from "./ExamDraggable";
 import ExamDroppable from "./ExamDroppable";
 import useExamQuestionStore from "./examQuestionStore";
 import "../../Question/QuestionTable.css";
 import { data } from "./SampleData";
+import { calculateFinalAccounts } from "../../Question/SampleData";
+
+const EMPTY_PLACEMENTS = {};
 
 const ExamQuestionTable = () => {
   // Read this question's own slice - see examQuestionStore for why it's keyed.
@@ -12,20 +16,46 @@ const ExamQuestionTable = () => {
     useExamQuestionStore(
       (state) => state.byQuestionId[state.activeQuestionId]?.questions,
     ) || [];
+  const droppableData = useExamQuestionStore((state) =>
+    state.byQuestionId[state.activeQuestionId]?.droppableData) || EMPTY_PLACEMENTS;
+  const setAmountSelection = useExamQuestionStore((state) => state.setAmountSelection);
+  const finalAccounts = useMemo(() => calculateFinalAccounts(droppableData), [droppableData]);
 
   const debitBalances = questions.filter((q) => q.type === "debit");
   const creditBalances = questions.filter((q) => q.type === "credit");
+  const adjustments = questions.filter((q) => q.type === "adjustment");
 
   const debitTotal = debitBalances.reduce(
-    (sum, q) => sum + (q.status === "pending" ? Number(q.amount || 0) : 0),
+    (sum, q) => sum + Number(q.amount || 0),
     0,
   );
   const creditTotal = creditBalances.reduce(
-    (sum, q) => sum + (q.status === "pending" ? Number(q.amount || 0) : 0),
+    (sum, q) => sum + Number(q.amount || 0),
     0,
   );
 
   const allTableNames = data.map((d) => d.name);
+  const trialBalanceRow = (obj) => (
+    <div key={obj.id}>
+      <ExamDraggable id={obj.id} type={obj.type} status={obj.status}>
+        <span>{obj.name}</span>
+        <span className="fw-semibold">
+          ₹{Number(obj[obj.amountSelection] ?? obj.amount).toLocaleString("en-IN")}
+        </span>
+      </ExamDraggable>
+      {obj.amount2 != null && (
+        <select
+          className="form-select form-select-sm mb-2"
+          aria-label={`Amount to place for ${obj.name}`}
+          value={obj.amountSelection}
+          onChange={(event) => setAmountSelection(obj.id, event.target.value)}
+        >
+          <option value="amount">Amount 1: ₹{obj.amount.toLocaleString("en-IN")}</option>
+          <option value="amount2">Amount 2: ₹{obj.amount2.toLocaleString("en-IN")}</option>
+        </select>
+      )}
+    </div>
+  );
 
   return (
     <div className="row g-4 align-items-start">
@@ -38,8 +68,11 @@ const ExamQuestionTable = () => {
               {questions.length}
             </span>
           </div>
+          <p className="small text-muted">
+            Drag an item to each account it affects. Edit its placed amount for adjustments.
+          </p>
 
-          <Accordion defaultActiveKey={["debit", "credit"]} alwaysOpen>
+          <Accordion defaultActiveKey={["debit", "credit", "adjustments"]} alwaysOpen>
             <Accordion.Item
               eventKey="debit"
               className="tb-accordion-item theme-debit"
@@ -51,19 +84,7 @@ const ExamQuestionTable = () => {
                 </span>
               </Accordion.Header>
               <Accordion.Body>
-                {debitBalances.map((obj) => (
-                  <ExamDraggable
-                    id={obj.id}
-                    key={obj.id}
-                    type={obj.type}
-                    status={obj.status}
-                  >
-                    <span>{obj.name}</span>
-                    <span className="fw-semibold">
-                      ₹{Number(obj.amount).toLocaleString("en-IN")}
-                    </span>
-                  </ExamDraggable>
-                ))}
+                {debitBalances.map(trialBalanceRow)}
               </Accordion.Body>
             </Accordion.Item>
 
@@ -78,22 +99,34 @@ const ExamQuestionTable = () => {
                 </span>
               </Accordion.Header>
               <Accordion.Body>
-                {creditBalances.map((obj) => (
-                  <ExamDraggable
-                    id={obj.id}
-                    key={obj.id}
-                    type={obj.type}
-                    status={obj.status}
-                  >
-                    <span>{obj.name}</span>
-                    <span className="fw-semibold">
-                      ₹{Number(obj.amount).toLocaleString("en-IN")}
-                    </span>
-                  </ExamDraggable>
-                ))}
+                {creditBalances.map(trialBalanceRow)}
               </Accordion.Body>
             </Accordion.Item>
+            {adjustments.length > 0 && (
+              <Accordion.Item eventKey="adjustments" className="tb-accordion-item">
+                <Accordion.Header>Additional Adjustments</Accordion.Header>
+                <Accordion.Body>{adjustments.map(trialBalanceRow)}</Accordion.Body>
+              </Accordion.Item>
+            )}
           </Accordion>
+          <div className="small border-top mt-3 pt-3" aria-live="polite">
+            <div className="d-flex justify-content-between mb-2">
+              <span>Gross {finalAccounts.grossResult < 0 ? "Loss" : "Profit"}</span>
+              <strong>₹{Math.abs(finalAccounts.grossResult).toLocaleString("en-IN")}</strong>
+            </div>
+            <div className="d-flex justify-content-between mb-2">
+              <span>Net {finalAccounts.netResult < 0 ? "Loss" : "Profit"}</span>
+              <strong>₹{Math.abs(finalAccounts.netResult).toLocaleString("en-IN")}</strong>
+            </div>
+            {finalAccounts.hasBalanceSheet && (
+              <div className={finalAccounts.balanced ? "text-success" : "text-danger"}>
+                {finalAccounts.balanced ? "Balance Sheet balances" :
+                  `Balance Sheet difference: ₹${finalAccounts.balanceDifference.toLocaleString("en-IN")}`}
+              </div>
+            )}
+            <div className="text-muted mt-2">Calculated from your current placements.</div>
+            {finalAccounts.warnings.map((warning) => <div key={warning} className="text-danger">{warning}</div>)}
+          </div>
         </div>
       </div>
 
@@ -118,6 +151,8 @@ const ExamQuestionTable = () => {
                     <ExamDroppable
                       id={`${obj.name}-${obj.headers[0]}`}
                       isCreditSide={false}
+                      derivedRows={finalAccounts.accounts[obj.name][obj.headers[0]].rows}
+                      calculatedTotal={finalAccounts.accounts[obj.name][obj.headers[0]].total}
                     />
                   </div>
                   <div className="col-12 col-md-6">
@@ -127,6 +162,8 @@ const ExamQuestionTable = () => {
                     <ExamDroppable
                       id={`${obj.name}-${obj.headers[1]}`}
                       isCreditSide={true}
+                      derivedRows={finalAccounts.accounts[obj.name][obj.headers[1]].rows}
+                      calculatedTotal={finalAccounts.accounts[obj.name][obj.headers[1]].total}
                     />
                   </div>
                 </div>
