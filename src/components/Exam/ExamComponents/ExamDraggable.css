@@ -59,10 +59,9 @@
   flex-shrink: 0;
 }
 
-/* Exam-only: a placed item stays visible but inert - there is no
-   correct/wrong state to show. */
+/* Placed items remain draggable for adjustments with several effects. */
 .drag-item-placed .drag-btn {
-  cursor: not-allowed;
+  cursor: grab;
   background-color: #f0fdf4;
   border-color: #bbf7d0;
   opacity: 1;

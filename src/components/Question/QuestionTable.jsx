@@ -6,7 +6,7 @@ import useQuestionStore from "./questionStore";
 import "./QuestionTable.css";
 import Header from "./Header";
 import SummaryCards from "./SummaryCards";
-import { data } from "./SampleData";
+import { calculateFinalAccounts, data } from "./SampleData";
 import { useParams } from "react-router-dom";
 import MistakesModal from "./MistakesModal";
 import { useState } from "react";
@@ -17,6 +17,11 @@ const QuestionTable = () => {
   const [checkMistakes, setCheckMistakes] = useState(false);
 
   const { questions, score, droppableData } = useQuestionStore();
+  const finalAccounts = calculateFinalAccounts(droppableData);
+  const fullyPlaced = questions.length > 0 && questions.every((row) => row.status === "solved");
+  const rowCount = (table) => Math.max(...table.headers.map((header) =>
+    (droppableData[`${table.name}-${header}`]?.length ?? 0) +
+    (finalAccounts.derivedRows[`${table.name}-${header}`]?.length ?? 0)));
 
   const { questionId } = useParams();
 
@@ -151,6 +156,17 @@ const QuestionTable = () => {
 
       {/* RIGHT: Accounts accordion */}
       <div className="col-12 col-lg-9">
+        <div className="alert alert-light border mb-3" role="status">
+          {fullyPlaced ? "Final Accounts" : "Final Accounts preview — totals update as you place each balance."}
+          {finalAccounts.hasBalanceSheet && (
+            <span className={`d-block mt-1 ${finalAccounts.balanced ? "text-success" : "text-danger"}`}>
+              {finalAccounts.balanced
+                ? "Balance Sheet balances."
+                : `Balance Sheet difference: ₹${Math.abs(finalAccounts.balanceDifference).toLocaleString("en-IN")}`}
+            </span>
+          )}
+          {finalAccounts.warnings.map((warning) => <span className="d-block text-warning" key={warning}>{warning}</span>)}
+        </div>
         <Accordion defaultActiveKey={allTableNames} alwaysOpen>
           {data.map((obj, idx) => (
             <Accordion.Item
@@ -169,13 +185,9 @@ const QuestionTable = () => {
                     </div>
                     <Droppable
                       id={`${obj.name}-${obj.headers[0]}`}
+                      derivedRows={finalAccounts.derivedRows[`${obj.name}-${obj.headers[0]}`]}
                       isCreditSide={false}
-                      matchRowCount={Math.max(
-                        (droppableData[`${obj.name}-${obj.headers[0]}`] || [])
-                          .length,
-                        (droppableData[`${obj.name}-${obj.headers[1]}`] || [])
-                          .length,
-                      )}
+                      matchRowCount={rowCount(obj)}
                     />
                   </div>
                   <div className="col-12 col-md-6">
@@ -184,13 +196,9 @@ const QuestionTable = () => {
                     </div>
                     <Droppable
                       id={`${obj.name}-${obj.headers[1]}`}
+                      derivedRows={finalAccounts.derivedRows[`${obj.name}-${obj.headers[1]}`]}
                       isCreditSide={true}
-                      matchRowCount={Math.max(
-                        (droppableData[`${obj.name}-${obj.headers[0]}`] || [])
-                          .length,
-                        (droppableData[`${obj.name}-${obj.headers[1]}`] || [])
-                          .length,
-                      )}
+                      matchRowCount={rowCount(obj)}
                     />
                   </div>
                 </div>

@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import "./Draggable.css";
 import { VscError } from "react-icons/vsc";
 import { OverlayTrigger, Popover } from "react-bootstrap";
-import useQuestionStore from "./questionStore";
+import useQuestionStore, { getRuleAnswers } from "./questionStore";
+import { normalizeFinalAccountTarget } from "./SampleData";
 import RuleEngineService from "../../services/RuleEngineService";
 import { useParams } from "react-router-dom";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
@@ -57,6 +58,9 @@ export default function Draggable({
 }) {
   const { questionId } = useParams();
   const [showActions, setShowActions] = useState(false);
+  const [autoFillError, setAutoFillError] = useState("");
+  const [isAutoFilling, setIsAutoFilling] = useState(false);
+  const busyOperation = useQuestionStore((state) => state.busyOperation);
 
   useEffect(() => {
     if (status === "wrong") {
@@ -71,22 +75,23 @@ export default function Draggable({
   const { ref } = useDraggable({
     id,
     type,
-    disabled: solved,
+    disabled: solved || Boolean(busyOperation),
   });
   {
     /* <CheckIcon /> */
     // <PendingIcon />
   }
-  const { questions, setHintUsed, moveQuestion } = useQuestionStore();
+  const { questions, setHintUsed, moveQuestion, setActualAnswers,
+    setTotalAnswers, setHints, setCurrentScore } = useQuestionStore();
   const myQuestion = questions.find((q) => q.id == id);
   const allHints = myQuestion.hints;
   const dragButton = (
     <button
-      ref={solved ? undefined : ref}
+      ref={solved || busyOperation ? undefined : ref}
       type="button"
       className="drag-btn"
-      disabled={solved}
-      aria-disabled={solved}
+      disabled={solved || Boolean(busyOperation)}
+      aria-disabled={solved || Boolean(busyOperation)}
       onTouchEnd={(event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -108,6 +113,7 @@ export default function Draggable({
   );
 
   const handleHint = () => {
+    if (useQuestionStore.getState().busyOperation) return;
     console.log("Hint was clicked");
     setHintUsed(id);
   };
@@ -118,74 +124,68 @@ export default function Draggable({
   // };
 
   const handleAutoFill = async () => {
-    console.log("Autofill was clicked");
-
+    const operation = useQuestionStore.getState().beginOperation(questionId, "autofill");
+    if (!operation) return;
+    setIsAutoFilling(true);
+    setAutoFillError("");
     try {
-      const response = await RuleEngineService.getAttributeAnswers(id);
-      const apiData = response?.[0];
-      if (!apiData) return;
-
-      const validTargets = [];
-      const pairedId = apiData.pairAttributeId;
-      for (let i = 1; i <= 4; i++) {
-        const condition = apiData[`condition${i}`];
-        if (!condition || condition.arithmetic == null) continue;
-
-        validTargets.push({
-          targetId: `${condition.tableName}-${condition.headerName}-${condition.arithmetic}`,
-          conditionId: i,
-        });
-      }
-
-      if (!validTargets.length) return;
-
-      validTargets.forEach((obj) => {
-        moveQuestion(id, obj.targetId, obj.conditionId, pairedId);
-      });
-      const post_body = {
-        userId: getCurrentUserId(),
-        questionId: questionId,
-        attributeId: id,
-        arithmetic: "add",
-        answerPosition: "1",
-        eventType: "AUTOFILL",
-        isCorrect: true,
-        description: "empty",
-        userAnswer: "empty",
-      };
-
-      // call question answer service for all answers that are in actual answers but not in answered with this body
+      let state = useQuestionStore.getState();
+      let myQuestion = state.questions.find((row) => String(row.id) === String(id));
+      if (!myQuestion || myQuestion.status === "solved") return;
+      const response = await RuleEngineService.getAttributeAnswers(myQuestion.attributeId);
+      if (!useQuestionStore.getState().isOperationCurrent(operation)) return;
+      state = useQuestionStore.getState();
+      myQuestion = state.questions.find((row) => String(row.id) === String(id));
+      if (!myQuestion) return;
+      const actualAnswers = getRuleAnswers(response, state.question.chapterId, myQuestion)
+        .map((answer) => ({ ...answer, answer: normalizeFinalAccountTarget(answer.answer) }));
+      setActualAnswers(id, actualAnswers);
+      setTotalAnswers(id, actualAnswers.length);
+      setHints(id, actualAnswers.map((answer) => answer.information).filter(Boolean));
       const answeredConditionIds = myQuestion.answered.map(
         (a) => a.conditionId,
       );
-      const unansweredAnswers = myQuestion.actualAnswers.filter(
+      const unansweredAnswers = actualAnswers.filter(
         (a) => !answeredConditionIds.includes(a.conditionId),
       );
+      if (!unansweredAnswers.length) return;
 
+      const firstAnswer = unansweredAnswers[0];
+      await QuestionAnswerService.processAnswerEvent({
+        finalAccounts: true,
+        userId: getCurrentUserId(),
+        questionId,
+        attributeId: myQuestion.attributeId,
+        questionAttributeId: myQuestion.questionAttributeId,
+        tableNameId: firstAnswer.tableNameId,
+        headerId: firstAnswer.headerId,
+        amount: firstAnswer.amount,
+        conditionId: firstAnswer.conditionId,
+        arithmetic: firstAnswer.answer.split("-").pop(),
+        answerPosition: firstAnswer.conditionId,
+        eventType: "AUTOFILL",
+        isCorrect: true,
+        description: "Auto filled configured final-account placements.",
+        userAnswer: "Auto filled configured final-account placements.",
+      });
+
+      if (!useQuestionStore.getState().isOperationCurrent(operation)) return;
+      // The backend commits all remaining placements and autofill markers in
+      // the event transaction, so the browser only updates its local table.
       for (const answer of unansweredAnswers) {
-        const questionBody = {
-          userId: getCurrentUserId(),
-          questionId: questionId,
-          tableNameId: answer.tableNameId,
-          headerId: answer.headerId,
-          attributeId: id,
-          arithmetic: answer.answer.split("-").pop(),
-          amount: myQuestion.amount,
-          conditionId: answer.conditionId,
-          pairAttributeId: answer.pairAttributeId,
-          totalAnswers: myQuestion.totalAnswers,
-        };
-
-        console.log("Saving unanswered answer: ", questionBody);
-        await QuestionAnswerService.saveAnswer(questionBody);
+        moveQuestion(id, answer.answer, answer.conditionId, answer.pairAttributeId, answer.amount);
       }
-
-      console.log(post_body);
-      const response2 =
-        await QuestionAnswerService.processAnswerEvent(post_body);
-      console.log(response2);
+      try {
+        await setCurrentScore(getCurrentUserId());
+      } catch (scoreError) {
+        console.error("Unable to refresh score:", scoreError);
+      }
     } catch (error) {
       console.error("I got this error: ", error);
+      setAutoFillError(error.response?.data?.message ?? error.message ?? "Unable to auto fill this account.");
+    } finally {
+      useQuestionStore.getState().endOperation(operation);
+      setIsAutoFilling(false);
     }
   };
 
@@ -225,7 +225,7 @@ export default function Draggable({
                       </Popover>
                     }
                   >
-                    <button className="action-menu-item" onClick={handleHint}>
+                    <button className="action-menu-item" onClick={handleHint} disabled={Boolean(busyOperation)}>
                       <span className="action-icon hint-icon">💡</span>
                       <span>
                         <strong>Hint</strong>
@@ -242,13 +242,14 @@ export default function Draggable({
                     </span>
                   </button> */}
 
-                  <button className="action-menu-item" onClick={handleAutoFill}>
+                  <button className="action-menu-item" onClick={handleAutoFill} disabled={Boolean(busyOperation)}>
                     <span className="action-icon autofill-icon">✦</span>
                     <span>
-                      <strong>Auto Fill</strong>
+                        <strong>{isAutoFilling ? "Filling…" : "Auto Fill"}</strong>
                       <small>Fill this automatically</small>
                     </span>
                   </button>
+                  {autoFillError && <div className="text-danger small" role="alert">{autoFillError}</div>}
                 </Popover.Body>
               </Popover>
             }

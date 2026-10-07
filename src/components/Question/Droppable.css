@@ -49,6 +49,12 @@
   padding: 11px 12px;
 }
 
+.q-droppable .qd-table tbody tr.derived-row td {
+  font-weight: 600;
+  background-color: #f8fafc;
+  border-top: 1px solid #e5e7eb;
+}
+
 /* Particulars column: allowed to wrap onto a second line */
 .q-droppable .particulars-cell {
   white-space: normal;

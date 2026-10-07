@@ -2,11 +2,75 @@ import { create } from "zustand";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import { getCurrentUserId } from "../../utils/user";
 
+// A rule selects an amount for each effect. Missing second amounts must not
+// silently become zero, especially for two-sided final-account adjustments.
+export const getAnswerAmount = (question, amountPosition = "1") => {
+  const position = String(amountPosition ?? "1").trim().toLowerCase();
+  const value = ["2", "amount2"].includes(position)
+    ? question.amount2
+    : ["1", "amount", "amount1"].includes(position)
+      ? question.amount
+      : undefined;
+  if (value == null || value === "" || !Number.isFinite(Number(value))) {
+    throw new Error("This account has a missing or invalid rule amount.");
+  }
+  return Number(value);
+};
+
+export const getRuleAnswers = (rules, chapterId, question) => {
+  const activeRules = (Array.isArray(rules) ? rules : [])
+    .filter((rule) => rule.activeRow !== false);
+  const applicable = activeRules.filter((rule) =>
+    chapterId == null || String(rule.chapterId) === String(chapterId));
+  if (applicable.length !== 1) {
+    throw new Error(applicable.length
+      ? "More than one rule is configured for this account in the chapter."
+      : "No active rule is configured for this account in the chapter.");
+  }
+  const rule = applicable[0];
+  const answers = [];
+  for (let conditionId = 1; conditionId <= 4; conditionId++) {
+    const condition = rule[`condition${conditionId}`];
+    if (!condition?.arithmetic) continue;
+    const rawOperation = String(condition.arithmetic).trim().toLowerCase();
+    const operation = rawOperation === "subtract" ? "less" : rawOperation;
+    if (!["add", "less"].includes(operation) || !condition.tableName || !condition.headerName) {
+      throw new Error("This account has an incomplete placement rule.");
+    }
+    answers.push({
+      conditionId,
+      answer: `${condition.tableName}-${condition.headerName}-${operation}`,
+      tableNameId: condition.tableId,
+      headerId: condition.headerId,
+      pairAttributeId: rule.pairAttributeId,
+      amountPosition: condition.amountPosition,
+      amount: getAnswerAmount(question, condition.amountPosition),
+      information: condition.information,
+    });
+  }
+  if (!answers.length) throw new Error("No placement is configured for this account.");
+  return answers;
+};
+
 const useQuestionStore = create((set, get) => ({
   questions: [],
   question: {},
   droppableData: {},
   score: 0,
+  busyOperation: null,
+  operationSequence: 0,
+  beginOperation: (questionId, kind) => {
+    const state = get();
+    if (state.busyOperation || String(state.question.questionId) !== String(questionId)) return null;
+    const operation = { questionId: String(questionId), kind, sequence: state.operationSequence + 1 };
+    set({ busyOperation: operation, operationSequence: operation.sequence });
+    return operation;
+  },
+  isOperationCurrent: (operation) => operation != null && get().busyOperation === operation &&
+    String(get().question.questionId) === operation.questionId,
+  endOperation: (operation) => {
+    if (operation != null && get().busyOperation === operation) set({ busyOperation: null });
+  },
   setCurrentScore: async (id) => {
     const score = await QuestionAnswerService.getOverallMarks(id);
     await set({ score });
@@ -31,12 +95,15 @@ const useQuestionStore = create((set, get) => ({
         };
       }
       if (q.questionAttributes) {
-        q.questionAttributes.forEach((attribute) => {
+        q.questionAttributes.forEach((attribute, rowIndex) => {
           formattedQuestions.push({
-            id: attribute.attributeId,
+            id: attribute.questionAttributeId ?? `question-${q.questionId}-row-${rowIndex}`,
+            attributeId: attribute.attributeId,
             questionAttributeId: attribute.questionAttributeId,
             name: attribute.attributeName,
             amount: Number(attribute.amount),
+            amount2: attribute.amount2 == null || attribute.amount2 === ""
+              ? null : Number(attribute.amount2),
             hints: [],
             usedHint: false,
             attemptingId: 1,
@@ -62,7 +129,7 @@ const useQuestionStore = create((set, get) => ({
   setActualAnswers: (id, actualAnswers) =>
     set((state) => {
       const nextQuestions = state.questions.map((item) => {
-        if (item.id === id) {
+        if (String(item.id) === String(id)) {
           return { ...item, actualAnswers: actualAnswers };
         } else {
           return item;
@@ -92,7 +159,7 @@ const useQuestionStore = create((set, get) => ({
   setHintUsed: (id) =>
     set((state) => {
       const nextQuestions = state.questions.map((item) => {
-        if (item.id === id) {
+        if (String(item.id) === String(id)) {
           return { ...item, usedHint: true };
         } else {
           return item;
@@ -106,7 +173,7 @@ const useQuestionStore = create((set, get) => ({
   setError: (id) =>
     set((state) => {
       const nextQuestions = state.questions.map((item) => {
-        if (item.id === id) {
+        if (String(item.id) === String(id)) {
           return {
             ...item,
             status: "wrong",
@@ -124,7 +191,7 @@ const useQuestionStore = create((set, get) => ({
   setHints: (id, hints) =>
     set((state) => {
       const nextQuestions = state.questions.map((item) => {
-        if (item.id === id) {
+        if (String(item.id) === String(id)) {
           return { ...item, hints: hints };
         } else {
           return item;
@@ -136,7 +203,7 @@ const useQuestionStore = create((set, get) => ({
   setTotalAnswers: (id, count) =>
     set((state) => {
       const nextQuestions = state.questions.map((item) => {
-        if (item.id === id) {
+        if (String(item.id) === String(id)) {
           return { ...item, totalAnswers: count };
         } else {
           return item;
@@ -148,7 +215,7 @@ const useQuestionStore = create((set, get) => ({
   setAttributeId: (id, attributeId) =>
     set((state) => {
       const nextQuestions = state.questions.map((item) => {
-        if (item.id === id) {
+        if (String(item.id) === String(id)) {
           return { ...item, attemptingId: attributeId };
         } else {
           return item;
@@ -160,115 +227,61 @@ const useQuestionStore = create((set, get) => ({
   setTableData: (data) => {
     const allTablesData = Object.fromEntries(data.map((d) => [d, []]));
 
-    console.log("This is full table data", allTablesData);
-
     set({ droppableData: allTablesData });
   },
 
-  moveQuestion: (sourceId, targetId, condId, pairId) =>
+  moveQuestion: (sourceId, targetId, condId, pairId, selectedAmount) =>
     set((state) => {
-      const question = state.questions.find((item) => item.id == sourceId);
+      const question = state.questions.find((item) => String(item.id) === String(sourceId));
+      const separator = targetId.lastIndexOf("-");
+      const myId = targetId.slice(0, separator);
+      const operation = targetId.slice(separator + 1).toLowerCase();
+      const existingRows = state.droppableData[myId];
+      if (!question || !existingRows || !["add", "less"].includes(operation) ||
+          question.answered.some((answer) => answer.conditionId === condId)) return state;
 
-      if (!question) {
-        return state;
-      }
-      console.log("I got here");
-
-      // const nextQuestions = [...item.answered, targetId];
-
-      const nextQuestions = state.questions.map((item) => {
-        if (item.id !== sourceId) {
-          return item;
-        }
-
-        const updatedAnswered = [
-          ...item.answered,
-          { conditionId: condId, answer: targetId },
-        ];
-        // console.log("Updated answered is ", updatedAnswered);
-
-        return {
-          ...item,
-          answered: updatedAnswered,
-          status:
-            item.totalAnswers === updatedAnswered.length ? "solved" : "pending",
-        };
-      });
-
-      const myId = targetId.split("-").slice(0, 2).join("-");
-
-      // if an object exists in droppableData[myId] with id as sourceId then return
-      const alreadyPlaced = (get().droppableData[myId] ?? []).some(
-        (obj) => obj.id === sourceId,
-      );
-      if (alreadyPlaced) {
-        return state;
-      }
-
-      const ops = targetId.split("-").pop();
-      let updatedData = null;
-      // write this logic
-      let found = get().droppableData[myId].filter((obj) => obj.id === pairId);
-      if (found.length === 0) {
-        found = get().droppableData[myId].filter(
-          (obj) => obj.pairId === sourceId,
-        );
-      }
-      if (found.length > 0) {
-        console.log("This is data in droppable ", get().droppableData[myId]);
-        updatedData = get().droppableData[myId].filter((obj) => {
-          return obj.id !== found[0].id;
-        });
-        console.log("This is data in updated ", [...updatedData]);
-        // console.log("This is previous data ", updatedData);
-        // what is wrong with this code
-        found = found[0];
-        // console.log("This is actual ", found);
-        found = {
-          id: found.id,
-          name: found.name,
-          amount: found.amount,
-          operation: found.operation,
-          pairId: found.pairId,
-          isPaired: true,
-        };
-        // console.log("This is what is found in store ", found);
-        updatedData.push(found);
-        let newObj = {
-          id: question.id,
-          name: question.name,
-          amount: question.amount,
-          operation: ops,
-          pairId,
-          isPaired: true,
-        };
-        if (newObj.operation == "add") {
-          updatedData.splice(-1, 0, newObj);
-        } else {
-          updatedData.push(newObj);
-        }
-
-        // how do I do this in js when I have a isPaired is true and operation is add
+      const configuredAnswer = question.actualAnswers.find((answer) => answer.conditionId === condId);
+      const amount = selectedAmount ?? configuredAnswer?.amount ?? question.amount;
+      if (!Number.isFinite(Number(amount))) return state;
+      const row = {
+        id: question.id,
+        questionAttributeId: question.questionAttributeId,
+        attributeId: question.attributeId,
+        conditionId: condId,
+        name: question.name,
+        amount: Number(amount),
+        operation,
+        pairId,
+        isPaired: false,
+      };
+      // Pair against account identity, while each trial-balance row keeps its
+      // own identity. Multiple deductions can therefore share one account.
+      const pairIndex = existingRows.findIndex((item) =>
+        item.operation !== operation &&
+        ((pairId != null && String(item.attributeId) === String(pairId)) ||
+         (item.pairId != null && String(item.pairId) === String(question.attributeId))));
+      let updatedData = [...existingRows];
+      if (pairIndex >= 0) {
+        const counterpart = { ...updatedData[pairIndex], isPaired: true };
+        row.isPaired = true;
+        updatedData[pairIndex] = counterpart;
+        updatedData.splice(pairIndex + (operation === "less" ? 1 : 0), 0, row);
+        const pairedAccountId = operation === "less" ? pairId : question.attributeId;
+        updatedData = updatedData.map((item) => item.operation === "add" &&
+          String(item.attributeId) === String(pairedAccountId)
+          ? { ...item, isPaired: true } : item);
       } else {
-        updatedData = [
-          ...get().droppableData[myId],
-          {
-            id: question.id,
-            name: question.name,
-            amount: question.amount,
-            operation: ops,
-            pairId,
-            isPaired: false,
-          },
-        ];
+        updatedData.push(row);
       }
-
-      // console.log("I got here too with updated data ", updatedData);
+      const nextQuestions = state.questions.map((item) => {
+        if (String(item.id) !== String(sourceId)) return item;
+        const answered = [...item.answered, { conditionId: condId, answer: targetId }];
+        return { ...item, answered, status: answered.length >= item.totalAnswers ? "solved" : "pending" };
+      });
       return {
         questions: nextQuestions,
         droppableData: { ...state.droppableData, [myId]: updatedData },
       };
-      // console.log("I finally got here");
     }),
 }));
 

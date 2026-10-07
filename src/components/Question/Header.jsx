@@ -20,10 +20,12 @@ function Header({
   const {
     question: storeQuestion,
     resetFrontend,
+    busyOperation,
   } = useQuestionStore();
   const [isResetting, setIsResetting] = useState(false);
 
   const question = propQuestion || storeQuestion;
+  const usesDragStore = !propQuestion && !setAnsweredData;
 
   console.log("Header Question:", question);
   console.log("Header Answered Data:", answeredData);
@@ -85,6 +87,10 @@ function Header({
 
   const handleReset = async () => {
     if (isResetting) return;
+    const usesDragStore = !propQuestion && !setAnsweredData;
+    const operation = usesDragStore
+      ? useQuestionStore.getState().beginOperation(question?.questionId, "reset") : null;
+    if (usesDragStore && !operation) return;
     setIsResetting(true);
     try {
       console.log("========== RESET QUESTION ==========");
@@ -112,6 +118,7 @@ function Header({
         );
 
       console.log("QUESTION ANSWER RESET RESPONSE:", questionAnswerResult);
+      if (usesDragStore && !useQuestionStore.getState().isOperationCurrent(operation)) return;
 
       // Clear only current answers after the backend reset succeeds.
       if (setAnsweredData) {
@@ -130,6 +137,7 @@ function Header({
       }
       alert("Unable to reset your answers. Please try again.");
     } finally {
+      if (usesDragStore) useQuestionStore.getState().endOperation(operation);
       setIsResetting(false);
     }
   };
@@ -167,7 +175,7 @@ function Header({
                   height: "35px",
                 }}
                 onClick={handleReset}
-                disabled={isResetting}
+                disabled={isResetting || (usesDragStore && Boolean(busyOperation))}
               >
                 <FaRedo className="me-1" />
                 Reset
@@ -181,6 +189,7 @@ function Header({
                   height: "35px",
                 }}
                 onClick={handleCheck}
+                disabled={usesDragStore && Boolean(busyOperation)}
               >
                 <FaExclamationTriangle className="me-1" />
                 Check
@@ -194,6 +203,7 @@ function Header({
                   height: "35px",
                 }}
                 onClick={handleSubmit}
+                disabled={usesDragStore && Boolean(busyOperation)}
               >
                 <FaPaperPlane className="me-1" />
                 Submit

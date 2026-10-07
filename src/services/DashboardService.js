@@ -3,10 +3,10 @@
 const BASE_URL = "/api/dashboard";
 
 class DashboardService {
-  getDashboardData() {
+  getDashboardData(options = {}) {
     return apiClient.get(
       `${BASE_URL}`,
-      { withCredentials: true }, // Passes authorization cookie
+      { ...options, withCredentials: true }, // Passes authorization cookie
     );
   }
 }

@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import QuestionTable from "./QuestionTable";
-import useQuestionStore from "./questionStore";
+import useQuestionStore, { getRuleAnswers } from "./questionStore";
 
 import JournalPage from "../JournalQuestion/JournalPage";
 import DropdownPage from "../DropdownQuestions/DropdownPage";
@@ -18,7 +18,7 @@ import QuestionTypeService from "../../services/QuestionTypeService";
 import MatchingQuestionService from "../../services/MatchingQuestionService";
 import FillInBlankQuestionService from "../../services/FillInBlankQuestionService";
 
-import { data } from "./SampleData";
+import { data, normalizeFinalAccountTarget } from "./SampleData";
 import { getCurrentUserId } from "../../utils/user";
 
 import "./QuestionPage.css";
@@ -84,9 +84,9 @@ const questionMap = {
 const answerMap = {
   dr: "debit particulars",
   cr: "credit particulars",
-  pnl: "Profit and Loss Account",
+  pnl: "Profit & Loss Account",
   liabilities: "Liabilities Side",
-  assets: "assets",
+  assets: "Asset Side",
   trading: "Trading Account",
   balance: "Balance Sheet",
   add: "ADD",
@@ -105,7 +105,6 @@ const QuestionPage = () => {
     setQuestions,
     setError,
     setHints,
-    questions,
     setTotalAnswers,
     setTableData,
     setActualAnswers,
@@ -127,6 +126,7 @@ const QuestionPage = () => {
   ].includes(questionType);
 
   const [isLoading, setIsLoading] = useState(true);
+  const [placementError, setPlacementError] = useState("");
 
   const [matchingQuestion, setMatchingQuestion] = useState(null);
 
@@ -167,21 +167,13 @@ const QuestionPage = () => {
     Object.values(completedQuestions).filter(Boolean).length;
 
   // ===========================================================
-  // PROGRESS
-  // ===========================================================
-
-  const progressPercentage =
-    totalQuestions > 0
-      ? Math.round((completedCount / totalQuestions) * 100)
-      : 0;
-
-  // ===========================================================
   // LOAD QUESTION
   // ===========================================================
 
   useEffect(() => {
     const init = async () => {
       setIsLoading(true);
+      setPlacementError("");
 
       try {
         const response = await loadQuestions(questionId);
@@ -407,40 +399,30 @@ const QuestionPage = () => {
       return;
     }
 
-    const answerMap = savedAnswers.reduce((map, answer) => {
-      if (!answer) {
-        return map;
+    const rows = useQuestionStore.getState().questions;
+    const groupedAnswers = new Map();
+    for (const answer of savedAnswers) {
+      if (!answer) continue;
+      const candidates = rows.filter((row) => answer.questionAttributeId != null
+        ? String(row.questionAttributeId) === String(answer.questionAttributeId)
+        : String(row.attributeId) === String(answer.attributeId));
+      // Old answers did not identify repeated trial-balance accounts. Preserve
+      // them in storage without incorrectly assigning one balance to another.
+      if (candidates.length !== 1) {
+        setPlacementError("Some older saved answers cannot identify a repeated account row. Reset the question to place those balances again.");
+        continue;
       }
-
-      const entries = (map[answer.attributeId] = map[answer.attributeId] || []);
-
-      entries.push({
-        totalAnswers: answer.totalAnswers,
-
-        targetId: `${answer.tableName}-${answer.headerName}-${answer.arithmetic}`,
-
-        conditionId: answer.conditionId,
-
-        pairAttributeId: answer.pairAttributeId,
-      });
-
-      return map;
-    }, {});
-
-    console.log("I have data in answerMap: ", answerMap);
-
-    for (const [sourceId, answers] of Object.entries(answerMap)) {
-      const attributeId = Number(sourceId);
-
-      await setTotalAnswers(attributeId, answers[0].totalAnswers);
-
-      for (const obj of answers) {
-        await moveQuestion(
-          attributeId,
-          obj.targetId,
-          obj.conditionId,
-          obj.pairAttributeId,
-        );
+      const row = candidates[0];
+      const entries = groupedAnswers.get(row.id) ?? [];
+      entries.push(answer);
+      groupedAnswers.set(row.id, entries);
+    }
+    for (const [sourceId, answers] of groupedAnswers) {
+      setTotalAnswers(sourceId, Math.max(answers.length, ...answers.map((answer) => Number(answer.totalAnswers) || 1)));
+      for (const answer of answers) {
+        moveQuestion(sourceId,
+          normalizeFinalAccountTarget(`${answer.tableName}-${answer.headerName}-${answer.arithmetic}`),
+          answer.conditionId, answer.pairAttributeId, answer.amount);
       }
     }
   };
@@ -745,135 +727,68 @@ const QuestionPage = () => {
 
         console.log(`I got dropped into ${targetId}`);
 
-        const myQuestion = questions.find((q) => q.id == sourceId);
-
-        if (!myQuestion) {
-          return;
-        }
-
-        for (const cur of myQuestion.answered) {
-          if (cur === targetId) {
-            console.log("This was already added");
-
-            return;
-          }
-        }
-
         const [first, second, third] = targetId.split("-");
-
-        let count = 0;
+        const operation = useQuestionStore.getState().beginOperation(questionId, "drop");
+        if (!operation) return;
 
         try {
+          let myQuestion = useQuestionStore.getState().questions.find((q) => String(q.id) === String(sourceId));
+          if (!myQuestion || myQuestion.status === "solved") return;
           let actualAnswers = myQuestion.actualAnswers;
 
           if (myQuestion.actualAnswers.length === 0) {
             const response =
-              await RuleEngineService.getAttributeAnswers(sourceId);
+              await RuleEngineService.getAttributeAnswers(myQuestion.attributeId);
+            if (!useQuestionStore.getState().isOperationCurrent(operation)) return;
+            myQuestion = useQuestionStore.getState().questions.find((q) => String(q.id) === String(sourceId));
+            if (!myQuestion) return;
 
-            const apiData = response[0];
-
-            let allHints = [];
-
-            for (let i = 1; i <= 4; i++) {
-              const pairId = apiData.pairAttributeId;
-
-              const condition = apiData[`condition${i}`];
-
-              if (condition.arithmetic == null) {
-                continue;
-              }
-
-              count++;
-
-              allHints.push(condition.information);
-
-              const string = `${condition.tableName}-${condition.headerName}-${condition.arithmetic}`;
-
-              actualAnswers.push({
-                conditionId: i,
-                answer: string,
-                tableNameId: condition.tableId,
-                headerId: condition.headerId,
-                pairAttributeId: pairId,
-              });
-            }
+            actualAnswers = getRuleAnswers(response, useQuestionStore.getState().question.chapterId, myQuestion)
+              .map((answer) => ({ ...answer, answer: normalizeFinalAccountTarget(answer.answer) }));
 
             setActualAnswers(sourceId, actualAnswers);
-
-            setTotalAnswers(sourceId, count);
-
-            setHints(sourceId, allHints);
+            setTotalAnswers(sourceId, actualAnswers.length);
+            setHints(sourceId, actualAnswers.map((answer) => answer.information).filter(Boolean));
           }
-
-          if (count === 0) {
-            count = myQuestion.totalAnswers;
-          }
-
-          let matched = false;
-
-          let answerId = null;
-
-          const alreadyAnswered = myQuestion.answered.find(
-            (a) => a.answer === targetId,
-          );
-
-          if (alreadyAnswered) {
-            return;
-          }
-
+          setPlacementError("");
+          const answeredIds = myQuestion.answered.map((answer) => answer.conditionId);
           const correctAnswer = actualAnswers.find(
-            (a) => a.answer === targetId,
+            (answer) => answer.answer === targetId && !answeredIds.includes(answer.conditionId),
           );
-
-          if (correctAnswer) {
-            matched = true;
-
-            answerId = correctAnswer.conditionId;
-          }
-
-          if (!matched) {
+          if (!correctAnswer) {
+            // Dropping onto an already completed destination is a harmless no-op.
+            if (actualAnswers.some((answer) => answer.answer === targetId)) return;
             if (myQuestion.status !== "wrong") {
               setError(sourceId);
             }
-
-            const answeredIds = myQuestion.answered.map((a) => a.conditionId);
-
-            let enter = false;
-
-            let newValue = null;
-
-            if (answeredIds.includes(myQuestion.attemptingId)) {
-              enter = true;
-
-              const nextAttempt = myQuestion.actualAnswers.find(
-                (a) => !answeredIds.includes(a.conditionId),
-              );
-
-              if (!nextAttempt) {
-                return;
-              }
-
-              newValue = nextAttempt.conditionId;
-
-              setAttributeId(sourceId, nextAttempt.conditionId);
-            }
+            const attemptedAnswer = actualAnswers.find((answer) =>
+              answer.conditionId === myQuestion.attemptingId && !answeredIds.includes(answer.conditionId)) ??
+              actualAnswers.find((answer) => !answeredIds.includes(answer.conditionId));
+            if (!attemptedAnswer) return;
+            setAttributeId(sourceId, attemptedAnswer.conditionId);
 
             const body = {
+              finalAccounts: true,
               userId: getCurrentUserId(),
 
               questionId: questionId,
 
-              attributeId: sourceId,
+              attributeId: myQuestion.attributeId,
+              questionAttributeId: myQuestion.questionAttributeId,
+              tableName: first,
+              headerName: second,
+              amount: attemptedAnswer.amount,
+              conditionId: attemptedAnswer.conditionId,
 
-              arithmetic: answerMap[third],
+              arithmetic: third,
 
               eventType: "ANSWER",
 
-              answerPosition: enter ? newValue : myQuestion.attemptingId,
+              answerPosition: attemptedAnswer.conditionId,
 
               isCorrect: false,
 
-              description: `from ${questionMap[myQuestion.type]} of ${myQuestion.name} is ${myQuestion.amount} >> attempted to ${answerMap[third]} on ${second} of ${first}.`,
+              description: `from ${questionMap[myQuestion.type]} of ${myQuestion.name} is ${attemptedAnswer.amount} >> attempted to ${answerMap[third]} on ${second} of ${first}.`,
 
               userAnswer: `attempted to ${answerMap[third]} on ${second} of ${first}.`,
             };
@@ -883,28 +798,32 @@ const QuestionPage = () => {
             });
           } else {
             const body = {
+              finalAccounts: true,
               userId: getCurrentUserId(),
 
               questionId: questionId,
 
-              attributeId: sourceId,
+              attributeId: myQuestion.attributeId,
+              questionAttributeId: myQuestion.questionAttributeId,
+              tableNameId: correctAnswer.tableNameId,
+              headerId: correctAnswer.headerId,
+              tableName: first,
+              headerName: second,
+              amount: correctAnswer.amount,
+              conditionId: correctAnswer.conditionId,
 
-              arithmetic: answerMap[third],
+              arithmetic: third,
 
-              answerPosition: answerId,
+              answerPosition: correctAnswer.conditionId,
 
               eventType: myQuestion.usedHint ? "HINT" : "ANSWER",
 
               isCorrect: true,
 
-              description: `from ${questionMap[myQuestion.type]} of ${myQuestion.name} is ${myQuestion.amount} >> attempted to ${answerMap[third]} on ${second} of ${first}.`,
+              description: `from ${questionMap[myQuestion.type]} of ${myQuestion.name} is ${correctAnswer.amount} >> attempted to ${answerMap[third]} on ${second} of ${first}.`,
 
               userAnswer: `attempted to ${answerMap[third]} on ${second} of ${first}.`,
             };
-
-            const correctAnswer = myQuestion.actualAnswers.find(
-              (a) => a.answer === targetId,
-            );
 
             const questionBody = {
               userId: getCurrentUserId(),
@@ -915,38 +834,50 @@ const QuestionPage = () => {
 
               headerId: correctAnswer.headerId,
 
-              attributeId: sourceId,
+              attributeId: myQuestion.attributeId,
+              questionAttributeId: myQuestion.questionAttributeId,
 
               arithmetic: third,
 
-              amount: myQuestion.amount,
+              amount: correctAnswer.amount,
 
               conditionId: correctAnswer.conditionId,
 
               pairAttributeId: correctAnswer.pairAttributeId,
 
-              totalAnswers: count,
+              totalAnswers: actualAnswers.length,
             };
 
             await QuestionAnswerService.processAnswerEvent({
               ...body, questionAttributeId: myQuestion.questionAttributeId,
             });
+            if (!useQuestionStore.getState().isOperationCurrent(operation)) return;
 
             await QuestionAnswerService.saveAnswer(questionBody);
-            await setCurrentScore(1);
+            if (!useQuestionStore.getState().isOperationCurrent(operation)) return;
 
             moveQuestion(
               sourceId,
               targetId,
-              answerId,
+              correctAnswer.conditionId,
               correctAnswer.pairAttributeId,
+              correctAnswer.amount,
             );
+            try {
+              await setCurrentScore(getCurrentUserId());
+            } catch (scoreError) {
+              console.error("Unable to refresh score:", scoreError);
+            }
           }
         } catch (error) {
           console.log("Error is ", error, " for id ", sourceId);
+          setPlacementError(error.response?.data?.message ?? error.message ?? "Unable to save this placement.");
+        } finally {
+          useQuestionStore.getState().endOperation(operation);
         }
       }}
     >
+      {placementError && <div className="alert alert-warning" role="alert">{placementError}</div>}
       <QuestionTable />
     </DragDropProvider>
   );
