@@ -24,6 +24,14 @@
     font-size:16px;
 }
 
+.dashboard .dashboard-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.dashboard .dashboard-empty { color: #64748b; padding: 18px 0; }
+.dashboard .dashboard-footnote { color: #64748b; font-size: 12px; line-height: 1.6; margin-bottom: 12px; }
+.dashboard .leader-row { grid-template-columns: 32px 36px minmax(0, 1fr) auto; }
+.dashboard .leader-avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: #eaf2ff; color: #2563eb; font-weight: 700; }
+.dashboard .leader-info small { color: #64748b; }
+.dashboard .activity time { color: #64748b; font-size: 12px; max-width: 100px; flex-shrink: 0; }
+
 /* ===========================
    Responsive
 =========================== */
