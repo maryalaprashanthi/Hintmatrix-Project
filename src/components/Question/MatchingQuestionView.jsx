@@ -1,8 +1,9 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import useQuestionStore from "./questionStore";
 import { getCurrentUserId } from "../../utils/user";
+import { restoreMatchingAnswers } from "../../utils/questionAttemptState";
 import "./MatchingQuestionView.css";
 
 const MatchingQuestionView = ({
@@ -35,6 +36,9 @@ const MatchingQuestionView = ({
   const [score, setScore] = useState(0);
 
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [restoredReady, setRestoredReady] = useState(false);
+  const savedAnswers = useRef({});
 
   // =========================================================
   // SHUFFLE
@@ -117,6 +121,30 @@ const MatchingQuestionView = ({
     setCurrentScore(0);
   }, [question?.questionId, setCurrentScore]);
 
+  useEffect(() => {
+    if (!question?.questionId || !Array.isArray(question.pairs)) return;
+    let active = true;
+    setSaving(true);
+    setRestoredReady(false);
+    setError("");
+    savedAnswers.current = {};
+    QuestionAnswerService.getAnswerEventsByQuestionId(getCurrentUserId(), question.questionId)
+      .then((events) => {
+        if (!active) return;
+        const restored = restoreMatchingAnswers(events, question.pairs);
+        savedAnswers.current = restored.saved;
+        setSelectedAnswers(restored.answers);
+        setScore(restored.score);
+        setCurrentScore(restored.score);
+        setSubmitted(restored.submitted);
+        setRestoredReady(true);
+        if (restored.submitted) onCompleted?.(question.questionId, restored.score);
+      })
+      .catch(() => { if (active) setError("Unable to restore your saved answers. Please reopen the question."); })
+      .finally(() => { if (active) setSaving(false); });
+    return () => { active = false; };
+  }, [question?.questionId, setCurrentScore]);
+
   // =========================================================
   // GET SELECTED ANSWER
   // =========================================================
@@ -162,7 +190,7 @@ const MatchingQuestionView = ({
     event,
     pair
   ) => {
-    if (submitted || saving) {
+    if (submitted || saving || !restoredReady) {
       return;
     }
 
@@ -190,7 +218,7 @@ const MatchingQuestionView = ({
     event,
     pairId
   ) => {
-    if (submitted || saving) {
+    if (submitted || saving || !restoredReady) {
       return;
     }
 
@@ -227,7 +255,7 @@ const MatchingQuestionView = ({
   ) => {
     event.preventDefault();
 
-    if (submitted || saving) {
+    if (submitted || saving || !restoredReady) {
       return;
     }
 
@@ -295,7 +323,7 @@ const MatchingQuestionView = ({
   const handleRemoveMatch = (
     pairId
   ) => {
-    if (submitted || saving) {
+    if (submitted || saving || !restoredReady) {
       return;
     }
 
@@ -316,17 +344,25 @@ const MatchingQuestionView = ({
   // RESET
   // =========================================================
 
-  const handleReset = () => {
-    if (submitted || saving) {
-      return;
+  const handleReset = async () => {
+    if (saving || !restoredReady) return;
+    setSaving(true);
+    setError("");
+    try {
+      await QuestionAnswerService.resetAnswerEventsByUserAndQuestion(getCurrentUserId(), question.questionId);
+      savedAnswers.current = {};
+      setSelectedAnswers({});
+      setSubmitted(false);
+      setDraggedAnswer(null);
+      setDropTargetPairId(null);
+      setScore(0);
+      setCurrentScore(0);
+      setShuffledColumnB(shuffleArray(pairs));
+    } catch {
+      setError("Unable to reset your saved answers. Please try again.");
+    } finally {
+      setSaving(false);
     }
-
-    setSelectedAnswers({});
-    setDraggedAnswer(null);
-    setDropTargetPairId(null);
-    setScore(0);
-
-    setCurrentScore(0);
   };
 
   // =========================================================
@@ -334,7 +370,7 @@ const MatchingQuestionView = ({
   // =========================================================
 
   const handleSubmit = async () => {
-    if (pairs.length === 0) {
+    if (pairs.length === 0 || saving || submitted || !restoredReady) {
       return;
     }
 
@@ -365,6 +401,7 @@ const MatchingQuestionView = ({
     }
 
     setSaving(true);
+    setError("");
 
     let correctCount = 0;
 
@@ -426,21 +463,16 @@ const MatchingQuestionView = ({
           isCorrect: isCorrect,
 
           description:
-            `Matching question: Column A "${pair.columnA}" was matched with Column B "${selectedPair?.columnB ?? ""}".`,
+            `Matching question: Column A "${pair.columnA}" was matched with Column B "${selectedPair?.columnB ?? ""}". | matchIds=${JSON.stringify([Number(pair.pairId), selectedPairId])}`,
 
           userAnswer:
             `Column A "${pair.columnA}" -> Column B "${selectedPair?.columnB ?? ""}"`,
         };
 
-        try {
-          await QuestionAnswerService.processAnswerEvent(
-            answerEvent
-          );
-        } catch (error) {
-          console.error(
-            "Failed to save matching answer:",
-            error
-          );
+        const previous = savedAnswers.current[pair.pairId];
+        const marker = `| matchIds=${JSON.stringify([Number(pair.pairId), selectedPairId])}`;
+        if (!previous?.description?.endsWith(marker)) {
+          savedAnswers.current[pair.pairId] = await QuestionAnswerService.processAnswerEvent(answerEvent);
         }
       }
 
@@ -472,9 +504,7 @@ const MatchingQuestionView = ({
         error
       );
 
-      alert(
-        "Something went wrong while submitting the answer."
-      );
+      setError("Unable to save all matches. Your saved matches are retained; please try again.");
     } finally {
       setSaving(false);
     }
@@ -484,18 +514,7 @@ const MatchingQuestionView = ({
   // TRY AGAIN
   // =========================================================
 
-  const handleTryAgain = () => {
-    setSelectedAnswers({});
-    setSubmitted(false);
-    setScore(0);
-    setDraggedAnswer(null);
-
-    setCurrentScore(0);
-
-    setShuffledColumnB(
-      shuffleArray(pairs)
-    );
-  };
+  const handleTryAgain = handleReset;
 
   // =========================================================
   // NO QUESTION
@@ -541,6 +560,7 @@ const MatchingQuestionView = ({
 
   return (
     <div className="matching-page">
+      {error && <div className="alert alert-danger" role="alert">{error}</div>}
 
       {/* =====================================================
           HEADER
@@ -1081,7 +1101,7 @@ const MatchingQuestionView = ({
                     handleReset
                   }
                   disabled={
-                    saving ||
+                    saving || !restoredReady ||
                     Object.keys(
                       selectedAnswers
                     ).length === 0
@@ -1097,7 +1117,7 @@ const MatchingQuestionView = ({
                     handleSubmit
                   }
                   disabled={
-                    saving
+                    saving || !restoredReady
                   }
                 >
                   {saving
@@ -1115,6 +1135,7 @@ const MatchingQuestionView = ({
                   onClick={
                     handleTryAgain
                   }
+                  disabled={saving || !restoredReady}
                 >
                   ↻ Try Again
                 </button>

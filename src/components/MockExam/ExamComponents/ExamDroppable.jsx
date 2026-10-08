@@ -25,6 +25,7 @@ const ExamDroppable = ({
   isCreditSide,
   derivedRows = [],
   calculatedTotal,
+  matchRowCount,
 }) => {
   const data =
     useExamQuestionStore(
@@ -59,6 +60,8 @@ const ExamDroppable = ({
   const subTotal = displayRows
     .filter((o) => o.operation === "less")
     .reduce((sum, o) => sum + Number(o.amount || 0), 0);
+
+  const blankRows = Math.max(0, (matchRowCount ?? displayRows.length) - displayRows.length);
 
   return (
     <div className={`exam-droppable ${theme}`}>
@@ -95,19 +98,17 @@ const ExamDroppable = ({
                   </button>}
                 </td>
                 <td className="text-end amount-cell">
-                  {obj.operation === "add" && (obj.derived
-                    ? Number(obj.amount).toLocaleString("en-IN")
-                    : <input type="number" min="0" step="0.01"
+                  {obj.operation === "add" && !obj.derived && <input type="number" min="0" step="0.01"
                         className="ed-amount-input"
                         aria-label={`Amount for ${obj.name} on ${id}`}
                         value={obj.amount}
                         onChange={(event) => updatePlacementAmount(obj.id, `${id}-${obj.operation}`, event.target.value)}
-                      />)}
+                      />}
                 </td>
                 <td className="text-end amount-cell">
-                  {obj.operation === "less" && (obj.derived
-                    ? `-${Number(obj.amount).toLocaleString("en-IN")}`
-                    : <label className="d-flex align-items-center justify-content-end">
+                  {obj.derived
+                    ? `${obj.operation === "less" ? "-" : ""}${Number(obj.amount).toLocaleString("en-IN")}`
+                    : obj.operation === "less" && <label className="d-flex align-items-center justify-content-end">
                         <span aria-hidden="true">−</span>
                         <input type="number" min="0" step="0.01"
                           className="ed-amount-input"
@@ -115,17 +116,20 @@ const ExamDroppable = ({
                           value={obj.amount}
                           onChange={(event) => updatePlacementAmount(obj.id, `${id}-${obj.operation}`, event.target.value)}
                         />
-                      </label>)}
+                      </label>}
                 </td>
+              </tr>
+            ))}
+            {Array.from({ length: blankRows }, (_, index) => (
+              <tr key={`${id}-blank-${index}`} className="blank-row" aria-hidden="true">
+                <td>&nbsp;</td><td /><td />
               </tr>
             ))}
           </tbody>
           <tfoot>
             <tr className="total-row">
               <td className="fw-bold">Total</td>
-              <td className="fw-bold text-end amount-cell">
-                {addTotal.toLocaleString("en-IN")}
-              </td>
+              <td />
               <td className="fw-bold text-end amount-cell">
                 {(calculatedTotal ?? addTotal - subTotal).toLocaleString("en-IN")}
               </td>

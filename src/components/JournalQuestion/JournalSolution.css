@@ -2,6 +2,10 @@
    RIGHT SIDE CARD
    ========================================================= */
 
+.journal-solution-table tbody tr {
+  scroll-margin-block: 16px;
+}
+
 .journal-wrap {
   width: 100%;
   margin: 0;

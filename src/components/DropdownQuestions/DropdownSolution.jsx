@@ -1,9 +1,12 @@
 import React from "react";
 import { Table } from "react-bootstrap";
+import useAnswerRowScroll from "../../hooks/useAnswerRowScroll";
 
 import "./DropdownSolution.css";
 
-const DropdownSolution = ({ answeredData }) => {
+const DropdownSolution = ({ answeredData, answerScrollTarget }) => {
+  const answerRows = useAnswerRowScroll(answeredData, answerScrollTarget);
+
   return (
     <div className="dropdown-wrap">
       <div className="dropdown-card">
@@ -27,6 +30,10 @@ const DropdownSolution = ({ answeredData }) => {
                       return (
                         <tr
                           key={`${id}-${index}`}
+                          ref={(element) => {
+                            if (element) answerRows.current[`${id}-${index}`] = element;
+                            else delete answerRows.current[`${id}-${index}`];
+                          }}
                           className={
                             item.valid === true
                               ? "answer-correct"

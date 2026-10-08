@@ -14,6 +14,10 @@
   box-shadow: none;
 }
 
+.dropdown-card tbody tr {
+  scroll-margin-block: 16px;
+}
+
 .dropdown-table {
   width: 100%;
   border-collapse: collapse;

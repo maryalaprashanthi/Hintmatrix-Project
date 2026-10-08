@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import { ChevronUp } from "lucide-react";
+import { getQuestionAttributeSide } from "../../utils/questionAttributeSide";
 import {
   FINAL_ACCOUNT_TABLES,
   attributeLookup,
@@ -98,13 +99,13 @@ const ReadOnlyDragDropAnswer = ({
   const finalAccounts = calculateFinalAccounts(droppableData);
 
   const debitBalances = (question?.questionAttributes || []).filter(
-    (a) => a.headerName === "Debit Particulars",
+    (a) => getQuestionAttributeSide(a) === "debit",
   );
   const creditBalances = (question?.questionAttributes || []).filter(
-    (a) => a.headerName === "Credit Particulars",
+    (a) => getQuestionAttributeSide(a) === "credit",
   );
   const adjustments = (question?.questionAttributes || []).filter(
-    (a) => !["Debit Particulars", "Credit Particulars"].includes(a.headerName),
+    (a) => getQuestionAttributeSide(a) == null,
   );
 
   const debitTotal = debitBalances.reduce(

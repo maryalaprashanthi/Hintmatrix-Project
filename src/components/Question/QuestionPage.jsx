@@ -621,6 +621,7 @@ const QuestionPage = () => {
   if (questionType === "FILL_IN_THE_BLANKS") {
     return (
       <FillInBlankQuestionView
+        key={(currentQuestion || matchingQuestion)?.questionId}
         question={currentQuestion || matchingQuestion}
         questionNumber={currentQuestionIndex + 1}
         totalQuestions={totalQuestions}
@@ -642,6 +643,7 @@ const QuestionPage = () => {
   if (questionType === "MATCH_THE_FOLLOWING") {
     return (
       <MatchingQuestionView
+        key={(currentQuestion || matchingQuestion)?.questionId}
         question={currentQuestion || matchingQuestion}
         questionNumber={currentQuestionIndex + 1}
         totalQuestions={totalQuestions}

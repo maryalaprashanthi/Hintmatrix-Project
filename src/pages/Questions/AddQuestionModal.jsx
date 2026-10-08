@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getQuestionAttributeSide } from "../../utils/questionAttributeSide";
 import { createPortal } from "react-dom";
 import Select from "react-select";
 
@@ -8,6 +9,7 @@ import ChapterService from "../../services/ChapterService";
 import TopicService from "../../services/TopicService";
 import QuestionTypeService from "../../services/QuestionTypeService";
 import TableAttributeService from "../../services/TableAttributeService";
+import TableHeaderService from "../../services/TableHeaderService";
 import QuestionService from "../../services/QuestionService";
 import MatchingQuestionService from "../../services/MatchingQuestionService";
 import McqQuestionService from "../../services/McqQuestionService";
@@ -105,6 +107,7 @@ function AddQuestionModal({
   const [topicOptions, setTopicOptions] = useState([]);
   const [questionTypeOptions, setQuestionTypeOptions] = useState([]);
   const [balanceOptions, setBalanceOptions] = useState([]);
+  const [tableHeaders, setTableHeaders] = useState([]);
 
   // =========================================================
   // NORMAL QUESTION ATTRIBUTES
@@ -140,6 +143,9 @@ function AddQuestionModal({
     getData();
     loadQuestionTypes();
     loadTableAttributes();
+    TableHeaderService.getAll()
+      .then(({ data }) => setTableHeaders(Array.isArray(data) ? data : []))
+      .catch((error) => console.error("Failed to load table headers:", error));
   }, []);
 
   // =========================================================
@@ -268,7 +274,7 @@ function AddQuestionModal({
       console.log("TABLE ATTRIBUTE DATA:", response.data);
 
       const data = response.data.map((item) => ({
-        value: item.attributeId,
+        value: Number(item.attributeId),
         label: item.name,
         amount: item.amount ?? item.amount1 ?? item.amount2 ?? "",
       }));
@@ -408,16 +414,7 @@ function AddQuestionModal({
 
         const questionAttributes = question.questionAttributes || [];
 
-        const isCreditAttribute = (attribute) =>
-          [
-            attribute.transaction,
-            attribute.type,
-            attribute.side,
-            attribute.headerName,
-          ]
-            .filter(Boolean)
-            .some((value) => String(value).toLowerCase().includes("credit")) ||
-          String(attribute.headerId) === "3";
+        const isCreditAttribute = (attribute) => getQuestionAttributeSide(attribute) === "credit";
 
         if (cancelled) return;
 
@@ -572,6 +569,32 @@ function AddQuestionModal({
   };
 
   const isMatchingQuestion = isMatchingQuestionType(questionTypeId);
+
+  const getBalanceValue = (row, side) => {
+    const value = row[`${side}Balance`];
+    if (value === "" || value == null) return null;
+    return balanceOptions.find((option) => String(option.value) === String(value)) ?? {
+      value: Number(value),
+      label: row[`${side}AttributeName`] || `Attribute ${value}`,
+    };
+  };
+
+  const getBalanceHeader = (row, side) => {
+    const original = row[`${side}Original`];
+    if (original?.attributeHeaderId != null &&
+        String(original.attributeId) === String(row[`${side}Balance`]) &&
+        getQuestionAttributeSide({ headerName: original.attributeHeaderName }) === side) {
+      return { headerId: Number(original.attributeHeaderId), headerName: original.attributeHeaderName };
+    }
+    if (original?.headerId != null &&
+        getQuestionAttributeSide({ headerName: original.headerName }) === side) {
+      return { headerId: Number(original.headerId), headerName: original.headerName };
+    }
+    const header = tableHeaders.find((item) =>
+      getQuestionAttributeSide({ headerName: item.name }) === side,
+    );
+    return header ? { headerId: Number(header.headerId), headerName: header.name } : null;
+  };
 
   // =========================================================
   // NORMAL ATTRIBUTE FUNCTIONS
@@ -795,6 +818,14 @@ function AddQuestionModal({
     // NORMAL QUESTION ATTRIBUTES
     // =======================================================
 
+    if (attributes.some((row) =>
+      (row.debitBalance && !getBalanceHeader(row, "debit")) ||
+      (row.creditBalance && !getBalanceHeader(row, "credit")),
+    )) {
+      alert("Unable to resolve debit/credit headers. Check the table headers and reopen the form.");
+      return;
+    }
+
     const questionAttributes = attributes.flatMap((row) => {
       const mappedAttributes = [];
 
@@ -813,9 +844,7 @@ function AddQuestionModal({
             questionAttributeId: row.debitQuestionAttributeId,
           }),
 
-          headerId: 1,
-
-          headerName: "Debit Particulars",
+          ...getBalanceHeader(row, "debit"),
 
           attributeId: Number(row.debitBalance),
 
@@ -846,9 +875,7 @@ function AddQuestionModal({
             questionAttributeId: row.creditQuestionAttributeId,
           }),
 
-          headerId: 3,
-
-          headerName: "Credit Particulars",
+          ...getBalanceHeader(row, "credit"),
 
           attributeId: Number(row.creditBalance),
 
@@ -1415,9 +1442,7 @@ function AddQuestionModal({
                             className="react-select-container"
                             classNamePrefix="credit-select"
                             options={balanceOptions}
-                            value={balanceOptions.find(
-                              (option) => option.value == row.debitBalance,
-                            )}
+                            value={getBalanceValue(row, "debit")}
                             onChange={(selected) =>
                               (() => {
                                 const updated = [...attributes];
@@ -1479,9 +1504,7 @@ function AddQuestionModal({
                             className="react-select-container"
                             classNamePrefix="credit-select"
                             options={balanceOptions}
-                            value={balanceOptions.find(
-                              (option) => option.value === row.creditBalance,
-                            )}
+                            value={getBalanceValue(row, "credit")}
                             onChange={(selected) =>
                               (() => {
                                 const updated = [...attributes];

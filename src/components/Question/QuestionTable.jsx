@@ -177,7 +177,7 @@ const QuestionTable = () => {
               </Accordion.Header>
               <Accordion.Body>
                 <div className="row g-3">
-                  <div className="col-12 col-md-6">
+                  <div className="col-12 col-md-6 account-side">
                     <div className="text-primary fw-semibold small mb-2">
                       {obj.headers[0]}
                     </div>
@@ -188,7 +188,7 @@ const QuestionTable = () => {
                       matchRowCount={rowCount(obj)}
                     />
                   </div>
-                  <div className="col-12 col-md-6">
+                  <div className="col-12 col-md-6 account-side">
                     <div className="text-success fw-semibold small mb-2">
                       {obj.headers[1]}
                     </div>

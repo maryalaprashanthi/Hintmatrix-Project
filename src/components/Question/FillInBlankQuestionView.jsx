@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import { getCurrentUserId } from "../../utils/user";
+import { restoreBlankAnswers } from "../../utils/questionAttemptState";
 
 import "./FillInBlankQuestionView.css";
 
@@ -278,16 +279,43 @@ const blankCount =
   const [score, setScore] = useState(0);
 
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [restoredReady, setRestoredReady] = useState(false);
+  const savedAnswers = useRef({});
 
   const [draggedAnswer, setDraggedAnswer] = useState("");
 
   const [displayOptions, setDisplayOptions] = useState([]);
+  const shuffledOptionsKey = useRef(null);
 
   useEffect(() => {
     setAnswers(Array.from({ length: blankCount }, () => ""));
     setSubmitted(false);
     setScore(0);
     setDraggedAnswer("");
+  }, [questionRecord.questionId, blankCount]);
+
+  useEffect(() => {
+    if (!questionRecord.questionId) return;
+    let active = true;
+    setSaving(true);
+    setRestoredReady(false);
+    setError("");
+    savedAnswers.current = {};
+    QuestionAnswerService.getAnswerEventsByQuestionId(getCurrentUserId(), questionRecord.questionId)
+      .then((events) => {
+        if (!active) return;
+        const restored = restoreBlankAnswers(events, blankCount);
+        savedAnswers.current = restored.saved;
+        setAnswers(restored.answers);
+        setSubmitted(restored.submitted);
+        setScore(restored.score);
+        setRestoredReady(true);
+        if (restored.submitted) onCompleted?.(questionRecord.questionId, restored.score);
+      })
+      .catch(() => { if (active) setError("Unable to restore your saved answers. Please reopen the question."); })
+      .finally(() => { if (active) setSaving(false); });
+    return () => { active = false; };
   }, [questionRecord.questionId, blankCount]);
 
   const answerOptions = useMemo(() => {
@@ -302,37 +330,15 @@ const blankCount =
     ];
   }, [blanks]);
 
+  const answerOptionsKey = JSON.stringify(answerOptions);
+
   useEffect(() => {
-    if (!answerOptions.length) {
-      setDisplayOptions([]);
-      return undefined;
-    }
-
-    const initialOrder = shuffleArray(answerOptions);
-    setDisplayOptions(initialOrder);
-
-    const shuffleDuration = 4000;
-    const tickMs = 120;
-    const startedAt = Date.now();
-
-    const timer = setInterval(() => {
-      const elapsed = Date.now() - startedAt;
-
-      setDisplayOptions((current) => {
-        if (elapsed >= shuffleDuration) {
-          return current.length ? current : initialOrder;
-        }
-
-        return shuffleArray(current.length ? current : initialOrder);
-      });
-
-      if (elapsed >= shuffleDuration) {
-        clearInterval(timer);
-      }
-    }, tickMs);
-
-    return () => clearInterval(timer);
-  }, [answerOptions.join("|"), questionRecord.questionId]);
+    const key = `${questionRecord.questionId}:${answerOptionsKey}`;
+    // Keep the same order during answering, resets and StrictMode effect replay.
+    if (shuffledOptionsKey.current === key) return;
+    shuffledOptionsKey.current = key;
+    setDisplayOptions(shuffleArray(JSON.parse(answerOptionsKey)));
+  }, [answerOptionsKey, questionRecord.questionId]);
 
   const updateAnswer = (index, value) => {
     setAnswers((current) => {
@@ -352,12 +358,14 @@ const blankCount =
   };
 
   const submit = async () => {
+    if (saving || submitted || !restoredReady) return;
     const enteredAnswers = Array.from(
       { length: blankCount },
       (_, index) => String(answers[index] ?? "").trim(),
     );
 
     setSaving(true);
+    setError("");
 
     let correct = 0;
 
@@ -371,10 +379,8 @@ const blankCount =
             enteredAnswers[index].toLowerCase(),
         );
 
-        if (isCorrect) correct += 1;
-
-        try {
-          await QuestionAnswerService.processAnswerEvent({
+        if (savedAnswers.current[index]?.userAnswer !== enteredAnswers[index]) {
+          savedAnswers.current[index] = await QuestionAnswerService.processAnswerEvent({
             userId: getCurrentUserId(),
             questionId: questionRecord.questionId,
             attributeId: null,
@@ -385,12 +391,9 @@ const blankCount =
             description: `Blank ${index + 1} answer: ${enteredAnswers[index]}`,
             userAnswer: enteredAnswers[index],
           });
-        } catch (answerError) {
-          console.error(
-            "Failed to save fill-in-the-blank answer:",
-            answerError,
-          );
         }
+        // Use the server's correctness result, including on a partial-save retry.
+        if (savedAnswers.current[index].isCorrect === true) correct += 1;
       }
 
       setScore(correct);
@@ -399,6 +402,7 @@ const blankCount =
 
       onCompleted?.(questionRecord.questionId, correct);
     } catch (error) {
+      setError("Unable to save all blanks. Your saved answers are retained; please try again.");
       console.error(
         "Failed to save fill-in-the-blanks answer:",
         error,
@@ -408,11 +412,22 @@ const blankCount =
     }
   };
 
-  const reset = () => {
-    setAnswers(Array.from({ length: blankCount }, () => ""));
-    setSubmitted(false);
-    setScore(0);
-    setDraggedAnswer("");
+  const reset = async () => {
+    if (saving || !restoredReady) return;
+    setSaving(true);
+    setError("");
+    try {
+      await QuestionAnswerService.resetAnswerEventsByUserAndQuestion(getCurrentUserId(), questionRecord.questionId);
+      savedAnswers.current = {};
+      setAnswers(Array.from({ length: blankCount }, () => ""));
+      setSubmitted(false);
+      setScore(0);
+      setDraggedAnswer("");
+    } catch {
+      setError("Unable to reset your saved answers. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDrop = (index, event) => {
@@ -420,7 +435,7 @@ const blankCount =
 
     const value = event.dataTransfer.getData("text/plain");
 
-    if (!value || submitted || saving) return;
+    if (!value || submitted || saving || !restoredReady) return;
 
     updateAnswer(index, value);
 
@@ -509,6 +524,7 @@ const blankCount =
 
   return (
     <main className="fill-blank-page">
+      {error && <div className="alert alert-danger" role="alert">{error}</div>}
       <header className="matching-practice-header">
         <div>
           <div className="matching-eyebrow">
@@ -686,7 +702,7 @@ const blankCount =
               type="button"
               className="matching-reset-btn"
               onClick={reset}
-              disabled={saving}
+              disabled={saving || !restoredReady}
             >
               ↻ {submitted ? "Try Again" : "Reset"}
             </button>
@@ -696,7 +712,7 @@ const blankCount =
                 type="button"
                 className="matching-next-btn"
                 onClick={submit}
-                disabled={saving}
+                disabled={saving || !restoredReady}
               >
                 {saving ? "Saving..." : "Save & Next"}
               </button>
