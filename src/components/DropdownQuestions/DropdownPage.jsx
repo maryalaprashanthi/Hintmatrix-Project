@@ -56,6 +56,11 @@ const DropdownPage = () => {
   const [questionTables, setQuestionTables] = useState([]);
   const [totalScore, setTotalScore] = useState(0);
   const [checkMistakes, setCheckMistakes] = useState(false);
+  const [answerScrollTarget, setAnswerScrollTarget] = useState(null);
+
+  useEffect(() => {
+    setAnswerScrollTarget(null);
+  }, [questionId]);
 
   /*
    * =========================================================
@@ -380,11 +385,15 @@ const DropdownPage = () => {
             answeredData={answeredData}
             setAnsweredData={setAnsweredData}
             loadTotalScore={loadTotalScore}
+            onAnswerAdded={setAnswerScrollTarget}
           />
         </Col>
 
         <Col md={6}>
-          <DropdownSolution answeredData={answeredData} />
+          <DropdownSolution
+            answeredData={answeredData}
+            answerScrollTarget={answerScrollTarget}
+          />
         </Col>
       </Row>
     </div>

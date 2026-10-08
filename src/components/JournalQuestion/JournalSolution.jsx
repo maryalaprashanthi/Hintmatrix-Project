@@ -1,8 +1,10 @@
 import React from "react";
 import { Table } from "react-bootstrap";
+import useAnswerRowScroll from "../../hooks/useAnswerRowScroll";
 import "./JournalSolution.css";
 
-const JournalSolution = ({ answeredData }) => {
+const JournalSolution = ({ answeredData, answerScrollTarget }) => {
+  const answerRows = useAnswerRowScroll(answeredData, answerScrollTarget);
   return (
     <Table className="journal-solution-table">
       <thead>
@@ -55,6 +57,10 @@ const JournalSolution = ({ answeredData }) => {
                   return (
                     <tr
                       key={`${id}-${index}`}
+                      ref={(element) => {
+                        if (element) answerRows.current[`${id}-${index}`] = element;
+                        else delete answerRows.current[`${id}-${index}`];
+                      }}
                       className={rowClass}
                       data-valid={String(item.valid)}
                     >

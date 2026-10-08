@@ -22,6 +22,13 @@ test("unknown or missing headers are not silently treated as credit", () => {
   assert.equal(getQuestionAttributeSide(null), null);
 });
 
+test("legacy edit header links use explicit attribute metadata", () => {
+  assert.equal(getQuestionAttributeSide({ headerName: "transaction", attributeHeaderName: "debit particulars" }), "debit");
+  assert.equal(getQuestionAttributeSide({ headerName: "liabilities side", attributeHeaderName: "credit particulars" }), "credit");
+  assert.equal(getQuestionAttributeSide({ headerName: "Adjustments", attributeHeaderName: "Credit Particulars" }), null);
+  assert.equal(getQuestionAttributeSide({ headerName: "transaction" }), null);
+});
+
 test("mixed uploaded attributes retain separate sides and totals", () => {
   const rows = [
     { headerName: " Debit Particulars ", amount: 10000 },

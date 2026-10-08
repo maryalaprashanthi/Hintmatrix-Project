@@ -48,6 +48,11 @@ const JournalPage = () => {
   const [answeredData, setAnsweredData] = useState({});
   const [totalScore, setTotalScore] = useState(0);
   const [checkMistakes, setCheckMistakes] = useState(false);
+  const [answerScrollTarget, setAnswerScrollTarget] = useState(null);
+
+  useEffect(() => {
+    setAnswerScrollTarget(null);
+  }, [questionId]);
   useEffect(() => {
     const loadPage = async () => {
       const loadedQuestion = await loadQuestion();
@@ -370,11 +375,15 @@ const JournalPage = () => {
             answeredData={answeredData}
             setAnsweredData={setAnsweredData}
             loadTotalScore={loadTotalScore}
+            onAnswerAdded={setAnswerScrollTarget}
           />
         </Col>
 
         <Col>
-          <JournalSolution answeredData={answeredData} />
+          <JournalSolution
+            answeredData={answeredData}
+            answerScrollTarget={answerScrollTarget}
+          />
         </Col>
       </Row>
     </div>

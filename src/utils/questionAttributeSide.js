@@ -10,7 +10,15 @@ export const getQuestionAttributeSide = (attribute) => {
     const credit = /\bcredit\b/.test(name);
     if (debit !== credit) return debit ? "debit" : "credit";
     // An explicit but unknown header must not be overridden by a stale side.
-    if (value === header) return null;
+    if (value === header) {
+      // Recover display of legacy rows saved by the old edit form's IDs 1/3.
+      // Use explicit backend attribute-header metadata, never the attribute name
+      // or a numeric ID. Valid adjustment headers are not overridden.
+      if (["transaction", "liabilities side"].includes(name) && attribute?.attributeHeaderName) {
+        return getQuestionAttributeSide({ headerName: attribute.attributeHeaderName });
+      }
+      return null;
+    }
   }
   return null;
 };
