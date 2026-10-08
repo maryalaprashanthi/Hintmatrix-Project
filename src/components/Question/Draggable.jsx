@@ -71,7 +71,6 @@ export default function Draggable({
   }, [status, wrongAttempts]);
 
   const solved = status === "solved";
-  console.log("My status is ", status);
   const { ref } = useDraggable({
     id,
     type,
@@ -114,7 +113,6 @@ export default function Draggable({
 
   const handleHint = () => {
     if (useQuestionStore.getState().busyOperation) return;
-    console.log("Hint was clicked");
     setHintUsed(id);
   };
 

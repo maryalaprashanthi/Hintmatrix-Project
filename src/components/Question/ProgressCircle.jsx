@@ -4,7 +4,6 @@ const ProgressCircle = ({ solvedCount = 1, totalCount = 20 }) => {
   // Calculate percentage
   const percentage = Math.round((solvedCount / totalCount) * 100);
   // SVG Circle calculations for the progress ring
-  console.log("Solved count is ", solvedCount);
   const radius = 24;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset =

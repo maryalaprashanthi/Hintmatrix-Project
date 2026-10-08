@@ -21,6 +21,7 @@ class ExamPaperService {
         payload.endDate && payload.endTime
           ? `${payload.endDate}T${payload.endTime}:00`
           : payload.endDate || null,
+      durationMinutes: payload.durationMinutes ?? 60,
       passPercentage: payload.passPercentage ?? 35,
     };
 

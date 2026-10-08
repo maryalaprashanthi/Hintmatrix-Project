@@ -11,7 +11,6 @@ import { getCurrentUserId } from "../../utils/user";
 
 function Header({
   question: propQuestion,
-  answeredData,
   setAnsweredData,
   setCheckMistakes,
   actions,
@@ -26,9 +25,6 @@ function Header({
 
   const question = propQuestion || storeQuestion;
   const usesDragStore = !propQuestion && !setAnsweredData;
-
-  console.log("Header Question:", question);
-  console.log("Header Answered Data:", answeredData);
 
   const openMistakes = async () => {
     try {

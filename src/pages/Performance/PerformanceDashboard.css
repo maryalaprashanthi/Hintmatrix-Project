@@ -620,3 +620,43 @@
     padding: 18px;
   }
 }
+
+/* ---- scope tabs (College / Branch / Student picker) ---- */
+.performance-scope-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.performance-field-label {
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.performance-scope-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  padding: 3px;
+  border: 1px solid #dfe7f3;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.performance-scope-tabs button {
+  padding: 7px 16px;
+  border-radius: 8px;
+  color: #475569;
+  font-size: 0.86rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.performance-scope-tabs button.is-active {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #fff;
+}

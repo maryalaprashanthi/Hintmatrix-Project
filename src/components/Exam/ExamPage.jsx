@@ -17,7 +17,9 @@ import { getCurrentUserId } from "../../utils/user";
 import "./ExamShell/examTokens.css";
 import styles from "./ExamPage.module.css";
 
-const EXAM_MINUTES = 60;
+// Used only for the sample paper (/exam-mine), which has no exam record to
+// read a duration from. A real paper's duration always comes from the API.
+const DEFAULT_EXAM_MINUTES = 60;
 const MAX_WARNINGS = 3;
 
 const ResetIcon = () => (
@@ -87,11 +89,20 @@ const ExamPage = () => {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // The exam's own duration (and, for a scheduled exam, its end date) -
+  // null for the sample paper, which falls back to DEFAULT_EXAM_MINUTES.
+  const [examDetails, setExamDetails] = useState(null);
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [visited, setVisited] = useState(() => new Set());
   const [marked, setMarked] = useState(() => new Set());
-  const [secondsLeft, setSecondsLeft] = useState(EXAM_MINUTES * 60);
+  // Fixed once the exam starts; the countdown is computed from it, not
+  // ticked as state here - see Timer, which owns its own per-second render.
+  // examEndAtRef is min(startedAt + duration, exam's own end date) - the
+  // formula the brief specifies. examBudgetSecondsRef is that same window's
+  // length, used to work out how long the student actually used at submit.
+  const examEndAtRef = useRef(null);
+  const examBudgetSecondsRef = useRef(DEFAULT_EXAM_MINUTES * 60);
   const [warnings, setWarnings] = useState(0);
   const [bannerMessage, setBannerMessage] = useState(null);
   const [fullscreen, setFullscreen] = useState(false);
@@ -131,6 +142,16 @@ const ExamPage = () => {
               question,
             })),
           );
+
+          // Duration (and, for a scheduled exam, its end date) for the
+          // countdown formula. A failure here isn't fatal - startExam()
+          // falls back to DEFAULT_EXAM_MINUTES with no end-date cap.
+          try {
+            const examResponse = await ExamService.getById(examId);
+            setExamDetails(examResponse?.data ?? null);
+          } catch (detailsError) {
+            console.error("Failed to load exam duration:", detailsError);
+          }
         } else {
           setQuestions(await loadSampleQuestions());
         }
@@ -146,20 +167,15 @@ const ExamPage = () => {
   }, [examId]);
 
   // --- countdown -----------------------------------------------------------
-  useEffect(() => {
-    if (phase !== "running") return undefined;
+  // The tick itself lives inside Timer (see ExamTopBar); it reads
+  // examEndAtRef and calls handleTimeExpired once, so this page re-renders
+  // on a real state change only, not once a second.
+  const getSecondsLeft = () =>
+    examEndAtRef.current
+      ? Math.max(0, Math.round((examEndAtRef.current - Date.now()) / 1000))
+      : examBudgetSecondsRef.current;
 
-    const id = window.setInterval(
-      () => setSecondsLeft((value) => Math.max(0, value - 1)),
-      1000,
-    );
-
-    return () => window.clearInterval(id);
-  }, [phase]);
-
-  useEffect(() => {
-    if (phase === "running" && secondsLeft === 0) endExam("time");
-  }, [phase, secondsLeft]);
+  const handleTimeExpired = () => endExam("time");
 
   // --- fullscreen and warnings ---------------------------------------------
   // The rule shown on the start screen: leaving fullscreen or switching away
@@ -248,6 +264,21 @@ const ExamPage = () => {
   };
 
   const startExam = async () => {
+    const now = Date.now();
+    const durationMinutes = examDetails?.durationMinutes ?? DEFAULT_EXAM_MINUTES;
+    const durationEndAt = now + durationMinutes * 60 * 1000;
+    // A scheduled exam's own end date can cut a late starter short; the
+    // sample paper and a paper with no end date aren't bounded by it.
+    const scheduleEndAt = examDetails?.endDate
+      ? new Date(examDetails.endDate).getTime()
+      : Infinity;
+
+    examEndAtRef.current = Math.min(durationEndAt, scheduleEndAt);
+    examBudgetSecondsRef.current = Math.max(
+      0,
+      Math.round((examEndAtRef.current - now) / 1000),
+    );
+
     setPhase("running");
     if (questions[0]) setVisited(new Set([questions[0].id]));
     await enterFullscreen();
@@ -269,7 +300,7 @@ const ExamPage = () => {
         sessionById,
         examDragById,
         userId: getCurrentUserId(),
-        timeTakenSeconds: EXAM_MINUTES * 60 - secondsLeft,
+        timeTakenSeconds: examBudgetSecondsRef.current - getSecondsLeft(),
       });
 
       // What we're actually sending for marking. Expand the object in the
@@ -379,7 +410,10 @@ const ExamPage = () => {
           isLoading={loading}
           meta={[
             { label: "Questions", value: String(questions.length || "—") },
-            { label: "Duration", value: `${EXAM_MINUTES}m` },
+            {
+              label: "Duration",
+              value: `${examDetails?.durationMinutes ?? DEFAULT_EXAM_MINUTES}m`,
+            },
             { label: "Warnings", value: String(MAX_WARNINGS) },
           ]}
           onStart={startExam}
@@ -407,7 +441,8 @@ const ExamPage = () => {
         progressPct={
           questions.length ? (answeredIds.size / questions.length) * 100 : 0
         }
-        secondsLeft={secondsLeft}
+        endAt={examEndAtRef.current}
+        onExpire={handleTimeExpired}
         title={paper?.categoryName ?? ""}
         warnings={warnings}
       />
@@ -523,7 +558,7 @@ const ExamPage = () => {
           marked={marked.size}
           onCancel={() => setConfirmingSubmit(false)}
           onConfirm={() => endExam("manual")}
-          secondsLeft={secondsLeft}
+          secondsLeft={getSecondsLeft()}
           unattempted={questions.length - answeredIds.size}
         />
       )}

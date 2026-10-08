@@ -1,5 +1,5 @@
 import { DragDropProvider } from "@dnd-kit/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import QuestionTable from "./QuestionTable";
@@ -138,9 +138,6 @@ const QuestionPage = () => {
 
   // Completed questions
   const [completedQuestions, setCompletedQuestions] = useState({});
-
-  // Timer - 30 minutes
-  const [timeLeft, setTimeLeft] = useState(30 * 60);
 
   const [testSubmitted, setTestSubmitted] = useState(false);
 
@@ -428,42 +425,6 @@ const QuestionPage = () => {
   };
 
   // ===========================================================
-  // TIMER
-  // ===========================================================
-
-  useEffect(() => {
-    if (testSubmitted || isMcq) {
-      return;
-    }
-
-    if (timeLeft <= 0) {
-      handleSubmitTest();
-      return;
-    }
-
-    const timer = setInterval(() => {
-      setTimeLeft((previous) => (previous > 0 ? previous - 1 : 0));
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [timeLeft, testSubmitted, isMcq]);
-
-  // ===========================================================
-  // FORMAT TIMER
-  // ===========================================================
-
-  const formattedTime = useMemo(() => {
-    const minutes = Math.floor(timeLeft / 60);
-
-    const seconds = timeLeft % 60;
-
-    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
-      2,
-      "0",
-    )}`;
-  }, [timeLeft]);
-
-  // ===========================================================
   // QUESTION COMPLETED
   // ===========================================================
 
@@ -669,7 +630,6 @@ const QuestionPage = () => {
         onCompleted={handleQuestionCompleted}
         onQuestionSelect={handleSelectQuestion}
         onNext={handleNextQuestion}
-        formattedTime={formattedTime}
         onSubmitTest={handleSubmitTest}
       />
     );

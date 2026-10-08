@@ -27,8 +27,6 @@ const QuestionTable = () => {
 
   // Functions to handle opening and closing the modal
 
-  console.log("Questions from Store:", questions);
-
   const totalQ = questions.length;
 
   const debitBalances = questions.filter((q) => q.type === "debit");

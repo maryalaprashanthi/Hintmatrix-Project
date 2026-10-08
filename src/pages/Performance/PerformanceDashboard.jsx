@@ -22,9 +22,30 @@ import ExamService from "../../services/ExamService";
 import PerformanceService from "../../services/PerformanceService";
 import SectionService from "../../services/SectionService";
 import UserService from "../../services/UserService";
-import { currentRole } from "../../utils/roles";
+import { currentRole, ROLES } from "../../utils/roles";
 import { getApiErrorMessage } from "../../utils/apiError";
 import "./PerformanceDashboard.css";
+
+// Same scope-tab pattern as the Practice Performance page: a role sees only
+// the tabs its access allows, and a tab with `pick` shows one dropdown for
+// it. Only one of college / branch / student is ever filtered on at a time.
+const SCOPE_TABS = {
+  [ROLES.SUPER_ADMIN]: [
+    { key: "all", label: "All App" },
+    { key: "college", label: "College", pick: "college" },
+    { key: "branch", label: "Branch", pick: "branch" },
+    { key: "student", label: "Student", pick: "student" },
+  ],
+  [ROLES.COLLEGE_ADMIN]: [
+    { key: "college", label: "My College" },
+    { key: "branch", label: "Branch", pick: "branch" },
+    { key: "student", label: "Student", pick: "student" },
+  ],
+  [ROLES.BRANCH_ADMIN]: [
+    { key: "branch", label: "My Branch" },
+    { key: "student", label: "Student", pick: "student" },
+  ],
+};
 
 const EMPTY_DATA = {
   totalStudents: 0,
@@ -266,7 +287,6 @@ function TrendChart({ trend, onBarClick }) {
         margin={{ left: 52, right: 20, top: 18, bottom: 52 }}
         slotProps={{ legend: { hidden: true } }}
         onItemClick={(event, barItem) => {
-          console.log("I am clicked");
           const item = trend[barItem?.dataIndex];
           if (item && onBarClick) onBarClick(item);
         }}
@@ -492,6 +512,7 @@ function PerformanceDashboard() {
   const isStudent = role === "STUDENT";
   const isSuperAdmin = role === "SUPER_ADMIN";
   const isCollegeAdmin = role === "COLLEGE_ADMIN";
+  const scopeTabs = SCOPE_TABS[role] ?? [];
   const [data, setData] = useState(EMPTY_DATA);
   const [options, setOptions] = useState({
     colleges: [],
@@ -501,15 +522,22 @@ function PerformanceDashboard() {
     exams: [],
     students: [],
   });
-  const [filters, setFilters] = useState({
+
+  // Who the numbers cover (one of college / branch / student at a time, via
+  // the scope tabs) and which paper(s) - two independent axes, same split as
+  // the Practice Performance page's scope + course/subject.
+  const [scope, setScope] = useState({
+    mode: scopeTabs[0]?.key ?? "all",
     collegeId: "",
     branchId: "",
+    studentId: "",
+  });
+  const [hierarchy, setHierarchy] = useState({
     courseId: "",
     sectionId: "",
     examId: "",
-    studentId: "",
   });
-  const [activeFilters, setActiveFilters] = useState({});
+
   const [topPerformersSearch, setTopPerformersSearch] = useState("");
   const [attentionSearch, setAttentionSearch] = useState("");
   const [status, setStatus] = useState("loading");
@@ -520,6 +548,30 @@ function PerformanceDashboard() {
     data: null,
     error: "",
   });
+
+  const scopeToParams = (currentScope) => {
+    if (currentScope.mode === "college" && currentScope.collegeId) {
+      return { collegeId: currentScope.collegeId };
+    }
+    if (currentScope.mode === "branch" && currentScope.branchId) {
+      return { branchId: currentScope.branchId };
+    }
+    if (currentScope.mode === "student" && currentScope.studentId) {
+      return { studentId: currentScope.studentId };
+    }
+    return {};
+  };
+
+  const activeParams = useMemo(
+    () => ({
+      ...scopeToParams(scope),
+      ...Object.fromEntries(
+        Object.entries(hierarchy).filter(([, value]) => value !== ""),
+      ),
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [scope, hierarchy],
+  );
 
   const loadPerformance = useCallback(
     async (nextFilters = {}) => {
@@ -596,75 +648,41 @@ function PerformanceDashboard() {
         setOptionsError("Some filter options could not be loaded.");
       }
     });
-    loadPerformance();
     return () => {
       active = false;
     };
-  }, [isStudent, loadPerformance]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isStudent]);
 
-  const handleFilterChange = (event) => {
+  // Every scope / course / section / exam change reloads immediately - no
+  // separate Apply step, same as Practice Performance's filters.
+  useEffect(() => {
+    if (isStudent) return;
+    void loadPerformance(activeParams);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isStudent, activeParams]);
+
+  const changeScopeMode = (mode) => {
+    setScope({ mode, collegeId: "", branchId: "", studentId: "" });
+  };
+
+  // Course -> Section -> Exam cascade: changing one clears whatever depends
+  // on it, same rule the old form used.
+  const handleHierarchyChange = (event) => {
     const { name, value } = event.target;
-    setFilters((current) => {
-      if (name === "collegeId") {
-        return {
-          ...current,
-          collegeId: value,
-          branchId: "",
-          courseId: "",
-          sectionId: "",
-          examId: "",
-          studentId: "",
-        };
-      }
-      if (name === "branchId") {
-        return {
-          ...current,
-          branchId: value,
-          courseId: "",
-          sectionId: "",
-          examId: "",
-          studentId: "",
-        };
-      }
+    setHierarchy((current) => {
       if (name === "courseId") {
-        return {
-          ...current,
-          courseId: value,
-          sectionId: "",
-          examId: "",
-          studentId: "",
-        };
+        return { courseId: value, sectionId: "", examId: "" };
       }
       if (name === "sectionId") {
-        return { ...current, sectionId: value, examId: "", studentId: "" };
+        return { ...current, sectionId: value, examId: "" };
       }
       return { ...current, [name]: value };
     });
   };
 
-  const applyFilters = (event) => {
-    event.preventDefault();
-    const nextFilters = Object.fromEntries(
-      Object.entries(filters).filter(
-        ([, value]) => value !== "" && value !== null && value !== undefined,
-      ),
-    );
-    setActiveFilters(nextFilters);
-    loadPerformance(nextFilters);
-  };
-
-  const clearFilters = () => {
-    setFilters({
-      collegeId: "",
-      branchId: "",
-      courseId: "",
-      sectionId: "",
-      examId: "",
-      studentId: "",
-    });
-    setActiveFilters({});
-    loadPerformance();
-  };
+  const clearHierarchy = () =>
+    setHierarchy({ courseId: "", sectionId: "", examId: "" });
 
   const openChapterBreakdown = async (trendItem) => {
     setBreakdown({ trendItem, status: "idle", data: null, error: "" });
@@ -721,88 +739,139 @@ function PerformanceDashboard() {
         )
       : studentsNeedingAttention;
   }, [studentsNeedingAttention, attentionSearch]);
+  // The scope tab pins at most one of college / branch - used only to
+  // narrow the Course / Section / Exam / Student lists, same as scope and
+  // path are independent axes on the Practice Performance page.
+  const scopeCollegeId = scope.mode === "college" ? scope.collegeId : "";
+  const scopeBranchId = scope.mode === "branch" ? scope.branchId : "";
+
   const visibleCourses = useMemo(
     () =>
       options.courses.filter(
         (course) =>
-          matchesParent(course, filters.branchId, ["branchId", "branch_id"]) &&
-          matchesParent(course, filters.collegeId, ["collegeId", "college_id"]),
+          matchesParent(course, scopeBranchId, ["branchId", "branch_id"]) &&
+          matchesParent(course, scopeCollegeId, ["collegeId", "college_id"]),
       ),
-    [options.courses, filters.branchId, filters.collegeId],
+    [options.courses, scopeBranchId, scopeCollegeId],
   );
 
   const visibleBranches = useMemo(
     () =>
       options.branches.filter((branch) =>
-        matchesParent(branch, filters.collegeId, ["collegeId", "college_id"]),
+        matchesParent(branch, scope.collegeId, ["collegeId", "college_id"]),
       ),
-    [options.branches, filters.collegeId],
+    [options.branches, scope.collegeId],
   );
 
   const visibleSections = useMemo(() => {
     return options.sections.filter(
       (section) =>
-        matchesParent(section, filters.branchId, ["branchId", "branch_id"]) &&
-        matchesParent(section, filters.collegeId, [
-          "collegeId",
-          "college_id",
-        ]) &&
-        matchesParent(section, filters.courseId, ["courseId", "course_id"]),
+        matchesParent(section, scopeBranchId, ["branchId", "branch_id"]) &&
+        matchesParent(section, scopeCollegeId, ["collegeId", "college_id"]) &&
+        matchesParent(section, hierarchy.courseId, [
+          "courseId",
+          "course_id",
+        ]),
     );
-  }, [options.sections, filters.branchId, filters.collegeId, filters.courseId]);
+  }, [options.sections, scopeBranchId, scopeCollegeId, hierarchy.courseId]);
 
   const visibleExams = useMemo(
     () =>
       options.exams.filter(
         (exam) =>
-          matchesParent(exam, filters.branchId, ["branchId", "branch_id"]) &&
-          matchesParent(exam, filters.collegeId, ["collegeId", "college_id"]) &&
-          matchesParent(exam, filters.courseId, ["courseId", "course_id"]) &&
-          matchesParent(exam, filters.sectionId, ["sectionId", "section_id"]),
+          matchesParent(exam, scopeBranchId, ["branchId", "branch_id"]) &&
+          matchesParent(exam, scopeCollegeId, ["collegeId", "college_id"]) &&
+          matchesParent(exam, hierarchy.courseId, ["courseId", "course_id"]) &&
+          matchesParent(exam, hierarchy.sectionId, [
+            "sectionId",
+            "section_id",
+          ]),
       ),
-    [options.exams, filters.branchId, filters.courseId, filters.sectionId],
+    [
+      options.exams,
+      scopeBranchId,
+      scopeCollegeId,
+      hierarchy.courseId,
+      hierarchy.sectionId,
+    ],
   );
 
-  // Optional - narrows the dashboard to one student. Picking one also turns
-  // each trend bar into that student's own result, which the chapter
-  // breakdown needs.
+  // The Student picker (scope.mode === "student") - narrowed by whichever
+  // college/branch the role already implies, and by the current course /
+  // section so the list only ever shows relevant students.
   const visibleStudents = useMemo(
     () =>
       options.students.filter(
         (student) =>
-          matchesParent(student, filters.collegeId, [
+          matchesParent(student, scopeCollegeId, [
             "collegeId",
             "college_id",
           ]) &&
-          matchesParent(student, filters.branchId, ["branchId", "branch_id"]) &&
-          matchesParent(student, filters.courseId, ["courseId", "course_id"]) &&
-          matchesParent(student, filters.sectionId, [
+          matchesParent(student, scopeBranchId, ["branchId", "branch_id"]) &&
+          matchesParent(student, hierarchy.courseId, [
+            "courseId",
+            "course_id",
+          ]) &&
+          matchesParent(student, hierarchy.sectionId, [
             "sectionId",
             "section_id",
           ]),
       ),
     [
       options.students,
-      filters.branchId,
-      filters.collegeId,
-      filters.courseId,
-      filters.sectionId,
+      scopeBranchId,
+      scopeCollegeId,
+      hierarchy.courseId,
+      hierarchy.sectionId,
     ],
   );
 
-  // Whose line the trend chart is showing - the applied filters, not the
-  // dropdown, so this always matches what loadPerformance actually fetched.
+  // Whose line the trend chart is showing.
   const trendStudentName = useMemo(() => {
-    if (!activeFilters.studentId) return null;
+    if (scope.mode !== "student" || !scope.studentId) return null;
 
     const student = options.students.find(
       (candidate) =>
-        String(getId(candidate, ["userId", "id"])) ===
-        String(activeFilters.studentId),
+        String(getId(candidate, ["userId", "id"])) === String(scope.studentId),
     );
 
     return student ? getLabel(student, ["name"], "this student") : "this student";
-  }, [activeFilters.studentId, options.students]);
+  }, [scope.mode, scope.studentId, options.students]);
+
+  const activeTab = scopeTabs.find((tab) => tab.key === scope.mode);
+  const pickKind = activeTab?.pick;
+
+  const pickList = {
+    college: options.colleges.map((college) => ({
+      value: String(getId(college, ["collegeId", "id"])),
+      label: getLabel(
+        college,
+        ["instituteName", "collegeName", "name"],
+        "College",
+      ),
+    })),
+    branch: visibleBranches.map((branch) => ({
+      value: String(getId(branch, ["branchId", "id"])),
+      label: getLabel(branch, ["branchName", "name"], "Branch"),
+    })),
+    student: [...visibleStudents]
+      .sort((a, b) =>
+        String(getLabel(a, ["name"], "")).localeCompare(
+          String(getLabel(b, ["name"], "")),
+        ),
+      )
+      .map((student) => ({
+        value: String(getId(student, ["userId", "id"])),
+        label: getLabel(student, ["name"], "Student"),
+      })),
+  };
+
+  const pickValue = pickKind ? scope[`${pickKind}Id`] : "";
+  const pickAllLabel = {
+    college: "All colleges",
+    branch: "All branches",
+    student: "All students",
+  };
 
   return (
     <div className="container-fluid performance-page">
@@ -819,7 +888,7 @@ function PerformanceDashboard() {
         <button
           type="button"
           className="btn btn-outline-primary performance-refresh"
-          onClick={() => loadPerformance(activeFilters)}
+          onClick={() => loadPerformance(activeParams)}
           disabled={status === "loading"}
         >
           <FaRedo /> Refresh
@@ -835,54 +904,53 @@ function PerformanceDashboard() {
       )}
 
       {!isStudent && (
-        <form
-          className="performance-filters card shadow-sm border-0"
-          onSubmit={applyFilters}
-        >
-          <div className="row g-3 align-items-end">
-            {isSuperAdmin && (
-              <div className="col-12 col-md-4 col-xl-3">
-                <label htmlFor="performance-college">College</label>
-                <select
-                  id="performance-college"
-                  name="collegeId"
-                  value={filters.collegeId}
-                  onChange={handleFilterChange}
-                >
-                  <option value="">All colleges</option>
-                  {options.colleges.map((college) => {
-                    const id = getId(college, ["collegeId", "id"]);
-                    return (
-                      <option key={id} value={id}>
-                        {getLabel(
-                          college,
-                          ["instituteName", "collegeName", "name"],
-                          "College",
-                        )}
-                      </option>
-                    );
-                  })}
-                </select>
+        <section className="performance-filters card shadow-sm border-0">
+          {scopeTabs.length > 0 && (
+            <div className="performance-scope-row">
+              <span className="performance-field-label">Scope</span>
+              <div className="performance-scope-tabs" role="tablist">
+                {scopeTabs.map((tab) => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={scope.mode === tab.key}
+                    className={scope.mode === tab.key ? "is-active" : undefined}
+                    onClick={() => changeScopeMode(tab.key)}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
-            )}
-            {(isSuperAdmin || isCollegeAdmin) && (
+            </div>
+          )}
+
+          <div className="row g-3 align-items-end">
+            {pickKind && (
               <div className="col-12 col-md-4 col-xl-3">
-                <label htmlFor="performance-branch">Branch</label>
+                <label htmlFor="performance-pick">
+                  {pickKind === "college"
+                    ? "College"
+                    : pickKind === "branch"
+                      ? "Branch"
+                      : "Student"}
+                </label>
                 <select
-                  id="performance-branch"
-                  name="branchId"
-                  value={filters.branchId}
-                  onChange={handleFilterChange}
+                  id="performance-pick"
+                  value={pickValue}
+                  onChange={(event) =>
+                    setScope((current) => ({
+                      ...current,
+                      [`${pickKind}Id`]: event.target.value,
+                    }))
+                  }
                 >
-                  <option value="">All branches</option>
-                  {visibleBranches.map((branch) => {
-                    const id = getId(branch, ["branchId", "id"]);
-                    return (
-                      <option key={id} value={id}>
-                        {getLabel(branch, ["branchName", "name"], "Branch")}
-                      </option>
-                    );
-                  })}
+                  <option value="">{pickAllLabel[pickKind]}</option>
+                  {pickList[pickKind].map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
                 </select>
               </div>
             )}
@@ -891,8 +959,8 @@ function PerformanceDashboard() {
               <select
                 id="performance-course"
                 name="courseId"
-                value={filters.courseId}
-                onChange={handleFilterChange}
+                value={hierarchy.courseId}
+                onChange={handleHierarchyChange}
               >
                 <option value="">All courses</option>
                 {visibleCourses.map((course) => {
@@ -914,8 +982,8 @@ function PerformanceDashboard() {
               <select
                 id="performance-section"
                 name="sectionId"
-                value={filters.sectionId}
-                onChange={handleFilterChange}
+                value={hierarchy.sectionId}
+                onChange={handleHierarchyChange}
               >
                 <option value="">All sections</option>
                 {visibleSections.map((section) => {
@@ -933,8 +1001,8 @@ function PerformanceDashboard() {
               <select
                 id="performance-exam"
                 name="examId"
-                value={filters.examId}
-                onChange={handleFilterChange}
+                value={hierarchy.examId}
+                onChange={handleHierarchyChange}
               >
                 <option value="">All exams</option>
                 {visibleExams.map((exam) => {
@@ -947,48 +1015,22 @@ function PerformanceDashboard() {
                 })}
               </select>
             </div>
-            <div className="col-12 col-md-4 col-xl-3">
-              <label htmlFor="performance-student">Student (optional)</label>
-              <select
-                id="performance-student"
-                name="studentId"
-                value={filters.studentId}
-                onChange={handleFilterChange}
-              >
-                <option value="">All students</option>
-                {[...visibleStudents]
-                  .sort((a, b) =>
-                    String(getLabel(a, ["name"], "")).localeCompare(
-                      String(getLabel(b, ["name"], "")),
-                    ),
-                  )
-                  .map((student) => {
-                    const id = getId(student, ["userId", "id"]);
-                    return (
-                      <option key={id} value={id}>
-                        {getLabel(student, ["name"], "Student")}
-                      </option>
-                    );
-                  })}
-              </select>
-            </div>
-            <div className="col-12 col-xl-3 d-flex gap-2">
-              <button type="submit" className="btn btn-primary flex-grow-1">
-                <FaSearch /> Apply
-              </button>
-              <button
-                type="button"
-                className="btn btn-light flex-grow-1"
-                onClick={clearFilters}
-              >
-                Clear
-              </button>
-            </div>
+            {(hierarchy.courseId || hierarchy.sectionId || hierarchy.examId) && (
+              <div className="col-12 col-md-4 col-xl-3">
+                <button
+                  type="button"
+                  className="btn btn-light w-100"
+                  onClick={clearHierarchy}
+                >
+                  Clear course, section &amp; exam
+                </button>
+              </div>
+            )}
           </div>
           {optionsError && (
             <small className="text-warning d-block mt-3">{optionsError}</small>
           )}
-        </form>
+        </section>
       )}
 
       {!isStudent && status === "loading" && (
@@ -1011,7 +1053,7 @@ function PerformanceDashboard() {
           <button
             type="button"
             className="btn btn-sm btn-outline-danger"
-            onClick={() => loadPerformance(activeFilters)}
+            onClick={() => loadPerformance(activeParams)}
           >
             Try again
           </button>
