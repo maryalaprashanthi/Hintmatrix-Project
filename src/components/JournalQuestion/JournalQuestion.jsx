@@ -19,6 +19,7 @@ const JournalQuestion = ({
   setAnsweredData,
   questionText,
   loadTotalScore,
+  onAnswerAdded,
 }) => {
   const [helpRequest, setHelpRequest] = useState(null);
   const [showHint, setShowHint] = useState(false);
@@ -167,6 +168,14 @@ const JournalQuestion = ({
           ],
         };
       });
+
+      const lastEntry = savedEntries[savedEntries.length - 1];
+      if (lastEntry) {
+        onAnswerAdded?.({
+          questionAttributeId: item.questionAttributeId,
+          particulars: lastEntry.particulars,
+        });
+      }
 
       if (loadTotalScore) {
         await loadTotalScore();
@@ -336,6 +345,7 @@ const JournalQuestion = ({
         };
       });
 
+      onAnswerAdded?.({ questionAttributeId: id, particulars: text });
       setOpenAttributeId(null);
 
       if (!isCorrect) {

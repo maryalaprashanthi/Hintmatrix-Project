@@ -17,6 +17,7 @@ const DropdownQuestion = ({
   answeredData,
   setAnsweredData,
   loadTotalScore,
+  onAnswerAdded,
 }) => {
   // Hardcoded for now
   const userId = getCurrentUserId();
@@ -236,6 +237,14 @@ const DropdownQuestion = ({
         };
       });
 
+      const lastEntry = savedEntries[savedEntries.length - 1];
+      if (lastEntry) {
+        onAnswerAdded?.({
+          questionAttributeId: item.questionAttributeId,
+          particulars: lastEntry.particulars,
+        });
+      }
+
       if (loadTotalScore) {
         await loadTotalScore();
       }
@@ -404,6 +413,7 @@ const DropdownQuestion = ({
       }));
     }
 
+    onAnswerAdded?.({ questionAttributeId: id, particulars: text });
     console.log("Answer added:", id, type, text, "Correct:", isCorrect);
   };
 
@@ -423,6 +433,8 @@ const DropdownQuestion = ({
     if (isSolved) {
       return;
     }
+
+    closeHelp();
 
     const rule = item.rule;
 
@@ -618,6 +630,8 @@ const DropdownQuestion = ({
         await loadTotalScore();
       }
 
+      // The selector and feedback share a row anchor; never display both.
+      setOpenAttributeId(null);
       setHelpRequest({
         item,
       });
@@ -675,8 +689,6 @@ const DropdownQuestion = ({
                 answeredData[item.questionAttributeId] || [],
               );
 
-              const hasBothSelections = Boolean(debitValue) && Boolean(creditValue);
-
               return (
                 <OverlayTrigger
                   key={item.questionAttributeId}
@@ -684,7 +696,7 @@ const DropdownQuestion = ({
                   show={
                     openAttributeId === item.questionAttributeId &&
                     !isSolved &&
-                    !hasBothSelections
+                    !helpRequest
                   }
                   placement="right"
                   container={document.body}
@@ -718,7 +730,7 @@ const DropdownQuestion = ({
                                   options={optionsDebitData}
                                   placeholder="Select Debit A/C"
                                   value={debitValue}
-                                  closeMenuOnSelect={false}
+                                  closeMenuOnSelect
                                   menuPortalTarget={document.body}
                                   menuPosition="fixed"
                                   menuPlacement="auto"
@@ -745,7 +757,7 @@ const DropdownQuestion = ({
                                 options={optionsCreditData}
                                 placeholder="Select Credit A/C"
                                 value={creditValue}
-                                closeMenuOnSelect={false}
+                                closeMenuOnSelect
                                 menuPortalTarget={document.body}
                                 menuPosition="fixed"
                                 menuPlacement="auto"
@@ -780,6 +792,7 @@ const DropdownQuestion = ({
                     }}
                     onClick={() => {
                       if (!isSolved) {
+                        closeHelp();
                         setOpenAttributeId((current) =>
                           current === item.questionAttributeId
                             ? null

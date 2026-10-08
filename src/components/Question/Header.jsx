@@ -1,7 +1,6 @@
 import { Button, Container } from "react-bootstrap";
 import {
   FaRedo,
-  FaPaperPlane,
   FaExclamationTriangle,
 } from "react-icons/fa";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
@@ -58,32 +57,6 @@ function Header({
   };
 
   const handleCheck = openMistakes;
-
-  const handleSubmit = async () => {
-    try {
-      console.log("========== SUBMIT ANSWERS ==========");
-
-      if (!question) {
-        alert("Question is not loaded.");
-        return;
-      }
-
-      const userId = getCurrentUserId();
-
-      await QuestionAnswerService.getMistakesByQuestionId(
-        userId,
-        question.questionId,
-      );
-
-      setCheckMistakes(true);
-    } catch (error) {
-      console.error("Failed to submit answers:", error);
-
-      if (error.response) {
-        console.error("Backend response:", error.response.data);
-      }
-    }
-  };
 
   const handleReset = async () => {
     if (isResetting) return;
@@ -195,19 +168,6 @@ function Header({
                 Check
               </Button>
 
-              <Button
-                variant="primary"
-                size="sm"
-                style={{
-                  minWidth: "95px",
-                  height: "35px",
-                }}
-                onClick={handleSubmit}
-                disabled={usesDragStore && Boolean(busyOperation)}
-              >
-                <FaPaperPlane className="me-1" />
-                Submit
-              </Button>
             </>
           )}
         </div>

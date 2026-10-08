@@ -8,6 +8,7 @@ import QuestionAnswerService from "../../services/QuestionAnswerService";
 import QuestionService from "../../services/QuestionService";
 import useQuestionStore from "./questionStore";
 import { getCurrentUserId } from "../../utils/user";
+import { restoreMcqAnswer } from "../../utils/questionAttemptState";
 import "./McqQuestionView.css";
 
 export default function McqQuestionView({ questionId, questionType }) {
@@ -24,18 +25,33 @@ export default function McqQuestionView({ questionId, questionType }) {
 
   useEffect(() => {
     let active = true;
-    McqQuestionService.getById(questionId)
-      .then(({ data }) => {
-        if (active) setQuestion(data);
+    setBusy(true);
+    setError("");
+    setQuestion(null);
+    setSelected([]);
+    setResult(null);
+    Promise.all([
+      McqQuestionService.getById(questionId),
+      QuestionAnswerService.getAnswerEventsByQuestionId(getCurrentUserId(), questionId),
+    ])
+      .then(([{ data }, events]) => {
+        if (!active) return;
+        setQuestion(data);
+        const restored = restoreMcqAnswer(events, data.options || [], multiple);
+        if (restored) {
+          setSelected(restored.selected);
+          setResult(restored.result);
+        }
       })
       .catch(() => {
         if (active)
           setError("Unable to load this MCQ. Please reopen the question.");
-      });
+      })
+      .finally(() => { if (active) setBusy(false); });
     return () => {
       active = false;
     };
-  }, [questionId]);
+  }, [questionId, multiple]);
 
   useEffect(() => {
     if (!question?.courseId || !question?.chapterId || !question?.topicId)
@@ -100,6 +116,9 @@ export default function McqQuestionView({ questionId, questionType }) {
       await QuestionAnswerService.resetAnswersByUserAndQuestion(
         getCurrentUserId(),
         question.questionId,
+      );
+      await QuestionAnswerService.resetAnswerEventsByUserAndQuestion(
+        getCurrentUserId(), question.questionId,
       );
       setSelected([]);
       setResult(null);

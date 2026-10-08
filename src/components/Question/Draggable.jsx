@@ -150,29 +150,40 @@ export default function Draggable({
       );
       if (!unansweredAnswers.length) return;
 
-      const firstAnswer = unansweredAnswers[0];
-      await QuestionAnswerService.processAnswerEvent({
-        finalAccounts: true,
-        userId: getCurrentUserId(),
-        questionId,
-        attributeId: myQuestion.attributeId,
-        questionAttributeId: myQuestion.questionAttributeId,
-        tableNameId: firstAnswer.tableNameId,
-        headerId: firstAnswer.headerId,
-        amount: firstAnswer.amount,
-        conditionId: firstAnswer.conditionId,
-        arithmetic: firstAnswer.answer.split("-").pop(),
-        answerPosition: firstAnswer.conditionId,
-        eventType: "AUTOFILL",
-        isCorrect: true,
-        description: "Auto filled configured final-account placements.",
-        userAnswer: "Auto filled configured final-account placements.",
-      });
-
-      if (!useQuestionStore.getState().isOperationCurrent(operation)) return;
-      // The backend commits all remaining placements and autofill markers in
-      // the event transaction, so the browser only updates its local table.
+      // Like journal auto-fill, persist both the answer and its zero-mark event.
+      // Reopening restores questions_answers, not the event history. Save each
+      // condition, including amount2 placements and repeated attribute rows.
       for (const answer of unansweredAnswers) {
+        if (!useQuestionStore.getState().isOperationCurrent(operation)) return;
+        const arithmetic = answer.answer.split("-").pop();
+        const placement = {
+          userId: getCurrentUserId(),
+          questionId,
+          attributeId: myQuestion.attributeId,
+          questionAttributeId: myQuestion.questionAttributeId,
+          tableNameId: answer.tableNameId,
+          headerId: answer.headerId,
+          amount: answer.amount,
+          conditionId: answer.conditionId,
+          arithmetic,
+        };
+        // Keep the AUTOFILL marker first so a failed placement save cannot
+        // leave an automatically supplied answer eligible for normal marks.
+        await QuestionAnswerService.processAnswerEvent({
+          ...placement,
+          finalAccounts: true,
+          answerPosition: answer.conditionId,
+          eventType: "AUTOFILL",
+          isCorrect: true,
+          description: "Auto filled configured final-account placement.",
+          userAnswer: "Auto filled configured final-account placement.",
+        });
+        await QuestionAnswerService.saveAnswer({
+          ...placement,
+          pairAttributeId: answer.pairAttributeId,
+          totalAnswers: actualAnswers.length,
+        });
+        if (!useQuestionStore.getState().isOperationCurrent(operation)) return;
         moveQuestion(id, answer.answer, answer.conditionId, answer.pairAttributeId, answer.amount);
       }
       try {
