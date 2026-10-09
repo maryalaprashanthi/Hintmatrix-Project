@@ -169,7 +169,7 @@ const QuestionTable = () => {
                 <div className="row g-3">
                   <div className="col-12 col-md-6 account-side">
                     <div className="text-primary fw-semibold small mb-2">
-                      {obj.headers[0]}
+                      {obj.headers[0] === "Debit Particulars" ? "Debit" : obj.headers[0]}
                     </div>
                     <Droppable
                       id={`${obj.name}-${obj.headers[0]}`}
@@ -180,7 +180,7 @@ const QuestionTable = () => {
                   </div>
                   <div className="col-12 col-md-6 account-side">
                     <div className="text-success fw-semibold small mb-2">
-                      {obj.headers[1]}
+                      {obj.headers[1] === "Credit Particulars" ? "Credit" : obj.headers[1]}
                     </div>
                     <Droppable
                       id={`${obj.name}-${obj.headers[1]}`}

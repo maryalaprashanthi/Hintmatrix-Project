@@ -4,6 +4,7 @@ import { useDroppable } from "@dnd-kit/react";
 import { Overlay, Tooltip } from "react-bootstrap";
 import "./Droppable.css";
 import useQuestionStore from "./questionStore";
+import { finalAccountParticular } from "./SampleData";
 
 const mergeRefs =
   (...refs) =>
@@ -93,25 +94,25 @@ const Droppable = ({
             {displayRows.map((obj) => (
               <tr key={`${obj.id}-${obj.conditionId ?? obj.operation}`}
                 className={obj.isBlank ? "blank-row" : obj.isDerived ? "derived-row" : ""}>
-                <td className="particulars-cell">{obj.isBlank ? "" : obj.name}</td>
+                <td className="particulars-cell">{finalAccountParticular(obj, id)}</td>
                 <td className="text-end amount-cell">
                   {obj.isBlank
                     ? ""
                     : obj.operation === "add"
                       ? obj.isDerived || !obj.isPaired ? "" : Number(obj.amount).toLocaleString("en-IN")
                       : obj.isPaired
-                        ? `-${Number(obj.amount).toLocaleString("en-IN")}`
+                        ? `${obj.isDerived && Number(obj.amount) === 0 ? "" : "-"}${Number(obj.amount).toLocaleString("en-IN", obj.isDerived && Number(obj.amount) === 0 ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : {})}`
                         : ""}
                 </td>
                 <td className="text-end amount-cell">
                   {obj.isBlank
                     ? ""
                     : obj.operation === "less" && !obj.isPaired
-                      ? `-${Number(obj.amount).toLocaleString("en-IN")}`
+                      ? `${obj.isDerived && Number(obj.amount) === 0 ? "" : "-"}${Number(obj.amount).toLocaleString("en-IN", obj.isDerived && Number(obj.amount) === 0 ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : {})}`
                       : obj.operation === "less" && obj.isPaired
                         ? pairedSubtotal(obj)
                         : obj.operation === "add" && (obj.isDerived || !obj.isPaired)
-                          ? Number(obj.amount).toLocaleString("en-IN")
+                          ? Number(obj.amount).toLocaleString("en-IN", obj.isDerived && Number(obj.amount) === 0 ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : {})
                           : " "}
                 </td>
               </tr>

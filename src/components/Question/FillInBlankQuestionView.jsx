@@ -157,6 +157,36 @@ const getBackendBlanks = (questionRecord) => {
         Object.prototype.hasOwnProperty.call(answer, "isCorrect"),
     );
 
+    // displayOrder orders choices; blankNumber identifies the sentence blank.
+    // Keep distractors in the answer bank, never in accepted answers.
+    if (backendAnswers.some((answer) => Number.isInteger(Number(answer.blankNumber)) && Number(answer.blankNumber) > 0)) {
+      const grouped = new Map();
+      for (const answer of backendAnswers) {
+        const number = Number(answer.blankNumber);
+        if (!Number.isInteger(number) || number <= 0) continue;
+        if (!grouped.has(number)) grouped.set(number, []);
+        grouped.get(number).push(answer);
+      }
+      const count = Math.max(detectedBlankCount, ...grouped.keys());
+      return Array.from({ length: count }, (_, index) => {
+        const options = grouped.get(index + 1) ?? [];
+        const answerOptions = [...new Set(options.flatMap((option) => normalizeAnswerValues(option.answerText)))];
+        const acceptedAnswers = [...new Set(options
+          .filter((option) => !hasCorrectFlag || option.isCorrect === true)
+          .flatMap((option) => normalizeAnswerValues(
+            option.acceptedAnswers ?? option.acceptedAnswerList ?? option.answerText)) )];
+        return {
+          answerId: options[0]?.answerId ?? index + 1,
+          blankNumber: index + 1,
+          displayOrder: index + 1,
+          answerText: acceptedAnswers[0] ?? "",
+          correctAnswer: acceptedAnswers[0] ?? "",
+          acceptedAnswers,
+          answerOptions,
+        };
+      });
+    }
+
     if (detectedBlankCount === 1 && hasCorrectFlag) {
       const allOptions = backendAnswers
         .map((answer) => String(answer.answerText ?? "").trim())
@@ -319,7 +349,7 @@ const blankCount =
   }, [questionRecord.questionId, blankCount]);
 
   const answerOptions = useMemo(() => {
-    const acceptedAnswers = blanks.flatMap(acceptedAnswersFromBlank);
+    const acceptedAnswers = blanks.flatMap((blank) => blank.answerOptions?.length ? blank.answerOptions : acceptedAnswersFromBlank(blank));
 
     return [
       ...new Set(
@@ -443,6 +473,11 @@ const blankCount =
   };
 
   const isAnswerCorrect = (index) => {
+    const saved = savedAnswers.current[index];
+    if (saved && typeof saved.isCorrect === "boolean" &&
+        String(saved.userAnswer ?? "").trim() === String(answers[index] ?? "").trim()) {
+      return saved.isCorrect;
+    }
     const acceptedAnswers = getAcceptedAnswers(index);
 
     return acceptedAnswers.some(

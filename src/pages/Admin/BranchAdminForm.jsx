@@ -96,7 +96,7 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
 
       setEmail(selectedBranchAdminData.email || "");
       setPhoneNumber(selectedBranchAdminData.phoneNumber || "");
-      setPassword(selectedBranchAdminData.password || "");
+      setPassword("");
       setAddress(selectedBranchAdminData.address || "");
       setActiveRow(selectedBranchAdminData.activeRow !== false);
     } else {
@@ -143,6 +143,7 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
       phoneNumber,
       password,
       address,
+      isEdit: Boolean(selectedBranchAdminData),
     });
 
     if (!validation.isValid) {
@@ -162,7 +163,7 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
       branchId: Number(branchId),
       email: email.trim(),
       phoneNumber: String(phoneNumber).replace(/\D/g, ""),
-      password: password.trim(),
+      ...(password.trim() ? { password: password.trim() } : {}),
       address: address.trim(),
       activeRow,
     };
@@ -377,7 +378,7 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
 
               <div className="form-group">
                 <label>
-                  Password <span>*</span>
+                  Password {selectedBranchAdminData ? <span className="text-muted">(optional)</span> : <span>*</span>}
                 </label>
 
                 <div className="input-box">
@@ -385,7 +386,8 @@ function BranchAdminForm({ show, onClose, onSave, selectedBranchAdminData }) {
 
                   <input
                     type="password"
-                    placeholder="Enter Password"
+                    placeholder={selectedBranchAdminData ? "Leave blank to keep current password" : "Enter Password"}
+                    autoComplete="new-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />

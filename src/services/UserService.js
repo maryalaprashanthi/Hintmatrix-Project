@@ -1,4 +1,6 @@
 ﻿import apiClient from "./apiClient";
+import { isGuestUser } from "../utils/userEdit";
+import { currentRole, ROLES } from "../utils/roles";
 
 // Matches the Spring Boot Controller's @RequestMapping("/api/users")
 const BASE_URL = "/api/users";
@@ -108,7 +110,8 @@ class UserService {
   }
 
   getAllStudents() {
-    return apiClient.get(`${BASE_URL}/students_Guest`, {
+    const path = currentRole() === ROLES.SUPER_ADMIN ? "students_Guest" : "students";
+    return apiClient.get(`${BASE_URL}/${path}`, {
       withCredentials: true,
     });
   }
@@ -117,6 +120,28 @@ class UserService {
     return apiClient.put(`${BASE_URL}/student/${id}`, studentRequestDTO, {
       withCredentials: true,
     });
+  }
+
+  updateGuest(id, guestRequestDTO) {
+    if (currentRole() !== ROLES.SUPER_ADMIN) return Promise.reject(new Error("Only Super Admin can edit guests."));
+    return apiClient.put(`${BASE_URL}/guest/${id}`, guestRequestDTO, {
+      withCredentials: true,
+    });
+  }
+
+  updateStudentOrGuest(user, request) {
+    const id = user.userId || user.studentId;
+    return isGuestUser(user) ? this.updateGuest(id, request) : this.updateStudent(id, request);
+  }
+
+  deleteGuest(id) {
+    if (currentRole() !== ROLES.SUPER_ADMIN) return Promise.reject(new Error("Only Super Admin can delete guests."));
+    return apiClient.delete(`${BASE_URL}/guest/${id}`, { withCredentials: true });
+  }
+
+  deleteStudentOrGuest(user) {
+    const id = user.userId || user.user_id || user.studentId;
+    return isGuestUser(user) ? this.deleteGuest(id) : this.deleteStudent(id);
   }
 
   deleteStudent(id) {

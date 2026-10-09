@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Select from "react-select";
 import { validateStudentForm } from "./superAdminValidation";
+import { isGuestUser } from "../../utils/userEdit";
 
 import {
   FaTimes,
@@ -30,6 +31,7 @@ function StudentForm({
   sections = [],
   courses = [],
 }) {
+  const isGuest = isGuestUser(selectedStudentData);
   const [name, setName] = useState("");
   const [studentCode, setStudentCode] = useState("");
   const [collegeId, setCollegeId] = useState("");
@@ -58,7 +60,7 @@ function StudentForm({
       setGuardianPhoneNumber(selectedStudentData.guardianPhoneNumber || "");
       setEmail(selectedStudentData.email || "");
       setPhoneNumber(selectedStudentData.phoneNumber || "");
-      setPassword(selectedStudentData.password || "");
+      setPassword("");
       setAddress(selectedStudentData.address || "");
       setActiveRow(selectedStudentData.activeRow !== false);
     } else {
@@ -155,6 +157,8 @@ function StudentForm({
       phoneNumber,
       password,
       address,
+      isEdit: Boolean(selectedStudentData),
+      isGuest,
     });
 
     if (!validation.isValid) {
@@ -162,24 +166,32 @@ function StudentForm({
       return;
     }
 
+    if (!isGuest && !courseOptions.some((option) => Number(option.value) === Number(courseId))) {
+      alert("Please select a valid course for the selected branch.");
+      return;
+    }
+
+    const cleanedPhoneNumber = String(phoneNumber).replace(/\D/g, "");
     const studentData = {
       ...(selectedStudentData && {
         userId: selectedStudentData.userId,
       }),
 
       name: name.trim(),
-      studentCode: Number(studentCode),
-      collegeId: Number(collegeId),
-      branchId: Number(branchId),
-      sectionId: Number(sectionId),
-      courseId: Number(courseId),
-      guardianName: guardianName.trim(),
-      guardianPhoneNumber: String(guardianPhoneNumber).replace(/\D/g, ""),
+      ...(!isGuest && {
+        studentCode: Number(studentCode),
+        collegeId: Number(collegeId),
+        branchId: Number(branchId),
+        sectionId: Number(sectionId),
+        courseId: Number(courseId),
+        guardianName: guardianName.trim(),
+        guardianPhoneNumber: String(guardianPhoneNumber).replace(/\D/g, ""),
+      }),
       email: email.trim(),
-      phoneNumber: String(phoneNumber).replace(/\D/g, ""),
-      password: password.trim(),
+      phoneNumber: isGuest && !cleanedPhoneNumber ? null : cleanedPhoneNumber,
+      ...(password.trim() ? { password: password.trim() } : {}),
       address: address.trim(),
-      activeRow,
+      ...(!isGuest && { activeRow }),
     };
 
     onSave(studentData);
@@ -191,11 +203,11 @@ function StudentForm({
         {/* Header */}
         <div className="modal-header">
           <div>
-            <h2>{selectedStudentData ? "Edit Student" : "Add Student"}</h2>
+            <h2>{selectedStudentData ? (isGuest ? "Edit Guest" : "Edit Student") : "Add Student"}</h2>
 
             <p>
               {selectedStudentData
-                ? "Update Student details."
+                ? (isGuest ? "Update Guest details." : "Update Student details.")
                 : "Create a new Student."}
             </p>
           </div>
@@ -208,7 +220,7 @@ function StudentForm({
         {/* Body */}
         <div className="modal-body">
           <div className="form-card">
-            <h3 className="section-title">Student Information</h3>
+            <h3 className="section-title">{isGuest ? "Guest Information" : "Student Information"}</h3>
 
             <div className="form-grid">
               {/* Name */}
@@ -231,6 +243,7 @@ function StudentForm({
                 </div>
               </div>
 
+              {!isGuest && <>
               {/* Student Code */}
               <div className="form-group">
                 <label>
@@ -431,6 +444,7 @@ function StudentForm({
                 </div>
               </div>
 
+              </>}
               {/* Email */}
               <div className="form-group">
                 <label>
@@ -452,7 +466,7 @@ function StudentForm({
               {/* Phone Number */}
               <div className="form-group">
                 <label>
-                  Phone Number <span>*</span>
+                  Phone Number {!isGuest && <span>*</span>}
                 </label>
 
                 <div className="input-box">
@@ -474,7 +488,7 @@ function StudentForm({
               {/* Password */}
               <div className="form-group">
                 <label>
-                  Password <span>*</span>
+                  Password {selectedStudentData ? <span className="text-muted">(optional)</span> : <span>*</span>}
                 </label>
 
                 <div className="input-box">
@@ -482,7 +496,8 @@ function StudentForm({
 
                   <input
                     type="password"
-                    placeholder="Enter Password"
+                    placeholder={selectedStudentData ? "Leave blank to keep current password" : "Enter Password"}
+                    autoComplete="new-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
@@ -505,6 +520,7 @@ function StudentForm({
               />
             </div>
           </div>
+          {!isGuest && (
           <div className="form-card">
             <h3 className="section-title">Status</h3>
             <div className="form-check form-switch status-form-switch">
@@ -512,6 +528,7 @@ function StudentForm({
               <label className="form-check-label">{activeRow ? "Active" : "Inactive"}</label>
             </div>
           </div>
+          )}
         </div>
 
         {/* Footer */}
