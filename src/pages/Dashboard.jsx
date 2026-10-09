@@ -7,6 +7,7 @@ import PracticeStreak from "../components/PracticeStreak/PracticeStreak";
 import UpcomingTests from "../components/UpcomingTests/UpcomingTests";
 import { useEffect, useState } from "react";
 import DashboardService from "../services/DashboardService";
+import { loadOncePerLogin } from "../utils/pageLoadCache";
 import { ADMIN_ROLES, currentRole, ROLES } from "../utils/roles";
 import {
   dashboardCards,
@@ -20,23 +21,27 @@ function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [refresh, setRefresh] = useState(0);
+  // const [refresh, setRefresh] = useState(0);
   const [now, setNow] = useState(() => new Date());
   const role = currentRole();
 
   useEffect(() => {
     let alive = true;
     let busy = false;
-    const controller = new AbortController();
+    // const controller = new AbortController();
     async function load() {
       setNow(new Date());
-      if (busy || document.visibilityState === "hidden") return;
+      // if (busy || document.visibilityState === "hidden") return;
+      if (busy) return;
       busy = true;
       setLoading(true);
       try {
-        const response = await DashboardService.getDashboardData({
-          signal: controller.signal,
-        });
+        // const response = await DashboardService.getDashboardData({
+        //   signal: controller.signal,
+        // });
+        const response = await loadOncePerLogin("dashboard", () =>
+          DashboardService.getDashboardData(),
+        );
         if (alive) {
           setData(response.data);
           setError("");
@@ -50,17 +55,18 @@ function Dashboard() {
       }
     }
     void load();
-    const timer = window.setInterval(load, 60000);
-    window.addEventListener("focus", load);
-    document.addEventListener("visibilitychange", load);
+    // const timer = window.setInterval(load, 60000);
+    // window.addEventListener("focus", load);
+    // document.addEventListener("visibilitychange", load);
     return () => {
       alive = false;
-      controller.abort();
-      window.clearInterval(timer);
-      window.removeEventListener("focus", load);
-      document.removeEventListener("visibilitychange", load);
+      // controller.abort();
+      // window.clearInterval(timer);
+      // window.removeEventListener("focus", load);
+      // document.removeEventListener("visibilitychange", load);
     };
-  }, [refresh]);
+  // }, [refresh]);
+  }, []);
 
   const cards = dashboardCards(data).map((card) =>
     card.type === "rank" && ADMIN_ROLES.includes(role)
@@ -77,7 +83,8 @@ function Dashboard() {
           type="button"
           className="btn btn-outline-primary"
           disabled={loading}
-          onClick={() => setRefresh((value) => value + 1)}
+          // onClick={() => setRefresh((value) => value + 1)}
+          onClick={() => window.location.reload()}
         >
           {loading ? "Refreshing…" : "Refresh"}
         </button>
