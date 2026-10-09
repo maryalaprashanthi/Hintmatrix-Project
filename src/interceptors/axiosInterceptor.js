@@ -1,6 +1,7 @@
 ﻿import axios from "axios";
 
 import { BACKEND_BASE_URL, backendUrl } from "../config/backend";
+import { clearPageLoadCache } from "../utils/pageLoadCache";
 
 const apiClient = axios.create({
   baseURL: BACKEND_BASE_URL,
@@ -8,6 +9,7 @@ const apiClient = axios.create({
 });
 
 export const clearAuthSession = () => {
+  clearPageLoadCache();
   if (typeof window === "undefined") return;
 
   localStorage.removeItem("token");
