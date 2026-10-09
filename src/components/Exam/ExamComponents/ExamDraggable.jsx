@@ -40,22 +40,42 @@ const PlacedIcon = () => (
   </svg>
 );
 
-export default function ExamDraggable({ id, children, type, status = "pending" }) {
+// maxDrops comes from the rule engine. Once the row sits in that many
+// accounts it stops being draggable. A null maxDrops means no known limit.
+export default function ExamDraggable({
+  id,
+  children,
+  type,
+  status = "pending",
+  placedCount = 0,
+  maxDrops = null,
+}) {
   const placed = status === "placed";
+  const full = maxDrops != null && placedCount >= maxDrops;
 
   const { ref } = useDraggable({
     id,
     type,
+    disabled: full,
   });
 
   return (
     <div className={`drag-item ${placed ? "drag-item-placed" : ""}`}>
       <button
-        ref={ref}
+        ref={full ? undefined : ref}
         type="button"
         className="drag-btn"
+        disabled={full}
+        aria-disabled={full}
+        title={maxDrops != null ? `Placed ${placedCount} of ${maxDrops}` : undefined}
       >
         <span className="drag-btn-content">{children}</span>
+
+        {maxDrops != null && (
+          <span className="drag-drop-count">
+            {placedCount}/{maxDrops}
+          </span>
+        )}
 
         <span className="drag-status-icon">
           {placed ? <PlacedIcon /> : <PendingIcon />}

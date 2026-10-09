@@ -5,6 +5,12 @@ import { getQuestionAttributeSide } from "../../../utils/questionAttributeSide";
 // repeated accounts separate; one row may have effects in several accounts.
 const emptySlice = () => ({ questions: [], droppableData: {} });
 const sameId = (left, right) => String(left) === String(right);
+// How many accounts a trial-balance row currently sits in.
+export const placementCount = (droppableData, sourceId) =>
+  Object.values(droppableData).reduce(
+    (count, rows) => count + rows.filter((row) => sameId(row.id, sourceId)).length,
+    0,
+  );
 const targetParts = (targetId) => {
   const splitAt = String(targetId).lastIndexOf("-");
   return [String(targetId).slice(0, splitAt), String(targetId).slice(splitAt + 1)];
@@ -27,6 +33,9 @@ const useExamQuestionStore = create((set, get) => ({
         amountSelection: "amount",
         type: getQuestionAttributeSide(attribute) ?? "adjustment",
         status: "pending",
+        // Filled in by setDropLimits once the rule engine answers. null means
+        // the limit is unknown, so drops stay unlimited.
+        maxDrops: null,
       })),
     );
     set((state) => ({
@@ -37,6 +46,24 @@ const useExamQuestionStore = create((set, get) => ({
       },
     }));
   },
+
+  // limits maps attributeId -> how many accounts that attribute belongs in.
+  setDropLimits: (questionId, limits) => set((state) => {
+    const slice = state.byQuestionId[questionId];
+    if (!slice) return state;
+    return {
+      byQuestionId: {
+        ...state.byQuestionId,
+        [questionId]: {
+          ...slice,
+          questions: slice.questions.map((question) => ({
+            ...question,
+            maxDrops: limits[question.attributeId] ?? null,
+          })),
+        },
+      },
+    };
+  }),
 
   setTableData: (data) => {
     const questionId = get().activeQuestionId;
@@ -83,7 +110,9 @@ const useExamQuestionStore = create((set, get) => ({
     const [tableKey, operation] = targetParts(targetId);
     const existingRows = slice.droppableData[tableKey];
     if (!existingRows || !["add", "less"].includes(operation)
-      || existingRows.some((row) => sameId(row.id, sourceId) && row.operation === operation)) {
+      || existingRows.some((row) => sameId(row.id, sourceId) && row.operation === operation)
+      || (question.maxDrops != null
+        && placementCount(slice.droppableData, sourceId) >= question.maxDrops)) {
       return state;
     }
     const row = {

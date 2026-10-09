@@ -6,6 +6,7 @@ import ExamService from "../../services/ExamService";
 import ExamTopBar from "./ExamShell/ExamTopBar";
 import QuestionRail from "./ExamShell/QuestionRail";
 import ExamStartScreen from "./ExamShell/ExamStartScreen";
+import EffectiveDurationBadge from "./ExamShell/EffectiveDurationBadge";
 import SubmitConfirmDialog from "./ExamShell/SubmitConfirmDialog";
 import TimeUpDialog from "./ExamShell/TimeUpDialog";
 import ExamResultDialog from "./ExamShell/ExamResultDialog";
@@ -412,7 +413,14 @@ const ExamPage = () => {
             { label: "Questions", value: String(questions.length || "—") },
             {
               label: "Duration",
-              value: `${examDetails?.durationMinutes ?? DEFAULT_EXAM_MINUTES}m`,
+              value: (
+                <EffectiveDurationBadge
+                  durationMinutes={
+                    examDetails?.durationMinutes ?? DEFAULT_EXAM_MINUTES
+                  }
+                  endDate={examDetails?.endDate}
+                />
+              ),
             },
             { label: "Warnings", value: String(MAX_WARNINGS) },
           ]}
@@ -423,7 +431,7 @@ const ExamPage = () => {
             "Move freely between questions; mark any question to come back to it.",
             "Answers are kept as you go. Navigating between questions won't lose your work.",
           ]}
-          title={paper?.categoryName ?? "Exam"}
+          title={examDetails?.examName ?? paper?.categoryName ?? "Exam"}
         />
       </main>
     );

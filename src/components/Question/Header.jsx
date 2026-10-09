@@ -15,11 +15,9 @@ function Header({
   actions,
   questionTypeLabel,
 }) {
-  const {
-    question: storeQuestion,
-    resetFrontend,
-    busyOperation,
-  } = useQuestionStore();
+  const storeQuestion = useQuestionStore((state) => state.question);
+  const resetFrontend = useQuestionStore((state) => state.resetFrontend);
+  const busyOperation = useQuestionStore((state) => state.busyOperation);
   const [isResetting, setIsResetting] = useState(false);
 
   const question = propQuestion || storeQuestion;
@@ -27,8 +25,6 @@ function Header({
 
   const openMistakes = async () => {
     try {
-      console.log("========== LOAD MISTAKES ==========");
-
       if (!question) {
         alert("Question is not loaded.");
         return;
@@ -36,12 +32,10 @@ function Header({
 
       const userId = getCurrentUserId();
 
-      const mistakes = await QuestionAnswerService.getMistakesByQuestionId(
+      await QuestionAnswerService.getMistakesByQuestionId(
         userId,
         question.questionId,
       );
-
-      console.log("Mistakes:", mistakes);
       setCheckMistakes(true);
     } catch (error) {
       console.error("Failed to get mistakes:", error);
@@ -62,10 +56,7 @@ function Header({
     if (usesDragStore && !operation) return;
     setIsResetting(true);
     try {
-      console.log("========== RESET QUESTION ==========");
-
       if (!question?.questionId) {
-        console.log("Question is not loaded.");
         return;
       }
 
@@ -76,17 +67,12 @@ function Header({
         return;
       }
 
-      console.log("User ID:", userId);
-      console.log("Question ID:", questionId);
-
       // 1. Reset current QuestionAnswers
-      const questionAnswerResult =
-        await QuestionAnswerService.resetAnswersByUserAndQuestion(
-          userId,
-          questionId,
-        );
+      await QuestionAnswerService.resetAnswersByUserAndQuestion(
+        userId,
+        questionId,
+      );
 
-      console.log("QUESTION ANSWER RESET RESPONSE:", questionAnswerResult);
       if (usesDragStore && !useQuestionStore.getState().isOperationCurrent(operation)) return;
 
       // Clear only current answers after the backend reset succeeds.
@@ -96,8 +82,6 @@ function Header({
         resetFrontend();
       }
       setCheckMistakes?.(false);
-
-      console.log("Frontend answered data cleared.");
     } catch (error) {
       console.error("Reset failed:", error);
 

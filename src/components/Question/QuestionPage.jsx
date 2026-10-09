@@ -270,10 +270,6 @@ const QuestionPage = () => {
         obj.headers.map((header) => `${obj.name}-${header}`),
       );
 
-      console.log("QUESTION RESPONSE:", response.data);
-
-      console.log("QUESTION PAIRS:", response.data?.pairs);
-
       await setQuestions([response.data]);
 
       setMatchingQuestion(response.data);
@@ -365,8 +361,6 @@ const QuestionPage = () => {
       );
 
       setCurrentQuestionIndex(currentIndex >= 0 ? currentIndex : 0);
-
-      console.log("TEST QUESTIONS:", finalQuestions);
     } catch (error) {
       console.error("Failed to load test questions:", error);
 
@@ -385,14 +379,10 @@ const QuestionPage = () => {
       await QuestionAnswerService.getAnswersByUserAndQuestion(
         getCurrentUserId(), questionId,
       );
-    console.log("92iowerj20 Correct answers: ", correctAnswers);
-    console.log("Completed data ", correctAnswers);
 
     const savedAnswers = Array.isArray(correctAnswers) ? correctAnswers : [];
 
     if (savedAnswers.length === 0) {
-      console.warn("No saved answers to restore:", correctAnswers);
-
       return;
     }
 
@@ -428,18 +418,11 @@ const QuestionPage = () => {
   // QUESTION COMPLETED
   // ===========================================================
 
-  const handleQuestionCompleted = (completedQuestionId, questionScore) => {
+  const handleQuestionCompleted = (completedQuestionId) => {
     setCompletedQuestions((previous) => ({
       ...previous,
       [completedQuestionId]: true,
     }));
-
-    console.log(
-      "Completed question:",
-      completedQuestionId,
-      "Score:",
-      questionScore,
-    );
   };
 
   // ===========================================================
@@ -682,12 +665,8 @@ const QuestionPage = () => {
         const targetId = Event.operation.target?.id;
 
         if (targetId == null) {
-          console.log("I did nothing");
-
           return;
         }
-
-        console.log(`I got dropped into ${targetId}`);
 
         const [first, second, third] = targetId.split("-");
         const operation = useQuestionStore.getState().beginOperation(questionId, "drop");
@@ -832,7 +811,6 @@ const QuestionPage = () => {
             }
           }
         } catch (error) {
-          console.log("Error is ", error, " for id ", sourceId);
           setPlacementError(error.response?.data?.message ?? error.message ?? "Unable to save this placement.");
         } finally {
           useQuestionStore.getState().endOperation(operation);

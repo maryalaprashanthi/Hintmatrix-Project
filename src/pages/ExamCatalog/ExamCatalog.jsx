@@ -143,6 +143,12 @@ function ExamCatalog() {
 
   useEffect(() => loadPastAttempts(), [loadPastAttempts]);
 
+  // No one sees a paper once its window has closed. A student's finished
+  // attempts live on the Past tab instead.
+  const visibleExams = exams.filter(
+    (exam) => windowState(exam.startDate, exam.endDate).key !== "closed",
+  );
+
   const openExam = (examId) => navigate(`/exams/${examId}`);
   const editExam = (examId) => navigate(`/exam-paper/${examId}`);
   const openReview = (examId, resultId) =>
@@ -154,8 +160,8 @@ function ExamCatalog() {
         <h1>Choose a paper</h1>
         <p>
           {tab === "present"
-            ? status === "ready" && exams.length > 0
-              ? `${exams.length} ${exams.length === 1 ? "paper" : "papers"} published for you.`
+            ? status === "ready" && visibleExams.length > 0
+              ? `${visibleExams.length} ${visibleExams.length === 1 ? "paper" : "papers"} published for you.`
               : "Every paper your college has published shows up here."
             : "Every paper you've already completed shows up here."}
         </p>
@@ -185,16 +191,16 @@ function ExamCatalog() {
         </div>
       )}
 
-      {tab === "present" && status === "ready" && exams.length === 0 && (
+      {tab === "present" && status === "ready" && visibleExams.length === 0 && (
         <div className="exam-catalog__notice">
           <h2>No papers yet</h2>
           <p>New papers appear here as soon as your college publishes them.</p>
         </div>
       )}
 
-      {tab === "present" && status === "ready" && exams.length > 0 && (
+      {tab === "present" && status === "ready" && visibleExams.length > 0 && (
         <ul className="exam-catalog__grid">
-          {exams.map((exam) => {
+          {visibleExams.map((exam) => {
             const state = windowState(exam.startDate, exam.endDate);
             const isOpen = state.key === "open";
 

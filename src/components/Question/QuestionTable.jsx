@@ -16,7 +16,9 @@ import { useState } from "react";
 const QuestionTable = () => {
   const [checkMistakes, setCheckMistakes] = useState(false);
 
-  const { questions, score, droppableData } = useQuestionStore();
+  const questions = useQuestionStore((state) => state.questions);
+  const score = useQuestionStore((state) => state.score);
+  const droppableData = useQuestionStore((state) => state.droppableData);
   const finalAccounts = calculateFinalAccounts(droppableData);
   const fullyPlaced = questions.length > 0 && questions.every((row) => row.status === "solved");
   const rowCount = (table) => Math.max(...table.headers.map((header) =>
@@ -50,13 +52,11 @@ const QuestionTable = () => {
   );
 
   const allTableNames = data.map((d) => d.name);
-  // console.log("These are all table names I got ", allTableNames);
 
   let pendingQ = questions.filter((q) => q.status === "solved");
   let solvedQ = pendingQ.length;
   // onCheck={handleCheckValidation}
   if (checkMistakes) {
-    console.log("I got rendered check mistakes");
     return (
       <MistakesModal
         questionId={questionId}
@@ -109,12 +109,7 @@ const QuestionTable = () => {
                     type={obj.type}
                     status={obj.status}
                     wrongAttempts={obj.wrongAttempts}
-                  >
-                    <span>{obj.name}</span>
-                    <span className="fw-semibold">
-                      ₹{Number(obj.amount).toLocaleString("en-IN")}
-                    </span>
-                  </Draggable>
+                  />
                 ))}
               </Accordion.Body>
             </Accordion.Item>
@@ -137,12 +132,7 @@ const QuestionTable = () => {
                     type={obj.type}
                     status={obj.status}
                     wrongAttempts={obj.wrongAttempts}
-                  >
-                    <span>{obj.name}</span>
-                    <span className="fw-semibold">
-                      ₹{Number(obj.amount).toLocaleString("en-IN")}
-                    </span>
-                  </Draggable>
+                  />
                 ))}
               </Accordion.Body>
             </Accordion.Item>

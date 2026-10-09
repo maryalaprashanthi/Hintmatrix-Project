@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useDraggable } from "@dnd-kit/react";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import "./Draggable.css";
 import { VscError } from "react-icons/vsc";
 import { OverlayTrigger, Popover } from "react-bootstrap";
@@ -49,55 +49,31 @@ const PendingIcon = () => (
   </svg>
 );
 
-export default function Draggable({
-  id,
-  children,
-  type,
-  status = "pending",
-  wrongAttempts = 0,
-}) {
-  const { questionId } = useParams();
-  const [showActions, setShowActions] = useState(false);
-  const [autoFillError, setAutoFillError] = useState("");
-  const [isAutoFilling, setIsAutoFilling] = useState(false);
+// Subscribes to the one store-wide busyOperation flag so the full Draggable
+// body (hints, autofill, popovers, logging) doesn't have to re-run on every
+// drop just to disable every other row's button while one row is mid-drop.
+const DragHandle = memo(function DragHandle({ id, type, solved, status, name, amount, onTouchEnd }) {
   const busyOperation = useQuestionStore((state) => state.busyOperation);
-
-  useEffect(() => {
-    if (status === "wrong") {
-      setShowActions(true);
-    } else if (status === "pending" && wrongAttempts === 0) {
-      setShowActions(false);
-    }
-  }, [status, wrongAttempts]);
-
-  const solved = status === "solved";
   const { ref } = useDraggable({
     id,
     type,
     disabled: solved || Boolean(busyOperation),
   });
-  {
-    /* <CheckIcon /> */
-    // <PendingIcon />
-  }
-  const { questions, setHintUsed, moveQuestion, setActualAnswers,
-    setTotalAnswers, setHints, setCurrentScore } = useQuestionStore();
-  const myQuestion = questions.find((q) => q.id == id);
-  const allHints = myQuestion.hints;
-  const dragButton = (
+  return (
     <button
       ref={solved || busyOperation ? undefined : ref}
       type="button"
       className="drag-btn"
       disabled={solved || Boolean(busyOperation)}
       aria-disabled={solved || Boolean(busyOperation)}
-      onTouchEnd={(event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        setShowActions(true);
-      }}
+      onTouchEnd={onTouchEnd}
     >
-      <span className="drag-btn-content">{children}</span>
+      <span className="drag-btn-content">
+        <span>{name}</span>
+        <span className="fw-semibold">
+          ₹{Number(amount).toLocaleString("en-IN")}
+        </span>
+      </span>
 
       <span className="drag-status-icon">
         {solved ? (
@@ -110,16 +86,108 @@ export default function Draggable({
       </span>
     </button>
   );
+});
+
+// Same reasoning as DragHandle: only the wrong-answer popover's own action
+// buttons need busyOperation, so only they subscribe to it.
+const WrongActionsMenu = memo(function WrongActionsMenu({
+  allHints,
+  handleHint,
+  handleAutoFill,
+  isAutoFilling,
+  autoFillError,
+}) {
+  const busyOperation = useQuestionStore((state) => state.busyOperation);
+  return (
+    <Popover.Body>
+      <OverlayTrigger
+        trigger="click"
+        placement="right"
+        rootClose
+        container={document.body}
+        overlay={
+          <Popover className="hint-popover">
+            <Popover.Header as="div">💡 Hint</Popover.Header>
+            <Popover.Body>
+              {allHints.map((h, idx) => (
+                <div key={idx}>
+                  {h}
+                  <hr />
+                </div>
+              ))}
+            </Popover.Body>
+          </Popover>
+        }
+      >
+        <button className="action-menu-item" onClick={handleHint} disabled={Boolean(busyOperation)}>
+          <span className="action-icon hint-icon">💡</span>
+          <span>
+            <strong>Hint</strong>
+            <small>Get a helpful clue</small>
+          </span>
+        </button>
+      </OverlayTrigger>
+
+      <button className="action-menu-item" onClick={handleAutoFill} disabled={Boolean(busyOperation)}>
+        <span className="action-icon autofill-icon">✦</span>
+        <span>
+          <strong>{isAutoFilling ? "Filling…" : "Auto Fill"}</strong>
+          <small>Fill this automatically</small>
+        </span>
+      </button>
+      {autoFillError && <div className="text-danger small" role="alert">{autoFillError}</div>}
+    </Popover.Body>
+  );
+});
+
+function Draggable({
+  id,
+  type,
+  status = "pending",
+  wrongAttempts = 0,
+}) {
+  const { questionId } = useParams();
+  const [showActions, setShowActions] = useState(false);
+  const [autoFillError, setAutoFillError] = useState("");
+  const [isAutoFilling, setIsAutoFilling] = useState(false);
+
+  useEffect(() => {
+    if (status === "wrong") {
+      setShowActions(true);
+    } else if (status === "pending" && wrongAttempts === 0) {
+      setShowActions(false);
+    }
+  }, [status, wrongAttempts]);
+
+  const solved = status === "solved";
+  const myQuestion = useQuestionStore((state) => state.questions.find((q) => q.id == id));
+  const setHintUsed = useQuestionStore((state) => state.setHintUsed);
+  const moveQuestion = useQuestionStore((state) => state.moveQuestion);
+  const setActualAnswers = useQuestionStore((state) => state.setActualAnswers);
+  const setTotalAnswers = useQuestionStore((state) => state.setTotalAnswers);
+  const setHints = useQuestionStore((state) => state.setHints);
+  const setCurrentScore = useQuestionStore((state) => state.setCurrentScore);
+  const allHints = myQuestion.hints;
+  const dragButton = (
+    <DragHandle
+      id={id}
+      type={type}
+      solved={solved}
+      status={status}
+      name={myQuestion.name}
+      amount={myQuestion.amount}
+      onTouchEnd={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setShowActions(true);
+      }}
+    />
+  );
 
   const handleHint = () => {
     if (useQuestionStore.getState().busyOperation) return;
     setHintUsed(id);
   };
-
-  // const handleTryAgain = () => {
-  //   console.log("Try again was clicked");
-  //   // call answer events with attributeId to remove the correct answers on this id.
-  // };
 
   const handleAutoFill = async () => {
     const operation = useQuestionStore.getState().beginOperation(questionId, "autofill");
@@ -214,52 +282,13 @@ export default function Draggable({
             container={document.body}
             overlay={
               <Popover className="question-actions-popover">
-                <Popover.Body>
-                  <OverlayTrigger
-                    trigger="click"
-                    placement="right"
-                    rootClose
-                    container={document.body}
-                    overlay={
-                      <Popover className="hint-popover">
-                        <Popover.Header as="div">💡 Hint</Popover.Header>
-                        <Popover.Body>
-                          {allHints.map((h, idx) => (
-                            <div key={idx}>
-                              {h}
-                              <hr />
-                            </div>
-                          ))}
-                        </Popover.Body>
-                      </Popover>
-                    }
-                  >
-                    <button className="action-menu-item" onClick={handleHint} disabled={Boolean(busyOperation)}>
-                      <span className="action-icon hint-icon">💡</span>
-                      <span>
-                        <strong>Hint</strong>
-                        <small>Get a helpful clue</small>
-                      </span>
-                    </button>
-                  </OverlayTrigger>
-
-                  {/* <button className="action-menu-item" onClick={handleTryAgain}>
-                    <span className="action-icon retry-icon">↻</span>
-                    <span>
-                      <strong>Try Again</strong>
-                      <small>Reset your answer</small>
-                    </span>
-                  </button> */}
-
-                  <button className="action-menu-item" onClick={handleAutoFill} disabled={Boolean(busyOperation)}>
-                    <span className="action-icon autofill-icon">✦</span>
-                    <span>
-                        <strong>{isAutoFilling ? "Filling…" : "Auto Fill"}</strong>
-                      <small>Fill this automatically</small>
-                    </span>
-                  </button>
-                  {autoFillError && <div className="text-danger small" role="alert">{autoFillError}</div>}
-                </Popover.Body>
+                <WrongActionsMenu
+                  allHints={allHints}
+                  handleHint={handleHint}
+                  handleAutoFill={handleAutoFill}
+                  isAutoFilling={isAutoFilling}
+                  autoFillError={autoFillError}
+                />
               </Popover>
             }
           >
@@ -272,3 +301,5 @@ export default function Draggable({
     </div>
   );
 }
+
+export default memo(Draggable);
