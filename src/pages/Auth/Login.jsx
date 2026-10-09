@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import LoginService from "../../services/LoginService";
+import { clearPageLoadCache } from "../../utils/pageLoadCache";
 import { backendUrl } from "../../config/backend";
 import "./Login.css";
 
@@ -39,6 +40,7 @@ function Login() {
       setError("");
 
       const response = await LoginService.login(loginData);
+      clearPageLoadCache();
 
 
       // Save JWT

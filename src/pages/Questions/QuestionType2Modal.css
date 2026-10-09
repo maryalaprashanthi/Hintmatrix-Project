@@ -13,7 +13,8 @@ Overlay
   justify-content: center;
   align-items: flex-start;
 
-  padding-top: 40px;
+  padding: 40px 16px 16px;
+  box-sizing: border-box;
 
   background: rgba(15, 23, 42, 0.35);
   backdrop-filter: blur(8px);
@@ -27,8 +28,10 @@ Modal
 ========================================== */
 
 .qt2-table-name-modal {
-  width: 850px;
-  max-width: 95%;
+  width: min(850px, 100%);
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 
   background: #fff;
 
@@ -124,8 +127,12 @@ Body
 
 .qt2-modal-body {
   flex: 1;
+  min-height: 0;
+  min-width: 0;
+  box-sizing: border-box;
 
   overflow-y: auto;
+  overflow-x: hidden;
 
   padding: 25px;
 
@@ -169,7 +176,7 @@ Grid
 .qt2-form-grid {
   display: grid;
 
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 
   gap: 20px;
 }
@@ -177,6 +184,10 @@ Grid
 /* ==========================================
 Form Group
 ========================================== */
+
+.qt2-form-group {
+  min-width: 0;
+}
 
 .qt2-form-group label {
   display: block;
@@ -196,6 +207,8 @@ Input Box
 
 .qt2-input-box {
   position: relative;
+  min-width: 0;
+  width: 100%;
 }
 
 /* ==========================================
@@ -255,6 +268,7 @@ Normal Inputs
 React Select - Course / Chapter / Category
 ========================================== */
 .qt2-react-select__control {
+  min-width: 0 !important;
   min-height: 60px !important;
   height: 60px !important;
 
@@ -267,11 +281,12 @@ React Select - Course / Chapter / Category
 }
 
 .qt2-react-select__value-container {
-  height: 60px !important;
+  height: 58px !important;
+  min-width: 0 !important;
 
   padding: 0 16px 0 58px !important;
 
-  display: flex !important;
+  display: grid !important;
   align-items: center !important;
 }
 
@@ -285,6 +300,11 @@ React Select - Course / Chapter / Category
 
 .qt2-react-select__single-value {
   margin: 0 !important;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   color: #000 !important;
 
@@ -303,6 +323,26 @@ React Select - Course / Chapter / Category
 
 .qt2-react-select-container {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* React Select's search input must not inherit the full-size form input. */
+.qt2-input-box .qt2-react-select__input-container {
+  min-width: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.qt2-input-box .qt2-react-select__input-container input {
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0;
+  font-size: inherit;
+  line-height: inherit;
+  caret-color: auto;
 }
 
 .qt2-react-select__control:hover {
@@ -412,6 +452,7 @@ Question Table
 
 .qt2-question-table table {
   width: 100%;
+  min-width: 560px;
 
   table-layout: fixed;
 
@@ -630,7 +671,7 @@ Footer
 Bootstrap Buttons
 ========================================== */
 
-.btn {
+.qt2-table-name-modal .btn {
   border-radius: 10px;
 
   padding: 10px 22px;
@@ -674,9 +715,9 @@ Responsive
   }
 
   .qt2-table-name-modal {
-    width: 850px;
+    width: 100%;
 
-    max-width: 95%;
+    max-width: 100%;
 
     background: #fff;
 
@@ -701,7 +742,7 @@ Responsive
     flex-direction: column;
   }
 
-  .btn {
+  .qt2-modal-footer .btn {
     width: 100%;
   }
 }
@@ -715,7 +756,8 @@ Responsive
 }
 
 .qt2-question-table {
-  overflow: visible !important;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .qt2-question-table td {

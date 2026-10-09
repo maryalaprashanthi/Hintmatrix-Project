@@ -19,6 +19,7 @@ import SubjectService from "../../services/SubjectService";
 import TableAttributeService from "../../services/TableAttributeService";
 import TableHeaderService from "../../services/TableHeaderService";
 import TopicService from "../../services/TopicService";
+import { normalizeQuestionType } from "../../utils/questionType";
 import "./CreateAllQuestions.css";
 
 const emptyMcqOptions = () =>
@@ -118,28 +119,7 @@ const labelOf = (item, type) => {
   return labels[type] ?? item?.name ?? "";
 };
 
-const normalizeType = (value = "") => {
-  let normalized = String(value)
-    .trim()
-    .toUpperCase()
-    .replace(/[\s-]+/g, "_");
-
-  if (normalized.startsWith("MCQ_")) {
-    normalized = normalized.slice(4);
-  }
-
-  if (normalized.endsWith("_QUESTION")) {
-    normalized = normalized.slice(0, -9);
-  }
-
-  const aliases = {
-    DRAGANDDROP: "DRAG_AND_DROP",
-    SINGLECHOICE: "SINGLE_CHOICE",
-    MULTIPLECHOICE: "MULTIPLE_CHOICE",
-  };
-
-  return aliases[normalized] ?? normalized;
-};
+const normalizeType = normalizeQuestionType;
 
 const isMcqType = (type) =>
   type === "SINGLE_CHOICE" || type === "MULTIPLE_CHOICE";

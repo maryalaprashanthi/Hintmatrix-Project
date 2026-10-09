@@ -10,6 +10,7 @@ import QuestionTypeService from "../../services/QuestionTypeService";
 import QuestionService from "../../services/QuestionService";
 import TableHeaderService from "../../services/TableHeaderService";
 import TableAttributeService from "../../services/TableAttributeService";
+import { isTransactionQuestionType } from "../../utils/questionType";
 
 import {
   FaTimes,
@@ -107,6 +108,9 @@ function QuestionType2Modal({
   });
 
   const [questionAttributes, setQuestionAttributes] = useState([emptyRow()]);
+  const [detailsLoading, setDetailsLoading] = useState(Boolean(questionData?.questionId));
+  const [detailsError, setDetailsError] = useState("");
+  const [saving, setSaving] = useState(false);
   console.log("Transaction Options:", transactionOptions);
 
   /* =========================================================
@@ -195,6 +199,8 @@ function QuestionType2Modal({
       );
 
       const loadQuestionAttributes = async () => {
+        setDetailsLoading(true);
+        setDetailsError("");
         try {
           const response = await QuestionService.getQuestionById(
             questionData.questionId,
@@ -215,6 +221,7 @@ function QuestionType2Modal({
           );
         } catch (error) {
           console.error("Failed to load question attributes:", error);
+          if (!cancelled) setDetailsError("Unable to load complete question details. Close and reopen the form.");
           if (!cancelled) {
             setQuestionAttributes(
               questionData.questionAttributes?.length > 0
@@ -222,6 +229,8 @@ function QuestionType2Modal({
                 : [emptyRow()],
             );
           }
+        } finally {
+          if (!cancelled) setDetailsLoading(false);
         }
       };
 
@@ -424,6 +433,8 @@ function QuestionType2Modal({
         label: item.name ?? item.attributeName ?? item.attribute_name ?? "",
         amount1: item.amount1 ?? item.amount ?? "",
         amount2: item.amount2 ?? item.amount2Value ?? item.amount ?? "",
+        headerId: item.headerId ?? item.header_id ?? item.tableHeader?.headerId,
+        headerName: item.tableHeaderName ?? item.headerName,
       }));
 
       console.log("TABLE ATTRIBUTE OPTIONS:", options);
@@ -455,6 +466,7 @@ function QuestionType2Modal({
       ...updated[index],
       transaction: selected ? selected.value : "",
       attributeId: selected ? selected.value : "",
+      headerId: updated[index].headerId ?? selected?.headerId ?? null,
       amount: selected ? (selected.amount ?? selected.amount1 ?? "") : "",
       amount1: selected ? (selected.amount1 ?? selected.amount ?? "") : "",
       amount2: selected
@@ -519,6 +531,7 @@ function QuestionType2Modal({
   ========================================================= */
 
   const handleSave = async () => {
+    if (detailsLoading || detailsError || saving) return;
     if (
       !courseId ||
       !subjectId ||
@@ -540,6 +553,17 @@ function QuestionType2Modal({
       return;
     }
 
+    const resolveHeaderId = (row) => {
+      const attribute = attributeOptions.find((option) =>
+        String(option.value) === String(row.attributeId ?? row.transaction));
+      return row.headerId ?? attribute?.headerId ?? headerOptions.find((header) =>
+        String(header.label).trim().toLowerCase() === String(attribute?.headerName ?? "").trim().toLowerCase())?.value;
+    };
+    if (questionAttributes.some((row) => !resolveHeaderId(row))) {
+      alert("Unable to resolve a transaction header. Check the attribute configuration.");
+      return;
+    }
+
     const payload = {
       courseId: Number(courseId),
       subjectId: Number(subjectId),
@@ -553,7 +577,8 @@ function QuestionType2Modal({
         const amount2Value = getEffectiveAmount(row.amount2);
 
         return {
-          headerId: row.headerId || 1,
+          questionAttributeId: row.questionAttributeId ?? null,
+          headerId: Number(resolveHeaderId(row)),
           attributeId: row.attributeId || Number(row.transaction),
 
           transaction: row.transaction || null,
@@ -561,12 +586,14 @@ function QuestionType2Modal({
           amount2: parseOptionalNumber(amount2Value),
 
           note: row.note ?? null,
+          transactionDate: row.transactionDate ?? null,
         };
       }),
     };
 
     console.log("Question Type 2 Payload:", payload);
 
+    setSaving(true);
     try {
       if (onSave) {
         await onSave(payload);
@@ -575,7 +602,8 @@ function QuestionType2Modal({
       handleClose();
     } catch (error) {
       console.error("Error saving Question Type 2:", error);
-    }
+      alert(error.response?.data?.message || "Unable to save question.");
+    } finally { setSaving(false); }
   };
 
   /* =========================================================
@@ -774,7 +802,8 @@ function QuestionType2Modal({
                   <Select
                     className="qt2-react-select-container"
                     classNamePrefix="qt2-react-select"
-                    options={questionTypeOptions}
+                    options={questionTypeOptions.filter((option) => isTransactionQuestionType(option.label))}
+                    isDisabled={Boolean(questionData?.questionId)}
                     value={
                       questionTypeOptions.find(
                         (option) =>
@@ -941,6 +970,8 @@ function QuestionType2Modal({
         ================================================= */}
 
         <div className="qt2-modal-footer">
+          {detailsLoading && <p role="status">Loading question details…</p>}
+          {detailsError && <p className="text-danger" role="alert">{detailsError}</p>}
           <button
             type="button"
             className="btn btn-secondary"
@@ -953,6 +984,7 @@ function QuestionType2Modal({
             type="button"
             className="btn btn-primary"
             onClick={handleSave}
+            disabled={detailsLoading || !!detailsError || saving}
           >
             <FaSave className="me-2" />
             Save

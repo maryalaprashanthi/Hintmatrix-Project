@@ -33,6 +33,7 @@ import { useToast } from "../../components/Toast/useToast";
 import ActionIconButton from "../../components/Common/ActionIconButton";
 import "./QuestionList.css";
 import AddQuestionModal from "./AddQuestionModal";
+import { normalizeQuestionType } from "../../utils/questionType";
 import QuestionType2Modal from "./QuestionType2Modal";
 
 const getQuestionType = (question) => {
@@ -42,9 +43,7 @@ const getQuestionType = (question) => {
     question?.questionTypeName ??
     question?.question_type_name;
 
-  return typeof type === "string"
-    ? type.trim().toUpperCase().replace(/\s+/g, "_")
-    : undefined;
+  return normalizeQuestionType(type);
 };
 
 const QuestionList = () => {
@@ -803,11 +802,16 @@ const QuestionList = () => {
   // EDIT
   // =========================================================
 
-  const handleEdit = (question) => {
+  const handleEdit = async (question) => {
     if (!isQuestionActive(question)) return;
-
-    setSelectedQuestion(question);
-    setShowModal(true);
+    try {
+      const { data } = await QuestionService.getQuestionById(question.questionId);
+      if (!getQuestionType(data)) throw new Error("Missing question type");
+      setSelectedQuestion(data);
+      setShowModal(true);
+    } catch {
+      toast.error("Unable to load question details. Please try again.");
+    }
   };
 
   // =========================================================
