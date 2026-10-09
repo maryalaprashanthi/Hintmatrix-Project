@@ -42,6 +42,9 @@ const ExamPaper = () => {
 
   const [passPercentage, setPassPercentage] = useState(35);
   const [examName, setExamName] = useState("");
+  // Minutes a student gets once they press Start - both exam types need
+  // this now; a real exam's own end date can still cut it short.
+  const [durationMinutes, setDurationMinutes] = useState(60);
 
   // SELECTED VALUES
 
@@ -333,6 +336,10 @@ const ExamPaper = () => {
 
         const data = response?.data ?? {};
 
+        if (data.durationMinutes != null) {
+          setDurationMinutes(Number(data.durationMinutes));
+        }
+
         if (isMockEdit) {
           // A mock exam has no name-vs-mockExamName ambiguity and no window.
           setExamName(data.mockExamName ?? "");
@@ -538,6 +545,11 @@ const ExamPaper = () => {
       return;
     }
 
+    if (!durationMinutes || durationMinutes < 1 || durationMinutes > 1440) {
+      toast.error("Please enter a duration between 1 and 1440 minutes.");
+      return;
+    }
+
     setCurrentStep(2);
   };
 
@@ -557,6 +569,7 @@ const ExamPaper = () => {
           mockExamName: examName,
           courseId: course?.value ?? null,
           chapterIds: chapters.map((item) => item.value ?? item),
+          durationMinutes,
           passPercentage,
         };
 
@@ -594,6 +607,7 @@ const ExamPaper = () => {
         startDate:
           startDate && startTime ? `${startDate}T${startTime}:00` : null,
         endDate: endDate && endTime ? `${endDate}T${endTime}:00` : null,
+        durationMinutes,
         passPercentage,
       };
 
@@ -922,6 +936,26 @@ const ExamPaper = () => {
                     hideSelectedOptions={false}
                     isLoading={loadingChapters}
                     isDisabled={!subject}
+                  />
+                </Form.Group>
+
+                {/* DURATION - both exam types; how long a student gets once
+                    they press Start. A real exam's own end date can still
+                    cut a late starter short. */}
+                <Form.Group className="exam-paper-form-group">
+                  <Form.Label>Duration (minutes)</Form.Label>
+
+                  <Form.Control
+                    type="number"
+                    min={1}
+                    max={1440}
+                    value={durationMinutes}
+                    onChange={(e) =>
+                      setDurationMinutes(
+                        e.target.value === "" ? "" : Number(e.target.value),
+                      )
+                    }
+                    className="exam-paper-input"
                   />
                 </Form.Group>
 

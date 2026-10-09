@@ -1,5 +1,5 @@
 import { DragDropProvider } from "@dnd-kit/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import QuestionTable from "./QuestionTable";
@@ -139,9 +139,6 @@ const QuestionPage = () => {
   // Completed questions
   const [completedQuestions, setCompletedQuestions] = useState({});
 
-  // Timer - 30 minutes
-  const [timeLeft, setTimeLeft] = useState(30 * 60);
-
   const [testSubmitted, setTestSubmitted] = useState(false);
 
   // ===========================================================
@@ -273,10 +270,6 @@ const QuestionPage = () => {
         obj.headers.map((header) => `${obj.name}-${header}`),
       );
 
-      console.log("QUESTION RESPONSE:", response.data);
-
-      console.log("QUESTION PAIRS:", response.data?.pairs);
-
       await setQuestions([response.data]);
 
       setMatchingQuestion(response.data);
@@ -368,8 +361,6 @@ const QuestionPage = () => {
       );
 
       setCurrentQuestionIndex(currentIndex >= 0 ? currentIndex : 0);
-
-      console.log("TEST QUESTIONS:", finalQuestions);
     } catch (error) {
       console.error("Failed to load test questions:", error);
 
@@ -388,14 +379,10 @@ const QuestionPage = () => {
       await QuestionAnswerService.getAnswersByUserAndQuestion(
         getCurrentUserId(), questionId,
       );
-    console.log("92iowerj20 Correct answers: ", correctAnswers);
-    console.log("Completed data ", correctAnswers);
 
     const savedAnswers = Array.isArray(correctAnswers) ? correctAnswers : [];
 
     if (savedAnswers.length === 0) {
-      console.warn("No saved answers to restore:", correctAnswers);
-
       return;
     }
 
@@ -428,57 +415,14 @@ const QuestionPage = () => {
   };
 
   // ===========================================================
-  // TIMER
-  // ===========================================================
-
-  useEffect(() => {
-    if (testSubmitted || isMcq) {
-      return;
-    }
-
-    if (timeLeft <= 0) {
-      handleSubmitTest();
-      return;
-    }
-
-    const timer = setInterval(() => {
-      setTimeLeft((previous) => (previous > 0 ? previous - 1 : 0));
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [timeLeft, testSubmitted, isMcq]);
-
-  // ===========================================================
-  // FORMAT TIMER
-  // ===========================================================
-
-  const formattedTime = useMemo(() => {
-    const minutes = Math.floor(timeLeft / 60);
-
-    const seconds = timeLeft % 60;
-
-    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
-      2,
-      "0",
-    )}`;
-  }, [timeLeft]);
-
-  // ===========================================================
   // QUESTION COMPLETED
   // ===========================================================
 
-  const handleQuestionCompleted = (completedQuestionId, questionScore) => {
+  const handleQuestionCompleted = (completedQuestionId) => {
     setCompletedQuestions((previous) => ({
       ...previous,
       [completedQuestionId]: true,
     }));
-
-    console.log(
-      "Completed question:",
-      completedQuestionId,
-      "Score:",
-      questionScore,
-    );
   };
 
   // ===========================================================
@@ -670,7 +614,6 @@ const QuestionPage = () => {
         onCompleted={handleQuestionCompleted}
         onQuestionSelect={handleSelectQuestion}
         onNext={handleNextQuestion}
-        formattedTime={formattedTime}
         onSubmitTest={handleSubmitTest}
       />
     );
@@ -722,12 +665,8 @@ const QuestionPage = () => {
         const targetId = Event.operation.target?.id;
 
         if (targetId == null) {
-          console.log("I did nothing");
-
           return;
         }
-
-        console.log(`I got dropped into ${targetId}`);
 
         const [first, second, third] = targetId.split("-");
         const operation = useQuestionStore.getState().beginOperation(questionId, "drop");
@@ -872,7 +811,6 @@ const QuestionPage = () => {
             }
           }
         } catch (error) {
-          console.log("Error is ", error, " for id ", sourceId);
           setPlacementError(error.response?.data?.message ?? error.message ?? "Unable to save this placement.");
         } finally {
           useQuestionStore.getState().endOperation(operation);

@@ -121,8 +121,11 @@ const formatDate = (value) => {
   return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
 };
 
-const formatDuration = (start, end) => {
-  const minutes = Math.round((new Date(end) - new Date(start)) / 60000);
+// How long a student actually gets once they press Start - not the
+// scheduling window (startDate to endDate), which can be open for days
+// while each attempt still only runs for durationMinutes.
+const formatDuration = (durationMinutes) => {
+  const minutes = Number(durationMinutes);
   if (!Number.isFinite(minutes) || minutes <= 0) return "—";
   return `${minutes} Min`;
 };
@@ -245,7 +248,7 @@ function ExamHub({ kind = "exam" }) {
               examId: exam.examId,
               title: exam.examName || "Untitled Test",
               marks: `Pass: ${exam.passPercentage}%`,
-              duration: formatDuration(exam.startDate, exam.endDate),
+              duration: formatDuration(exam.durationMinutes),
               date: formatDate(exam.startDate),
               time,
               period,

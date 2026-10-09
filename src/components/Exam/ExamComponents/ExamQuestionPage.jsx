@@ -8,6 +8,7 @@ import useExamSessionStore from "./examSessionStore";
 import ExamJournalPage from "./ExamJournalPage";
 import ExamDropdownPage from "./ExamDropdownPage";
 import QuestionService from "../../../services/QuestionService";
+import RuleEngineService from "../../../services/RuleEngineService";
 import { questionTypeOf } from "./questionTypeOf";
 import { data } from "./SampleData";
 
@@ -19,13 +20,49 @@ import { data } from "./SampleData";
 // back (examQuestionStore / examSessionStore are keyed by questionId and are
 // only cleared by an explicit Reset) - nothing is refetched or wiped just
 // because the component remounted.
+// An attribute belongs in one account per rule condition (1-4) that has an
+// arithmetic set. That count is how many times the student may drop it.
+const countRuleDrops = (rules, chapterId) => {
+  const activeRules = (Array.isArray(rules) ? rules : []).filter(
+    (rule) => rule.activeRow !== false,
+  );
+  const rule =
+    activeRules.find(
+      (item) => chapterId != null && String(item.chapterId) === String(chapterId),
+    ) ?? activeRules[0];
+  if (!rule) return null;
+
+  const count = [1, 2, 3, 4].filter(
+    (index) => rule[`condition${index}`]?.arithmetic != null,
+  ).length;
+  return count > 0 ? count : null;
+};
+
+// One rule-engine call per distinct attribute. A failed call leaves that
+// attribute without a limit rather than blocking the question.
+const loadDropLimits = async (questionData) => {
+  const attributeIds = [
+    ...new Set(
+      (questionData.questionAttributes || []).map((attribute) => attribute.attributeId),
+    ),
+  ];
+  const entries = await Promise.all(
+    attributeIds.map(async (attributeId) => {
+      const rules = await RuleEngineService.getRuleEngineByAttributeId(attributeId)
+        .catch(() => null);
+      return [attributeId, countRuleDrops(rules, questionData.chapterId)];
+    }),
+  );
+  return Object.fromEntries(entries);
+};
+
 const ExamQuestionPage = ({ id, question: sourceQuestion }) => {
   const { questionId: paramsQuestionId } = useParams();
   const questionId = id ?? paramsQuestionId;
 
   const [questionType, setQuestionType] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { moveQuestion, setQuestions, setTableData, setActiveQuestion } =
+  const { moveQuestion, setQuestions, setTableData, setActiveQuestion, setDropLimits } =
     useExamQuestionStore();
   const cacheQuestionType = useExamSessionStore(
     (state) => state.setQuestionType,
@@ -51,6 +88,7 @@ const ExamQuestionPage = ({ id, question: sourceQuestion }) => {
 
       setQuestions(questionId, [questionData]);
       setTableData(allStrings);
+      setDropLimits(questionId, await loadDropLimits(questionData));
     }
 
     return type;

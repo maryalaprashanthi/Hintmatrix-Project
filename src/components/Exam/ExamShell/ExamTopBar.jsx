@@ -43,7 +43,8 @@ const ExamTopBar = ({
   progressPct,
   warnings,
   maxWarnings,
-  secondsLeft,
+  endAt,
+  onExpire,
   isFullscreen,
   onToggleFullscreen,
   bannerMessage,
@@ -83,7 +84,7 @@ const ExamTopBar = ({
           </div>
         )}
 
-        <Timer secondsLeft={secondsLeft} />
+        <Timer endAt={endAt} onExpire={onExpire} />
 
         <button
           className={styles.ghostButton}

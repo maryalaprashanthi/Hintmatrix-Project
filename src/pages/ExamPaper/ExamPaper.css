@@ -363,8 +363,11 @@
   font-weight: 500;
 }
 
+/* AddCourseModal.css pins every .aq-select__control to a fixed 45px height.
+   The multi-select chapter field must grow as chips wrap onto new lines. */
 .exam-paper-page .aq-search-select .aq-select__control {
   width: 100%;
+  height: auto !important;
   min-height: 43px !important;
   border: 1px solid #ccd4e0 !important;
   border-radius: 9px !important;
@@ -383,6 +386,9 @@
 
 .exam-paper-page .aq-search-select .aq-select__value-container {
   min-height: 43px;
+  flex-wrap: wrap !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
   padding-left: 12px !important;
   padding-right: 8px !important;
   display: flex !important;

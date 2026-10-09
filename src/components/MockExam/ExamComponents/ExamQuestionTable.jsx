@@ -3,7 +3,7 @@ import { Accordion } from "react-bootstrap";
 import { useMemo } from "react";
 import ExamDraggable from "./ExamDraggable";
 import ExamDroppable from "./ExamDroppable";
-import useExamQuestionStore from "./examQuestionStore";
+import useExamQuestionStore, { placementCount } from "./examQuestionStore";
 import "../../Question/QuestionTable.css";
 import { data } from "./SampleData";
 import { calculateFinalAccounts } from "../../Question/SampleData";
@@ -40,7 +40,13 @@ const ExamQuestionTable = () => {
   const allTableNames = data.map((d) => d.name);
   const trialBalanceRow = (obj) => (
     <div key={obj.id}>
-      <ExamDraggable id={obj.id} type={obj.type} status={obj.status}>
+      <ExamDraggable
+        id={obj.id}
+        type={obj.type}
+        status={obj.status}
+        placedCount={placementCount(droppableData, obj.id)}
+        maxDrops={obj.maxDrops}
+      >
         <span>{obj.name}</span>
         <span className="fw-semibold">
           ₹{Number(obj[obj.amountSelection] ?? obj.amount).toLocaleString("en-IN")}
