@@ -509,7 +509,9 @@ export default function Sidebar({
             >
               <div className="menu-left">
                 <MdBarChart className="menu-icon" />
-                <span>Exam Performance</span>
+                <span>
+                  {isStudent ? "Performance & Study Time" : "Exam Performance"}
+                </span>
               </div>
             </NavLink>
           )}
