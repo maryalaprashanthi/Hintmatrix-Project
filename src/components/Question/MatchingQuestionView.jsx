@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import useQuestionStore from "./questionStore";
@@ -22,19 +21,21 @@ const MatchingQuestionView = ({
   // =========================================================
 
   const [pairs, setPairs] = useState([]);
+
+  // Column B (answers) is shown in shuffled order
   const [shuffledColumnB, setShuffledColumnB] = useState([]);
 
-  // Column A pairId -> Column B pairId
+  // Column A pairId (question) -> Column B pairId (answer)
   const [selectedAnswers, setSelectedAnswers] = useState({});
 
-  const [draggedAnswer, setDraggedAnswer] = useState(null);
+  // Question (Column A item) currently being dragged
+  const [draggedQuestion, setDraggedQuestion] = useState(null);
 
-  const [dropTargetPairId, setDropTargetPairId] = useState(null);
+  // Answer (Column B item) currently hovered while dragging
+  const [dropTargetAnswerId, setDropTargetAnswerId] = useState(null);
 
   const [submitted, setSubmitted] = useState(false);
-
   const [score, setScore] = useState(0);
-
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [restoredReady, setRestoredReady] = useState(false);
@@ -48,14 +49,9 @@ const MatchingQuestionView = ({
     const result = [...array];
 
     for (let i = result.length - 1; i > 0; i--) {
-      const randomIndex = Math.floor(
-        Math.random() * (i + 1)
-      );
+      const randomIndex = Math.floor(Math.random() * (i + 1));
 
-      [result[i], result[randomIndex]] = [
-        result[randomIndex],
-        result[i],
-      ];
+      [result[i], result[randomIndex]] = [result[randomIndex], result[i]];
     }
 
     return result;
@@ -66,60 +62,40 @@ const MatchingQuestionView = ({
   // =========================================================
 
   useEffect(() => {
-    if (!question) {
+    if (!question || !Array.isArray(question.pairs)) {
       setPairs([]);
       setShuffledColumnB([]);
       setSelectedAnswers({});
       setSubmitted(false);
       setScore(0);
-      setDraggedAnswer(null);
+      setDraggedQuestion(null);
+      setDropTargetAnswerId(null);
       setCurrentScore(0);
       return;
     }
 
-    if (!Array.isArray(question.pairs)) {
-      setPairs([]);
-      setShuffledColumnB([]);
-      setSelectedAnswers({});
-      setSubmitted(false);
-      setScore(0);
-      setDraggedAnswer(null);
-      setCurrentScore(0);
-      return;
-    }
-
-    // -------------------------------------------------------
-    // Column A
-    // -------------------------------------------------------
-
+    // Column A (questions) in display order
     const sortedPairs = [...question.pairs].sort(
-      (a, b) =>
-        Number(a.displayOrder ?? 0) -
-        Number(b.displayOrder ?? 0)
+      (a, b) => Number(a.displayOrder ?? 0) - Number(b.displayOrder ?? 0),
     );
 
     setPairs(sortedPairs);
 
-    // -------------------------------------------------------
-    // Column B
-    // -------------------------------------------------------
+    // Column B (answers) shuffled
+    setShuffledColumnB(shuffleArray(sortedPairs));
 
-    setShuffledColumnB(
-      shuffleArray(sortedPairs)
-    );
-
-    // -------------------------------------------------------
     // Reset
-    // -------------------------------------------------------
-
     setSelectedAnswers({});
     setSubmitted(false);
     setScore(0);
-    setDraggedAnswer(null);
-    setDropTargetPairId(null);
-
+    setDraggedQuestion(null);
+    setDropTargetAnswerId(null);
     setCurrentScore(0);
   }, [question?.questionId, setCurrentScore]);
+
+  // =========================================================
+  // RESTORE SAVED ANSWERS
+  // =========================================================
 
   useEffect(() => {
     if (!question?.questionId || !Array.isArray(question.pairs)) return;
@@ -128,7 +104,10 @@ const MatchingQuestionView = ({
     setRestoredReady(false);
     setError("");
     savedAnswers.current = {};
-    QuestionAnswerService.getAnswerEventsByQuestionId(getCurrentUserId(), question.questionId)
+    QuestionAnswerService.getAnswerEventsByQuestionId(
+      getCurrentUserId(),
+      question.questionId,
+    )
       .then((events) => {
         if (!active) return;
         const restored = restoreMatchingAnswers(events, question.pairs);
@@ -138,206 +117,140 @@ const MatchingQuestionView = ({
         setCurrentScore(restored.score);
         setSubmitted(restored.submitted);
         setRestoredReady(true);
-        if (restored.submitted) onCompleted?.(question.questionId, restored.score);
+        if (restored.submitted)
+          onCompleted?.(question.questionId, restored.score);
       })
-      .catch(() => { if (active) setError("Unable to restore your saved answers. Please reopen the question."); })
-      .finally(() => { if (active) setSaving(false); });
-    return () => { active = false; };
+      .catch(() => {
+        if (active)
+          setError(
+            "Unable to restore your saved answers. Please reopen the question.",
+          );
+      })
+      .finally(() => {
+        if (active) setSaving(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [question?.questionId, setCurrentScore]);
 
   // =========================================================
-  // GET SELECTED ANSWER
+  // HELPERS
   // =========================================================
 
-  const getSelectedAnswer = (pairId) => {
-    const selectedId =
-      selectedAnswers[pairId];
+  // Answer (Column B item) assigned to a question (Column A item)
+  const getSelectedAnswer = (questionPairId) => {
+    const selectedId = selectedAnswers[questionPairId];
 
-    if (
-      selectedId === undefined ||
-      selectedId === null ||
-      selectedId === ""
-    ) {
+    if (selectedId === undefined || selectedId === null || selectedId === "") {
       return null;
     }
 
-    return pairs.find(
+    return (
+      pairs.find((pair) => Number(pair.pairId) === Number(selectedId)) ?? null
+    );
+  };
+
+  // Is this question (Column A item) already matched to an answer?
+  const isQuestionMatched = (questionPairId) => {
+    const value = selectedAnswers[questionPairId];
+    return value !== undefined && value !== null && value !== "";
+  };
+
+  // Which question (Column A item) is currently dropped on this answer?
+  const getQuestionForAnswer = (answerPairId) =>
+    pairs.find(
       (pair) =>
-        Number(pair.pairId) ===
-        Number(selectedId)
-    );
-  };
+        isQuestionMatched(pair.pairId) &&
+        Number(selectedAnswers[pair.pairId]) === Number(answerPairId),
+    ) ?? null;
 
   // =========================================================
-  // CHECK WHETHER ANSWER IS USED
+  // DRAG AND DROP
   // =========================================================
 
-  const isAnswerUsed = (pairId) => {
-    return Object.values(
-      selectedAnswers
-    ).some(
-      (selectedId) =>
-        Number(selectedId) ===
-        Number(pairId)
-    );
-  };
-
-  // =========================================================
-  // DRAG START
-  // =========================================================
-
-  const handleDragStart = (
-    event,
-    pair
-  ) => {
+  // Drag starts from a question in Column A
+  const handleDragStart = (event, pair) => {
     if (submitted || saving || !restoredReady) {
+      event.preventDefault();
       return;
     }
 
-    setDraggedAnswer(pair);
+    setDraggedQuestion(pair);
 
-    event.dataTransfer.effectAllowed =
-      "move";
-
-    event.dataTransfer.setData(
-      "text/plain",
-      String(pair.pairId)
-    );
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", String(pair.pairId));
   };
-
-  // =========================================================
-  // DRAG END
-  // =========================================================
 
   const handleDragEnd = () => {
-    setDraggedAnswer(null);
-    setDropTargetPairId(null);
+    setDraggedQuestion(null);
+    setDropTargetAnswerId(null);
   };
 
-  const handleQuestionDragOver = (
-    event,
-    pairId
-  ) => {
-    if (submitted || saving || !restoredReady) {
-      return;
-    }
+  // Hovering over an answer in Column B
+  const handleAnswerDragOver = (event, answerPairId) => {
+    if (submitted || saving || !restoredReady) return;
 
     event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
 
-    setDropTargetPairId(pairId);
-
-    event.dataTransfer.dropEffect =
-      "move";
+    if (dropTargetAnswerId !== answerPairId) {
+      setDropTargetAnswerId(answerPairId);
+    }
   };
 
-  // =========================================================
-  // DRAG OVER
-  // =========================================================
+  const handleAnswerDragLeave = (event, answerPairId) => {
+    // Ignore leave events fired when moving over a child element
+    if (event.currentTarget.contains(event.relatedTarget)) return;
 
-  const handleDragOver = (event) => {
-    if (submitted || saving) {
-      return;
+    if (dropTargetAnswerId === answerPairId) {
+      setDropTargetAnswerId(null);
     }
+  };
 
+  // Question dropped on an answer
+  const handleDrop = (event, answerPairId) => {
     event.preventDefault();
 
-    event.dataTransfer.dropEffect =
-      "move";
+    if (submitted || saving || !restoredReady) return;
+
+    const raw = event.dataTransfer.getData("text/plain");
+    if (!raw) return;
+
+    const questionPairId = Number(raw);
+
+    setSelectedAnswers((previous) => {
+      const updated = {};
+
+      // Free any other question already sitting on this answer
+      Object.entries(previous).forEach(([qId, aId]) => {
+        if (Number(aId) !== Number(answerPairId)) {
+          updated[qId] = aId;
+        }
+      });
+
+      // Assign the dragged question (this also moves it if matched elsewhere)
+      updated[questionPairId] = Number(answerPairId);
+
+      return updated;
+    });
+
+    setDraggedQuestion(null);
+    setDropTargetAnswerId(null);
   };
 
   // =========================================================
-  // DROP
+  // REMOVE MATCH (by question id)
   // =========================================================
 
-  const handleDrop = (
-    event,
-    columnAPairId = dropTargetPairId
-  ) => {
-    event.preventDefault();
+  const handleRemoveMatch = (questionPairId) => {
+    if (submitted || saving || !restoredReady) return;
 
-    if (submitted || saving || !restoredReady) {
-      return;
-    }
-
-    if (
-      columnAPairId === null ||
-      columnAPairId === undefined
-    ) {
-      return;
-    }
-
-    const pairIdFromDrag =
-      event.dataTransfer.getData(
-        "text/plain"
-      );
-
-    if (!pairIdFromDrag) {
-      return;
-    }
-
-    const selectedPairId =
-      Number(pairIdFromDrag);
-
-    // -------------------------------------------------------
-    // Prevent same Column B answer being used twice
-    // -------------------------------------------------------
-
-    const usedByAnotherRow =
-      Object.entries(
-        selectedAnswers
-      ).some(
-        ([
-          currentPairId,
-          currentSelectedId,
-        ]) =>
-          Number(currentPairId) !==
-            Number(columnAPairId) &&
-          Number(currentSelectedId) ===
-            selectedPairId
-      );
-
-    if (usedByAnotherRow) {
-      return;
-    }
-
-    // -------------------------------------------------------
-    // Save match
-    // -------------------------------------------------------
-
-    setSelectedAnswers(
-      (previous) => ({
-        ...previous,
-        [columnAPairId]:
-          selectedPairId,
-      })
-    );
-
-    setDraggedAnswer(null);
-    setDropTargetPairId(null);
-  };
-
-  // =========================================================
-  // REMOVE MATCH
-  // =========================================================
-
-  const handleRemoveMatch = (
-    pairId
-  ) => {
-    if (submitted || saving || !restoredReady) {
-      return;
-    }
-
-    setSelectedAnswers(
-      (previous) => {
-        const updated = {
-          ...previous,
-        };
-
-        delete updated[pairId];
-
-        return updated;
-      }
-    );
+    setSelectedAnswers((previous) => {
+      const updated = { ...previous };
+      delete updated[questionPairId];
+      return updated;
+    });
   };
 
   // =========================================================
@@ -349,12 +262,15 @@ const MatchingQuestionView = ({
     setSaving(true);
     setError("");
     try {
-      await QuestionAnswerService.resetAnswerEventsByUserAndQuestion(getCurrentUserId(), question.questionId);
+      await QuestionAnswerService.resetAnswerEventsByUserAndQuestion(
+        getCurrentUserId(),
+        question.questionId,
+      );
       savedAnswers.current = {};
       setSelectedAnswers({});
       setSubmitted(false);
-      setDraggedAnswer(null);
-      setDropTargetPairId(null);
+      setDraggedQuestion(null);
+      setDropTargetAnswerId(null);
       setScore(0);
       setCurrentScore(0);
       setShuffledColumnB(shuffleArray(pairs));
@@ -374,29 +290,11 @@ const MatchingQuestionView = ({
       return;
     }
 
-    // -------------------------------------------------------
-    // Check unanswered
-    // -------------------------------------------------------
-
-    const unanswered =
-      pairs.some(
-        (pair) =>
-          selectedAnswers[
-            pair.pairId
-          ] === undefined ||
-          selectedAnswers[
-            pair.pairId
-          ] === null ||
-          selectedAnswers[
-            pair.pairId
-          ] === ""
-      );
+    // Every question in Column A must be matched
+    const unanswered = pairs.some((pair) => !isQuestionMatched(pair.pairId));
 
     if (unanswered) {
-      alert(
-        "Please match all Column A items before submitting."
-      );
-
+      alert("Please match all Column A questions before submitting.");
       return;
     }
 
@@ -406,113 +304,58 @@ const MatchingQuestionView = ({
     let correctCount = 0;
 
     try {
-      // -----------------------------------------------------
-      // Check each pair
-      // -----------------------------------------------------
-
       for (const pair of pairs) {
-        const selectedPairId =
-          Number(
-            selectedAnswers[
-              pair.pairId
-            ]
-          );
+        const selectedPairId = Number(selectedAnswers[pair.pairId]);
 
-        const isCorrect =
-          selectedPairId ===
-          Number(pair.pairId);
+        const isCorrect = selectedPairId === Number(pair.pairId);
 
         if (isCorrect) {
           correctCount++;
         }
 
-        // ---------------------------------------------------
-        // Find selected Column B
-        // ---------------------------------------------------
-
-        const selectedPair =
-          pairs.find(
-            (item) =>
-              Number(
-                item.pairId
-              ) ===
-              selectedPairId
-          );
-
-        // ---------------------------------------------------
-        // Save answer event
-        // ---------------------------------------------------
+        const selectedPair = pairs.find(
+          (item) => Number(item.pairId) === selectedPairId,
+        );
 
         const answerEvent = {
           // Identify the source pair, including when the selected target is wrong.
           unitPosition: Number(pair.pairId),
           userId: getCurrentUserId(),
-
-          questionId:
-            question.questionId,
-
+          questionId: question.questionId,
           attributeId: null,
-
           arithmetic: "MATCH",
-
-          answerPosition:
-            selectedPairId,
-
+          answerPosition: selectedPairId,
           eventType: "ANSWER",
-
           isCorrect: isCorrect,
-
-          description:
-            `Matching question: Column A "${pair.columnA}" was matched with Column B "${selectedPair?.columnB ?? ""}". | matchIds=${JSON.stringify([Number(pair.pairId), selectedPairId])}`,
-
-          userAnswer:
-            `Column A "${pair.columnA}" -> Column B "${selectedPair?.columnB ?? ""}"`,
+          description: `Matching question: Column A "${pair.columnA}" was matched with Column B "${selectedPair?.columnB ?? ""}". | matchIds=${JSON.stringify([Number(pair.pairId), selectedPairId])}`,
+          userAnswer: `Column A "${pair.columnA}" -> Column B "${selectedPair?.columnB ?? ""}"`,
         };
 
         const previous = savedAnswers.current[pair.pairId];
         const marker = `| matchIds=${JSON.stringify([Number(pair.pairId), selectedPairId])}`;
         if (!previous?.description?.endsWith(marker)) {
-          savedAnswers.current[pair.pairId] = await QuestionAnswerService.processAnswerEvent(answerEvent);
+          savedAnswers.current[pair.pairId] =
+            await QuestionAnswerService.processAnswerEvent(answerEvent);
         }
       }
 
-      // -----------------------------------------------------
-      // Score
-      // -----------------------------------------------------
-
       setScore(correctCount);
-
-      setCurrentScore(
-        correctCount
-      );
-
+      setCurrentScore(correctCount);
       setSubmitted(true);
 
-      // -----------------------------------------------------
-      // Notify QuestionPage
-      // -----------------------------------------------------
-
       if (onCompleted) {
-        onCompleted(
-          question.questionId,
-          correctCount
-        );
+        onCompleted(question.questionId, correctCount);
       }
-    } catch (error) {
-      console.error(
-        "Error submitting matching question:",
-        error
-      );
+    } catch (err) {
+      console.error("Error submitting matching question:", err);
 
-      setError("Unable to save all matches. Your saved matches are retained; please try again.");
+      setError(
+        "Unable to save all matches. Your saved matches are retained; please try again.",
+      );
     } finally {
       setSaving(false);
     }
   };
-
-  // =========================================================
-  // TRY AGAIN
-  // =========================================================
 
   const handleTryAgain = handleReset;
 
@@ -524,9 +367,7 @@ const MatchingQuestionView = ({
     return (
       <div className="matching-empty">
         <div className="matching-empty-card">
-          <h3>
-            No question found.
-          </h3>
+          <h3>No question found.</h3>
         </div>
       </div>
     );
@@ -540,15 +381,8 @@ const MatchingQuestionView = ({
     return (
       <div className="matching-empty">
         <div className="matching-empty-card">
-
-          <h3>
-            {question.questionText}
-          </h3>
-
-          <p>
-            No matching pairs found.
-          </p>
-
+          <h3>{question.questionText}</h3>
+          <p>No matching pairs found.</p>
         </div>
       </div>
     );
@@ -560,608 +394,319 @@ const MatchingQuestionView = ({
 
   return (
     <div className="matching-page">
-      {error && <div className="alert alert-danger" role="alert">{error}</div>}
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
+      )}
 
-      {/* =====================================================
-          HEADER
-      ===================================================== */}
-
+      {/* HEADER */}
       <div className="matching-practice-header">
-
         <div className="matching-header-left">
+          <div className="matching-eyebrow">STUDENT PRACTICE</div>
 
-          <div className="matching-eyebrow">
-            STUDENT PRACTICE
-          </div>
-
-          <h1 className="matching-practice-title">
-            Match the Following
-          </h1>
+          <h1 className="matching-practice-title">Match the Following</h1>
 
           <p className="matching-practice-subtitle">
-            Match each item in Column A with
-            the correct answer.
+            Match each question in Column A with the correct answer in Column B.
           </p>
-
         </div>
 
-        {/* ===================================================
-            STAT CARDS
-        =================================================== */}
-
         <div className="matching-stat-cards">
-
           <div className="matching-stat-card matching-progress-card">
-
-            <span>
-              PROGRESS
-            </span>
-
+            <span>PROGRESS</span>
             <strong>
-              {completedCount}/
-              {totalQuestions}
+              {completedCount}/{totalQuestions}
             </strong>
-
-            <small>
-              {totalQuestions - completedCount} left
-            </small>
-
+            <small>{totalQuestions - completedCount} left</small>
           </div>
 
           <div className="matching-stat-card matching-score-card">
-
-            <span>
-              TOTAL SCORE
-            </span>
-
-            <strong>
-              {score}
-            </strong>
-
+            <span>TOTAL SCORE</span>
+            <strong>{score}</strong>
           </div>
-
         </div>
-
       </div>
 
-      {/* =====================================================
-          MAIN LAYOUT
-      ===================================================== */}
-
+      {/* MAIN LAYOUT */}
       <div className="matching-practice-layout">
-
-        {/* ===================================================
-            MAIN QUESTION
-        =================================================== */}
-
         <main className="matching-question-content">
-
-          {/* =================================================
-              QUESTION HEADING
-          ================================================= */}
-
+          {/* QUESTION HEADING */}
           <div className="matching-question-heading">
+            {/* <span className="matching-question-number">
+              Question {questionNumber} of {totalQuestions}
+            </span> */}
 
-            <span>
-              Question{" "}
-              {questionNumber} of{" "}
-              {totalQuestions}
-            </span>
+            <div className="matching-heading-actions">
+              <span className="matching-mark-badge">{pairs.length} Marks</span>
 
-            <span className="matching-mark-badge">
-              {pairs.length} Marks
-            </span>
+              {!submitted ? (
+                <>
+                  <button
+                    type="button"
+                    className="matching-reset-btn"
+                    onClick={handleReset}
+                    disabled={
+                      saving ||
+                      !restoredReady ||
+                      Object.keys(selectedAnswers).length === 0
+                    }
+                  >
+                    ↻ Reset
+                  </button>
 
+                  <button
+                    type="button"
+                    className="matching-next-btn matching-submit-btn"
+                    onClick={handleSubmit}
+                    disabled={saving || !restoredReady}
+                  >
+                    {saving ? "Saving..." : "Submit Answer"}
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="matching-reset-btn"
+                  onClick={handleTryAgain}
+                  disabled={saving || !restoredReady}
+                >
+                  ↻ Try Again
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* =================================================
-              QUESTION TEXT
-          ================================================= */}
+          {/* QUESTION TEXT */}
+          <div className="matching-question-title">{question.questionText}</div>
 
-          <div className="matching-question-title">
-            {question.questionText}
-          </div>
-
-          {/* =================================================
-              INSTRUCTION
-          ================================================= */}
-
-          <div className="matching-instruction">
-
-            <span className="matching-instruction-icon">
-              💡
-            </span>
+          {/* INSTRUCTION */}
+          {/* <div className="matching-instruction">
+            <span className="matching-instruction-icon">💡</span>
 
             <div>
-
-              <strong>
-                How to answer
-              </strong>
+              <strong>How to answer</strong>
 
               <p>
-                Drag each answer from Column B
-                and drop it into the matching
-                box in Column A.
+                Drag each question from Column A and drop it onto the matching
+                answer in Column B.
               </p>
-
             </div>
+          </div> */}
 
-          </div>
-
-          {/* =================================================
-              MATCHING COLUMNS
-          ================================================= */}
-
-          <div className="matching-columns">
-
-            {/* =================================================
-                COLUMN A
-            ================================================= */}
-
-            <div className="matching-column">
-
+          {/* MATCHING COLUMNS
+              Inline flexDirection/order force Column A to the LEFT and
+              Column B to the RIGHT, overriding any reversing CSS. */}
+          <div className="matching-columns" style={{ flexDirection: "row" }}>
+            {/* =============================================
+                COLUMN A  (QUESTIONS - DRAGGABLE)  -> LEFT
+            ============================================= */}
+            <div className="matching-column" style={{ order: 1 }}>
               <div className="matching-column-header column-a-header">
-
-                <span className="header-icon">
-                  ◇
-                </span>
-
-                <span>
-                  Column A
-                </span>
-
-                <small>
-                  Questions
-                </small>
-
+                <span className="header-icon">◇</span>
+                <span>Column A</span>
+                <small>Questions</small>
               </div>
 
               <div className="matching-column-body">
+                {pairs.map((pair, index) => {
+                  const matched = isQuestionMatched(pair.pairId);
 
-                <div
-                  className={`drop-zone matching-drop-tray ${
-                    dropTargetPairId !== null
-                      ? "drop-zone-active"
-                      : ""
-                  }`}
-                  onDragOver={
-                    handleDragOver
-                  }
-                  onDrop={(event) =>
-                    handleDrop(event)
-                  }
-                >
-                  <span className="drop-placeholder">
-                    {dropTargetPairId !== null
-                      ? "Drop answer here"
-                      : "Drag an answer onto a question"}
-                  </span>
-                </div>
+                  const isDragging = draggedQuestion?.pairId === pair.pairId;
 
-                {pairs.map(
-                  (
-                    pair,
-                    index
-                  ) => {
+                  const isCorrect =
+                    submitted &&
+                    Number(selectedAnswers[pair.pairId]) ===
+                      Number(pair.pairId);
 
-                    const selectedPair =
-                      getSelectedAnswer(
-                        pair.pairId
-                      );
+                  const isWrong = submitted && !isCorrect;
 
-                    const selectedId =
-                      selectedAnswers[
-                        pair.pairId
-                      ];
+                  return (
+                    <div
+                      key={pair.pairId}
+                      draggable={!submitted && !saving && restoredReady}
+                      onDragStart={(event) => handleDragStart(event, pair)}
+                      onDragEnd={handleDragEnd}
+                      className={`answer-card ${
+                        matched && !submitted ? "answer-card-used" : ""
+                      } ${isDragging ? "answer-card-dragging" : ""} ${
+                        isCorrect ? "matching-row-correct" : ""
+                      } ${isWrong ? "matching-row-wrong" : ""}`}
+                    >
+                      {!submitted && <span className="drag-dots">⋮⋮</span>}
 
-                    const isCorrect =
-                      submitted &&
-                      Number(
-                        selectedId
-                      ) ===
-                        Number(
-                          pair.pairId
-                        );
+                      <span className="answer-number">{index + 1}.</span>
 
-                    const isWrong =
-                      submitted &&
-                      Number(
-                        selectedId
-                      ) !==
-                        Number(
-                          pair.pairId
-                        );
+                      <span className="answer-text">{pair.columnA}</span>
 
-                    return (
-                      <div
-                        key={
-                          pair.pairId
-                        }
-                        className={`matching-row ${
-                          submitted &&
-                          isCorrect
-                            ? "matching-row-correct"
-                            : ""
-                        } ${
-                          submitted &&
-                          isWrong
-                            ? "matching-row-wrong"
-                            : ""
-                        }`}
-                        onDragOver={(
-                          event
-                        ) =>
-                          handleQuestionDragOver(
-                            event,
-                            pair.pairId
-                          )
-                        }
-                        onDrop={(
-                          event
-                        ) =>
-                          handleDrop(
-                            event,
-                            pair.pairId
-                          )
-                        }
-                      >
-
-                        {/* ---------------------------------
-                            COLUMN A
-                        --------------------------------- */}
-
-                        <div className="column-a-item">
-
-                          <span className="drag-dots">
-                            ⋮⋮
-                          </span>
-
-                          <span className="column-letter">
-                            {String.fromCharCode(
-                              65 + index
-                            )}
-                            .
-                          </span>
-
-                          <span className="column-text">
-                            {pair.columnA}
-                          </span>
-
-                          {selectedPair && (
-                            <span className="column-a-match">
-                              {selectedPair.columnB}
-
-                              {!submitted && (
-                                <button
-                                  type="button"
-                                  className="remove-match-btn"
-                                  onClick={() =>
-                                    handleRemoveMatch(
-                                      pair.pairId
-                                    )
-                                  }
-                                >
-                                  ×
-                                </button>
-                              )}
-                            </span>
-                          )}
-
-                        </div>
-
-                        {/* ---------------------------------
-                            RESULT
-                        --------------------------------- */}
-
-                        {submitted && (
-                          <div className="matching-row-result">
-
-                            {isCorrect ? (
-                              <span className="result-correct-text">
-                                ✓ Correct
-                              </span>
-                            ) : (
-                              <span className="result-wrong-text">
-                                ✗ Correct answer:{" "}
-                                {pair.columnB}
-                              </span>
-                            )}
-
-                          </div>
-                        )}
-
-                      </div>
-                    );
-                  }
-                )}
-
+                      {!submitted && matched && (
+                        <span className="answer-used-label">Matched</span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-
             </div>
 
-            {/* =================================================
-                COLUMN B
-            ================================================= */}
-
-            <div className="matching-column">
-
+            {/* =============================================
+                COLUMN B  (ANSWERS - DROP TARGETS)  -> RIGHT
+            ============================================= */}
+            <div className="matching-column" style={{ order: 2 }}>
               <div className="matching-column-header column-b-header">
-
-                <span className="header-icon">
-                  ◇
-                </span>
-
-                <span>
-                  Column B
-                </span>
-
-                <small>
-                  Answers
-                </small>
-
+                <span className="header-icon">◇</span>
+                <span>Column B</span>
+                <small>Answers</small>
               </div>
 
               <div className="matching-column-body">
+                {shuffledColumnB.map((option, index) => {
+                  const matchedQuestion = getQuestionForAnswer(option.pairId);
 
-                {shuffledColumnB.map(
-                  (
-                    option,
-                    index
-                  ) => {
+                  const isOver = dropTargetAnswerId === option.pairId;
 
-                    const used =
-                      isAnswerUsed(
-                        option.pairId
-                      );
+                  const isCorrect =
+                    submitted &&
+                    matchedQuestion &&
+                    Number(matchedQuestion.pairId) === Number(option.pairId);
 
-                    const isDragging =
-                      draggedAnswer?.pairId ===
-                      option.pairId;
+                  const isWrong = submitted && matchedQuestion && !isCorrect;
 
-                    return (
-                      <div
-                        key={
-                          option.pairId
-                        }
-                        draggable={
-                          !submitted &&
-                          !saving &&
-                          !used
-                        }
-                        onDragStart={(
-                          event
-                        ) =>
-                          handleDragStart(
-                            event,
-                            option
-                          )
-                        }
-                        onDragEnd={
-                          handleDragEnd
-                        }
-                        className={`answer-card ${
-                          used
-                            ? "answer-card-used"
-                            : ""
-                        } ${
-                          isDragging
-                            ? "answer-card-dragging"
-                            : ""
-                        }`}
-                      >
-
-                        <span className="drag-dots">
-                          ⋮⋮
+                  return (
+                    <div
+                      key={option.pairId}
+                      className={`matching-row ${
+                        isOver ? "matching-row-over" : ""
+                      } ${isCorrect ? "matching-row-correct" : ""} ${
+                        isWrong ? "matching-row-wrong" : ""
+                      }`}
+                      onDragOver={(event) =>
+                        handleAnswerDragOver(event, option.pairId)
+                      }
+                      onDragLeave={(event) =>
+                        handleAnswerDragLeave(event, option.pairId)
+                      }
+                      onDrop={(event) => handleDrop(event, option.pairId)}
+                    >
+                      <div className="column-a-item">
+                        <span className="column-letter">
+                          {String.fromCharCode(65 + index)}.
                         </span>
 
-                        <span className="answer-number">
-                          {index + 1}.
-                        </span>
+                        <span className="column-text">{option.columnB}</span>
 
-                        <span className="answer-text">
-                          {option.columnB}
-                        </span>
+                        {matchedQuestion ? (
+                          <span className="column-a-match">
+                            {matchedQuestion.columnA}
 
-                        {used && (
-                          <span className="answer-used-label">
-                            Used
+                            {!submitted && (
+                              <button
+                                type="button"
+                                className="remove-match-btn"
+                                onClick={() =>
+                                  handleRemoveMatch(matchedQuestion.pairId)
+                                }
+                              >
+                                ×
+                              </button>
+                            )}
                           </span>
+                        ) : (
+                          !submitted && (
+                            <span className="drop-placeholder">
+                              Drop a question here
+                            </span>
+                          )
                         )}
-
                       </div>
-                    );
-                  }
-                )}
-
+                    </div>
+                  );
+                })}
               </div>
-
             </div>
-
           </div>
 
-          {/* =================================================
-              RESULT
-          ================================================= */}
+          {/* BOTTOM QUESTION NAVIGATION */}
+          <div className="matching-nav-row">
+            <div className="matching-nav-left">
+              {questionNumber > 1 && (
+                <button
+                  type="button"
+                  className="matching-prev-btn"
+                  onClick={onPrevious}
+                >
+                  ← Previous
+                </button>
+              )}
+            </div>
 
+            <div className="matching-nav-right">
+              {questionNumber < totalQuestions && (
+                <button
+                  type="button"
+                  className="matching-next-btn matching-nav-next-btn"
+                  onClick={onNext}
+                >
+                  Next →
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* RESULT */}
           {submitted && (
             <div className="matching-result">
-
-              <div className="result-title">
-                Result
-              </div>
+              <div className="result-title">Result</div>
 
               <div className="result-score">
                 {score} / {pairs.length}
               </div>
 
               <div className="result-message">
-
                 {score === pairs.length
                   ? "Excellent! All answers are correct."
                   : `You got ${score} out of ${pairs.length} correct.`}
-
               </div>
-
             </div>
           )}
 
-          {/* =================================================
-              ANSWER REVIEW
-          ================================================= */}
-
+          {/* ANSWER REVIEW */}
           {submitted && (
             <div className="answer-review">
+              <div className="answer-review-title">Answer Review</div>
 
-              <div className="answer-review-title">
-                Answer Review
-              </div>
+              {pairs.map((pair, index) => {
+                const selectedPair = getSelectedAnswer(pair.pairId);
 
-              {pairs.map(
-                (
-                  pair,
-                  index
-                ) => {
+                const isCorrect =
+                  Number(selectedAnswers[pair.pairId]) === Number(pair.pairId);
 
-                  const selectedPair =
-                    getSelectedAnswer(
-                      pair.pairId
-                    );
+                return (
+                  <div
+                    key={pair.pairId}
+                    className={isCorrect ? "review-correct" : "review-wrong"}
+                  >
+                    <strong>
+                      {index + 1}. {pair.columnA}
+                    </strong>
 
-                  const isCorrect =
-                    Number(
-                      selectedAnswers[
-                        pair.pairId
-                      ]
-                    ) ===
-                    Number(
-                      pair.pairId
-                    );
+                    <span>→</span>
 
-                  return (
-                    <div
-                      key={
-                        pair.pairId
-                      }
-                      className={
-                        isCorrect
-                          ? "review-correct"
-                          : "review-wrong"
-                      }
-                    >
+                    <span>{selectedPair?.columnB ?? "Not answered"}</span>
 
-                      <strong>
-                        {String.fromCharCode(
-                          65 + index
-                        )}
-                        .{" "}
-                        {pair.columnA}
-                      </strong>
-
-                      <span>
-                        →
+                    {isCorrect ? (
+                      <span className="review-check">✓ Correct</span>
+                    ) : (
+                      <span className="review-cross">
+                        ✗ Correct: {pair.columnB}
                       </span>
-
-                      <span>
-                        {selectedPair?.columnB ??
-                          "Not answered"}
-                      </span>
-
-                      {isCorrect ? (
-                        <span className="review-check">
-                          ✓ Correct
-                        </span>
-                      ) : (
-                        <span className="review-cross">
-                          ✗ Correct:{" "}
-                          {pair.columnB}
-                        </span>
-                      )}
-
-                    </div>
-                  );
-                }
-              )}
-
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
-
-          {/* =================================================
-              BUTTONS
-          ================================================= */}
-
-          <div className="matching-actions">
-
-            {!submitted ? (
-              <>
-
-                <button
-                  type="button"
-                  className="matching-reset-btn"
-                  onClick={
-                    handleReset
-                  }
-                  disabled={
-                    saving || !restoredReady ||
-                    Object.keys(
-                      selectedAnswers
-                    ).length === 0
-                  }
-                >
-                  ↻ Reset
-                </button>
-
-                <button
-                  type="button"
-                  className="matching-next-btn"
-                  onClick={
-                    handleSubmit
-                  }
-                  disabled={
-                    saving || !restoredReady
-                  }
-                >
-                  {saving
-                    ? "Saving..."
-                    : "Submit Answer"}
-                </button>
-
-              </>
-            ) : (
-              <>
-
-                <button
-                  type="button"
-                  className="matching-reset-btn"
-                  onClick={
-                    handleTryAgain
-                  }
-                  disabled={saving || !restoredReady}
-                >
-                  ↻ Try Again
-                </button>
-
-                {questionNumber <
-                  totalQuestions && (
-                  <button
-                    type="button"
-                    className="matching-next-btn"
-                    onClick={
-                      onNext
-                    }
-                  >
-                    Next Question →
-                  </button>
-                )}
-
-              </>
-            )}
-
-          </div>
-
         </main>
-
       </div>
-
     </div>
   );
 };
