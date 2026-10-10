@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import {
+  FaArrowLeft,
+  FaChevronRight,
+  FaRedo,
+  FaSearch,
+} from "react-icons/fa";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
+import { getApiErrorMessage } from "../../utils/apiError";
 import { getCurrentUserId } from "../../utils/user";
 import "./ErrorList.css";
 
@@ -10,23 +17,34 @@ import "./ErrorList.css";
 
 const getMistakes = (response) => {
   if (Array.isArray(response)) {
-    return response;
+    return response.filter((mistake) => mistake && typeof mistake === "object");
   }
 
-  if (Array.isArray(response?.content)) {
-    return response.content;
+  for (const key of ["content", "data", "items", "mistakes"]) {
+    if (Array.isArray(response?.[key])) {
+      return response[key].filter(
+        (mistake) => mistake && typeof mistake === "object",
+      );
+    }
   }
 
-  if (Array.isArray(response?.data)) {
-    return response.data;
-  }
-
-  if (Array.isArray(response?.mistakes)) {
-    return response.mistakes;
-  }
-
-  return [];
+  throw new Error("The error list response has an unexpected format.");
 };
+
+const getDisplayText = (value, fallback = "—") => {
+  if (typeof value === "string" && value.trim()) {
+    return value.trim();
+  }
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value);
+  }
+
+  return fallback;
+};
+
+const getChapterName = (mistake) =>
+  getDisplayText(mistake.chapterName, "Unknown chapter");
 
 // =========================================================
 // FORMAT DATE
@@ -46,6 +64,11 @@ const formatDate = (value) => {
   return date.toLocaleString();
 };
 
+const getTimestamp = (value) => {
+  const timestamp = value ? new Date(value).getTime() : Number.NaN;
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+};
+
 // =========================================================
 // GET CHAPTER KEY
 // =========================================================
@@ -55,10 +78,7 @@ const getChapterKey = (mistake) => {
     return String(mistake.chapterId);
   }
 
-  return `name-${(mistake.chapterName || "Unknown chapter")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")}`;
+  return `name-${encodeURIComponent(getChapterName(mistake).toLowerCase())}`;
 };
 
 export default function ErrorList() {
@@ -69,6 +89,13 @@ export default function ErrorList() {
   const [mistakes, setMistakes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
+  const [chapterSearch, setChapterSearch] = useState("");
+  const [mistakeSearch, setMistakeSearch] = useState("");
+  const [dateOrder, setDateOrder] = useState("newest");
+  const [chapterSearch, setChapterSearch] = useState("");
+  const [mistakeSearch, setMistakeSearch] = useState("");
+  const [dateOrder, setDateOrder] = useState("newest");
 
   // =========================================================
   // LOAD USER MISTAKES
@@ -103,8 +130,10 @@ export default function ErrorList() {
 
         if (active) {
           setError(
-            requestError.response?.data?.message ||
-              "Could not load your errors. Please check your connection and sign in again.",
+            getApiErrorMessage(
+              requestError,
+              "Could not load your errors. Please check your connection and try again.",
+            ),
           );
         }
       } finally {
@@ -119,7 +148,7 @@ export default function ErrorList() {
     return () => {
       active = false;
     };
-  }, [userId]);
+  }, [userId, reloadKey]);
 
   // =========================================================
   // GROUP MISTAKES BY CHAPTER
@@ -135,7 +164,7 @@ export default function ErrorList() {
         groups.set(key, {
           key,
           chapterId: mistake.chapterId,
-          name: mistake.chapterName || "Unknown chapter",
+          name: getChapterName(mistake),
           count: 0,
         });
       }
@@ -145,6 +174,40 @@ export default function ErrorList() {
 
     return Array.from(groups.values());
   }, [mistakes]);
+
+  const filteredChapters = useMemo(() => {
+    const query = chapterSearch.trim().toLowerCase();
+    if (!query) {
+      return chapters;
+    }
+
+    return chapters.filter((chapter) =>
+      chapter.name.toLowerCase().includes(query),
+    );
+  }, [chapters, chapterSearch]);
+
+  const topicCount = useMemo(
+    () =>
+      new Set(
+        mistakes.map((mistake) =>
+          mistake.topicId !== null && mistake.topicId !== undefined
+            ? String(mistake.topicId)
+            : getDisplayText(mistake.topicName, "Unknown topic").toLowerCase(),
+        ),
+      ).size,
+    [mistakes],
+  );
+
+  const filteredChapters = useMemo(() => {
+    const query = chapterSearch.trim().toLowerCase();
+    if (!query) {
+      return chapters;
+    }
+
+    return chapters.filter((chapter) =>
+      chapter.name.toLowerCase().includes(query),
+    );
+  }, [chapters, chapterSearch]);
 
   // =========================================================
   // SELECTED CHAPTER
@@ -172,13 +235,35 @@ export default function ErrorList() {
     );
   }, [mistakes, selectedChapter]);
 
+  const filteredChapterMistakes = useMemo(() => {
+    const query = mistakeSearch.trim().toLowerCase();
+    const filtered = chapterMistakes.filter((mistake) => {
+      if (!query) {
+        return true;
+      }
+
+      return [
+        mistake.topicName,
+        mistake.attributeName,
+        mistake.questionText,
+        mistake.userAnswer,
+      ].some((value) => getDisplayText(value, "").toLowerCase().includes(query));
+    });
+
+    return filtered.sort((first, second) =>
+      dateOrder === "newest"
+        ? getTimestamp(second.createdAt) - getTimestamp(first.createdAt)
+        : getTimestamp(first.createdAt) - getTimestamp(second.createdAt),
+    );
+  }, [chapterMistakes, dateOrder, mistakeSearch]);
+
   // =========================================================
   // LOADING
   // =========================================================
 
   if (loading) {
     return (
-      <main className="error-list-page">
+      <main className="error-list-page" aria-busy="true">
         <header className="error-list-header">
           <div>
             <p className="error-list-eyebrow">PRACTICE REVIEW</p>
@@ -191,7 +276,10 @@ export default function ErrorList() {
           </div>
         </header>
 
-        <p className="error-list-state">Loading your errors…</p>
+        <div className="error-list-state" role="status">
+          <span className="error-list-spinner" aria-hidden="true" />
+          Loading your errors...
+        </div>
       </main>
     );
   }
@@ -211,9 +299,17 @@ export default function ErrorList() {
           </div>
         </header>
 
-        <p className="error-list-state error-list-state--error" role="alert">
-          {error}
-        </p>
+        <div className="error-list-state error-list-state--error" role="alert">
+          <p>{error}</p>
+          <button
+            type="button"
+            className="btn btn-outline-primary error-list-retry"
+            onClick={() => setReloadKey((key) => key + 1)}
+          >
+            <FaRedo aria-hidden="true" />
+            Try again
+          </button>
+        </div>
       </main>
     );
   }
@@ -239,7 +335,16 @@ export default function ErrorList() {
           <span className="error-list-total">0 mistakes</span>
         </header>
 
-        <p className="error-list-state">No incorrect attempts found yet.</p>
+        <div className="error-list-empty">
+          <span className="error-list-empty-icon" aria-hidden="true">
+            <FaChevronRight />
+          </span>
+          <h2>You&apos;re all caught up</h2>
+          <p>
+            No incorrect attempts found yet. Keep practicing to track your
+            progress.
+          </p>
+        </div>
       </main>
     );
   }
@@ -261,7 +366,8 @@ export default function ErrorList() {
           </header>
 
           <Link className="error-list-back" to="/errors">
-            ← All chapters
+            <FaArrowLeft aria-hidden="true" />
+            All chapters
           </Link>
 
           <p className="error-list-state">
@@ -297,28 +403,32 @@ export default function ErrorList() {
 
         <section className="error-list-section">
           <Link className="error-list-back" to="/errors">
-            ← All chapters
+            <FaArrowLeft aria-hidden="true" />
+            All chapters
           </Link>
 
           <h2>{selectedChapter.name}</h2>
 
           {/* =================================================
-              MISTAKE TABLE
+            MISTAKE TABLE
           ================================================= */}
 
           <div className="error-list-table-wrap">
             <table className="error-list-table">
+              <caption className="visually-hidden">
+                Incorrect attempts in {selectedChapter.name}
+              </caption>
               <thead>
                 <tr>
-                  <th>Date</th>
+                  <th scope="col">Date</th>
 
-                  <th>Topic</th>
+                  <th scope="col">Topic</th>
 
-                  <th>Attribute</th>
+                  <th scope="col">Attribute</th>
 
-                  <th>Your Answer</th>
+                  <th scope="col">Your Answer</th>
 
-                  <th>Question</th>
+                  <th scope="col">Question</th>
                 </tr>
               </thead>
 
@@ -326,12 +436,19 @@ export default function ErrorList() {
                 {chapterMistakes.map((mistake, index) => {
                   const questionId = mistake.questionId;
 
-                  const attributeName =
-                    mistake.attributeName || "Unknown attribute";
-
-                  const topicName = mistake.topicName || "—";
-
-                  const questionText = mistake.questionText || "Open question";
+                  const attributeName = getDisplayText(
+                    mistake.attributeName,
+                    "Unknown attribute",
+                  );
+                  const topicName = getDisplayText(mistake.topicName);
+                  const questionText = getDisplayText(
+                    mistake.questionText,
+                    "Open question",
+                  );
+                  const hasQuestionId =
+                    questionId !== null &&
+                    questionId !== undefined &&
+                    String(questionId).length > 0;
 
                   return (
                     <tr
@@ -351,7 +468,7 @@ export default function ErrorList() {
                       {/* ATTRIBUTE */}
 
                       <td>
-                        {questionId ? (
+                        {hasQuestionId ? (
                           <Link
                             className="error-list-question-link"
                             to={`/questions/${questionId}`}
@@ -365,12 +482,12 @@ export default function ErrorList() {
 
                       {/* USER ANSWER */}
 
-                      <td>{mistake.userAnswer || "—"}</td>
+                      <td>{getDisplayText(mistake.userAnswer)}</td>
 
                       {/* QUESTION */}
 
                       <td>
-                        {questionId ? (
+                        {hasQuestionId ? (
                           <Link
                             className="error-list-question-link"
                             to={`/questions/${questionId}`}
@@ -384,7 +501,7 @@ export default function ErrorList() {
                     </tr>
                   );
                 })}
-              </tbody>
+            </tbody>
             </table>
           </div>
         </section>
@@ -439,7 +556,12 @@ export default function ErrorList() {
                 <span className="error-list-chapter-name">{chapter.name}</span>
               </div>
 
-              <span className="error-list-chapter-count">{chapter.count}</span>
+              <span className="error-list-chapter-trailing">
+                <span className="error-list-chapter-count">
+                  {chapter.count} {chapter.count === 1 ? "mistake" : "mistakes"}
+                </span>
+                <FaChevronRight aria-hidden="true" />
+              </span>
             </Link>
           ))}
         </div>

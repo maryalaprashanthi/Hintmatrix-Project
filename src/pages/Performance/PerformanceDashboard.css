@@ -137,6 +137,88 @@
   margin-bottom: 20px;
 }
 
+.student-learning-analytics .performance-panel-heading {
+  gap: 16px;
+}
+
+.student-learning-analytics .performance-panel-heading .btn {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+}
+
+.student-learning-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.student-learning-actions select {
+  width: auto;
+  min-width: 132px;
+}
+
+.student-learning-metric {
+  display: flex;
+  min-height: 132px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid #e8edf5;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.student-learning-metric > svg {
+  color: #2563eb;
+  font-size: 19px;
+}
+
+.student-learning-metric > span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.student-learning-metric > strong {
+  color: #0f172a;
+  font-size: 23px;
+  line-height: 1.2;
+}
+
+.student-learning-metric > small {
+  color: #b91c1c;
+  font-size: 12px;
+}
+
+.student-practice-courses {
+  margin-top: 22px;
+}
+
+.student-daily-study-chart {
+  margin-top: 22px;
+}
+
+.student-daily-study-chart h3,
+.student-practice-courses h3 {
+  margin: 0 0 12px;
+  color: #1e293b;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.student-daily-study-chart .performance-chart {
+  min-width: 0;
+}
+
+.student-daily-study-note {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
 .student-detail-label {
   display: block;
   margin-bottom: 6px;
@@ -437,6 +519,16 @@
 
   .performance-panel {
     padding: 16px;
+  }
+
+  .student-learning-analytics .performance-panel-heading {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .student-learning-actions {
+    width: 100%;
+    justify-content: flex-end;
   }
 
   .performance-table-panel .performance-panel-heading {

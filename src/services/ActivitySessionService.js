@@ -14,6 +14,8 @@ const ActivitySessionService = {
   close: (sessionKey) =>
     apiClient.post(`${BASE_URL}/close`, payload(sessionKey)),
   getTotalTime: () => apiClient.get(`${BASE_URL}/total-time`),
+  getDailyTime: (days = 7, filters = {}) =>
+    apiClient.get(`${BASE_URL}/daily-time`, { params: { ...filters, days } }),
 };
 
 export default ActivitySessionService;
