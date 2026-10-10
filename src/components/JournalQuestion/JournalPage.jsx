@@ -47,6 +47,7 @@ const getRuleConditions = (rule) =>
 
 const JournalPage = ({
   questionNumber = 1,
+  displayQuestionNumber = questionNumber,
   totalQuestions = 1,
   onPrevious,
   onNext,
@@ -359,24 +360,22 @@ const JournalPage = ({
   return (
     <div>
       <Header
+        questionNumber={displayQuestionNumber}
         question={question}
         answeredData={answeredData}
         setAnsweredData={setAnsweredData}
         setCheckMistakes={setCheckMistakes}
       />
 
-      <Row>
-        <SummaryCards
-          debit={0}
-          credit={0}
-          total={question.questionAttributes?.length || 0}
-          solved={solved}
-          totalScore={totalScore}
-        />
-      </Row>
+      <SummaryCards
+        showBalances={false}
+        total={question.questionAttributes?.length || 0}
+        solved={solved}
+        totalScore={totalScore}
+      />
 
-      <Row>
-        <Col>
+      <Row className="g-4 align-items-start">
+        <Col xs={12} lg={6}>
           <JournalQuestion
             data={question.questionAttributes || []}
             questionText={question.questionText}
@@ -387,7 +386,7 @@ const JournalPage = ({
           />
         </Col>
 
-        <Col>
+        <Col xs={12} lg={6}>
           <JournalSolution
             answeredData={answeredData}
             answerScrollTarget={answerScrollTarget}
