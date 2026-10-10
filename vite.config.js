@@ -50,6 +50,12 @@ export default defineConfig(({ command, mode }) => {
 
   return {
     plugins: [react()],
+    esbuild: {
+      pure:
+        mode === "production"
+          ? ["console.log", "console.debug", "console.info"]
+          : [],
+    },
     server: {
       port: 5173,
       proxy: {

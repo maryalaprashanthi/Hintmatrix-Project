@@ -43,6 +43,32 @@
   color: #047857;
 }
 
+/* Answered: the rows that are fully placed, from both sides. */
+.theme-answered {
+  border-top: 1px solid #e5e7eb;
+  margin-top: 4px;
+}
+
+.theme-answered .accordion-button,
+.theme-answered .accordion-button:not(.collapsed) {
+  color: #475569;
+}
+
+.tb-answered-label {
+  margin: 6px 2px 4px;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tb-answered-empty {
+  margin: 4px 2px;
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
 .accordion-button:not(.collapsed) {
   background-color: transparent;
 }

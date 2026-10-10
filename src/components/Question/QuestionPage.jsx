@@ -710,6 +710,11 @@ const QuestionPage = () => {
               return;
             if (myQuestion.status !== "wrong") {
               setError(sourceId);
+            } else {
+              // The row was already wrong, so setError does not run again.
+              // Open its popover anyway, so that every wrong drop shows Hint
+              // and Auto Fill.
+              useQuestionStore.getState().openErrorPopover(sourceId);
             }
             const attemptedAnswer =
               actualAnswers.find(

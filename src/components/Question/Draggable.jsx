@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useDraggable } from "@dnd-kit/react";
-import { memo, useEffect, useState } from "react";
+import { memo, useState } from "react";
 import "./Draggable.css";
 import { VscError } from "react-icons/vsc";
 import { OverlayTrigger, Popover } from "react-bootstrap";
@@ -52,7 +52,7 @@ const PendingIcon = () => (
 // Subscribes to the one store-wide busyOperation flag so the full Draggable
 // body (hints, autofill, popovers, logging) doesn't have to re-run on every
 // drop just to disable every other row's button while one row is mid-drop.
-const DragHandle = memo(function DragHandle({ id, type, solved, status, name, amount, onTouchEnd }) {
+const DragHandle = memo(function DragHandle({ id, type, solved, status, name, amount, onClick }) {
   const busyOperation = useQuestionStore((state) => state.busyOperation);
   const { ref } = useDraggable({
     id,
@@ -66,7 +66,7 @@ const DragHandle = memo(function DragHandle({ id, type, solved, status, name, am
       className="drag-btn"
       disabled={solved || Boolean(busyOperation)}
       aria-disabled={solved || Boolean(busyOperation)}
-      onTouchEnd={onTouchEnd}
+      onClick={onClick}
     >
       <span className="drag-btn-content">
         <span>{name}</span>
@@ -144,20 +144,17 @@ function Draggable({
   id,
   type,
   status = "pending",
-  wrongAttempts = 0,
 }) {
   const { questionId } = useParams();
-  const [showActions, setShowActions] = useState(false);
   const [autoFillError, setAutoFillError] = useState("");
   const [isAutoFilling, setIsAutoFilling] = useState(false);
 
-  useEffect(() => {
-    if (status === "wrong") {
-      setShowActions(true);
-    } else if (status === "pending" && wrongAttempts === 0) {
-      setShowActions(false);
-    }
-  }, [status, wrongAttempts]);
+  // Only one popover is open at a time: the one for the latest wrong drop.
+  // QuestionTable closes it when the user presses anywhere outside it.
+  const showActions = useQuestionStore(
+    (state) => String(state.errorPopoverId) === String(id),
+  );
+  const toggleErrorPopover = useQuestionStore((state) => state.toggleErrorPopover);
 
   const solved = status === "solved";
   const myQuestion = useQuestionStore((state) => state.questions.find((q) => q.id == id));
@@ -176,11 +173,9 @@ function Draggable({
       status={status}
       name={myQuestion.name}
       amount={myQuestion.amount}
-      onTouchEnd={(event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        setShowActions(true);
-      }}
+      // A click on a row that is still wrong opens or closes its popover.
+      // The press before the click already closed any other popover.
+      onClick={status === "wrong" ? () => toggleErrorPopover(id) : undefined}
     />
   );
 
@@ -268,36 +263,32 @@ function Draggable({
 
   return (
     <div
+      data-error-popover-row={id}
       className={`drag-item ${status == "solved" ? "drag-item-solved" : status == "wrong" ? "drag-item-wrong" : ""}`}
     >
-      <>
-        {status == "wrong" ? (
-          <OverlayTrigger
-            key={id}
-            trigger="click"
-            show={showActions}
-            onToggle={setShowActions}
-            placement="auto"
-            rootClose
-            container={document.body}
-            overlay={
-              <Popover className="question-actions-popover">
-                <WrongActionsMenu
-                  allHints={allHints}
-                  handleHint={handleHint}
-                  handleAutoFill={handleAutoFill}
-                  isAutoFilling={isAutoFilling}
-                  autoFillError={autoFillError}
-                />
-              </Popover>
-            }
-          >
-            <span className="drag-action-anchor">{dragButton}</span>
-          </OverlayTrigger>
-        ) : (
-          dragButton
-        )}
-      </>
+      {/* The OverlayTrigger stays mounted on every row. OverlayTrigger reads
+          its target from a ref that is filled only after the first render.
+          If it mounted at the moment the row turned wrong, the popover would
+          open with no target and stay invisible. */}
+      <OverlayTrigger
+        trigger={[]}
+        show={showActions && status === "wrong"}
+        placement="auto"
+        container={document.body}
+        overlay={
+          <Popover className="question-actions-popover">
+            <WrongActionsMenu
+              allHints={allHints}
+              handleHint={handleHint}
+              handleAutoFill={handleAutoFill}
+              isAutoFilling={isAutoFilling}
+              autoFillError={autoFillError}
+            />
+          </Popover>
+        }
+      >
+        <span className="drag-action-anchor">{dragButton}</span>
+      </OverlayTrigger>
     </div>
   );
 }
