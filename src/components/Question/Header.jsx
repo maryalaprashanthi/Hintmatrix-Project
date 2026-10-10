@@ -14,6 +14,7 @@ function Header({
   setCheckMistakes,
   actions,
   questionTypeLabel,
+  questionNumber,
 }) {
   const storeQuestion = useQuestionStore((state) => state.question);
   const resetFrontend = useQuestionStore((state) => state.resetFrontend);
@@ -106,7 +107,7 @@ function Header({
               : "Loading..."}
           </div> */}
           <div className="fw-bold fs-5">
-            {question ? question.questionText : "Loading..."}
+            {question ? <>{questionNumber > 0 && `Q${questionNumber}. `}{question.questionText}</> : "Loading..."}
           </div>
 
           <small className="text-muted">

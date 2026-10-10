@@ -38,7 +38,7 @@ const renderDraggable = (obj) => (
 
 // Ensure you import Bootstrap CSS somewhere in your app (like index.js or App.js)
 // import 'bootstrap/dist/css/bootstrap.min.css';
-const QuestionTable = () => {
+const QuestionTable = ({ questionNumber }) => {
   const [checkMistakes, setCheckMistakes] = useState(false);
 
   const questions = useQuestionStore((state) => state.questions);
@@ -181,6 +181,7 @@ const QuestionTable = () => {
     <div className="row g-4 align-items-start">
       <div>
         <Header
+          questionNumber={questionNumber}
           setCheckMistakes={setCheckMistakes}
         />
 

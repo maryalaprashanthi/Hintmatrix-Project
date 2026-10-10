@@ -13,7 +13,10 @@ import QuestionAnswerService from "../../services/QuestionAnswerService";
 import { isDropdownAttributeSolved } from "./dropdownAnswerStatus";
 import MistakesModal from "../Question/MistakesModal";
 import useQuestionStore from "../Question/questionStore";
+import QuestionNavigation from "../Question/QuestionNavigation";
 import { getCurrentUserId } from "../../utils/user";
+
+import "../Question/FillInBlankQuestionView.css";
 
 const getRuleConditions = (rule) =>
   [1, 2, 3, 4]
@@ -48,7 +51,13 @@ const getRuleConditions = (rule) =>
     })
     .filter(Boolean);
 
-const DropdownPage = () => {
+const DropdownPage = ({
+  questionNumber = 1,
+  displayQuestionNumber = questionNumber,
+  totalQuestions = 1,
+  onPrevious,
+  onNext,
+}) => {
   let { questionId } = useParams();
   const { showCheckMistakes } = useQuestionStore();
   const [question, setQuestion] = useState(null);
@@ -359,6 +368,7 @@ const DropdownPage = () => {
     <div>
       <Row>
         <Header
+          questionNumber={displayQuestionNumber}
           question={question}
           answeredData={answeredData}
           setAnsweredData={setAnsweredData}
@@ -366,15 +376,12 @@ const DropdownPage = () => {
         />
       </Row>
 
-      <Row>
-        <SummaryCards
-          debit={0}
-          credit={0}
-          total={question.questionAttributes?.length || 0}
-          solved={solved}
-          totalScore={totalScore}
-        />
-      </Row>
+      <SummaryCards
+        showBalances={false}
+        total={question.questionAttributes?.length || 0}
+        solved={solved}
+        totalScore={totalScore}
+      />
 
       <Row className="align-items-start">
         <Col md={6}>
@@ -396,6 +403,13 @@ const DropdownPage = () => {
           />
         </Col>
       </Row>
+
+      <QuestionNavigation
+        questionNumber={questionNumber}
+        totalQuestions={totalQuestions}
+        onPrevious={onPrevious}
+        onNext={onNext}
+      />
     </div>
   );
 };

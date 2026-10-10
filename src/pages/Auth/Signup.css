@@ -15,7 +15,7 @@
 
 .signup-container {
   width: min(900px, 100%);
-  height: 750px;
+  min-height: 750px;
   display: flex;
   overflow: hidden;
   background: #fff;
@@ -132,6 +132,33 @@
   border-color: #2563eb;
   box-shadow: 0 0 5px rgba(37, 99, 235, 0.3);
 }
+
+.signup-page .signup-password-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #64748b;
+  font-size: 18px;
+  cursor: pointer;
+}
+.signup-page .signup-password-toggle:hover {
+  background: #eff6ff;
+  color: #2563eb;
+}
+.signup-page .signup-password-toggle:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
 .signup-terms {
   display: flex;
   align-items: flex-start;
@@ -169,6 +196,16 @@
   font-size: 14px;
   text-align: center;
 }
+
+.signup-field-error,
+.signup-field-help {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.signup-field-error { color: #dc3545; }
+.signup-field-help { color: #666; }
+.signup-input-group input[aria-invalid="true"] { border-color: #dc3545; }
 .signup-or {
   position: relative;
   margin: 22px 0;

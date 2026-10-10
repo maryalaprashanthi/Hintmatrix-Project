@@ -795,7 +795,16 @@ const QuestionList = () => {
   const handleView = (question) => {
     if (!isQuestionActive(question)) return;
 
-    navigate(paths.question(question.questionId));
+    navigate(paths.question(question.questionId), {
+      state: {
+        questionNavigationIds: filteredQuestions
+          .filter(isQuestionActive)
+          .map((row) => String(row.questionId)),
+        questionNavigationNumbers: Object.fromEntries(
+          filteredQuestions.map((row, index) => [String(row.questionId), index + 1]),
+        ),
+      },
+    });
   };
 
   // =========================================================

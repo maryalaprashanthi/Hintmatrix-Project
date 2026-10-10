@@ -34,7 +34,7 @@ test("MCQ restores every selected option and the server result", () => {
   const options = [{ optionId: 10, isCorrect: true }, { optionId: 11, isCorrect: false }, { optionId: 12, isCorrect: true }];
   const restored = restoreMcqAnswer([{ eventType: "MCQ_ANSWER", description: "MCQ attempt | selectedOptionIds=[10, 11]", isCorrect: false }], options, true);
   assert.deepEqual(restored.selected, [10, 11]);
-  assert.deepEqual(restored.result, { status: "WRONG", correctOptionIds: [10, 12] });
+  assert.deepEqual(restored.result, { status: "WRONG", marksAwarded: 0, correctOptionIds: [10, 12] });
   assert.equal(restoreMcqAnswer([], options, true), null);
 });
 
@@ -47,4 +47,12 @@ test("legacy single MCQ restores option ID, legacy multiple selections are not g
 test("removed options or reset events cannot restore a stale MCQ result", () => {
   assert.equal(restoreMcqAnswer([{ eventType: "MCQ_ANSWER", description: "selectedOptionIds=[99]" }], [{ optionId: 10 }], false), null);
   assert.equal(restoreMcqAnswer([{ activeRow: false, eventType: "MCQ_ANSWER", description: "selectedOptionIds=[10]" }], [{ optionId: 10 }], false), null);
+});
+
+test("MCQ restores awarded marks from the saved event, including decimal and zero scores", () => {
+  const options = [{ optionId: 10, isCorrect: true }];
+  for (const marks of [5, "2.5", 0]) {
+    const restored = restoreMcqAnswer([{ eventType: "MCQ_ANSWER", optionId: 10, isCorrect: true, marks }], options, false);
+    assert.equal(restored.result.marksAwarded, Number(marks));
+  }
 });

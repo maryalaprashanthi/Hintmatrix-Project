@@ -1,20 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import { getCurrentUserId } from "../../utils/user";
 import { restoreBlankAnswers } from "../../utils/questionAttemptState";
 
 import "./FillInBlankQuestionView.css";
-
 import "./MatchingQuestionView.css";
 
 const blankPattern =
   /(__+|\[\[blank(?:\s*\d+)?\]\]|\{\{blank(?:\s*\d+)?\}\})/gi;
 
 const normalizeAnswerValues = (value) => {
-  if (value == null) {
-    return [];
-  }
+  if (value == null) return [];
 
   if (Array.isArray(value)) {
     return value.flatMap((item) => normalizeAnswerValues(item));
@@ -43,6 +40,7 @@ const shuffleArray = (items) => {
 
   for (let index = nextItems.length - 1; index > 0; index -= 1) {
     const randomIndex = Math.floor(Math.random() * (index + 1));
+
     [nextItems[index], nextItems[randomIndex]] = [
       nextItems[randomIndex],
       nextItems[index],
@@ -72,33 +70,11 @@ const acceptedAnswersFromBlank = (blank = {}) => {
   return normalizeAnswerValues(value);
 };
 
-/*
- * Backend response:
- *
- * {
- *   questionId: 42,
- *   questionText: "Java is a _____ language.",
- *   answers: [
- *     {
- *       answerId: 1,
- *       answerText: "programming",
- *       displayOrder: 1
- *     }
- *   ]
- * }
- *
- * Convert the backend answers into the format already
- * expected by the existing component.
- */
 const getBackendBlanks = (questionRecord) => {
-  if (
-    Array.isArray(questionRecord?.blanks) &&
-    questionRecord.blanks.length
-  ) {
+  if (Array.isArray(questionRecord?.blanks) && questionRecord.blanks.length) {
     return [...questionRecord.blanks]
       .sort(
-        (first, second) =>
-          (first.blankNumber ?? 0) - (second.blankNumber ?? 0),
+        (first, second) => (first.blankNumber ?? 0) - (second.blankNumber ?? 0),
       )
       .map((blank = {}, index) => {
         const acceptedAnswers = normalizeAnswerValues(
@@ -119,42 +95,23 @@ const getBackendBlanks = (questionRecord) => {
           answerText: acceptedAnswers[0] ?? blank.correctAnswer ?? "",
           displayOrder: blank.displayOrder ?? index + 1,
           acceptedAnswers,
-          correctAnswer:
-            blank.correctAnswer ?? acceptedAnswers[0] ?? "",
+          correctAnswer: blank.correctAnswer ?? acceptedAnswers[0] ?? "",
           answerOptions: [],
         };
       });
   }
 
-  if (
-    Array.isArray(questionRecord?.answers) &&
-    questionRecord.answers.length
-  ) {
+  if (Array.isArray(questionRecord?.answers) && questionRecord.answers.length) {
     const backendAnswers = [...questionRecord.answers].sort(
-      (first, second) =>
-        (first.displayOrder ?? 0) - (second.displayOrder ?? 0),
+      (first, second) => (first.displayOrder ?? 0) - (second.displayOrder ?? 0),
     );
 
-    /*
-     * SINGLE-BLANK QUESTION
-     *
-     * If the question contains exactly one blank and the backend
-     * provides isCorrect, all returned answers are options for
-     * the SAME blank.
-     *
-     * Only isCorrect=true answers are accepted as correct.
-     */
-    const rawQuestionText = String(
-      questionRecord.questionText ?? "",
-    );
+    const rawQuestionText = String(questionRecord.questionText ?? "");
+    const detectedBlankCount = [...rawQuestionText.matchAll(blankPattern)]
+      .length;
 
-    const detectedBlankCount = [
-      ...rawQuestionText.matchAll(blankPattern),
-    ].length;
-
-    const hasCorrectFlag = backendAnswers.some(
-      (answer) =>
-        Object.prototype.hasOwnProperty.call(answer, "isCorrect"),
+    const hasCorrectFlag = backendAnswers.some((answer) =>
+      Object.prototype.hasOwnProperty.call(answer, "isCorrect"),
     );
 
     // displayOrder orders choices; blankNumber identifies the sentence blank.
@@ -170,11 +127,13 @@ const getBackendBlanks = (questionRecord) => {
       const count = Math.max(detectedBlankCount, ...grouped.keys());
       return Array.from({ length: count }, (_, index) => {
         const options = grouped.get(index + 1) ?? [];
-        const answerOptions = [...new Set(options.flatMap((option) => normalizeAnswerValues(option.answerText)))];
+        const answerOptions = [...new Set(options.flatMap((option) => normalizeAnswerValues(
+          option.acceptedAnswers ?? option.acceptedAnswerList ?? option.answerText,
+        )))];
         const acceptedAnswers = [...new Set(options
           .filter((option) => !hasCorrectFlag || option.isCorrect === true)
           .flatMap((option) => normalizeAnswerValues(
-            option.acceptedAnswers ?? option.acceptedAnswerList ?? option.answerText)) )];
+            option.acceptedAnswers ?? option.acceptedAnswerList ?? option.answerText)))];
         return {
           answerId: options[0]?.answerId ?? index + 1,
           blankNumber: index + 1,
@@ -202,23 +161,13 @@ const getBackendBlanks = (questionRecord) => {
           answerId: backendAnswers[0].answerId ?? 1,
           answerText: correctOptions[0] ?? "",
           displayOrder: 1,
-
-          // ONLY the checked admin option is accepted.
           acceptedAnswers: [...new Set(correctOptions)],
-
           correctAnswer: correctOptions[0] ?? "",
-
-          // ALL options are shown in the student answer bank.
           answerOptions: [...new Set(allOptions)],
         },
       ];
     }
 
-    /*
-     * EXISTING MULTIPLE-BLANK BEHAVIOR
-     *
-     * Keep the existing behavior unchanged.
-     */
     return backendAnswers.map((answer, index) => {
       const acceptedAnswers = normalizeAnswerValues(
         answer.acceptedAnswers ??
@@ -247,31 +196,26 @@ const getBackendBlanks = (questionRecord) => {
 const FillInBlankQuestionView = ({
   question,
   questionNumber = 1,
+  displayQuestionNumber = questionNumber,
   totalQuestions = 1,
-  completedCount = 0,
   questions = [],
   completedQuestions = {},
   onCompleted,
   onQuestionSelect,
+  onPrevious,
   onNext,
 }) => {
-  const questionRecord =
-    question?.question ?? question?.data ?? question ?? {};
-
+  const questionRecord = question?.question ?? question?.data ?? question ?? {};
   const blanks = getBackendBlanks(questionRecord);
 
   const parts = useMemo(() => {
     const rawText = String(questionRecord.questionText ?? "");
 
-    if (!rawText) {
-      return [""];
-    }
+    if (!rawText) return [""];
 
     const matches = [...rawText.matchAll(blankPattern)];
 
-    if (!matches.length) {
-      return [rawText];
-    }
+    if (!matches.length) return [rawText];
 
     const result = [];
     let previousIndex = 0;
@@ -295,67 +239,109 @@ const FillInBlankQuestionView = ({
   }, [questionRecord.questionText]);
 
   const detectedBlankCount = parts.filter(
-  (part, index) => index % 2 === 1,
-).length;
+    (part, index) => index % 2 === 1,
+  ).length;
 
-const blankCount =
-  detectedBlankCount > 0 ? detectedBlankCount : Math.max(blanks.length, 1);
+  const blankCount =
+    detectedBlankCount > 0 ? detectedBlankCount : Math.max(blanks.length, 1);
 
   const [answers, setAnswers] = useState(() =>
     Array.from({ length: blankCount }, () => ""),
   );
+
   const [submitted, setSubmitted] = useState(false);
-
-  const [score, setScore] = useState(0);
-
+  const [totalScore, setTotalScore] = useState(null);
+  const [scoreError, setScoreError] = useState("");
+  const scoreRequest = useRef({ version: 0 });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [restoredReady, setRestoredReady] = useState(false);
   const savedAnswers = useRef({});
-
   const [draggedAnswer, setDraggedAnswer] = useState("");
-
   const [displayOptions, setDisplayOptions] = useState([]);
   const shuffledOptionsKey = useRef(null);
+
+  // Same overall earned-marks endpoint used by drag/drop and journal views.
+  const loadTotalScore = useCallback(async () => {
+    const tracker = scoreRequest.current;
+    const request = ++tracker.version;
+    setScoreError("");
+    try {
+      const marks = await QuestionAnswerService.getOverallMarks(getCurrentUserId());
+      if (request === tracker.version) setTotalScore(Number(marks) || 0);
+    } catch {
+      if (request === tracker.version) {
+        setScoreError("Unable to refresh total score. Reopen the question to retry.");
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const tracker = scoreRequest.current;
+    setTotalScore(null);
+    if (questionRecord.questionId) void loadTotalScore();
+    return () => { tracker.version++; };
+  }, [questionRecord.questionId, loadTotalScore]);
 
   useEffect(() => {
     setAnswers(Array.from({ length: blankCount }, () => ""));
     setSubmitted(false);
-    setScore(0);
     setDraggedAnswer("");
   }, [questionRecord.questionId, blankCount]);
 
   useEffect(() => {
-    if (!questionRecord.questionId) return;
+    if (!questionRecord.questionId) return undefined;
+
     let active = true;
+
     setSaving(true);
     setRestoredReady(false);
     setError("");
     savedAnswers.current = {};
-    QuestionAnswerService.getAnswerEventsByQuestionId(getCurrentUserId(), questionRecord.questionId)
+
+    QuestionAnswerService.getAnswerEventsByQuestionId(
+      getCurrentUserId(),
+      questionRecord.questionId,
+    )
       .then((events) => {
         if (!active) return;
+
         const restored = restoreBlankAnswers(events, blankCount);
+
         savedAnswers.current = restored.saved;
         setAnswers(restored.answers);
         setSubmitted(restored.submitted);
-        setScore(restored.score);
         setRestoredReady(true);
-        if (restored.submitted) onCompleted?.(questionRecord.questionId, restored.score);
+
+        if (restored.submitted) {
+          onCompleted?.(questionRecord.questionId, restored.score);
+        }
       })
-      .catch(() => { if (active) setError("Unable to restore your saved answers. Please reopen the question."); })
-      .finally(() => { if (active) setSaving(false); });
-    return () => { active = false; };
+      .catch(() => {
+        if (active) {
+          setError(
+            "Unable to restore your saved answers. Please reopen the question.",
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setSaving(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [questionRecord.questionId, blankCount]);
 
   const answerOptions = useMemo(() => {
-    const acceptedAnswers = blanks.flatMap((blank) => blank.answerOptions?.length ? blank.answerOptions : acceptedAnswersFromBlank(blank));
+    const options = blanks.flatMap((blank) => [
+      ...acceptedAnswersFromBlank(blank),
+      ...(blank.answerOptions ?? []),
+    ]);
 
     return [
       ...new Set(
-        acceptedAnswers
-          .map((answer) => String(answer).trim())
-          .filter(Boolean),
+        options.map((answer) => String(answer).trim()).filter(Boolean),
       ),
     ];
   }, [blanks]);
@@ -364,8 +350,9 @@ const blankCount =
 
   useEffect(() => {
     const key = `${questionRecord.questionId}:${answerOptionsKey}`;
-    // Keep the same order during answering, resets and StrictMode effect replay.
+
     if (shuffledOptionsKey.current === key) return;
+
     shuffledOptionsKey.current = key;
     setDisplayOptions(shuffleArray(JSON.parse(answerOptionsKey)));
   }, [answerOptionsKey, questionRecord.questionId]);
@@ -378,20 +365,49 @@ const blankCount =
       );
 
       next[index] = value;
-
       return next;
     });
   };
 
-  const getAcceptedAnswers = (index) => {
-    return acceptedAnswersFromBlank(blanks[index]);
+  const getAcceptedAnswers = (index) => acceptedAnswersFromBlank(blanks[index]);
+
+  const isOptionUsed = (option) =>
+    answers.some(
+      (answer) =>
+        String(answer).trim().toLowerCase() ===
+        String(option).trim().toLowerCase(),
+    );
+
+  const handlePreviousQuestion = () => {
+    if (typeof onPrevious === "function") {
+      onPrevious();
+      return;
+    }
+
+    if (questionNumber > 1 && typeof onQuestionSelect === "function") {
+      onQuestionSelect(questionNumber - 2);
+    }
+  };
+
+  const handleNextQuestion = () => {
+    if (typeof onNext === "function") {
+      onNext();
+      return;
+    }
+
+    if (
+      questionNumber < totalQuestions &&
+      typeof onQuestionSelect === "function"
+    ) {
+      onQuestionSelect(questionNumber);
+    }
   };
 
   const submit = async () => {
     if (saving || submitted || !restoredReady) return;
-    const enteredAnswers = Array.from(
-      { length: blankCount },
-      (_, index) => String(answers[index] ?? "").trim(),
+
+    const enteredAnswers = Array.from({ length: blankCount }, (_, index) =>
+      String(answers[index] ?? "").trim(),
     );
 
     setSaving(true);
@@ -410,48 +426,53 @@ const blankCount =
         );
 
         if (savedAnswers.current[index]?.userAnswer !== enteredAnswers[index]) {
-          savedAnswers.current[index] = await QuestionAnswerService.processAnswerEvent({
-            userId: getCurrentUserId(),
-            questionId: questionRecord.questionId,
-            attributeId: null,
-            arithmetic: "FILL_IN_THE_BLANK",
-            answerPosition: index + 1,
-            eventType: "ANSWER",
-            isCorrect,
-            description: `Blank ${index + 1} answer: ${enteredAnswers[index]}`,
-            userAnswer: enteredAnswers[index],
-          });
+          savedAnswers.current[index] =
+            await QuestionAnswerService.processAnswerEvent({
+              userId: getCurrentUserId(),
+              questionId: questionRecord.questionId,
+              attributeId: null,
+              arithmetic: "FILL_IN_THE_BLANK",
+              answerPosition: index + 1,
+              eventType: "ANSWER",
+              isCorrect,
+              description: `Blank ${index + 1} answer: ${enteredAnswers[index]}`,
+              userAnswer: enteredAnswers[index],
+            });
         }
-        // Use the server's correctness result, including on a partial-save retry.
-        if (savedAnswers.current[index].isCorrect === true) correct += 1;
+
+        if (isCorrect) correct += 1;
       }
 
-      setScore(correct);
-
       setSubmitted(true);
-
       onCompleted?.(questionRecord.questionId, correct);
-    } catch (error) {
-      setError("Unable to save all blanks. Your saved answers are retained; please try again.");
-      console.error(
-        "Failed to save fill-in-the-blanks answer:",
-        error,
+    } catch (submitError) {
+      setError(
+        "Unable to save all blanks. Your saved answers are retained; please try again.",
       );
+
+      console.error("Failed to save fill-in-the-blanks answer:", submitError);
     } finally {
+      await loadTotalScore();
       setSaving(false);
     }
   };
 
   const reset = async () => {
     if (saving || !restoredReady) return;
+
     setSaving(true);
     setError("");
+
     try {
-      await QuestionAnswerService.resetAnswerEventsByUserAndQuestion(getCurrentUserId(), questionRecord.questionId);
+      await QuestionAnswerService.resetAnswerEventsByUserAndQuestion(
+        getCurrentUserId(),
+        questionRecord.questionId,
+      );
+
       savedAnswers.current = {};
       setAnswers(Array.from({ length: blankCount }, () => ""));
       setSubmitted(false);
-      setScore(0);
+      await loadTotalScore();
       setDraggedAnswer("");
     } catch {
       setError("Unable to reset your saved answers. Please try again.");
@@ -467,8 +488,19 @@ const blankCount =
 
     if (!value || submitted || saving || !restoredReady) return;
 
-    updateAnswer(index, value);
+    const alreadyUsedInAnotherBlank = answers.some(
+      (answer, answerIndex) =>
+        answerIndex !== index &&
+        String(answer).trim().toLowerCase() ===
+          String(value).trim().toLowerCase(),
+    );
 
+    if (alreadyUsedInAnotherBlank) {
+      setDraggedAnswer("");
+      return;
+    }
+
+    updateAnswer(index, value);
     setDraggedAnswer("");
   };
 
@@ -483,8 +515,17 @@ const blankCount =
     return acceptedAnswers.some(
       (answer) =>
         String(answer).trim().toLowerCase() ===
-        String(answers[index] ?? "").trim().toLowerCase(),
+        String(answers[index] ?? "")
+          .trim()
+          .toLowerCase(),
     );
+  };
+
+  const getSlotStateClass = (index) => {
+    if (!submitted) return "";
+    if (!answers[index]) return "is-empty";
+
+    return isAnswerCorrect(index) ? "is-answered" : "is-wrong";
   };
 
   let blankIndex = 0;
@@ -495,40 +536,26 @@ const blankCount =
     }
 
     const currentIndex = blankIndex;
-
     blankIndex += 1;
 
     return (
       <div
         key={`blank-${currentIndex}`}
-        className={`fill-blank-drop-slot ${
-          submitted
-            ? answers[currentIndex]
-              ? "is-answered"
-              : "is-empty"
-            : ""
-        }`}
+        className={`fill-blank-drop-slot ${getSlotStateClass(currentIndex)}`}
         onDragOver={(event) => event.preventDefault()}
         onDrop={(event) => handleDrop(currentIndex, event)}
       >
-        {answers[currentIndex] ||
-          `Drop answer ${currentIndex + 1}`}
+        {answers[currentIndex] || `Drop answer ${currentIndex + 1}`}
       </div>
     );
   });
 
-  if (parts.length === 1 && blankCount > 1) {
+  if (parts.length === 1) {
     Array.from({ length: blankCount }).forEach((_, fallbackIndex) => {
       questionContent.push(
         <div
           key={`blank-fallback-${fallbackIndex}`}
-          className={`fill-blank-drop-slot ${
-            submitted
-              ? answers[fallbackIndex]
-                ? "is-answered"
-                : "is-empty"
-              : ""
-          }`}
+          className={`fill-blank-drop-slot ${getSlotStateClass(fallbackIndex)}`}
           onDragOver={(event) => event.preventDefault()}
           onDrop={(event) => handleDrop(fallbackIndex, event)}
         >
@@ -538,230 +565,158 @@ const blankCount =
     });
   }
 
-  if (parts.length === 1 && blankCount === 1) {
-    questionContent.push(
-      <div
-        key="blank-fallback"
-        className={`fill-blank-drop-slot ${
-          submitted
-            ? answers[0]
-              ? "is-answered"
-              : "is-empty"
-            : ""
-        }`}
-        onDragOver={(event) => event.preventDefault()}
-        onDrop={(event) => handleDrop(0, event)}
-      >
-        {answers[0] || "Drop answer 1"}
-      </div>,
-    );
-  }
-
   return (
     <main className="fill-blank-page">
-      {error && <div className="alert alert-danger" role="alert">{error}</div>}
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
+      )}
+
+      {scoreError && <div className="alert alert-warning" role="alert">{scoreError}</div>}
       <header className="matching-practice-header">
         <div>
-          <div className="matching-eyebrow">
-            STUDENT PRACTICE
-          </div>
-
-          <h1 className="matching-practice-title">
-            Fill in the Blanks
-          </h1>
-
+          <div className="matching-eyebrow">STUDENT PRACTICE</div>
+          <h1 className="matching-practice-title">Fill in the Blanks</h1>
           <p className="matching-practice-subtitle">
             Complete each blank with the correct answer.
           </p>
         </div>
 
         <div className="matching-stat-cards">
-          <div className="matching-stat-card matching-progress-card">
-            <span>PROGRESS</span>
-
-            <strong>
-              {completedCount}/{totalQuestions}
-            </strong>
-
-            <small>
-              {Math.max(totalQuestions - completedCount, 0)} left
-            </small>
-          </div>
-
-          <div className="matching-stat-card matching-score-card">
+          <div className="matching-stat-card matching-score-card" role="status" aria-live="polite">
             <span>TOTAL SCORE</span>
-
-            <strong>{score}</strong>
+            <strong>{totalScore ?? "—"}</strong>
           </div>
         </div>
       </header>
 
       <div className="matching-practice-layout">
-        <main className="matching-question-content fill-blank-question-card">
-          <div className="fill-blank-progress-heading">
-            <span>
-              Question {questionNumber} of {totalQuestions}
-            </span>
-
-            <span>
-              {Math.round(
-                (questionNumber /
-                  Math.max(totalQuestions, 1)) *
-                  100,
-              )}
-              %
-            </span>
-          </div>
-
-          <div className="fill-blank-progress-track">
-            <span
-              style={{
-                width: `${
-                  (questionNumber /
-                    Math.max(totalQuestions, 1)) *
-                  100
-                }%`,
-              }}
-            />
-          </div>
-
-          <div className="matching-question-heading">
+        <section className="matching-question-content fill-blank-question-card">
+          <div className="matching-question-heading fill-blank-heading">
             <span>Fill in the blanks:</span>
 
-            <span className="matching-mark-badge">
-              {questionRecord.marks ?? blankCount} Marks
-            </span>
-          </div>
+            <div className="matching-heading-actions">
+              <span className="matching-mark-badge">
+                {questionRecord.marks ?? blankCount} Marks
+              </span>
 
-          <div className="fill-blank-question">
-            {questionContent}
-          </div>
+              <button
+                type="button"
+                className="matching-reset-btn"
+                onClick={reset}
+                disabled={saving || !restoredReady}
+              >
+                ↻ {submitted ? "Try Again" : "Reset"}
+              </button>
 
-          <div className="fill-blank-answer-bank">
-            <strong>
-              Drag the correct answers into the blanks
-            </strong>
-
-            <div className="fill-blank-answer-options">
-              {displayOptions.map((option) => (
+              {!submitted && (
                 <button
                   type="button"
-                  draggable={!submitted && !saving}
-                  key={option}
-                  className={`fill-blank-answer-option ${
-                    draggedAnswer === option ? "dragging" : ""
-                  }`}
-                  onDragStart={(event) => {
-                    setDraggedAnswer(option);
-
-                    event.dataTransfer.setData(
-                      "text/plain",
-                      option,
-                    );
-                  }}
-                  onDragEnd={() => setDraggedAnswer("")}
+                  className="matching-next-btn"
+                  onClick={submit}
+                  disabled={saving || !restoredReady}
                 >
-                  ⋮⋮ {option}
+                  {saving ? "Saving..." : "Submit Answer"}
                 </button>
-              ))}
+              )}
             </div>
           </div>
 
-          <div className="fill-blank-hint">
-            <strong>💡 Hint</strong>
+          <div className="fill-blank-question">Q{displayQuestionNumber}. {questionContent}</div>
 
-            <p>
-              Think carefully about the context of each sentence.
-            </p>
+          <div className="fill-blank-answer-bank">
+            <strong>Drag the correct answers into the blanks</strong>
+
+            <div className="fill-blank-answer-options">
+              {displayOptions.map((option) => {
+                const used = isOptionUsed(option);
+
+                return (
+                  <button
+                    type="button"
+                    key={option}
+                    draggable={!submitted && !saving && !used}
+                    disabled={submitted || saving || used}
+                    className={`fill-blank-answer-option ${
+                      draggedAnswer === option ? "dragging" : ""
+                    } ${used ? "option-used" : ""}`}
+                    onDragStart={(event) => {
+                      if (used || submitted || saving) {
+                        event.preventDefault();
+                        return;
+                      }
+
+                      setDraggedAnswer(option);
+                      event.dataTransfer.setData("text/plain", option);
+                    }}
+                    onDragEnd={() => setDraggedAnswer("")}
+                  >
+                    ⋮⋮ {option}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {submitted && (
             <div className="fill-blank-results">
-              <div className="fill-blank-result fill-blank-result-summary">
-                <h2>Result</h2>
-
-                <strong>
-                  {score} / {blankCount}
-                </strong>
-
-                <p>
-                  You got {score} out of {blankCount} correct.
-                </p>
-              </div>
-
-              <h2 className="fill-blank-review-title">
-                Answer Review
-              </h2>
+              <h2 className="fill-blank-review-title">Answer Review</h2>
 
               <div className="fill-blank-review-list">
-                {Array.from(
-                  { length: blankCount },
-                  (_, index) => {
-                    const correct = isAnswerCorrect(index);
+                {Array.from({ length: blankCount }, (_, index) => {
+                  const correct = isAnswerCorrect(index);
+                  const correctAnswer = getAcceptedAnswers(index)[0];
 
-                    const correctAnswer =
-                      getAcceptedAnswers(index)[0];
-
-                    return (
-                      <div
-                        className={`fill-blank-review-row ${
-                          correct ? "correct" : "incorrect"
-                        }`}
-                        key={index}
-                      >
-                        <strong>
-                          Blank {index + 1}
-                        </strong>
-
-                        <span>
-                          {answers[index] || "Not answered"}
-                        </span>
-
-                        <span>
-                          {correct
-                            ? "✓ Correct"
-                            : `✕ Correct: ${
-                                correctAnswer || "-"
-                              }`}
-                        </span>
-                      </div>
-                    );
-                  },
-                )}
+                  return (
+                    <div
+                      className={`fill-blank-review-row ${
+                        correct ? "correct" : "incorrect"
+                      }`}
+                      key={index}
+                    >
+                      <strong>Blank {index + 1}</strong>
+                      <span>{answers[index] || "Not answered"}</span>
+                      <span>
+                        {correct
+                          ? "✓ Correct"
+                          : `✕ Correct: ${correctAnswer || "-"}`}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          <div className="matching-actions">
-            <button
-              type="button"
-              className="matching-reset-btn"
-              onClick={reset}
-              disabled={saving || !restoredReady}
-            >
-              ↻ {submitted ? "Try Again" : "Reset"}
-            </button>
+          <div className="matching-nav-row matching-nav-bottom">
+            <div className="matching-nav-left">
+              {questionNumber > 1 && (
+                <button
+                  type="button"
+                  className="matching-prev-btn"
+                  onClick={handlePreviousQuestion}
+                  disabled={saving}
+                >
+                  ← Previous
+                </button>
+              )}
+            </div>
 
-            {!submitted ? (
-              <button
-                type="button"
-                className="matching-next-btn"
-                onClick={submit}
-                disabled={saving || !restoredReady}
-              >
-                {saving ? "Saving..." : "Save & Next"}
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="matching-next-btn"
-                onClick={onNext}
-              >
-                Next Question →
-              </button>
-            )}
+            <div className="matching-nav-right">
+              {questionNumber < totalQuestions && (
+                <button
+                  type="button"
+                  className="matching-next-btn"
+                  onClick={handleNextQuestion}
+                  disabled={saving}
+                >
+                  Next →
+                </button>
+              )}
+            </div>
           </div>
-        </main>
+        </section>
       </div>
     </main>
   );
