@@ -1,8 +1,10 @@
 import { DragDropProvider } from "@dnd-kit/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import QuestionTable from "./QuestionTable";
+import DragAndDropWithAdj from "./DragAndDropWithAdj";
+import { normalizeQuestionType } from "../../utils/questionType";
 import useQuestionStore, { getRuleAnswers } from "./questionStore";
 
 import JournalPage from "../JournalQuestion/JournalPage";
@@ -40,6 +42,7 @@ const getQuestionType = (question) => {
     question?.typeName;
 
   if (typeof type === "string") {
+    if (normalizeQuestionType(type) === "DRAG_AND_DROP_WITH_ADJ") return "DRAG_AND_DROP_WITH_ADJ";
     const normalizedType = type.trim().toUpperCase().replace(/\s+/g, "_");
 
     const normalizedQuestionType = normalizedType.replace(/-/g, "_");
@@ -175,114 +178,7 @@ const QuestionPage = () => {
   // LOAD QUESTION
   // ===========================================================
 
-  useEffect(() => {
-    let active = true;
-    const isCurrent = () => active;
-    const init = async () => {
-      setIsLoading(true);
-      setLoadError("");
-      setPlacementError("");
-
-      try {
-        const response = await loadQuestions(questionId, isCurrent);
-
-        if (!active || !response?.data) {
-          if (active) setLoadError("Unable to load this question. Please refresh to retry.");
-          return;
-        }
-
-        let type = getQuestionType(response.data);
-
-        const questionTypeId =
-          response.data?.questionTypeId ?? response.data?.question_type_id;
-
-        if (!type && questionTypeId) {
-          const typeResponse =
-            await QuestionTypeService.getById(questionTypeId);
-          if (!active) return;
-
-          type = getQuestionType(typeResponse?.data);
-        }
-
-        let questionData = response.data;
-
-        if (
-          type === "MATCH_THE_FOLLOWING" &&
-          !Array.isArray(questionData?.pairs)
-        ) {
-          try {
-            const matchingResponse = await MatchingQuestionService.getById(
-              questionData.questionId ?? questionId,
-            );
-            if (!active) return;
-
-            questionData = {
-              ...questionData,
-              ...matchingResponse.data,
-            };
-            setMatchingQuestion(questionData);
-          } catch (matchingError) {
-            console.error("Failed to load matching pairs:", matchingError);
-          }
-        }
-
-        if (
-          type === "FILL_IN_THE_BLANKS" &&
-          !Array.isArray(questionData?.blanks)
-        ) {
-          try {
-            const fillBlankResponse = await FillInBlankQuestionService.getById(
-              questionData.questionId ?? questionId,
-            );
-            if (!active) return;
-
-            questionData = {
-              ...questionData,
-              ...fillBlankResponse.data,
-            };
-            setMatchingQuestion(questionData);
-          } catch (fillBlankError) {
-            console.error(
-              "Failed to load fill-in-the-blanks data:",
-              fillBlankError,
-            );
-          }
-        }
-
-        if (!active) return;
-        setQuestionType(type);
-
-        // -----------------------------------------------------
-        // Load all questions for navigation
-        // -----------------------------------------------------
-
-        await loadTestQuestions(questionData, isCurrent);
-        if (!active) return;
-
-        // -----------------------------------------------------
-        // Restore drag/drop answers
-        // -----------------------------------------------------
-
-        if (type === "DRAG_AND_DROP") {
-          await loadAnsweredQuestions(isCurrent);
-        }
-      } catch (error) {
-        console.error("Failed to initialize question:", error);
-        if (active) setLoadError("Unable to load this question. Please refresh to retry.");
-      } finally {
-        if (active) setIsLoading(false);
-      }
-    };
-
-    init();
-    return () => { active = false; };
-  }, [questionId, navigationState]);
-
-  // ===========================================================
-  // LOAD QUESTION
-  // ===========================================================
-
-  const loadQuestions = async (qId, isCurrent = () => true) => {
+  const loadQuestions = useCallback(async (qId, isCurrent = () => true) => {
     try {
       const response = await QuestionService.getQuestionById(qId || questionId);
       if (!isCurrent()) return null;
@@ -304,13 +200,13 @@ const QuestionPage = () => {
 
       return null;
     }
-  };
+  }, [questionId, setQuestions, setMatchingQuestion, setTableData]);
 
   // ===========================================================
   // LOAD TEST QUESTIONS
   // ===========================================================
 
-  const loadTestQuestions = async (currentQuestionData, isCurrent = () => true) => {
+  const loadTestQuestions = useCallback(async (currentQuestionData, isCurrent = () => true) => {
     try {
       const navigationIds = getQuestionNavigationIds(
         navigationState?.questionNavigationIds, currentQuestionData?.questionId,
@@ -352,13 +248,13 @@ const QuestionPage = () => {
 
       if (isCurrent()) setTestQuestions([currentQuestionData]);
     }
-  };
+  }, [navigationState, setTestQuestions]);
 
   // ===========================================================
   // LOAD ANSWERED QUESTIONS
   // ===========================================================
 
-  const loadAnsweredQuestions = async (isCurrent = () => true) => {
+  const loadAnsweredQuestions = useCallback(async (isCurrent = () => true) => {
     const correctAnswers =
       await QuestionAnswerService.getAnswersByUserAndQuestion(
         getCurrentUserId(),
@@ -416,7 +312,81 @@ const QuestionPage = () => {
         );
       }
     }
-  };
+  }, [questionId, setPlacementError, setTotalAnswers, moveQuestion]);
+
+  // ===========================================================
+  // LOAD QUESTION
+  // ===========================================================
+
+  useEffect(() => {
+    let active = true;
+    const isCurrent = () => active;
+    const init = async () => {
+      setIsLoading(true);
+      setLoadError("");
+      setPlacementError("");
+
+      try {
+        const response = await loadQuestions(questionId, isCurrent);
+
+        if (!active || !response?.data) {
+          if (active) setLoadError("Unable to load this question. Please refresh to retry.");
+          return;
+        }
+
+        let type = getQuestionType(response.data);
+        const questionTypeId = response.data?.questionTypeId ?? response.data?.question_type_id;
+
+        if (!type && questionTypeId) {
+          const typeResponse = await QuestionTypeService.getById(questionTypeId);
+          if (!active) return;
+          type = getQuestionType(typeResponse?.data);
+        }
+
+        let questionData = response.data;
+
+        if (type === "MATCH_THE_FOLLOWING" && !Array.isArray(questionData?.pairs)) {
+          try {
+            const matchingResponse = await MatchingQuestionService.getById(
+              questionData.questionId ?? questionId,
+            );
+            if (!active) return;
+            questionData = { ...questionData, ...matchingResponse.data };
+            setMatchingQuestion(questionData);
+          } catch (matchingError) {
+            console.error("Failed to load matching pairs:", matchingError);
+          }
+        }
+
+        if (type === "FILL_IN_THE_BLANKS" && !Array.isArray(questionData?.blanks)) {
+          try {
+            const fillBlankResponse = await FillInBlankQuestionService.getById(
+              questionData.questionId ?? questionId,
+            );
+            if (!active) return;
+            questionData = { ...questionData, ...fillBlankResponse.data };
+            setMatchingQuestion(questionData);
+          } catch (fillBlankError) {
+            console.error("Failed to load fill-in-the-blanks data:", fillBlankError);
+          }
+        }
+
+        if (!active) return;
+        setQuestionType(type);
+        await loadTestQuestions(questionData, isCurrent);
+        if (!active) return;
+        if (type === "DRAG_AND_DROP") await loadAnsweredQuestions(isCurrent);
+      } catch (error) {
+        console.error("Failed to initialize question:", error);
+        if (active) setLoadError("Unable to load this question. Please refresh to retry.");
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    };
+
+    init();
+    return () => { active = false; };
+  }, [questionId, navigationState, loadQuestions, loadTestQuestions, loadAnsweredQuestions]);
 
   // ===========================================================
   // QUESTION COMPLETED
@@ -618,6 +588,13 @@ const QuestionPage = () => {
   // ===========================================================
   // DRAG AND DROP
   // ===========================================================
+
+  if (questionType === "DRAG_AND_DROP_WITH_ADJ") {
+    return <DragAndDropWithAdj key={currentQuestion?.questionId}
+      question={currentQuestion || matchingQuestion} onCompleted={handleQuestionCompleted}
+      questionNumber={currentQuestionIndex + 1} displayQuestionNumber={displayQuestionNumber}
+      totalQuestions={totalQuestions} onPrevious={handlePreviousQuestion} onNext={handleNextQuestion} />;
+  }
 
   if (questionType !== "DRAG_AND_DROP") {
     return <div>Unsupported question type.</div>;

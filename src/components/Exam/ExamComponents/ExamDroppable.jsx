@@ -4,6 +4,7 @@ import { useDroppable } from "@dnd-kit/react";
 import { Overlay, Tooltip } from "react-bootstrap";
 import "./ExamDroppable.css";
 import useExamQuestionStore from "./examQuestionStore";
+import { finalAccountParticular } from "../../Question/SampleData";
 import { useOverlayContainer } from "../ExamShell/useOverlayContainer";
 
 const mergeRefs =
@@ -87,7 +88,7 @@ const ExamDroppable = ({
             {displayRows.map((obj) => (
               <tr key={`${obj.id}-${obj.operation}`} className={obj.derived ? "derived-row" : "placed-row"}>
                 <td className="particulars-cell">
-                  {obj.name}
+                  {finalAccountParticular(obj, id)}
                   {!obj.derived && <button
                     type="button"
                     className="remove-row-btn"
@@ -107,7 +108,7 @@ const ExamDroppable = ({
                 </td>
                 <td className="text-end amount-cell">
                   {obj.derived
-                    ? `${obj.operation === "less" ? "-" : ""}${Number(obj.amount).toLocaleString("en-IN")}`
+                    ? `${obj.operation === "less" && Number(obj.amount) !== 0 ? "-" : ""}${Number(obj.amount).toLocaleString("en-IN", Number(obj.amount) === 0 ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : {})}`
                     : obj.operation === "less" && <label className="d-flex align-items-center justify-content-end">
                         <span aria-hidden="true">−</span>
                         <input type="number" min="0" step="0.01"

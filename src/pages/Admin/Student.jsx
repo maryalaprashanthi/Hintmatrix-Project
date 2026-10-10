@@ -7,6 +7,8 @@ import StudentForm from "./StudentForm";
 import "./Student.css";
 import StudentTable from "./StudentTable";
 import StudentService from "../../services/UserService";
+import { isGuestUser, visibleUsers } from "../../utils/userEdit";
+import { currentRole, ROLES } from "../../utils/roles";
 import { useToast } from "../../components/Toast/useToast";
 import { FaUserGraduate } from "react-icons/fa";
 import ManagementCountTiles from "../../components/Common/ManagementCountTiles";
@@ -14,6 +16,7 @@ import { getManagementCounts } from "../../utils/managementCounts";
 
 function Student() {
   const toast = useToast();
+  const canManageGuests = currentRole() === ROLES.SUPER_ADMIN;
   const [showModal, setShowModal] = useState(false);
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -29,8 +32,9 @@ function Student() {
   const fetchStudents = async () => {
     try {
       const response = await StudentService.getAllStudents();
-      setStudents(response.data);
-      return response.data;
+      const users = visibleUsers(response.data ?? [], canManageGuests);
+      setStudents(users);
+      return users;
     } catch (error) {
       console.error("Error fetching Students:", error);
       return [];
@@ -129,6 +133,7 @@ function Student() {
 
   // Open Edit Form
   const handleEditStudent = (studentData) => {
+    if (isGuestUser(studentData) && !canManageGuests) return;
     setSelectedStudent(studentData);
     setShowModal(true);
   };
@@ -154,6 +159,10 @@ function Student() {
   // Save / Update Student
   const handleSave = (studentData) => {
     if (selectedStudent) {
+      if (isGuestUser(selectedStudent) && !canManageGuests) {
+        toast.error("Only Super Admin can edit guests.");
+        return;
+      }
       const studentId = selectedStudent.userId || selectedStudent.studentId;
 
       if (!studentId) {
@@ -162,18 +171,18 @@ function Student() {
         return;
       }
 
-      StudentService.updateStudent(studentId, studentData)
+      StudentService.updateStudentOrGuest(selectedStudent, studentData)
         .then(() => {
           fetchStudents();
 
-          toast.success("Student updated.");
+          toast.success(isGuestUser(selectedStudent) ? "Guest updated." : "Student updated.");
 
           setShowModal(false);
           setSelectedStudent(null);
         })
         .catch((error) => {
           console.error("Update Error:", error);
-          toast.error("Failed to update student.");
+          toast.error(error.response?.data?.message || (isGuestUser(selectedStudent) ? "Failed to update guest." : "Failed to update student."));
         });
     } else {
       StudentService.createStudent(studentData)
@@ -231,6 +240,7 @@ function Student() {
         <div className="card-body">
           <StudentTable
             data={students}
+            canManageGuests={canManageGuests}
             onEdit={handleEditStudent}
             onDeleted={handleStudentDeleted}
             refreshData={fetchStudents}
@@ -240,7 +250,7 @@ function Student() {
 
       {/* Form */}
       <StudentForm
-        show={showModal}
+        show={showModal && (!isGuestUser(selectedStudent) || canManageGuests)}
         onClose={() => {
           setShowModal(false);
           setSelectedStudent(null);

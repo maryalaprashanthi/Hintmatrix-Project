@@ -6,6 +6,7 @@ export const normalizeQuestionType = (value) => {
   const type = String(name ?? "").trim().toUpperCase()
     .replace(/[\s-]+/g, "_").replace(/^MCQ_/, "")
     .replace(/_QUESTION$/, "");
+  if (type.replace(/_/g, "") === "DRAGANDDROPWITHADJ") return "DRAG_AND_DROP_WITH_ADJ";
   return ({ DRAGANDDROP: "DRAG_AND_DROP", SINGLECHOICE: "SINGLE_CHOICE",
     MULTIPLECHOICE: "MULTIPLE_CHOICE" })[type] ?? type;
 };

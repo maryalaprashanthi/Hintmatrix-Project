@@ -11,6 +11,8 @@ import QuestionTypeService from "../../services/QuestionTypeService";
 import TableAttributeService from "../../services/TableAttributeService";
 import TableHeaderService from "../../services/TableHeaderService";
 import QuestionService from "../../services/QuestionService";
+import CreateDragAndDropWithAdj from "./CreateDragAndDropWithAdj";
+import { emptyAdjustmentForm, hydrateAdjustmentForm, validateAdjustmentForm, buildAdjustmentAttributes } from "./adjustmentQuestionForm";
 import MatchingQuestionService from "../../services/MatchingQuestionService";
 import McqQuestionService from "../../services/McqQuestionService";
 import FillInBlankQuestionService from "../../services/FillInBlankQuestionService";
@@ -46,6 +48,9 @@ function AddQuestionModal({
   const [topicId, setTopicId] = useState(null);
   const [questionTypeId, setQuestionTypeId] = useState(null);
   const [questionText, setQuestionText] = useState("");
+  const [adjustmentForm, setAdjustmentForm] = useState(emptyAdjustmentForm);
+  const [adjustmentAttributes, setAdjustmentAttributes] = useState([]);
+  const isAdjustmentQuestion = normalizeQuestionType(questionTypeId?.label) === "DRAG_AND_DROP_WITH_ADJ";
   const [mcqOptions, setMcqOptions] = useState([]);
   const [marks, setMarks] = useState(1);
   const [mcqLoading, setMcqLoading] = useState(false);
@@ -270,6 +275,7 @@ function AddQuestionModal({
   const loadTableAttributes = async () => {
     try {
       const response = await TableAttributeService.getRuleAttributes();
+      setAdjustmentAttributes(response.data);
 
       console.log("TABLE ATTRIBUTE API RESPONSE:", response);
 
@@ -420,6 +426,7 @@ function AddQuestionModal({
         const question = response.data || initialData;
 
         const questionAttributes = question.questionAttributes || [];
+        setAdjustmentForm(hydrateAdjustmentForm(question));
 
         const isCreditAttribute = (attribute) => getQuestionAttributeSide(attribute) === "credit";
 
@@ -861,7 +868,12 @@ function AddQuestionModal({
     // NORMAL QUESTION ATTRIBUTES
     // =======================================================
 
-    if (attributes.some((row) =>
+    if (isAdjustmentQuestion) {
+      const errors = validateAdjustmentForm(adjustmentForm, adjustmentAttributes, tableHeaders);
+      if (errors.length) { alert(errors.join("\n")); return; }
+    }
+
+    if (!isAdjustmentQuestion && attributes.some((row) =>
       (row.debitBalance && !getBalanceHeader(row, "debit")) ||
       (row.creditBalance && !getBalanceHeader(row, "credit")),
     )) {
@@ -869,7 +881,9 @@ function AddQuestionModal({
       return;
     }
 
-    const questionAttributes = attributes.flatMap((row) => {
+    const questionAttributes = isAdjustmentQuestion
+      ? buildAdjustmentAttributes(adjustmentForm, adjustmentAttributes, tableHeaders)
+      : attributes.flatMap((row) => {
       const mappedAttributes = [];
 
       // =====================================================
@@ -1468,6 +1482,9 @@ function AddQuestionModal({
                 Add Pair
               </button>
             </div>
+          ) : isAdjustmentQuestion ? (
+            <CreateDragAndDropWithAdj value={adjustmentForm} onChange={setAdjustmentForm}
+              attributes={adjustmentAttributes} disabled={saving || detailsLoading} />
           ) : (
             /* =================================================
                NORMAL QUESTION ATTRIBUTES

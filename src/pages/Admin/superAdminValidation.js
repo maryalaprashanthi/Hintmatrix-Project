@@ -36,6 +36,7 @@ export function validateSuperAdminForm({
   phoneNumber,
   password,
   address,
+  isEdit = false,
 }) {
   const nameCheck = validateAlphaName(name, "Name");
   if (!nameCheck.isValid) return nameCheck;
@@ -66,8 +67,10 @@ export function validateSuperAdminForm({
     };
   }
 
-  const passwordCheck = validateRequiredText(password, "Password");
-  if (!passwordCheck.isValid) return passwordCheck;
+  if (!isEdit) {
+    const passwordCheck = validateRequiredText(password, "Password");
+    if (!passwordCheck.isValid) return passwordCheck;
+  }
 
   const addressCheck = validateRequiredText(address, "Address");
   if (!addressCheck.isValid) return addressCheck;
@@ -85,6 +88,7 @@ export function validateBranchAdminForm({
   phoneNumber,
   password,
   address,
+  isEdit = false,
 }) {
   const nameCheck = validateAlphaName(name, "Name");
   if (!nameCheck.isValid) return nameCheck;
@@ -123,8 +127,10 @@ export function validateBranchAdminForm({
     };
   }
 
-  const passwordCheck = validateRequiredText(password, "Password");
-  if (!passwordCheck.isValid) return passwordCheck;
+  if (!isEdit) {
+    const passwordCheck = validateRequiredText(password, "Password");
+    if (!passwordCheck.isValid) return passwordCheck;
+  }
 
   const addressCheck = validateRequiredText(address, "Address");
   if (!addressCheck.isValid) return addressCheck;
@@ -138,48 +144,58 @@ export function validateStudentForm({
   collegeId,
   branchId,
   sectionId,
+  courseId,
   guardianName,
   guardianPhoneNumber,
   email,
   phoneNumber,
   password,
   address,
+  isEdit = false,
+  isGuest = false,
 }) {
   const nameCheck = validateAlphaName(name, "Name");
   if (!nameCheck.isValid) return nameCheck;
 
-  if (studentCode === "" || studentCode === null || studentCode === undefined) {
-    return { isValid: false, message: "Student code is required." };
-  }
+  if (!isGuest) {
+    if (studentCode === "" || studentCode === null || studentCode === undefined) {
+      return { isValid: false, message: "Student code is required." };
+    }
 
-  if (Number(studentCode) <= 0) {
-    return { isValid: false, message: "Student code must be greater than 0." };
-  }
+    if (Number(studentCode) <= 0) {
+      return { isValid: false, message: "Student code must be greater than 0." };
+    }
 
-  if (!collegeId) {
-    return { isValid: false, message: "College is required." };
-  }
+    if (!collegeId) {
+      return { isValid: false, message: "College is required." };
+    }
 
-  if (!branchId) {
-    return { isValid: false, message: "Branch is required." };
-  }
+    if (!branchId) {
+      return { isValid: false, message: "Branch is required." };
+    }
 
-  if (!sectionId) {
-    return { isValid: false, message: "Section is required." };
-  }
+    if (!sectionId) {
+      return { isValid: false, message: "Section is required." };
+    }
 
-  const guardianNameCheck = validateAlphaName(guardianName, "Guardian name");
-  if (!guardianNameCheck.isValid) return guardianNameCheck;
+    if (!Number.isSafeInteger(Number(courseId)) || Number(courseId) <= 0) {
+      return { isValid: false, message: "Course is required." };
+    }
 
-  const cleanedGuardianPhone = String(guardianPhoneNumber ?? "").replace(
-    /\D/g,
-    "",
-  );
-  if (cleanedGuardianPhone.length !== 10) {
-    return {
-      isValid: false,
-      message: "Guardian phone number must contain exactly 10 digits.",
-    };
+    const guardianNameCheck = validateAlphaName(guardianName, "Guardian name");
+    if (!guardianNameCheck.isValid) return guardianNameCheck;
+
+    const cleanedGuardianPhone = String(guardianPhoneNumber ?? "").replace(
+      /\D/g,
+      "",
+    );
+    if (cleanedGuardianPhone.length !== 10) {
+      return {
+        isValid: false,
+        message: "Guardian phone number must contain exactly 10 digits.",
+      };
+    }
+
   }
 
   const emailCheck = validateRequiredText(email, "Email");
@@ -190,18 +206,22 @@ export function validateStudentForm({
   }
 
   const cleanedPhoneNumber = String(phoneNumber ?? "").replace(/\D/g, "");
-  if (cleanedPhoneNumber.length !== 10) {
+  if ((!isGuest || cleanedPhoneNumber.length > 0) && cleanedPhoneNumber.length !== 10) {
     return {
       isValid: false,
       message: "Phone number must contain exactly 10 digits.",
     };
   }
 
-  const passwordCheck = validateRequiredText(password, "Password");
-  if (!passwordCheck.isValid) return passwordCheck;
+  if (!isEdit) {
+    const passwordCheck = validateRequiredText(password, "Password");
+    if (!passwordCheck.isValid) return passwordCheck;
+  }
 
-  const addressCheck = validateRequiredText(address, "Address");
-  if (!addressCheck.isValid) return addressCheck;
+  if (!isGuest) {
+    const addressCheck = validateRequiredText(address, "Address");
+    if (!addressCheck.isValid) return addressCheck;
+  }
 
   return { isValid: true, message: "" };
 }

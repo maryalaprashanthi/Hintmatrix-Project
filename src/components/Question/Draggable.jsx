@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useDraggable } from "@dnd-kit/react";
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import "./Draggable.css";
 import { VscError } from "react-icons/vsc";
 import { OverlayTrigger, Popover } from "react-bootstrap";
@@ -49,33 +49,33 @@ const PendingIcon = () => (
   </svg>
 );
 
-// Subscribes to the one store-wide busyOperation flag so the full Draggable
-// body (hints, autofill, popovers, logging) doesn't have to re-run on every
-// drop just to disable every other row's button while one row is mid-drop.
-const DragHandle = memo(function DragHandle({ id, type, solved, status, name, amount, onClick }) {
-  const busyOperation = useQuestionStore((state) => state.busyOperation);
+const DragHandle = memo(function DragHandle({ id, type, solved, status, name, amount, busy, selected, onSelect, onTouchEnd }) {
   const { ref } = useDraggable({
     id,
     type,
-    disabled: solved || Boolean(busyOperation),
+    disabled: solved || Boolean(busy),
   });
+  const amountText = amount == null || amount === "" || !Number.isFinite(Number(amount))
+    ? "Amount unavailable" : `₹${Number(amount).toLocaleString("en-IN")}`;
   return (
     <button
-      ref={solved || busyOperation ? undefined : ref}
+      ref={solved || busy ? undefined : ref}
       type="button"
-      className="drag-btn"
-      disabled={solved || Boolean(busyOperation)}
-      aria-disabled={solved || Boolean(busyOperation)}
-      onClick={onClick}
+      className={`drag-btn${selected ? " drag-btn-selected" : ""}`}
+      disabled={solved || Boolean(busy)}
+      aria-disabled={solved || Boolean(busy)}
+      aria-pressed={onSelect ? Boolean(selected) : undefined}
+      onClick={onSelect}
+      onTouchEnd={onTouchEnd}
     >
       <span className="drag-btn-content">
         <span>{name}</span>
         <span className="fw-semibold">
-          ₹{Number(amount).toLocaleString("en-IN")}
+          {amountText}
         </span>
       </span>
 
-      <span className="drag-status-icon">
+      <span className="drag-status-icon" aria-label={solved ? "Solved" : status === "wrong" ? "Incorrect answer" : "Drag to place"}>
         {solved ? (
           <CheckIcon />
         ) : status === "wrong" ? (
@@ -88,23 +88,28 @@ const DragHandle = memo(function DragHandle({ id, type, solved, status, name, am
   );
 });
 
-// Same reasoning as DragHandle: only the wrong-answer popover's own action
-// buttons need busyOperation, so only they subscribe to it.
+// Keep store subscriptions in the ordinary question adapter. Controlled
+// question views provide busy state without subscribing to that store.
+const StoreDragHandle = memo(function StoreDragHandle(props) {
+  const busyOperation = useQuestionStore((state) => state.busyOperation);
+  return <DragHandle {...props} busy={Boolean(busyOperation)} />;
+});
+
 const WrongActionsMenu = memo(function WrongActionsMenu({
   allHints,
   handleHint,
   handleAutoFill,
   isAutoFilling,
   autoFillError,
+  busy,
 }) {
-  const busyOperation = useQuestionStore((state) => state.busyOperation);
   return (
     <Popover.Body>
       <OverlayTrigger
         trigger="click"
         placement="right"
         rootClose
-        container={document.body}
+        container={typeof document === "undefined" ? undefined : document.body}
         overlay={
           <Popover className="hint-popover">
             <Popover.Header as="div">💡 Hint</Popover.Header>
@@ -119,7 +124,7 @@ const WrongActionsMenu = memo(function WrongActionsMenu({
           </Popover>
         }
       >
-        <button className="action-menu-item" onClick={handleHint} disabled={Boolean(busyOperation)}>
+        <button type="button" className="action-menu-item" onClick={handleHint} disabled={Boolean(busy)}>
           <span className="action-icon hint-icon">💡</span>
           <span>
             <strong>Hint</strong>
@@ -128,7 +133,7 @@ const WrongActionsMenu = memo(function WrongActionsMenu({
         </button>
       </OverlayTrigger>
 
-      <button className="action-menu-item" onClick={handleAutoFill} disabled={Boolean(busyOperation)}>
+      <button type="button" className="action-menu-item" onClick={handleAutoFill} disabled={Boolean(busy)}>
         <span className="action-icon autofill-icon">✦</span>
         <span>
           <strong>{isAutoFilling ? "Filling…" : "Auto Fill"}</strong>
@@ -140,23 +145,56 @@ const WrongActionsMenu = memo(function WrongActionsMenu({
   );
 });
 
-function Draggable({
-  id,
-  type,
-  status = "pending",
-}) {
+const StoreWrongActionsMenu = memo(function StoreWrongActionsMenu(props) {
+  const busyOperation = useQuestionStore((state) => state.busyOperation);
+  return <WrongActionsMenu {...props} busy={Boolean(busyOperation)} />;
+});
+
+function DraggableTile({ id, type, name, note, amount, solved, status, wrongAttempts = 0, busy, selected, hints = [],
+  autoFilling, actionError, onSelect, onHint, onAutoFill, Handle = DragHandle, ActionsMenu = WrongActionsMenu }) {
+  const [showActions, setShowActions] = useState(false);
+  useEffect(() => {
+    if (!solved && status === "wrong") {
+      setShowActions(true);
+    } else if (solved || (status === "pending" && wrongAttempts === 0)) {
+      setShowActions(false);
+    }
+  }, [solved, status, wrongAttempts]);
+  const dragButton = (
+    <Handle
+      id={id}
+      type={type}
+      solved={solved}
+      status={status}
+      name={name}
+      amount={amount}
+      busy={busy}
+      selected={selected}
+      onSelect={onSelect}
+      onTouchEnd={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        onSelect?.();
+        setShowActions(true);
+      }}
+    />
+  );
+
+  return <div className={`drag-item ${solved ? "drag-item-solved" : status === "wrong" ? "drag-item-wrong" : ""}`}>
+    {!solved && status === "wrong" ? <OverlayTrigger key={id} trigger="click" show={showActions} onToggle={setShowActions}
+      placement="auto" rootClose container={typeof document === "undefined" ? undefined : document.body}
+      overlay={<Popover className="question-actions-popover"><ActionsMenu allHints={hints} handleHint={onHint}
+        handleAutoFill={onAutoFill} isAutoFilling={autoFilling} autoFillError={actionError} busy={busy} /></Popover>}>
+      <span className="drag-action-anchor">{dragButton}</span>
+    </OverlayTrigger> : dragButton}
+    {note && <p className="drag-note small text-muted">{note}</p>}
+  </div>;
+}
+
+function OrdinaryDraggable({ id, type, status = "pending" }) {
   const { questionId } = useParams();
   const [autoFillError, setAutoFillError] = useState("");
   const [isAutoFilling, setIsAutoFilling] = useState(false);
-
-  // Only one popover is open at a time: the one for the latest wrong drop.
-  // QuestionTable closes it when the user presses anywhere outside it.
-  const showActions = useQuestionStore(
-    (state) => String(state.errorPopoverId) === String(id),
-  );
-  const toggleErrorPopover = useQuestionStore((state) => state.toggleErrorPopover);
-
-  const solved = status === "solved";
   const myQuestion = useQuestionStore((state) => state.questions.find((q) => q.id == id));
   const setHintUsed = useQuestionStore((state) => state.setHintUsed);
   const moveQuestion = useQuestionStore((state) => state.moveQuestion);
@@ -164,18 +202,18 @@ function Draggable({
   const setTotalAnswers = useQuestionStore((state) => state.setTotalAnswers);
   const setHints = useQuestionStore((state) => state.setHints);
   const setCurrentScore = useQuestionStore((state) => state.setCurrentScore);
-  const allHints = myQuestion.hints;
+  const showActions = useQuestionStore((state) => String(state.errorPopoverId) === String(id));
+  const toggleErrorPopover = useQuestionStore((state) => state.toggleErrorPopover);
+  const solved = status === "solved";
   const dragButton = (
-    <DragHandle
+    <StoreDragHandle
       id={id}
       type={type}
       solved={solved}
       status={status}
       name={myQuestion.name}
       amount={myQuestion.amount}
-      // A click on a row that is still wrong opens or closes its popover.
-      // The press before the click already closed any other popover.
-      onClick={status === "wrong" ? () => toggleErrorPopover(id) : undefined}
+      onSelect={status === "wrong" ? () => toggleErrorPopover(id) : undefined}
     />
   );
 
@@ -264,21 +302,18 @@ function Draggable({
   return (
     <div
       data-error-popover-row={id}
-      className={`drag-item ${status == "solved" ? "drag-item-solved" : status == "wrong" ? "drag-item-wrong" : ""}`}
+      className={`drag-item ${solved ? "drag-item-solved" : status === "wrong" ? "drag-item-wrong" : ""}`}
     >
-      {/* The OverlayTrigger stays mounted on every row. OverlayTrigger reads
-          its target from a ref that is filled only after the first render.
-          If it mounted at the moment the row turned wrong, the popover would
-          open with no target and stay invisible. */}
       <OverlayTrigger
         trigger={[]}
         show={showActions && status === "wrong"}
         placement="auto"
-        container={document.body}
+        rootClose
+        container={typeof document === "undefined" ? undefined : document.body}
         overlay={
           <Popover className="question-actions-popover">
-            <WrongActionsMenu
-              allHints={allHints}
+            <StoreWrongActionsMenu
+              allHints={myQuestion.hints}
               handleHint={handleHint}
               handleAutoFill={handleAutoFill}
               isAutoFilling={isAutoFilling}
@@ -291,6 +326,14 @@ function Draggable({
       </OverlayTrigger>
     </div>
   );
+}
+
+function Draggable(props) {
+  if (!props.row) return <OrdinaryDraggable {...props} />;
+  const { row, sourceId = row.id, amount = row.amount, solved = false, status = "pending", onSelect, onHint, onAutoFill } = props;
+  return <DraggableTile {...props} id={sourceId} name={row.name} note={row.note} amount={amount} solved={solved}
+    status={solved ? "solved" : status} onSelect={onSelect ? () => onSelect(row.id, amount) : undefined}
+    onHint={onHint ? () => onHint(row.id) : undefined} onAutoFill={onAutoFill ? () => onAutoFill(row.id) : undefined} />;
 }
 
 export default memo(Draggable);
