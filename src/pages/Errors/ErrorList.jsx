@@ -93,9 +93,7 @@ export default function ErrorList() {
   const [chapterSearch, setChapterSearch] = useState("");
   const [mistakeSearch, setMistakeSearch] = useState("");
   const [dateOrder, setDateOrder] = useState("newest");
-  const [chapterSearch, setChapterSearch] = useState("");
-  const [mistakeSearch, setMistakeSearch] = useState("");
-  const [dateOrder, setDateOrder] = useState("newest");
+
 
   // =========================================================
   // LOAD USER MISTAKES
@@ -198,16 +196,6 @@ export default function ErrorList() {
     [mistakes],
   );
 
-  const filteredChapters = useMemo(() => {
-    const query = chapterSearch.trim().toLowerCase();
-    if (!query) {
-      return chapters;
-    }
-
-    return chapters.filter((chapter) =>
-      chapter.name.toLowerCase().includes(query),
-    );
-  }, [chapters, chapterSearch]);
 
   // =========================================================
   // SELECTED CHAPTER
