@@ -1,0 +1,14 @@
+.adj-create { width: 100%; color: #172033; }
+.adj-create section { margin-bottom: 1.75rem; }
+.adj-create-table { overflow: visible; border-radius: .65rem; box-shadow: 0 2px 7px #17203318; margin-bottom: 1rem; padding: .25rem; background: white; }
+.adj-create table { width: 100%; border-collapse: separate; border-spacing: 3px; }
+.adj-create th { text-transform: uppercase; background: #ededff; padding: 1rem; text-align: left; }
+.adj-create td { padding: .8rem; vertical-align: top; }
+.adj-create td:has(input) { width: 16%; min-width: 110px; }
+.adj-create input, .adj-create textarea { width: 100%; padding: .55rem; border: 1px solid #bfc6d4; border-radius: .25rem; }
+.adj-create button { background: #64748b; color: white; border: 0; border-radius: .25rem; padding: .65rem 1rem; }
+.adj-create button:disabled { opacity: .45; }
+.adj-create details { font-size: .85rem; margin-top: .75rem; }
+.adj-create summary { cursor: pointer; color: #5261de; }
+.adj-create label { display: block; margin-top: .5rem; }
+@media(max-width: 700px) { .adj-create-table { overflow-x: auto; } .adj-create-table table { min-width: 650px; } }

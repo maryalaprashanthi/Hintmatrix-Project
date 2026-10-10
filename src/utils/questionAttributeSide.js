@@ -1,6 +1,7 @@
 // Header IDs are database-generated. Classify by the uploaded header name,
 // not an assumed ID or a default credit side for unrecognised headers.
 export const getQuestionAttributeSide = (attribute) => {
+  if (attribute?.adjustment === true) return null;
   const header = attribute?.headerName ?? attribute?.header_name ?? attribute?.header?.name;
   const values = [header, attribute?.side, attribute?.transaction, attribute?.type];
   for (const value of values) {

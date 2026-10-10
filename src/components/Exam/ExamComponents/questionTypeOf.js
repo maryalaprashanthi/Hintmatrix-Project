@@ -3,6 +3,7 @@
 // tokens ("JOURNAL" / "DROPDOWN" / "DRAG_AND_DROP"). Without normalising,
 // "Journal" !== "JOURNAL" and every question fell through to the drag-and-drop
 // branch. Accepts either a question object or a bare type string.
+import { normalizeQuestionType } from "../../../utils/questionType.js";
 export const questionTypeOf = (input) => {
   console.log("this is input ksjdf", input);
 
@@ -21,6 +22,7 @@ export const questionTypeOf = (input) => {
     .replace(/[\s-]+/g, "_");
 
   if (!token) return null;
+  if (normalizeQuestionType(raw) === "DRAG_AND_DROP_WITH_ADJ") return "DRAG_AND_DROP_WITH_ADJ";
   // Match loosely - the label may be "Dropdown", "Drop Down",
   // "Drop-Down Question", "DropDownQuestion", etc.
   if (token.includes("JOURNAL")) return "JOURNAL";

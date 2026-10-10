@@ -39,6 +39,15 @@
   outline-offset: 2px;
 }
 
+.drag-btn-selected {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px #6366f133;
+}
+
+.drag-note {
+  margin: .25rem .4rem;
+}
+
 .drag-btn-content {
   display: flex;
   flex-wrap: wrap;

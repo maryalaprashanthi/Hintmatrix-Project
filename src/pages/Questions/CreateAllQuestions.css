@@ -690,6 +690,11 @@
   width: 16%;
 }
 
+.aq-adjustments-card .aq-table-wrap th:first-child,
+.aq-adjustments-card .aq-table-wrap td:first-child {
+  width: 74%;
+}
+
 /* =========================================================
    FILL IN THE BLANKS (form)
 ========================================================= */

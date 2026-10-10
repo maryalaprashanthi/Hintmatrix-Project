@@ -15,16 +15,44 @@ const mergeRefs =
     });
   };
 
-const Droppable = ({
+// Group metadata comes from the question controller's rule relationships.
+// Keep the group's first position, but put its base account before its effects.
+const orderGroupedRows = (rows) => {
+  const groups = new Map();
+  for (const row of rows) {
+    if (row.groupId == null || row.isDerived) continue;
+    const key = String(row.groupId);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(row);
+  }
+  const emitted = new Set();
+  return rows.flatMap((row) => {
+    if (row.groupId == null || row.isDerived) return [row];
+    const key = String(row.groupId);
+    if (emitted.has(key)) return [];
+    emitted.add(key);
+    const members = groups.get(key);
+    return [...members.filter((member) => member.isGroupBase),
+      ...members.filter((member) => !member.isGroupBase)];
+  });
+};
+
+// Both question types render this table; callers may provide their own answer
+// state without subscribing to the ordinary practice question store.
+const DropTable = ({
   id,
   addLabel = "Particulars",
   amtLabel = "Amt (₹)",
   isCreditSide,
   matchRowCount,
   derivedRows = [],
+  rows: placedRows = [],
+  total,
+  busy = false,
+  onPlaceSelected,
+  onRemove,
 }) => {
-  const storedRows = useQuestionStore((state) => state.droppableData[id]);
-  const rows = [...(storedRows ?? []), ...derivedRows];
+  const rows = [...orderGroupedRows(placedRows), ...derivedRows];
 
   const theme = isCreditSide ? "theme-credit" : "theme-debit";
 
@@ -33,9 +61,11 @@ const Droppable = ({
 
   const { ref: addRef, isDropTarget: isAddOver } = useDroppable({
     id: `${id}-add`,
+    disabled: busy,
   });
   const { ref: subRef, isDropTarget: isSubOver } = useDroppable({
     id: `${id}-less`,
+    disabled: busy,
   });
 
   const addTotal = rows
@@ -55,6 +85,27 @@ const Droppable = ({
     return (additions.reduce((sum, row) => sum + Number(row.amount || 0), 0) -
       deductions.reduce((sum, row) => sum + Number(row.amount || 0), 0))
       .toLocaleString("en-IN");
+  };
+
+  const groupMembers = new Map();
+  for (const row of rows) {
+    if (row.groupId == null || row.isDerived) continue;
+    const key = String(row.groupId);
+    if (!groupMembers.has(key)) groupMembers.set(key, []);
+    groupMembers.get(key).push(row);
+  }
+  const isGrouped = (row) => row.groupId != null && !row.isDerived && !row.isBlank;
+  const groupSubtotal = (row) => {
+    const members = groupMembers.get(String(row.groupId));
+    if (members.at(-1) !== row) return "";
+    const cents = members.reduce((sum, member) => sum +
+      (member.operation === "less" ? -1 : 1) * Math.round(Number(member.amount || 0) * 100), 0);
+    return (cents / 100).toLocaleString("en-IN");
+  };
+  const particular = (row) => {
+    if (!isGrouped(row) || row.isGroupBase) return finalAccountParticular(row, id);
+    const name = String(row.name ?? "").trim().replace(/^(?:To\s+|By\s+|Add:\s*|Less:\s*)/i, "");
+    return `${row.operation === "less" ? "Less" : "Add"}: ${name}`;
   };
 
   const targetRows = Math.max(rows.length, matchRowCount ?? rows.length);
@@ -92,12 +143,22 @@ const Droppable = ({
           </thead>
           <tbody>
             {displayRows.map((obj) => (
-              <tr key={`${obj.id}-${obj.conditionId ?? obj.operation}`}
+              <tr key={obj.key ?? `${obj.id}-${obj.conditionId ?? obj.operation}`}
                 className={obj.isBlank ? "blank-row" : obj.isDerived ? "derived-row" : ""}>
-                <td className="particulars-cell">{finalAccountParticular(obj, id)}</td>
+                <td className="particulars-cell">{particular(obj)}
+                  {onRemove && !obj.isBlank && !obj.isDerived && <button
+                    className="drop-remove btn btn-sm"
+                    type="button"
+                    aria-label={`Remove ${obj.name}`}
+                    disabled={busy}
+                    onClick={() => onRemove(obj)}
+                  >×</button>}
+                </td>
                 <td className="text-end amount-cell">
                   {obj.isBlank
                     ? ""
+                    : isGrouped(obj)
+                      ? `${obj.operation === "less" ? "-" : ""}${Number(obj.amount).toLocaleString("en-IN")}`
                     : obj.operation === "add"
                       ? obj.isDerived || !obj.isPaired ? "" : Number(obj.amount).toLocaleString("en-IN")
                       : obj.isPaired
@@ -107,6 +168,8 @@ const Droppable = ({
                 <td className="text-end amount-cell">
                   {obj.isBlank
                     ? ""
+                    : isGrouped(obj)
+                      ? groupSubtotal(obj)
                     : obj.operation === "less" && !obj.isPaired
                       ? `${obj.isDerived && Number(obj.amount) === 0 ? "" : "-"}${Number(obj.amount).toLocaleString("en-IN", obj.isDerived && Number(obj.amount) === 0 ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : {})}`
                       : obj.operation === "less" && obj.isPaired
@@ -123,7 +186,7 @@ const Droppable = ({
               <td className="fw-bold">Total</td>
               <td className="fw-bold text-end" />
               <td className="fw-bold text-end amount-cell">
-                {(addTotal - subTotal).toLocaleString("en-IN")}
+                {(Number.isFinite(total) ? total : addTotal - subTotal).toLocaleString("en-IN")}
               </td>
             </tr>
           </tfoot>
@@ -131,27 +194,41 @@ const Droppable = ({
 
         {/* Transparent drop targets layered over the table columns so the
             table itself stays a single, aligned grid. */}
-        <div
+        {onPlaceSelected ? <button
+          ref={mergeRefs(addRef, addZoneRef)}
+          className={`drop-overlay drop-overlay-add ${isAddOver ? "is-over" : ""}`}
+          type="button"
+          disabled={busy}
+          aria-label={`Add to ${id}`}
+          onClick={() => onPlaceSelected(`${id}-add`)}
+        ><span className="visually-hidden">Add</span></button> : <div
           ref={mergeRefs(addRef, addZoneRef)}
           className={`drop-overlay drop-overlay-add ${
             isAddOver ? "is-over" : ""
           }`}
           aria-hidden="true"
-        />
-        <div
+        />}
+        {onPlaceSelected ? <button
+          ref={mergeRefs(subRef, subZoneRef)}
+          className={`drop-overlay drop-overlay-sub ${isSubOver ? "is-over" : ""}`}
+          type="button"
+          disabled={busy}
+          aria-label={`Subtract from ${id}`}
+          onClick={() => onPlaceSelected(`${id}-less`)}
+        ><span className="visually-hidden">Less</span></button> : <div
           ref={mergeRefs(subRef, subZoneRef)}
           className={`drop-overlay drop-overlay-sub ${
             isSubOver ? "is-over" : ""
           }`}
           aria-hidden="true"
-        />
+        />}
       </div>
 
       <Overlay
         target={addZoneRef.current}
         show={isAddOver}
         placement="top"
-        container={document.body}
+        container={typeof document === "undefined" ? undefined : document.body}
       >
         {(overlayProps) => (
           <Tooltip
@@ -168,7 +245,7 @@ const Droppable = ({
         target={subZoneRef.current}
         show={isSubOver}
         placement="top"
-        container={document.body}
+        container={typeof document === "undefined" ? undefined : document.body}
       >
         {(overlayProps) => (
           <Tooltip
@@ -183,4 +260,14 @@ const Droppable = ({
     </div>
   );
 };
+
+const StoreDroppable = (props) => {
+  const storedRows = useQuestionStore((state) => state.droppableData[props.id]);
+  return <DropTable {...props} rows={storedRows ?? []} />;
+};
+
+const Droppable = (props) => props.rows !== undefined
+  ? <DropTable {...props} />
+  : <StoreDroppable {...props} />;
+
 export default Droppable;
