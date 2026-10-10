@@ -10,6 +10,7 @@ import useQuestionStore from "./questionStore";
 import { getCurrentUserId } from "../../utils/user";
 import { restoreMcqAnswer } from "../../utils/questionAttemptState";
 import "./McqQuestionView.css";
+import "./FillInBlankQuestionView.css";
 
 export default function McqQuestionView({ questionId, questionType }) {
   const navigate = useNavigate();
@@ -32,7 +33,10 @@ export default function McqQuestionView({ questionId, questionType }) {
     setResult(null);
     Promise.all([
       McqQuestionService.getById(questionId),
-      QuestionAnswerService.getAnswerEventsByQuestionId(getCurrentUserId(), questionId),
+      QuestionAnswerService.getAnswerEventsByQuestionId(
+        getCurrentUserId(),
+        questionId,
+      ),
     ])
       .then(([{ data }, events]) => {
         if (!active) return;
@@ -47,7 +51,9 @@ export default function McqQuestionView({ questionId, questionType }) {
         if (active)
           setError("Unable to load this MCQ. Please reopen the question.");
       })
-      .finally(() => { if (active) setBusy(false); });
+      .finally(() => {
+        if (active) setBusy(false);
+      });
     return () => {
       active = false;
     };
@@ -118,7 +124,8 @@ export default function McqQuestionView({ questionId, questionType }) {
         question.questionId,
       );
       await QuestionAnswerService.resetAnswerEventsByUserAndQuestion(
-        getCurrentUserId(), question.questionId,
+        getCurrentUserId(),
+        question.questionId,
       );
       setSelected([]);
       setResult(null);
@@ -224,21 +231,26 @@ export default function McqQuestionView({ questionId, questionType }) {
           )}
         </Card.Body>
       </Card>
-      <div className="d-flex justify-content-between mt-3">
-        <Button
-          variant="primary"
-          disabled={busy || previousQuestionId == null}
-          onClick={() => navigate(`/questions/${previousQuestionId}`)}
-        >
-          ← Previous
-        </Button>
-        <Button
-          variant="primary"
-          disabled={busy || nextQuestionId == null}
-          onClick={() => navigate(`/questions/${nextQuestionId}`)}
-        >
-          Next →
-        </Button>
+      <div className="matching-nav-row matching-nav-bottom">
+        <div className="matching-nav-left">
+          <Button
+            className="matching-prev-btn"
+            disabled={busy || previousQuestionId == null}
+            onClick={() => navigate(`/questions/${previousQuestionId}`)}
+          >
+            ← Previous 
+          </Button>
+        </div>
+
+        <div className="matching-nav-right">
+          <Button
+            className="matching-next-btn"
+            disabled={busy || nextQuestionId == null}
+            onClick={() => navigate(`/questions/${nextQuestionId}`)}
+          >
+            Next  →
+          </Button>
+        </div>
       </div>
     </div>
   );

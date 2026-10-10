@@ -1,6 +1,6 @@
 import { DragDropProvider } from "@dnd-kit/react";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import QuestionTable from "./QuestionTable";
 import useQuestionStore, { getRuleAnswers } from "./questionStore";
@@ -21,6 +21,7 @@ import FillInBlankQuestionService from "../../services/FillInBlankQuestionServic
 import { data, normalizeFinalAccountTarget } from "./SampleData";
 import { getCurrentUserId } from "../../utils/user";
 
+import QuestionNavigation from "./QuestionNavigation";
 import "./QuestionPage.css";
 
 // =============================================================
@@ -99,6 +100,7 @@ const answerMap = {
 
 const QuestionPage = () => {
   const { questionId } = useParams();
+  const navigate = useNavigate();
 
   const {
     moveQuestion,
@@ -225,6 +227,7 @@ const QuestionPage = () => {
               ...questionData,
               ...fillBlankResponse.data,
             };
+            setMatchingQuestion(questionData);
           } catch (fillBlankError) {
             console.error(
               "Failed to load fill-in-the-blanks data:",
@@ -336,12 +339,21 @@ const QuestionPage = () => {
           Number(currentQuestionData.questionId),
       );
 
-      let finalQuestions = activeQuestions;
+      let finalQuestions = activeQuestions.map((question) =>
+        Number(question.questionId) === Number(currentQuestionData.questionId)
+          ? { ...question, ...currentQuestionData }
+          : question,
+      );
 
+      // if (!containsCurrent) {
+      //   finalQuestions = [currentQuestionData, ...finalQuestions];
+      // }
       if (!containsCurrent) {
-        finalQuestions = [currentQuestionData, ...activeQuestions];
+        // Keep the questions returned by the mapping API in their existing order.
+        // Append the current question instead of placing it at index 0,
+        // which would disable Previous navigation.
+        finalQuestions = [...finalQuestions, currentQuestionData];
       }
-
       // -------------------------------------------------------
       // Keep maximum 20 questions for this test UI
       // -------------------------------------------------------
@@ -377,7 +389,8 @@ const QuestionPage = () => {
   const loadAnsweredQuestions = async () => {
     const correctAnswers =
       await QuestionAnswerService.getAnswersByUserAndQuestion(
-        getCurrentUserId(), questionId,
+        getCurrentUserId(),
+        questionId,
       );
 
     const savedAnswers = Array.isArray(correctAnswers) ? correctAnswers : [];
@@ -390,13 +403,18 @@ const QuestionPage = () => {
     const groupedAnswers = new Map();
     for (const answer of savedAnswers) {
       if (!answer) continue;
-      const candidates = rows.filter((row) => answer.questionAttributeId != null
-        ? String(row.questionAttributeId) === String(answer.questionAttributeId)
-        : String(row.attributeId) === String(answer.attributeId));
+      const candidates = rows.filter((row) =>
+        answer.questionAttributeId != null
+          ? String(row.questionAttributeId) ===
+            String(answer.questionAttributeId)
+          : String(row.attributeId) === String(answer.attributeId),
+      );
       // Old answers did not identify repeated trial-balance accounts. Preserve
       // them in storage without incorrectly assigning one balance to another.
       if (candidates.length !== 1) {
-        setPlacementError("Some older saved answers cannot identify a repeated account row. Reset the question to place those balances again.");
+        setPlacementError(
+          "Some older saved answers cannot identify a repeated account row. Reset the question to place those balances again.",
+        );
         continue;
       }
       const row = candidates[0];
@@ -405,11 +423,23 @@ const QuestionPage = () => {
       groupedAnswers.set(row.id, entries);
     }
     for (const [sourceId, answers] of groupedAnswers) {
-      setTotalAnswers(sourceId, Math.max(answers.length, ...answers.map((answer) => Number(answer.totalAnswers) || 1)));
+      setTotalAnswers(
+        sourceId,
+        Math.max(
+          answers.length,
+          ...answers.map((answer) => Number(answer.totalAnswers) || 1),
+        ),
+      );
       for (const answer of answers) {
-        moveQuestion(sourceId,
-          normalizeFinalAccountTarget(`${answer.tableName}-${answer.headerName}-${answer.arithmetic}`),
-          answer.conditionId, answer.pairAttributeId, answer.amount);
+        moveQuestion(
+          sourceId,
+          normalizeFinalAccountTarget(
+            `${answer.tableName}-${answer.headerName}-${answer.arithmetic}`,
+          ),
+          answer.conditionId,
+          answer.pairAttributeId,
+          answer.amount,
+        );
       }
     }
   };
@@ -427,94 +457,24 @@ const QuestionPage = () => {
 
   // ===========================================================
   // SELECT QUESTION
+
   // ===========================================================
 
-  const handleSelectQuestion = async (index) => {
-  if (index < 0 || index >= testQuestions.length) {
-    return;
-  }
-
-  let selected = testQuestions[index];
-
-  const type = getQuestionType(selected);
-
-  // =========================================================
-  // LOAD FILL-IN-THE-BLANKS DATA IF MISSING
-  // =========================================================
-
-  if (
-    type === "FILL_IN_THE_BLANKS" &&
-    !Array.isArray(selected?.blanks)
-  ) {
-    try {
-      const fillBlankResponse =
-        await FillInBlankQuestionService.getById(
-          selected.questionId
-        );
-
-      selected = {
-        ...selected,
-        ...fillBlankResponse.data,
-      };
-
-      // Update the question inside testQuestions
-      setTestQuestions((currentQuestions) =>
-        currentQuestions.map((question, questionIndex) =>
-          questionIndex === index
-            ? selected
-            : question
-        )
-      );
-    } catch (error) {
-      console.error(
-        "Failed to load fill-in-the-blanks data:",
-        error
-      );
+  const handleSelectQuestion = (index) => {
+    if (index < 0 || index >= testQuestions.length) {
+      return;
     }
-  }
 
-  // =========================================================
-  // LOAD MATCHING DATA IF MISSING
-  // =========================================================
+    const target = testQuestions[index];
 
-  if (
-    type === "MATCH_THE_FOLLOWING" &&
-    !Array.isArray(selected?.pairs)
-  ) {
-    try {
-      const matchingResponse =
-        await MatchingQuestionService.getById(
-          selected.questionId
-        );
-
-      selected = {
-        ...selected,
-        ...matchingResponse.data,
-      };
-
-      setTestQuestions((currentQuestions) =>
-        currentQuestions.map((question, questionIndex) =>
-          questionIndex === index
-            ? selected
-            : question
-        )
-      );
-    } catch (error) {
-      console.error(
-        "Failed to load matching pairs:",
-        error
-      );
+    if (!target?.questionId) {
+      return;
     }
-  }
 
-  setCurrentQuestionIndex(index);
+    setCurrentScore(0);
 
-  setMatchingQuestion(selected);
-
-  setQuestionType(type);
-
-  setCurrentScore(0);
-};
+    navigate(`/questions/${target.questionId}`);
+  };
 
   // ===========================================================
   // NEXT QUESTION
@@ -580,25 +540,51 @@ const QuestionPage = () => {
   // ===========================================================
 
   if (questionType === "JOURNAL") {
-    return <JournalPage />;
+    return (
+      <JournalPage
+        questionNumber={currentQuestionIndex + 1}
+        totalQuestions={totalQuestions}
+        onPrevious={handlePreviousQuestion}
+        onNext={handleNextQuestion}
+      />
+    );
   }
 
+  // if (isMcq) {
+  //   return (
+  //     <McqQuestionView
+  //       key={questionId}
+  //       questionId={questionId}
+  //       questionType={questionType}
+  //     />
+  //   );
+  // }
   if (isMcq) {
     return (
       <McqQuestionView
         key={questionId}
         questionId={questionId}
         questionType={questionType}
+        questionNumber={currentQuestionIndex + 1}
+        totalQuestions={totalQuestions}
+        onPrevious={handlePreviousQuestion}
+        onNext={handleNextQuestion}
       />
     );
   }
-
   // ===========================================================
   // DROPDOWN
   // ===========================================================
 
   if (questionType === "DROPDOWN") {
-    return <DropdownPage />;
+    return (
+      <DropdownPage
+        questionNumber={currentQuestionIndex + 1}
+        totalQuestions={totalQuestions}
+        onPrevious={handlePreviousQuestion}
+        onNext={handleNextQuestion}
+      />
+    );
   }
 
   if (questionType === "FILL_IN_THE_BLANKS") {
@@ -614,6 +600,7 @@ const QuestionPage = () => {
         onCompleted={handleQuestionCompleted}
         onQuestionSelect={handleSelectQuestion}
         onNext={handleNextQuestion}
+        onPrevious={handlePreviousQuestion}
         onSubmitTest={handleSubmitTest}
       />
     );
@@ -669,36 +656,58 @@ const QuestionPage = () => {
         }
 
         const [first, second, third] = targetId.split("-");
-        const operation = useQuestionStore.getState().beginOperation(questionId, "drop");
+        const operation = useQuestionStore
+          .getState()
+          .beginOperation(questionId, "drop");
         if (!operation) return;
 
         try {
-          let myQuestion = useQuestionStore.getState().questions.find((q) => String(q.id) === String(sourceId));
+          let myQuestion = useQuestionStore
+            .getState()
+            .questions.find((q) => String(q.id) === String(sourceId));
           if (!myQuestion || myQuestion.status === "solved") return;
           let actualAnswers = myQuestion.actualAnswers;
 
           if (myQuestion.actualAnswers.length === 0) {
-            const response =
-              await RuleEngineService.getAttributeAnswers(myQuestion.attributeId);
-            if (!useQuestionStore.getState().isOperationCurrent(operation)) return;
-            myQuestion = useQuestionStore.getState().questions.find((q) => String(q.id) === String(sourceId));
+            const response = await RuleEngineService.getAttributeAnswers(
+              myQuestion.attributeId,
+            );
+            if (!useQuestionStore.getState().isOperationCurrent(operation))
+              return;
+            myQuestion = useQuestionStore
+              .getState()
+              .questions.find((q) => String(q.id) === String(sourceId));
             if (!myQuestion) return;
 
-            actualAnswers = getRuleAnswers(response, useQuestionStore.getState().question.chapterId, myQuestion)
-              .map((answer) => ({ ...answer, answer: normalizeFinalAccountTarget(answer.answer) }));
+            actualAnswers = getRuleAnswers(
+              response,
+              useQuestionStore.getState().question.chapterId,
+              myQuestion,
+            ).map((answer) => ({
+              ...answer,
+              answer: normalizeFinalAccountTarget(answer.answer),
+            }));
 
             setActualAnswers(sourceId, actualAnswers);
             setTotalAnswers(sourceId, actualAnswers.length);
-            setHints(sourceId, actualAnswers.map((answer) => answer.information).filter(Boolean));
+            setHints(
+              sourceId,
+              actualAnswers.map((answer) => answer.information).filter(Boolean),
+            );
           }
           setPlacementError("");
-          const answeredIds = myQuestion.answered.map((answer) => answer.conditionId);
+          const answeredIds = myQuestion.answered.map(
+            (answer) => answer.conditionId,
+          );
           const correctAnswer = actualAnswers.find(
-            (answer) => answer.answer === targetId && !answeredIds.includes(answer.conditionId),
+            (answer) =>
+              answer.answer === targetId &&
+              !answeredIds.includes(answer.conditionId),
           );
           if (!correctAnswer) {
             // Dropping onto an already completed destination is a harmless no-op.
-            if (actualAnswers.some((answer) => answer.answer === targetId)) return;
+            if (actualAnswers.some((answer) => answer.answer === targetId))
+              return;
             if (myQuestion.status !== "wrong") {
               setError(sourceId);
             } else {
@@ -707,9 +716,15 @@ const QuestionPage = () => {
               // and Auto Fill.
               useQuestionStore.getState().openErrorPopover(sourceId);
             }
-            const attemptedAnswer = actualAnswers.find((answer) =>
-              answer.conditionId === myQuestion.attemptingId && !answeredIds.includes(answer.conditionId)) ??
-              actualAnswers.find((answer) => !answeredIds.includes(answer.conditionId));
+            const attemptedAnswer =
+              actualAnswers.find(
+                (answer) =>
+                  answer.conditionId === myQuestion.attemptingId &&
+                  !answeredIds.includes(answer.conditionId),
+              ) ??
+              actualAnswers.find(
+                (answer) => !answeredIds.includes(answer.conditionId),
+              );
             if (!attemptedAnswer) return;
             setAttributeId(sourceId, attemptedAnswer.conditionId);
 
@@ -740,7 +755,8 @@ const QuestionPage = () => {
             };
 
             await QuestionAnswerService.processAnswerEvent({
-              ...body, questionAttributeId: myQuestion.questionAttributeId,
+              ...body,
+              questionAttributeId: myQuestion.questionAttributeId,
             });
           } else {
             const body = {
@@ -795,12 +811,15 @@ const QuestionPage = () => {
             };
 
             await QuestionAnswerService.processAnswerEvent({
-              ...body, questionAttributeId: myQuestion.questionAttributeId,
+              ...body,
+              questionAttributeId: myQuestion.questionAttributeId,
             });
-            if (!useQuestionStore.getState().isOperationCurrent(operation)) return;
+            if (!useQuestionStore.getState().isOperationCurrent(operation))
+              return;
 
             await QuestionAnswerService.saveAnswer(questionBody);
-            if (!useQuestionStore.getState().isOperationCurrent(operation)) return;
+            if (!useQuestionStore.getState().isOperationCurrent(operation))
+              return;
 
             moveQuestion(
               sourceId,
@@ -816,14 +835,28 @@ const QuestionPage = () => {
             }
           }
         } catch (error) {
-          setPlacementError(error.response?.data?.message ?? error.message ?? "Unable to save this placement.");
+          setPlacementError(
+            error.response?.data?.message ??
+              error.message ??
+              "Unable to save this placement.",
+          );
         } finally {
           useQuestionStore.getState().endOperation(operation);
         }
       }}
     >
-      {placementError && <div className="alert alert-warning" role="alert">{placementError}</div>}
+      {placementError && (
+        <div className="alert alert-warning" role="alert">
+          {placementError}
+        </div>
+      )}
       <QuestionTable />
+      <QuestionNavigation
+        questionNumber={currentQuestionIndex + 1}
+        totalQuestions={totalQuestions}
+        onPrevious={handlePreviousQuestion}
+        onNext={handleNextQuestion}
+      />
     </DragDropProvider>
   );
 };

@@ -1,4 +1,3 @@
-
 /* =========================================================
    MAIN WRAPPER
    ========================================================= */
@@ -105,8 +104,6 @@
 
 /* =========================================================
    MAIN LAYOUT
-   Full width — navigator space removed.
-   No functionality is changed.
    ========================================================= */
 
 .matching-practice-layout {
@@ -204,6 +201,9 @@
 
 /* =========================================================
    COLUMNS
+   Column A (questions, draggable) = LEFT
+   Column B (answers, drop targets) = RIGHT
+   No reordering here: DOM order is the visual order.
    ========================================================= */
 
 .matching-columns {
@@ -226,20 +226,6 @@
   border-radius: 10px;
   overflow: hidden;
   background: #ffffff;
-}
-
-/*
-   Keep draggable answers on the LEFT
-   and questions/drop targets on the RIGHT.
-   This preserves your existing functionality/layout.
-*/
-
-.matching-column:first-child {
-  order: 2;
-}
-
-.matching-column:last-child {
-  order: 1;
 }
 
 /* =========================================================
@@ -289,7 +275,7 @@
 }
 
 /* =========================================================
-   ROW
+   ROW  (Column B answer drop target)
    ========================================================= */
 
 .matching-row {
@@ -306,8 +292,15 @@
   margin-bottom: 0;
 }
 
+/* Highlight while a question is dragged over an answer */
+.matching-row-over .column-a-item {
+  border: 1.5px dashed #25a269;
+  background: #f0fff7;
+  box-shadow: 0 0 0 3px rgba(37, 162, 105, 0.12);
+}
+
 /* =========================================================
-   COLUMN A ITEM
+   ANSWER ROW CONTENT (inside Column B)
    ========================================================= */
 
 .column-a-item {
@@ -323,23 +316,24 @@
   background: #ffffff;
   font-size: 14px;
   font-weight: 600;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.column-a-item:has(+ .matching-row-result) {
-  cursor: copy;
-}
-
+/* Question that has been dropped onto this answer */
 .column-a-match {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  max-width: 50%;
+  max-width: 55%;
   margin-left: auto;
   padding: 5px 9px;
-  border: 1px solid #9fdfbf;
+  border: 1px solid #cfc7f7;
   border-radius: 6px;
-  background: #ecfff6;
-  color: #16865b;
+  background: #f4f0ff;
+  color: #4b22a7;
   font-size: 12px;
   font-weight: 700;
   overflow-wrap: anywhere;
@@ -373,28 +367,8 @@
 }
 
 /* =========================================================
-   DROP ZONE
+   DROP PLACEHOLDER (inside an empty answer)
    ========================================================= */
-
-.drop-zone {
-  min-height: 54px;
-  display: flex;
-  align-items: center;
-  box-sizing: border-box;
-  padding: 10px 14px;
-  border: 1.5px dashed #25a269;
-  border-radius: 8px;
-  background: #ffffff;
-  transition:
-    background 0.2s ease,
-    border 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.drop-zone:hover {
-  background: #f0fff7;
-  box-shadow: 0 2px 8px rgba(37, 162, 105, 0.12);
-}
 
 .drop-placeholder {
   width: 100%;
@@ -404,45 +378,18 @@
   text-align: center;
 }
 
-/* =========================================================
-   FILLED DROP ZONE
-   ========================================================= */
-
-.drop-zone-filled {
-  border-style: solid;
-  border-color: #25a269;
-  background: #ecfff6;
+.column-a-item .drop-placeholder {
+  width: auto;
+  flex-shrink: 0;
+  margin-left: auto;
+  color: #8a93a6;
+  font-size: 12px;
+  font-weight: 500;
 }
 
-.matching-drop-tray {
-  min-height: 72px;
-  margin-bottom: 14px;
-  border-color: #cfc7f7;
-  background: #fbfaff;
-}
-
-.matching-drop-tray.drop-zone-active {
-  border-color: #25a269;
-  background: #ecfff6;
-  box-shadow: 0 0 0 3px rgba(37, 162, 105, 0.12);
-}
-
-/* =========================================================
-   SELECTED ANSWER
-   ========================================================= */
-
-.selected-answer {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  color: #202535;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.selected-answer .drag-dots {
-  cursor: grab;
+.matching-row-over .column-a-item .drop-placeholder {
+  color: #16865b;
+  font-weight: 700;
 }
 
 /* =========================================================
@@ -464,7 +411,7 @@
 }
 
 /* =========================================================
-   ANSWER CARD
+   QUESTION CARD (Column A, draggable)
    ========================================================= */
 
 .answer-card {
@@ -472,13 +419,14 @@
   min-height: 54px;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 9px;
   box-sizing: border-box;
   padding: 12px 14px;
   margin-bottom: 12px;
-  border: 1px solid #d7e1f1;
+  border: 1px solid #e0d8fb;
   border-radius: 8px;
-  background: #f5f9ff;
+  background: #faf8ff;
   font-size: 14px;
   font-weight: 600;
   cursor: grab;
@@ -494,7 +442,7 @@
 
 .answer-card:hover {
   transform: translateY(-1px);
-  box-shadow: 0 5px 12px rgba(30, 70, 120, 0.1);
+  box-shadow: 0 5px 12px rgba(75, 34, 167, 0.12);
 }
 
 .answer-card:active {
@@ -506,10 +454,11 @@
   transform: scale(0.98);
 }
 
+/* Question already matched: dimmed but still draggable (can be moved) */
 .answer-card-used {
-  opacity: 0.35;
-  cursor: not-allowed;
+  opacity: 0.6;
   background: #f0f1f4;
+  border-color: #dfe2ed;
 }
 
 .answer-number {
@@ -526,7 +475,7 @@
 
 .answer-used-label {
   flex-shrink: 0;
-  color: #7b899f;
+  color: #16865b;
   font-size: 11px;
   font-weight: 700;
 }
@@ -534,16 +483,6 @@
 /* =========================================================
    CORRECT / WRONG
    ========================================================= */
-
-.drop-zone-correct {
-  border-color: #18a66a;
-  background: #ecfff6;
-}
-
-.drop-zone-wrong {
-  border-color: #dc3545;
-  background: #fff1f2;
-}
 
 .matching-row-correct .column-a-item {
   border-color: #18a66a;
@@ -553,6 +492,35 @@
 .matching-row-wrong .column-a-item {
   border-color: #dc3545;
   background: #fff1f2;
+}
+
+/* Column A cards after submit */
+.answer-card.matching-row-correct {
+  border-color: #18a66a;
+  background: #ecfff6;
+  opacity: 1;
+  cursor: default;
+}
+
+.answer-card.matching-row-wrong {
+  border-color: #dc3545;
+  background: #fff1f2;
+  opacity: 1;
+  cursor: default;
+}
+
+.answer-card.matching-row-correct:hover,
+.answer-card.matching-row-wrong:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.answer-card .result-correct-text,
+.answer-card .result-wrong-text {
+  flex-basis: 100%;
+  padding-left: 29px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 /* =========================================================
@@ -656,7 +624,6 @@
 
 /* =========================================================
    BUTTONS
-   Same functionality, full-width question layout
    ========================================================= */
 
 .matching-actions {
@@ -666,9 +633,39 @@
   align-items: center;
   gap: 12px;
   box-sizing: border-box;
-  margin-top: 24px;
+  margin-top: 0;
 }
 
+.matching-actions-top {
+  margin-bottom: 12px;
+}
+
+.matching-action-left-spacer {
+  flex: 1;
+}
+
+.matching-actions-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.matching-nav-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 16px 0 0;
+}
+
+.matching-nav-filler {
+  flex: 1;
+}
+
+.matching-prev-btn,
 .matching-reset-btn,
 .matching-next-btn {
   min-height: 44px;
@@ -679,16 +676,24 @@
   cursor: pointer;
 }
 
+.matching-prev-btn {
+  border: 1px solid #d7dbe5;
+  background: #ffffff;
+  color: #3c4352;
+}
+
 .matching-reset-btn {
   border: 1px solid #d7dbe5;
   background: #ffffff;
   color: #3c4352;
 }
 
+.matching-prev-btn:hover,
 .matching-reset-btn:hover {
   background: #f7f8fb;
 }
 
+.matching-prev-btn:disabled,
 .matching-reset-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -746,11 +751,6 @@
   .matching-columns {
     grid-template-columns: 1fr;
   }
-
-  .matching-column:first-child,
-  .matching-column:last-child {
-    order: initial;
-  }
 }
 
 @media (max-width: 600px) {
@@ -792,7 +792,8 @@
     flex-wrap: wrap;
   }
 
-  .column-a-match {
+  .column-a-match,
+  .column-a-item .drop-placeholder {
     width: 100%;
     max-width: 100%;
     margin-left: 28px;
@@ -800,11 +801,135 @@
 
   .matching-actions {
     flex-direction: column;
+    align-items: stretch;
     gap: 12px;
   }
 
+  .matching-actions-right {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .matching-prev-btn,
   .matching-reset-btn,
   .matching-next-btn {
     width: 100%;
+  }
+}
+
+/* =========================================================
+   TOP ACTIONS + QUESTION NAVIGATION
+   Reset/Submit sit beside the marks badge. Previous/Next
+   appear below both matching columns on opposite sides.
+   ========================================================= */
+
+.matching-question-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.matching-question-number {
+  flex: 0 0 auto;
+}
+
+.matching-heading-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.matching-heading-actions .matching-mark-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+.matching-heading-actions .matching-reset-btn,
+.matching-heading-actions .matching-submit-btn {
+  min-height: 44px;
+  padding: 0 18px;
+  white-space: nowrap;
+}
+
+.matching-nav-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 24px 0 4px;
+  box-sizing: border-box;
+}
+
+.matching-nav-left,
+.matching-nav-right {
+  display: flex;
+  align-items: center;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.matching-nav-left {
+  justify-content: flex-start;
+}
+
+.matching-nav-right {
+  justify-content: flex-end;
+}
+
+.matching-nav-row .matching-prev-btn,
+.matching-nav-row .matching-nav-next-btn {
+  width: auto;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .matching-heading-actions {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .matching-question-heading {
+    align-items: flex-start;
+  }
+
+  .matching-heading-actions {
+    width: 100%;
+    justify-content: flex-start;
+    margin-left: 0;
+  }
+
+  .matching-heading-actions .matching-reset-btn,
+  .matching-heading-actions .matching-submit-btn {
+    width: auto;
+    flex: 0 1 auto;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  .matching-nav-row {
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .matching-nav-row .matching-prev-btn,
+  .matching-nav-row .matching-nav-next-btn {
+    width: auto;
+    padding: 10px 12px;
+    font-size: 12px;
+    white-space: normal;
   }
 }

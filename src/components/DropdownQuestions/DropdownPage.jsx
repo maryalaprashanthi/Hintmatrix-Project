@@ -13,7 +13,10 @@ import QuestionAnswerService from "../../services/QuestionAnswerService";
 import { isDropdownAttributeSolved } from "./dropdownAnswerStatus";
 import MistakesModal from "../Question/MistakesModal";
 import useQuestionStore from "../Question/questionStore";
+import QuestionNavigation from "../Question/QuestionNavigation";
 import { getCurrentUserId } from "../../utils/user";
+
+import "../Question/FillInBlankQuestionView.css";
 
 const getRuleConditions = (rule) =>
   [1, 2, 3, 4]
@@ -48,7 +51,12 @@ const getRuleConditions = (rule) =>
     })
     .filter(Boolean);
 
-const DropdownPage = () => {
+const DropdownPage = ({
+  questionNumber = 1,
+  totalQuestions = 1,
+  onPrevious,
+  onNext,
+}) => {
   let { questionId } = useParams();
   const { showCheckMistakes } = useQuestionStore();
   const [question, setQuestion] = useState(null);
@@ -396,6 +404,13 @@ const DropdownPage = () => {
           />
         </Col>
       </Row>
+
+      <QuestionNavigation
+        questionNumber={questionNumber}
+        totalQuestions={totalQuestions}
+        onPrevious={onPrevious}
+        onNext={onNext}
+      />
     </div>
   );
 };
