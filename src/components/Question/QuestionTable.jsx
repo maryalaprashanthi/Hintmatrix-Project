@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import { Accordion } from "react-bootstrap";
+import { useDragDropMonitor } from "@dnd-kit/react";
 import Draggable from "./Draggable";
 import Droppable from "./Droppable";
 import useQuestionStore from "./questionStore";
@@ -9,7 +10,31 @@ import SummaryCards from "./SummaryCards";
 import { calculateFinalAccounts, data } from "./SampleData";
 import { useParams } from "react-router-dom";
 import MistakesModal from "./MistakesModal";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+// How long the pointer must rest on an account table, while it drags a row,
+// before that table opens. Without this pause, a pointer that crosses a table
+// on its way to another one makes the tables open and close rapidly.
+const HOVER_OPEN_DELAY_MS = 250;
+
+// Returns the name of the account table under the given screen point, or
+// null. elementsFromPoint also returns the elements under the dragged row.
+const accountTableAt = (x, y) => {
+  for (const element of document.elementsFromPoint(x, y)) {
+    const table = element.closest("[data-account-table]");
+    if (table) return table.dataset.accountTable;
+  }
+  return null;
+};
+
+const renderDraggable = (obj) => (
+  <Draggable
+    id={obj.id}
+    key={obj.id}
+    type={obj.type}
+    status={obj.status}
+  />
+);
 
 // Ensure you import Bootstrap CSS somewhere in your app (like index.js or App.js)
 // import 'bootstrap/dist/css/bootstrap.min.css';
@@ -31,8 +56,13 @@ const QuestionTable = () => {
 
   const totalQ = questions.length;
 
-  const debitBalances = questions.filter((q) => q.type === "debit");
-  const creditBalances = questions.filter((q) => q.type === "credit");
+  // A row that is fully placed moves out of its Debit or Credit list and
+  // into Answered, so the lists hold only the rows that are still to do.
+  const debitBalances = questions.filter((q) => q.type === "debit" && q.status !== "solved");
+  const creditBalances = questions.filter((q) => q.type === "credit" && q.status !== "solved");
+  const answeredDebits = questions.filter((q) => q.type === "debit" && q.status === "solved");
+  const answeredCredits = questions.filter((q) => q.type === "credit" && q.status === "solved");
+  const answeredCount = answeredDebits.length + answeredCredits.length;
 
   const debitTotal = debitBalances.reduce(
     (sum, q) =>
@@ -51,7 +81,89 @@ const QuestionTable = () => {
     0,
   );
 
-  const allTableNames = data.map((d) => d.name);
+
+  // The account tables are a controlled accordion. They start closed.
+  // clickedTables holds the tables the user opened with a click. Only a
+  // click closes them again. hoverTable is the one extra table that opens
+  // while a dragged row rests on it. It closes when the pointer leaves it
+  // or the drag ends.
+  const [clickedTables, setClickedTables] = useState([]);
+  const [hoverTable, setHoverTable] = useState(null);
+  const hoveredTable = useRef(null);
+  const hoverTimer = useRef(null);
+  const openTables = hoverTable && !clickedTables.includes(hoverTable)
+    ? [...clickedTables, hoverTable]
+    : clickedTables;
+
+  useEffect(() => () => clearTimeout(hoverTimer.current), []);
+
+  // Close the wrong-answer popover when the user presses anywhere outside it,
+  // for example on a row, a table or a header. The capture phase runs before
+  // dnd-kit starts a drag. A drag does not fire a click, so a click listener
+  // would miss it. Escape also closes the popover.
+  useEffect(() => {
+    const insidePopover = (target) =>
+      target instanceof Element &&
+      target.closest(".question-actions-popover, .hint-popover");
+    // A press on the row that owns the open popover is left alone, so the
+    // click that follows can toggle that popover closed.
+    const onOpenRow = (target) => {
+      const row = target instanceof Element && target.closest("[data-error-popover-row]");
+      const openId = useQuestionStore.getState().errorPopoverId;
+      return Boolean(row) && openId != null && row.dataset.errorPopoverRow === String(openId);
+    };
+    const closeOnPress = (event) => {
+      if (insidePopover(event.target) || onOpenRow(event.target)) return;
+      useQuestionStore.getState().closeErrorPopover();
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") useQuestionStore.getState().closeErrorPopover();
+    };
+    document.addEventListener("pointerdown", closeOnPress, true);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnPress, true);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
+
+  const clearHover = () => {
+    clearTimeout(hoverTimer.current);
+    hoveredTable.current = null;
+    setHoverTable(null);
+  };
+
+  useDragDropMonitor({
+    onDragStart: clearHover,
+    onDragMove(event) {
+      const { x, y } = event.operation.position.current;
+      const tableName = accountTableAt(x, y);
+      if (tableName === hoveredTable.current) return;
+      hoveredTable.current = tableName;
+      clearTimeout(hoverTimer.current);
+      hoverTimer.current = setTimeout(
+        () => setHoverTable(tableName),
+        HOVER_OPEN_DELAY_MS,
+      );
+    },
+    onDragEnd: clearHover,
+  });
+
+  // A header click opens or closes one table. React-bootstrap passes the
+  // new list of open keys. That list can also hold the hover table, so
+  // compare it with openTables to find the one table the user toggled.
+  const handleTableClick = (keys) => {
+    const nextOpen = keys ?? [];
+    const opened = nextOpen.find((key) => !openTables.includes(key));
+    const closed = openTables.find((key) => !nextOpen.includes(key));
+    if (opened) {
+      setClickedTables((current) => [...current, opened]);
+    }
+    if (closed) {
+      setClickedTables((current) => current.filter((key) => key !== closed));
+      if (closed === hoverTable) clearHover();
+    }
+  };
 
   let pendingQ = questions.filter((q) => q.status === "solved");
   let solvedQ = pendingQ.length;
@@ -90,7 +202,7 @@ const QuestionTable = () => {
             </span>
           </div>
 
-          <Accordion defaultActiveKey={["debit", "credit"]} alwaysOpen>
+          <Accordion defaultActiveKey={["debit", "credit", "answered"]} alwaysOpen>
             <Accordion.Item
               eventKey="debit"
               className="tb-accordion-item theme-debit"
@@ -102,15 +214,7 @@ const QuestionTable = () => {
                 </span>
               </Accordion.Header>
               <Accordion.Body>
-                {debitBalances.map((obj) => (
-                  <Draggable
-                    id={obj.id}
-                    key={obj.id}
-                    type={obj.type}
-                    status={obj.status}
-                    wrongAttempts={obj.wrongAttempts}
-                  />
-                ))}
+                {debitBalances.map(renderDraggable)}
               </Accordion.Body>
             </Accordion.Item>
 
@@ -125,15 +229,36 @@ const QuestionTable = () => {
                 </span>
               </Accordion.Header>
               <Accordion.Body>
-                {creditBalances.map((obj) => (
-                  <Draggable
-                    id={obj.id}
-                    key={obj.id}
-                    type={obj.type}
-                    status={obj.status}
-                    wrongAttempts={obj.wrongAttempts}
-                  />
-                ))}
+                {creditBalances.map(renderDraggable)}
+              </Accordion.Body>
+            </Accordion.Item>
+
+            <Accordion.Item
+              eventKey="answered"
+              className="tb-accordion-item theme-answered"
+            >
+              <Accordion.Header>
+                <span className="tb-accordion-title">Answered</span>
+                <span className="tb-accordion-amount">{answeredCount}</span>
+              </Accordion.Header>
+              <Accordion.Body>
+                {answeredCount === 0 && (
+                  <p className="tb-answered-empty">
+                    Rows that you place correctly move here.
+                  </p>
+                )}
+                {answeredDebits.length > 0 && (
+                  <>
+                    <div className="tb-answered-label">Debit</div>
+                    {answeredDebits.map(renderDraggable)}
+                  </>
+                )}
+                {answeredCredits.length > 0 && (
+                  <>
+                    <div className="tb-answered-label">Credit</div>
+                    {answeredCredits.map(renderDraggable)}
+                  </>
+                )}
               </Accordion.Body>
             </Accordion.Item>
           </Accordion>
@@ -155,12 +280,17 @@ const QuestionTable = () => {
           )}
           {finalAccounts.warnings.map((warning) => <span className="d-block text-warning" key={warning}>{warning}</span>)}
         </div>
-        <Accordion defaultActiveKey={allTableNames} alwaysOpen>
+        <Accordion
+          activeKey={openTables}
+          onSelect={handleTableClick}
+          alwaysOpen
+        >
           {data.map((obj, idx) => (
             <Accordion.Item
               eventKey={obj.name}
               className="acc-item mb-4"
               key={idx}
+              data-account-table={obj.name}
             >
               <Accordion.Header>
                 <span className="acc-title">{obj.name}</span>
