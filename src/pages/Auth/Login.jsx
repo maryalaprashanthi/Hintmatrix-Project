@@ -19,8 +19,9 @@ function Login() {
     }
   }, [navigate]);
 
+  const [rememberMe, setRememberMe] = useState(() => Boolean(localStorage.getItem("rememberedLoginEmail")));
   const [loginData, setLoginData] = useState({
-    email: "",
+    email: localStorage.getItem("rememberedLoginEmail") || "",
     password: "",
   });
 
@@ -39,8 +40,11 @@ function Login() {
     try {
       setError("");
 
-      const response = await LoginService.login(loginData);
+      const response = await LoginService.login({ ...loginData, email: loginData.email.trim() });
       clearPageLoadCache();
+      // Remember only the email; passwords are never saved in browser storage.
+      if (rememberMe) localStorage.setItem("rememberedLoginEmail", loginData.email.trim());
+      else localStorage.removeItem("rememberedLoginEmail");
 
 
       // Save JWT
@@ -94,6 +98,7 @@ function Login() {
                 <input
                   type="email"
                   name="email"
+                  autoComplete="username"
                   placeholder="Enter Email"
                   value={loginData.email}
                   onChange={handleChange}
@@ -107,6 +112,7 @@ function Login() {
                 <input
                   type="password"
                   name="password"
+                  autoComplete="current-password"
                   placeholder="Enter Password"
                   value={loginData.password}
                   onChange={handleChange}
@@ -116,7 +122,14 @@ function Login() {
 
               <div className="login-options">
                 <label>
-                  <input type="checkbox" /> Remember Me
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(event) => {
+                      setRememberMe(event.target.checked);
+                      if (!event.target.checked) localStorage.removeItem("rememberedLoginEmail");
+                    }}
+                  /> Remember Me
                 </label>
 
                 <a href="#">Forgot Password?</a>

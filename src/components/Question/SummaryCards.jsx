@@ -5,7 +5,7 @@ import { FaLongArrowAltDown } from "react-icons/fa";
 import StatCard from "./StatCard";
 import { CiMemoPad } from "react-icons/ci";
 
-function SummaryCards({ debit, credit, total, solved, totalScore }) {
+function SummaryCards({ debit, credit, total, solved, totalScore, showBalances = true }) {
   const summary = [
     {
       title: "Debit",
@@ -40,8 +40,8 @@ function SummaryCards({ debit, credit, total, solved, totalScore }) {
   return (
     <div className="mt-2 mb-4">
       <Row className="g-4">
-        {summary.map((item) => (
-          <Col xs={12} sm={6} lg={3} key={item.title}>
+        {summary.filter((item) => showBalances || !["Debit", "Credit"].includes(item.title)).map((item) => (
+          <Col xs={12} sm={6} lg={showBalances ? 3 : 6} key={item.title}>
             <StatCard
               icon={item.icon}
               title={item.title}

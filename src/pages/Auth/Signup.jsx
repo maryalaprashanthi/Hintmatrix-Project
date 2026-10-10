@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 import SignupService from "../../services/SignupService";
+import { PASSWORD_HELP, signupFieldErrors } from "../../utils/signupValidation";
 import "./Signup.css";
 
 function Signup() {
@@ -19,6 +21,9 @@ function Signup() {
 
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [touched, setTouched] = useState({});
+  const fieldErrors = signupFieldErrors(formData);
+  const handleBlur = (event) => setTouched((current) => ({ ...current, [event.target.name]: true }));
 
   // Password show/hide states
   const [showPassword, setShowPassword] = useState(false);
@@ -47,30 +52,24 @@ function Signup() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (isSubmitting) return;
+    setTouched({ email: true, password: true, confirmPassword: true });
+    setError("");
+    if (Object.keys(fieldErrors).length) return;
 
     // Full Name validation
     if (!/^[a-zA-Z\s]+$/.test(formData.name.trim())) {
       setError("Full Name should contain only letters and spaces.");
       return;
     }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailRegex.test(formData.email.trim())) {
-      setError("Please enter a valid email address.");
+    if (!formData.address.trim()) {
+      setError("Address is required.");
       return;
     }
 
     // Phone Number validation
     if (!/^\d{10}$/.test(formData.phoneNumber)) {
       setError("Phone Number must contain exactly 10 digits.");
-      return;
-    }
-
-    // Password validation
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match.");
       return;
     }
 
@@ -87,7 +86,7 @@ function Signup() {
       await SignupService.register({
         name: formData.name,
         address: formData.address,
-        email: formData.email,
+        email: formData.email.trim(),
         phoneNumber: formData.phoneNumber,
         password: formData.password,
       });
@@ -136,7 +135,7 @@ function Signup() {
               Create <span>Account</span>
             </h2>
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} noValidate>
               <div className="signup-input-group">
                 <label htmlFor="name">Full Name</label>
                 <input
@@ -169,11 +168,18 @@ function Signup() {
                   id="email"
                   name="email"
                   type="email"
+                  autoComplete="email"
+                  onBlur={handleBlur}
+                  aria-invalid={Boolean(touched.email && fieldErrors.email)}
+                  aria-describedby={touched.email && fieldErrors.email ? "signup-email-error" : undefined}
                   placeholder="Enter your email address"
                   value={formData.email}
                   onChange={handleChange}
                   required
                 />
+                {touched.email && fieldErrors.email && (
+                  <p id="signup-email-error" className="signup-field-error" role="alert">{fieldErrors.email}</p>
+                )}
               </div>
 
               <div className="signup-input-group">
@@ -198,6 +204,10 @@ function Signup() {
                   <input
                     id="password"
                     name="password"
+                    autoComplete="new-password"
+                    onBlur={handleBlur}
+                    aria-invalid={Boolean(touched.password && fieldErrors.password)}
+                    aria-describedby={touched.password && fieldErrors.password ? "signup-password-error" : "signup-password-help"}
                     type={showPassword ? "text" : "password"}
                     placeholder="Create a password"
                     value={formData.password}
@@ -208,25 +218,19 @@ function Signup() {
 
                   <button
                     type="button"
+                    className="signup-password-toggle"
+                    aria-pressed={showPassword}
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={
                       showPassword ? "Hide password" : "Show password"
                     }
-                    style={{
-                      position: "absolute",
-                      right: "10px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      border: "none",
-                      background: "transparent",
-                      cursor: "pointer",
-                      fontSize: "18px",
-                      padding: "5px",
-                    }}
                   >
-                    {showPassword ? "👁" : "🔒"}
+                    {showPassword ? <FiEyeOff aria-hidden="true" /> : <FiEye aria-hidden="true" />}
                   </button>
                 </div>
+                {touched.password && fieldErrors.password ? (
+                  <p id="signup-password-error" className="signup-field-error" role="alert">{fieldErrors.password}</p>
+                ) : <p id="signup-password-help" className="signup-field-help">{PASSWORD_HELP}</p>}
               </div>
 
               {/* Confirm Password */}
@@ -237,6 +241,10 @@ function Signup() {
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
+                    autoComplete="new-password"
+                    onBlur={handleBlur}
+                    aria-invalid={Boolean(touched.confirmPassword && fieldErrors.confirmPassword)}
+                    aria-describedby={touched.confirmPassword && fieldErrors.confirmPassword ? "signup-confirm-error" : undefined}
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm your password"
                     value={formData.confirmPassword}
@@ -247,27 +255,21 @@ function Signup() {
 
                   <button
                     type="button"
+                    className="signup-password-toggle"
+                    aria-pressed={showConfirmPassword}
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     aria-label={
                       showConfirmPassword
                         ? "Hide confirm password"
                         : "Show confirm password"
                     }
-                    style={{
-                      position: "absolute",
-                      right: "10px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      border: "none",
-                      background: "transparent",
-                      cursor: "pointer",
-                      fontSize: "18px",
-                      padding: "5px",
-                    }}
                   >
-                    {showConfirmPassword ? "👁" : "🔒"}
+                    {showConfirmPassword ? <FiEyeOff aria-hidden="true" /> : <FiEye aria-hidden="true" />}
                   </button>
                 </div>
+                {touched.confirmPassword && fieldErrors.confirmPassword && (
+                  <p id="signup-confirm-error" className="signup-field-error" role="alert">{fieldErrors.confirmPassword}</p>
+                )}
               </div>
 
               <label className="signup-terms">

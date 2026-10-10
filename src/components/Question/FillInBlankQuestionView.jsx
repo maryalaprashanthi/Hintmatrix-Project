@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import { getCurrentUserId } from "../../utils/user";
@@ -203,8 +203,8 @@ const getBackendBlanks = (questionRecord) => {
 const FillInBlankQuestionView = ({
   question,
   questionNumber = 1,
+  displayQuestionNumber = questionNumber,
   totalQuestions = 1,
-  completedCount = 0,
   questions = [],
   completedQuestions = {},
   onCompleted,
@@ -257,7 +257,9 @@ const FillInBlankQuestionView = ({
   );
 
   const [submitted, setSubmitted] = useState(false);
-  const [score, setScore] = useState(0);
+  const [totalScore, setTotalScore] = useState(null);
+  const [scoreError, setScoreError] = useState("");
+  const scoreRequest = useRef({ version: 0 });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [restoredReady, setRestoredReady] = useState(false);
@@ -266,10 +268,31 @@ const FillInBlankQuestionView = ({
   const [displayOptions, setDisplayOptions] = useState([]);
   const shuffledOptionsKey = useRef(null);
 
+  // Same overall earned-marks endpoint used by drag/drop and journal views.
+  const loadTotalScore = useCallback(async () => {
+    const tracker = scoreRequest.current;
+    const request = ++tracker.version;
+    setScoreError("");
+    try {
+      const marks = await QuestionAnswerService.getOverallMarks(getCurrentUserId());
+      if (request === tracker.version) setTotalScore(Number(marks) || 0);
+    } catch {
+      if (request === tracker.version) {
+        setScoreError("Unable to refresh total score. Reopen the question to retry.");
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const tracker = scoreRequest.current;
+    setTotalScore(null);
+    if (questionRecord.questionId) void loadTotalScore();
+    return () => { tracker.version++; };
+  }, [questionRecord.questionId, loadTotalScore]);
+
   useEffect(() => {
     setAnswers(Array.from({ length: blankCount }, () => ""));
     setSubmitted(false);
-    setScore(0);
     setDraggedAnswer("");
   }, [questionRecord.questionId, blankCount]);
 
@@ -295,7 +318,6 @@ const FillInBlankQuestionView = ({
         savedAnswers.current = restored.saved;
         setAnswers(restored.answers);
         setSubmitted(restored.submitted);
-        setScore(restored.score);
         setRestoredReady(true);
 
         if (restored.submitted) {
@@ -428,7 +450,6 @@ const FillInBlankQuestionView = ({
         if (isCorrect) correct += 1;
       }
 
-      setScore(correct);
       setSubmitted(true);
       onCompleted?.(questionRecord.questionId, correct);
     } catch (submitError) {
@@ -438,6 +459,7 @@ const FillInBlankQuestionView = ({
 
       console.error("Failed to save fill-in-the-blanks answer:", submitError);
     } finally {
+      await loadTotalScore();
       setSaving(false);
     }
   };
@@ -457,7 +479,7 @@ const FillInBlankQuestionView = ({
       savedAnswers.current = {};
       setAnswers(Array.from({ length: blankCount }, () => ""));
       setSubmitted(false);
-      setScore(0);
+      await loadTotalScore();
       setDraggedAnswer("");
     } catch {
       setError("Unable to reset your saved answers. Please try again.");
@@ -500,12 +522,6 @@ const FillInBlankQuestionView = ({
           .toLowerCase(),
     );
   };
-
-  const finalScore = submitted
-    ? Array.from({ length: blankCount }, (_, index) => index).filter((index) =>
-        answers[index] ? isAnswerCorrect(index) : false,
-      ).length
-    : score;
 
   const getSlotStateClass = (index) => {
     if (!submitted) return "";
@@ -559,6 +575,7 @@ const FillInBlankQuestionView = ({
         </div>
       )}
 
+      {scoreError && <div className="alert alert-warning" role="alert">{scoreError}</div>}
       <header className="matching-practice-header">
         <div>
           <div className="matching-eyebrow">STUDENT PRACTICE</div>
@@ -569,17 +586,9 @@ const FillInBlankQuestionView = ({
         </div>
 
         <div className="matching-stat-cards">
-          <div className="matching-stat-card matching-progress-card">
-            <span>PROGRESS</span>
-            <strong>
-              {completedCount}/{totalQuestions}
-            </strong>
-            <small>{Math.max(totalQuestions - completedCount, 0)} left</small>
-          </div>
-
-          <div className="matching-stat-card matching-score-card">
+          <div className="matching-stat-card matching-score-card" role="status" aria-live="polite">
             <span>TOTAL SCORE</span>
-            <strong>{finalScore}</strong>
+            <strong>{totalScore ?? "—"}</strong>
           </div>
         </div>
       </header>
@@ -616,7 +625,7 @@ const FillInBlankQuestionView = ({
             </div>
           </div>
 
-          <div className="fill-blank-question">{questionContent}</div>
+          <div className="fill-blank-question">Q{displayQuestionNumber}. {questionContent}</div>
 
           <div className="fill-blank-answer-bank">
             <strong>Drag the correct answers into the blanks</strong>
@@ -654,16 +663,6 @@ const FillInBlankQuestionView = ({
 
           {submitted && (
             <div className="fill-blank-results">
-              <div className="fill-blank-result fill-blank-result-summary">
-                <h2>Result</h2>
-                <strong>
-                  {finalScore} / {blankCount}
-                </strong>
-                <p>
-                  You got {finalScore} out of {blankCount} correct.
-                </p>
-              </div>
-
               <h2 className="fill-blank-review-title">Answer Review</h2>
 
               <div className="fill-blank-review-list">

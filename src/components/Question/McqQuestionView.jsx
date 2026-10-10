@@ -1,28 +1,49 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Button, Card, Form } from "react-bootstrap";
-import { FaPaperPlane, FaRedo } from "react-icons/fa";
+import { FaBalanceScale, FaPaperPlane, FaRedo } from "react-icons/fa";
 import Header from "./Header";
+import StatCard from "./StatCard";
 import McqQuestionService from "../../services/McqQuestionService";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
-import QuestionService from "../../services/QuestionService";
 import useQuestionStore from "./questionStore";
 import { getCurrentUserId } from "../../utils/user";
 import { restoreMcqAnswer } from "../../utils/questionAttemptState";
 import "./McqQuestionView.css";
 import "./FillInBlankQuestionView.css";
 
-export default function McqQuestionView({ questionId, questionType }) {
-  const navigate = useNavigate();
+export default function McqQuestionView({ questionId, questionType, questionNumber = 1, displayQuestionNumber = questionNumber, totalQuestions = 1, onPrevious, onNext }) {
   const metadata = useQuestionStore((state) => state.question);
   const [question, setQuestion] = useState(null);
   const [selected, setSelected] = useState([]);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [nextQuestionId, setNextQuestionId] = useState(null);
-  const [previousQuestionId, setPreviousQuestionId] = useState(null);
+  const [totalScore, setTotalScore] = useState(null);
+  const [scoreError, setScoreError] = useState("");
+  const scoreRequest = useRef({ version: 0 });
   const multiple = questionType.endsWith("MULTIPLE_CHOICE");
+
+  // Same persisted, user-wide earned marks used by drag-and-drop.
+  const loadTotalScore = useCallback(async () => {
+    const tracker = scoreRequest.current;
+    const request = ++tracker.version;
+    setScoreError("");
+    try {
+      const marks = await QuestionAnswerService.getOverallMarks(getCurrentUserId());
+      if (request === tracker.version) setTotalScore(Number(marks) || 0);
+    } catch {
+      if (request === tracker.version) {
+        setScoreError("Unable to refresh total score. Reopen the question to retry.");
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const tracker = scoreRequest.current;
+    setTotalScore(null);
+    if (questionId) void loadTotalScore();
+    return () => { tracker.version++; };
+  }, [questionId, loadTotalScore]);
 
   useEffect(() => {
     let active = true;
@@ -59,35 +80,6 @@ export default function McqQuestionView({ questionId, questionType }) {
     };
   }, [questionId, multiple]);
 
-  useEffect(() => {
-    if (!question?.courseId || !question?.chapterId || !question?.topicId)
-      return;
-    let active = true;
-    QuestionService.getQuestionsByMapping(
-      question.courseId,
-      question.chapterId,
-      question.topicId,
-    )
-      .then(({ data }) => {
-        const questions = data.filter((item) => item.activeRow !== false);
-        const index = questions.findIndex(
-          (item) => String(item.questionId) === String(questionId),
-        );
-        if (active) {
-          setNextQuestionId(
-            index >= 0 ? (questions[index + 1]?.questionId ?? null) : null,
-          );
-          setPreviousQuestionId(
-            index > 0 ? questions[index - 1].questionId : null,
-          );
-        }
-      })
-      .catch((err) => console.error("Failed to load next question:", err));
-    return () => {
-      active = false;
-    };
-  }, [question, questionId]);
-
   const submit = async () => {
     if (!selected.length || busy || result) return;
     setBusy(true);
@@ -111,6 +103,7 @@ export default function McqQuestionView({ questionId, questionType }) {
           "Unable to save your answer.",
       );
     } finally {
+      await loadTotalScore();
       setBusy(false);
     }
   };
@@ -132,6 +125,7 @@ export default function McqQuestionView({ questionId, questionType }) {
     } catch {
       setError("Unable to reset the answer. Please try again.");
     } finally {
+      await loadTotalScore();
       setBusy(false);
     }
   };
@@ -148,6 +142,7 @@ export default function McqQuestionView({ questionId, questionType }) {
   return (
     <div>
       <Header
+        questionNumber={displayQuestionNumber}
         question={{ ...metadata, ...question }}
         questionTypeLabel={
           multiple ? "MCQ Multiple Choice" : "MCQ Single Choice"
@@ -174,6 +169,18 @@ export default function McqQuestionView({ questionId, questionType }) {
         }
       />
       {error && <Alert variant="danger">{error}</Alert>}
+      {scoreError && <Alert variant="warning">{scoreError}</Alert>}
+      <div className="row mb-4">
+        <div className="col-12 col-md-6 col-xl-3" role="status" aria-live="polite">
+          <StatCard
+            icon={<FaBalanceScale />}
+            title="Total Score"
+            amount={totalScore ?? "—"}
+            subtitle="Total marks earned"
+            color="teritary"
+          />
+        </div>
+      </div>
       <Card className="shadow-sm">
         <Card.Body>
           <Card.Title>Answer options</Card.Title>
@@ -235,8 +242,8 @@ export default function McqQuestionView({ questionId, questionType }) {
         <div className="matching-nav-left">
           <Button
             className="matching-prev-btn"
-            disabled={busy || previousQuestionId == null}
-            onClick={() => navigate(`/questions/${previousQuestionId}`)}
+            disabled={busy || questionNumber <= 1 || typeof onPrevious !== "function"}
+            onClick={onPrevious}
           >
             ← Previous 
           </Button>
@@ -245,8 +252,8 @@ export default function McqQuestionView({ questionId, questionType }) {
         <div className="matching-nav-right">
           <Button
             className="matching-next-btn"
-            disabled={busy || nextQuestionId == null}
-            onClick={() => navigate(`/questions/${nextQuestionId}`)}
+            disabled={busy || questionNumber >= totalQuestions || typeof onNext !== "function"}
+            onClick={onNext}
           >
             Next  →
           </Button>

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import useQuestionStore from "./questionStore";
 import { getCurrentUserId } from "../../utils/user";
@@ -8,8 +8,8 @@ import "./MatchingQuestionView.css";
 const MatchingQuestionView = ({
   question,
   questionNumber = 1,
+  displayQuestionNumber = questionNumber,
   totalQuestions = 20,
-  completedCount = 0,
   onCompleted,
   onNext,
   onPrevious,
@@ -35,11 +35,35 @@ const MatchingQuestionView = ({
   const [dropTargetAnswerId, setDropTargetAnswerId] = useState(null);
 
   const [submitted, setSubmitted] = useState(false);
-  const [score, setScore] = useState(0);
+  const [totalScore, setTotalScore] = useState(null);
+  const [scoreError, setScoreError] = useState("");
+  const scoreRequest = useRef({ version: 0 });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [restoredReady, setRestoredReady] = useState(false);
   const savedAnswers = useRef({});
+
+  // Overall earned marks use the same backend endpoint as journal/dropdown.
+  const loadTotalScore = useCallback(async () => {
+    const tracker = scoreRequest.current;
+    const request = ++tracker.version;
+    setScoreError("");
+    try {
+      const marks = await QuestionAnswerService.getOverallMarks(getCurrentUserId());
+      if (request === tracker.version) setTotalScore(Number(marks) || 0);
+    } catch {
+      if (request === tracker.version) {
+        setScoreError("Unable to refresh total score. Reopen the question to retry.");
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const tracker = scoreRequest.current;
+    setTotalScore(null);
+    if (question?.questionId) void loadTotalScore();
+    return () => { tracker.version++; };
+  }, [question?.questionId, loadTotalScore]);
 
   // =========================================================
   // SHUFFLE
@@ -67,7 +91,6 @@ const MatchingQuestionView = ({
       setShuffledColumnB([]);
       setSelectedAnswers({});
       setSubmitted(false);
-      setScore(0);
       setDraggedQuestion(null);
       setDropTargetAnswerId(null);
       setCurrentScore(0);
@@ -87,7 +110,6 @@ const MatchingQuestionView = ({
     // Reset
     setSelectedAnswers({});
     setSubmitted(false);
-    setScore(0);
     setDraggedQuestion(null);
     setDropTargetAnswerId(null);
     setCurrentScore(0);
@@ -113,7 +135,6 @@ const MatchingQuestionView = ({
         const restored = restoreMatchingAnswers(events, question.pairs);
         savedAnswers.current = restored.saved;
         setSelectedAnswers(restored.answers);
-        setScore(restored.score);
         setCurrentScore(restored.score);
         setSubmitted(restored.submitted);
         setRestoredReady(true);
@@ -271,9 +292,9 @@ const MatchingQuestionView = ({
       setSubmitted(false);
       setDraggedQuestion(null);
       setDropTargetAnswerId(null);
-      setScore(0);
       setCurrentScore(0);
       setShuffledColumnB(shuffleArray(pairs));
+      await loadTotalScore();
     } catch {
       setError("Unable to reset your saved answers. Please try again.");
     } finally {
@@ -339,7 +360,6 @@ const MatchingQuestionView = ({
         }
       }
 
-      setScore(correctCount);
       setCurrentScore(correctCount);
       setSubmitted(true);
 
@@ -353,6 +373,8 @@ const MatchingQuestionView = ({
         "Unable to save all matches. Your saved matches are retained; please try again.",
       );
     } finally {
+      // Also refresh after a partial save: committed answers may have earned marks.
+      await loadTotalScore();
       setSaving(false);
     }
   };
@@ -381,7 +403,7 @@ const MatchingQuestionView = ({
     return (
       <div className="matching-empty">
         <div className="matching-empty-card">
-          <h3>{question.questionText}</h3>
+          <h3>Q{displayQuestionNumber}. {question.questionText}</h3>
           <p>No matching pairs found.</p>
         </div>
       </div>
@@ -399,6 +421,7 @@ const MatchingQuestionView = ({
           {error}
         </div>
       )}
+      {scoreError && <div className="alert alert-warning" role="alert">{scoreError}</div>}
 
       {/* HEADER */}
       <div className="matching-practice-header">
@@ -413,17 +436,9 @@ const MatchingQuestionView = ({
         </div>
 
         <div className="matching-stat-cards">
-          <div className="matching-stat-card matching-progress-card">
-            <span>PROGRESS</span>
-            <strong>
-              {completedCount}/{totalQuestions}
-            </strong>
-            <small>{totalQuestions - completedCount} left</small>
-          </div>
-
-          <div className="matching-stat-card matching-score-card">
+          <div className="matching-stat-card matching-score-card" role="status" aria-live="polite">
             <span>TOTAL SCORE</span>
-            <strong>{score}</strong>
+            <strong>{totalScore ?? "—"}</strong>
           </div>
         </div>
       </div>
@@ -478,7 +493,7 @@ const MatchingQuestionView = ({
           </div>
 
           {/* QUESTION TEXT */}
-          <div className="matching-question-title">{question.questionText}</div>
+          <div className="matching-question-title">Q{displayQuestionNumber}. {question.questionText}</div>
 
           {/* INSTRUCTION */}
           {/* <div className="matching-instruction">
@@ -651,23 +666,6 @@ const MatchingQuestionView = ({
               )}
             </div>
           </div>
-
-          {/* RESULT */}
-          {submitted && (
-            <div className="matching-result">
-              <div className="result-title">Result</div>
-
-              <div className="result-score">
-                {score} / {pairs.length}
-              </div>
-
-              <div className="result-message">
-                {score === pairs.length
-                  ? "Excellent! All answers are correct."
-                  : `You got ${score} out of ${pairs.length} correct.`}
-              </div>
-            </div>
-          )}
 
           {/* ANSWER REVIEW */}
           {submitted && (

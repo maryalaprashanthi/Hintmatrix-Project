@@ -1,6 +1,6 @@
 import { DragDropProvider } from "@dnd-kit/react";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import QuestionTable from "./QuestionTable";
 import useQuestionStore, { getRuleAnswers } from "./questionStore";
@@ -20,6 +20,7 @@ import FillInBlankQuestionService from "../../services/FillInBlankQuestionServic
 
 import { data, normalizeFinalAccountTarget } from "./SampleData";
 import { getCurrentUserId } from "../../utils/user";
+import { buildQuestionSequence, getQuestionNavigationIds, questionDisplayNumber, questionIndex } from "../../utils/questionNavigation";
 
 import QuestionNavigation from "./QuestionNavigation";
 import "./QuestionPage.css";
@@ -101,6 +102,7 @@ const answerMap = {
 const QuestionPage = () => {
   const { questionId } = useParams();
   const navigate = useNavigate();
+  const { state: navigationState } = useLocation();
 
   const {
     moveQuestion,
@@ -128,6 +130,7 @@ const QuestionPage = () => {
   ].includes(questionType);
 
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [placementError, setPlacementError] = useState("");
 
   const [matchingQuestion, setMatchingQuestion] = useState(null);
@@ -136,7 +139,10 @@ const QuestionPage = () => {
   const [testQuestions, setTestQuestions] = useState([]);
 
   // Current question index
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const currentQuestionIndex = questionIndex(testQuestions, questionId);
+  const displayQuestionNumber = questionDisplayNumber(
+    testQuestions, questionId, navigationState?.questionNavigationNumbers,
+  );
 
   // Completed questions
   const [completedQuestions, setCompletedQuestions] = useState({});
@@ -147,7 +153,7 @@ const QuestionPage = () => {
   // TOTAL QUESTIONS
   // ===========================================================
 
-  const totalQuestions = testQuestions.length > 0 ? testQuestions.length : 20;
+  const totalQuestions = testQuestions.length || 1;
 
   // ===========================================================
   // CURRENT QUESTION
@@ -170,14 +176,18 @@ const QuestionPage = () => {
   // ===========================================================
 
   useEffect(() => {
+    let active = true;
+    const isCurrent = () => active;
     const init = async () => {
       setIsLoading(true);
+      setLoadError("");
       setPlacementError("");
 
       try {
-        const response = await loadQuestions(questionId);
+        const response = await loadQuestions(questionId, isCurrent);
 
-        if (!response?.data) {
+        if (!active || !response?.data) {
+          if (active) setLoadError("Unable to load this question. Please refresh to retry.");
           return;
         }
 
@@ -189,6 +199,7 @@ const QuestionPage = () => {
         if (!type && questionTypeId) {
           const typeResponse =
             await QuestionTypeService.getById(questionTypeId);
+          if (!active) return;
 
           type = getQuestionType(typeResponse?.data);
         }
@@ -203,6 +214,7 @@ const QuestionPage = () => {
             const matchingResponse = await MatchingQuestionService.getById(
               questionData.questionId ?? questionId,
             );
+            if (!active) return;
 
             questionData = {
               ...questionData,
@@ -222,6 +234,7 @@ const QuestionPage = () => {
             const fillBlankResponse = await FillInBlankQuestionService.getById(
               questionData.questionId ?? questionId,
             );
+            if (!active) return;
 
             questionData = {
               ...questionData,
@@ -236,44 +249,50 @@ const QuestionPage = () => {
           }
         }
 
+        if (!active) return;
         setQuestionType(type);
 
         // -----------------------------------------------------
         // Load all questions for navigation
         // -----------------------------------------------------
 
-        await loadTestQuestions(questionData);
+        await loadTestQuestions(questionData, isCurrent);
+        if (!active) return;
 
         // -----------------------------------------------------
         // Restore drag/drop answers
         // -----------------------------------------------------
 
         if (type === "DRAG_AND_DROP") {
-          await loadAnsweredQuestions();
+          await loadAnsweredQuestions(isCurrent);
         }
       } catch (error) {
         console.error("Failed to initialize question:", error);
+        if (active) setLoadError("Unable to load this question. Please refresh to retry.");
       } finally {
-        setIsLoading(false);
+        if (active) setIsLoading(false);
       }
     };
 
     init();
-  }, [questionId]);
+    return () => { active = false; };
+  }, [questionId, navigationState]);
 
   // ===========================================================
   // LOAD QUESTION
   // ===========================================================
 
-  const loadQuestions = async (qId) => {
+  const loadQuestions = async (qId, isCurrent = () => true) => {
     try {
       const response = await QuestionService.getQuestionById(qId || questionId);
+      if (!isCurrent()) return null;
 
       const allStrings = data.flatMap((obj) =>
         obj.headers.map((header) => `${obj.name}-${header}`),
       );
 
       await setQuestions([response.data]);
+      if (!isCurrent()) return null;
 
       setMatchingQuestion(response.data);
 
@@ -291,8 +310,15 @@ const QuestionPage = () => {
   // LOAD TEST QUESTIONS
   // ===========================================================
 
-  const loadTestQuestions = async (currentQuestionData) => {
+  const loadTestQuestions = async (currentQuestionData, isCurrent = () => true) => {
     try {
+      const navigationIds = getQuestionNavigationIds(
+        navigationState?.questionNavigationIds, currentQuestionData?.questionId,
+      );
+      if (navigationIds.length > 0) {
+        setTestQuestions(buildQuestionSequence([], currentQuestionData, navigationIds));
+        return;
+      }
       const courseId = currentQuestionData?.courseId;
 
       const chapterId = currentQuestionData?.chapterId;
@@ -303,7 +329,6 @@ const QuestionPage = () => {
       if (!courseId || !chapterId || !topicId) {
         setTestQuestions([currentQuestionData]);
 
-        setCurrentQuestionIndex(0);
 
         return;
       }
@@ -313,6 +338,7 @@ const QuestionPage = () => {
         chapterId,
         topicId,
       );
+      if (!isCurrent()) return;
 
       const result = Array.isArray(response?.data)
         ? response.data
@@ -320,65 +346,11 @@ const QuestionPage = () => {
           ? response
           : [];
 
-      // -------------------------------------------------------
-      // Remove inactive questions if activeRow exists
-      // -------------------------------------------------------
-
-      const activeQuestions = result.filter(
-        (question) => question?.activeRow !== false,
-      );
-
-      // -------------------------------------------------------
-      // If API didn't return the current question,
-      // add it.
-      // -------------------------------------------------------
-
-      const containsCurrent = activeQuestions.some(
-        (question) =>
-          Number(question.questionId) ===
-          Number(currentQuestionData.questionId),
-      );
-
-      let finalQuestions = activeQuestions.map((question) =>
-        Number(question.questionId) === Number(currentQuestionData.questionId)
-          ? { ...question, ...currentQuestionData }
-          : question,
-      );
-
-      // if (!containsCurrent) {
-      //   finalQuestions = [currentQuestionData, ...finalQuestions];
-      // }
-      if (!containsCurrent) {
-        // Keep the questions returned by the mapping API in their existing order.
-        // Append the current question instead of placing it at index 0,
-        // which would disable Previous navigation.
-        finalQuestions = [...finalQuestions, currentQuestionData];
-      }
-      // -------------------------------------------------------
-      // Keep maximum 20 questions for this test UI
-      // -------------------------------------------------------
-
-      finalQuestions = finalQuestions.slice(0, 20);
-
-      setTestQuestions(finalQuestions);
-
-      // -------------------------------------------------------
-      // Find current question
-      // -------------------------------------------------------
-
-      const currentIndex = finalQuestions.findIndex(
-        (question) =>
-          Number(question.questionId) ===
-          Number(currentQuestionData.questionId),
-      );
-
-      setCurrentQuestionIndex(currentIndex >= 0 ? currentIndex : 0);
+      setTestQuestions(buildQuestionSequence(result, currentQuestionData));
     } catch (error) {
       console.error("Failed to load test questions:", error);
 
-      setTestQuestions([currentQuestionData]);
-
-      setCurrentQuestionIndex(0);
+      if (isCurrent()) setTestQuestions([currentQuestionData]);
     }
   };
 
@@ -386,12 +358,14 @@ const QuestionPage = () => {
   // LOAD ANSWERED QUESTIONS
   // ===========================================================
 
-  const loadAnsweredQuestions = async () => {
+  const loadAnsweredQuestions = async (isCurrent = () => true) => {
     const correctAnswers =
       await QuestionAnswerService.getAnswersByUserAndQuestion(
         getCurrentUserId(),
         questionId,
       );
+
+    if (!isCurrent()) return;
 
     const savedAnswers = Array.isArray(correctAnswers) ? correctAnswers : [];
 
@@ -461,19 +435,26 @@ const QuestionPage = () => {
   // ===========================================================
 
   const handleSelectQuestion = (index) => {
+    if (isLoading || currentQuestionIndex < 0 ||
+        String(matchingQuestion?.questionId) !== String(questionId)) return;
     if (index < 0 || index >= testQuestions.length) {
       return;
     }
 
     const target = testQuestions[index];
 
-    if (!target?.questionId) {
+    if (!target?.questionId || String(target.questionId) === String(questionId)) {
       return;
     }
 
     setCurrentScore(0);
 
-    navigate(`/questions/${target.questionId}`);
+    navigate(`/questions/${target.questionId}`, {
+      state: {
+        questionNavigationIds: testQuestions.map((row) => String(row.questionId)),
+        questionNavigationNumbers: navigationState?.questionNavigationNumbers,
+      },
+    });
   };
 
   // ===========================================================
@@ -481,7 +462,7 @@ const QuestionPage = () => {
   // ===========================================================
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < testQuestions.length - 1) {
+    if (currentQuestionIndex >= 0 && currentQuestionIndex < testQuestions.length - 1) {
       handleSelectQuestion(currentQuestionIndex + 1);
     }
   };
@@ -510,7 +491,8 @@ const QuestionPage = () => {
   // LOADING
   // ===========================================================
 
-  if (isLoading) {
+  if (loadError && !isLoading) return <div className="alert alert-danger" role="alert">{loadError}</div>;
+  if (isLoading || String(matchingQuestion?.questionId) !== String(questionId)) {
     return <div className="question-page-loading">Loading question...</div>;
   }
 
@@ -542,6 +524,7 @@ const QuestionPage = () => {
   if (questionType === "JOURNAL") {
     return (
       <JournalPage
+        displayQuestionNumber={displayQuestionNumber}
         questionNumber={currentQuestionIndex + 1}
         totalQuestions={totalQuestions}
         onPrevious={handlePreviousQuestion}
@@ -562,6 +545,7 @@ const QuestionPage = () => {
   if (isMcq) {
     return (
       <McqQuestionView
+        displayQuestionNumber={displayQuestionNumber}
         key={questionId}
         questionId={questionId}
         questionType={questionType}
@@ -579,6 +563,7 @@ const QuestionPage = () => {
   if (questionType === "DROPDOWN") {
     return (
       <DropdownPage
+        displayQuestionNumber={displayQuestionNumber}
         questionNumber={currentQuestionIndex + 1}
         totalQuestions={totalQuestions}
         onPrevious={handlePreviousQuestion}
@@ -590,6 +575,7 @@ const QuestionPage = () => {
   if (questionType === "FILL_IN_THE_BLANKS") {
     return (
       <FillInBlankQuestionView
+        displayQuestionNumber={displayQuestionNumber}
         key={(currentQuestion || matchingQuestion)?.questionId}
         question={currentQuestion || matchingQuestion}
         questionNumber={currentQuestionIndex + 1}
@@ -613,6 +599,7 @@ const QuestionPage = () => {
   if (questionType === "MATCH_THE_FOLLOWING") {
     return (
       <MatchingQuestionView
+        displayQuestionNumber={displayQuestionNumber}
         key={(currentQuestion || matchingQuestion)?.questionId}
         question={currentQuestion || matchingQuestion}
         questionNumber={currentQuestionIndex + 1}
@@ -850,7 +837,7 @@ const QuestionPage = () => {
           {placementError}
         </div>
       )}
-      <QuestionTable />
+      <QuestionTable questionNumber={displayQuestionNumber} />
       <QuestionNavigation
         questionNumber={currentQuestionIndex + 1}
         totalQuestions={totalQuestions}

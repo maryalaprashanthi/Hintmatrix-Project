@@ -53,6 +53,7 @@ const getRuleConditions = (rule) =>
 
 const DropdownPage = ({
   questionNumber = 1,
+  displayQuestionNumber = questionNumber,
   totalQuestions = 1,
   onPrevious,
   onNext,
@@ -367,6 +368,7 @@ const DropdownPage = ({
     <div>
       <Row>
         <Header
+          questionNumber={displayQuestionNumber}
           question={question}
           answeredData={answeredData}
           setAnsweredData={setAnsweredData}
@@ -374,15 +376,12 @@ const DropdownPage = ({
         />
       </Row>
 
-      <Row>
-        <SummaryCards
-          debit={0}
-          credit={0}
-          total={question.questionAttributes?.length || 0}
-          solved={solved}
-          totalScore={totalScore}
-        />
-      </Row>
+      <SummaryCards
+        showBalances={false}
+        total={question.questionAttributes?.length || 0}
+        solved={solved}
+        totalScore={totalScore}
+      />
 
       <Row className="align-items-start">
         <Col md={6}>
