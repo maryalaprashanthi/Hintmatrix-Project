@@ -11,8 +11,12 @@ import QuestionTypeService from "../../services/QuestionTypeService";
 import TableAttributeService from "../../services/TableAttributeService";
 import TableHeaderService from "../../services/TableHeaderService";
 import QuestionService from "../../services/QuestionService";
+import CreateDragAndDropWithAdj from "./CreateDragAndDropWithAdj";
+import { emptyAdjustmentForm, hydrateAdjustmentForm, validateAdjustmentForm, buildAdjustmentAttributes } from "./adjustmentQuestionForm";
 import MatchingQuestionService from "../../services/MatchingQuestionService";
 import McqQuestionService from "../../services/McqQuestionService";
+import FillInBlankQuestionService from "../../services/FillInBlankQuestionService";
+import { normalizeQuestionType, isMatchingQuestionType, isFillBlankQuestionType } from "../../utils/questionType";
 
 import {
   FaTimes,
@@ -25,12 +29,7 @@ import {
 
 import "./AddQuestionModal.css";
 
-const mcqType = (name) =>
-  String(name || "")
-    .trim()
-    .toUpperCase()
-    .replace(/[\s-]+/g, "_")
-    .replace(/^MCQ_/, "");
+const mcqType = normalizeQuestionType;
 const isMcqType = (name) =>
   ["SINGLE_CHOICE", "MULTIPLE_CHOICE"].includes(mcqType(name));
 
@@ -49,11 +48,19 @@ function AddQuestionModal({
   const [topicId, setTopicId] = useState(null);
   const [questionTypeId, setQuestionTypeId] = useState(null);
   const [questionText, setQuestionText] = useState("");
+  const [adjustmentForm, setAdjustmentForm] = useState(emptyAdjustmentForm);
+  const [adjustmentAttributes, setAdjustmentAttributes] = useState([]);
+  const isAdjustmentQuestion = normalizeQuestionType(questionTypeId?.label) === "DRAG_AND_DROP_WITH_ADJ";
   const [mcqOptions, setMcqOptions] = useState([]);
   const [marks, setMarks] = useState(1);
   const [mcqLoading, setMcqLoading] = useState(false);
   const [mcqLoadError, setMcqLoadError] = useState("");
   const [mcqSaving, setMcqSaving] = useState(false);
+  const [detailsLoading, setDetailsLoading] = useState(Boolean(initialData?.questionId));
+  const [detailsError, setDetailsError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [blankAnswers, setBlankAnswers] = useState([]);
+  const isFillBlankQuestion = isFillBlankQuestionType(questionTypeId?.label);
   const isMcqQuestion = isMcqType(questionTypeId?.label);
   const isMultipleChoice = mcqType(questionTypeId?.label) === "MULTIPLE_CHOICE";
 
@@ -268,6 +275,7 @@ function AddQuestionModal({
   const loadTableAttributes = async () => {
     try {
       const response = await TableAttributeService.getRuleAttributes();
+      setAdjustmentAttributes(response.data);
 
       console.log("TABLE ATTRIBUTE API RESPONSE:", response);
 
@@ -380,6 +388,9 @@ function AddQuestionModal({
 
     const loadQuestionDetails = async () => {
       if (!initialData?.questionId) {
+        setDetailsLoading(false);
+        setDetailsError("");
+        setBlankAnswers([{ answerText: "", blankNumber: 1, isCorrect: true }]);
         setAttributes([
           {
             debitBalance: "",
@@ -401,6 +412,8 @@ function AddQuestionModal({
         return;
       }
 
+      setDetailsLoading(true);
+      setDetailsError("");
       try {
         // =====================================================
         // LOAD COMMON QUESTION DETAILS
@@ -413,6 +426,7 @@ function AddQuestionModal({
         const question = response.data || initialData;
 
         const questionAttributes = question.questionAttributes || [];
+        setAdjustmentForm(hydrateAdjustmentForm(question));
 
         const isCreditAttribute = (attribute) => getQuestionAttributeSide(attribute) === "credit";
 
@@ -441,15 +455,30 @@ function AddQuestionModal({
         // LOAD MATCHING PAIRS
         // =====================================================
 
-        if (Number(loadedQuestionTypeId) === 6) {
-          try {
+        const loadedType = question.questionType ?? questionTypeOptions.find(
+          (option) => option.value === Number(loadedQuestionTypeId),
+        )?.label;
+        if (isFillBlankQuestionType(loadedType)) {
+          const { data } = await FillInBlankQuestionService.getById(initialData.questionId);
+          if (cancelled) return;
+          if (!Array.isArray(data.answers) || !data.answers.length) {
+            throw new Error("Blank answers were not returned by the server.");
+          }
+          setBlankAnswers(data.answers.map((answer) => ({
+            ...answer,
+            isCorrect: answer.isCorrect === true || answer.isCorrect === "true",
+          })));
+        }
+        if (isMatchingQuestionType(loadedType)) {
             const matchingResponse = await MatchingQuestionService.getById(
               initialData.questionId,
             );
 
             const matchingQuestion = matchingResponse.data;
-
-            if (!cancelled && Array.isArray(matchingQuestion?.pairs)) {
+            if (cancelled) return;
+            if (!Array.isArray(matchingQuestion?.pairs) || !matchingQuestion.pairs.length) {
+              throw new Error("Matching pairs were not returned by the server.");
+            }
               setMatchingPairs(
                 matchingQuestion.pairs.map((pair, index) => ({
                   pairId: pair.pairId ?? null,
@@ -461,10 +490,6 @@ function AddQuestionModal({
                   displayOrder: pair.displayOrder ?? index + 1,
                 })),
               );
-            }
-          } catch (matchingError) {
-            console.error("Matching pairs load error:", matchingError);
-          }
         }
 
         // =====================================================
@@ -539,6 +564,9 @@ function AddQuestionModal({
         );
       } catch (error) {
         console.error("Question details load error:", error);
+        if (!cancelled) setDetailsError("Unable to load complete question details. Close and reopen the form.");
+      } finally {
+        if (!cancelled) setDetailsLoading(false);
       }
     };
 
@@ -552,21 +580,6 @@ function AddQuestionModal({
   // =========================================================
   // MATCHING QUESTION CHECK
   // =========================================================
-
-  const isMatchingQuestionType = (option) => {
-    const typeName = String(option?.label ?? "")
-      .trim()
-      .toUpperCase()
-      .replace(/\s+/g, "_");
-
-    return (
-      Number(option?.value) === 6 ||
-      typeName === "MATCHING" ||
-      typeName === "MATCH_THE_FOLLOWING" ||
-      typeName.includes("MATCHING") ||
-      typeName.includes("MATCH_THE_FOLLOWING")
-    );
-  };
 
   const isMatchingQuestion = isMatchingQuestionType(questionTypeId);
 
@@ -677,7 +690,7 @@ function AddQuestionModal({
   // =========================================================
 
   const handleSave = async () => {
-    if (mcqSaving) return;
+    if (mcqSaving || saving || detailsLoading || detailsError) return;
     // =======================================================
     // REQUIRED FIELD VALIDATION
     // =======================================================
@@ -698,6 +711,42 @@ function AddQuestionModal({
     // =======================================================
     // MATCHING QUESTION
     // =======================================================
+
+    if (isFillBlankQuestion) {
+      const groups = new Map();
+      for (const answer of blankAnswers) {
+        const number = Number(answer.blankNumber);
+        if (!answer.answerText?.trim() || !Number.isInteger(number) || number < 1) {
+          alert("Enter an answer and a positive blank number for every option.");
+          return;
+        }
+        groups.set(number, (groups.get(number) || false) || answer.isCorrect);
+      }
+      if (!groups.size || [...groups.values()].some((correct) => !correct)) {
+        alert("Every blank needs at least one correct answer.");
+        return;
+      }
+      setSaving(true);
+      try {
+        const payload = {
+          courseId: Number(courseId.value), subjectId: Number(subjectId.value),
+          chapterId: Number(chapterId.value), topicId: Number(topicId.value),
+          questionTypeId: Number(questionTypeId.value), questionText: questionText.trim(),
+          answers: blankAnswers.map((answer, index) => ({
+            ...answer, answerText: answer.answerText.trim(),
+            blankNumber: Number(answer.blankNumber), displayOrder: index + 1,
+          })),
+        };
+        const response = initialData?.questionId
+          ? await FillInBlankQuestionService.update(initialData.questionId, payload)
+          : await FillInBlankQuestionService.create(payload);
+        await onSave(response.data);
+        handleClose();
+      } catch (error) {
+        alert(error.response?.data?.message || "Unable to save blank answers.");
+      } finally { setSaving(false); }
+      return;
+    }
 
     if (isMcqQuestion) {
       if (mcqLoading || mcqLoadError) return;
@@ -769,7 +818,7 @@ function AddQuestionModal({
 
         topicId: Number(topicId.value),
 
-        questionTypeId: 6,
+        questionTypeId: Number(questionTypeId.value),
 
         questionText: questionText.trim(),
 
@@ -790,6 +839,7 @@ function AddQuestionModal({
 
       console.log("MATCHING QUESTION REQUEST:", matchingQuestionData);
 
+      setSaving(true);
       try {
         const response = initialData?.questionId
           ? await MatchingQuestionService.update(
@@ -809,7 +859,7 @@ function AddQuestionModal({
         alert(
           `Failed to ${initialData ? "update" : "create"} matching question.`,
         );
-      }
+      } finally { setSaving(false); }
 
       return;
     }
@@ -818,7 +868,12 @@ function AddQuestionModal({
     // NORMAL QUESTION ATTRIBUTES
     // =======================================================
 
-    if (attributes.some((row) =>
+    if (isAdjustmentQuestion) {
+      const errors = validateAdjustmentForm(adjustmentForm, adjustmentAttributes, tableHeaders);
+      if (errors.length) { alert(errors.join("\n")); return; }
+    }
+
+    if (!isAdjustmentQuestion && attributes.some((row) =>
       (row.debitBalance && !getBalanceHeader(row, "debit")) ||
       (row.creditBalance && !getBalanceHeader(row, "credit")),
     )) {
@@ -826,7 +881,9 @@ function AddQuestionModal({
       return;
     }
 
-    const questionAttributes = attributes.flatMap((row) => {
+    const questionAttributes = isAdjustmentQuestion
+      ? buildAdjustmentAttributes(adjustmentForm, adjustmentAttributes, tableHeaders)
+      : attributes.flatMap((row) => {
       const mappedAttributes = [];
 
       // =====================================================
@@ -854,7 +911,7 @@ function AddQuestionModal({
 
           amount1: debitAmount,
 
-          amount2: null,
+          amount2: row.debitOriginal?.amount2 ?? null,
 
           transaction: "Debit",
         });
@@ -885,7 +942,7 @@ function AddQuestionModal({
 
           amount1: creditAmount,
 
-          amount2: null,
+          amount2: row.creditOriginal?.amount2 ?? null,
 
           transaction: "Credit",
         });
@@ -916,6 +973,7 @@ function AddQuestionModal({
 
     console.log("NORMAL QUESTION REQUEST:", questionData);
 
+    setSaving(true);
     try {
       const response = initialData?.questionId
         ? await QuestionService.update(initialData.questionId, questionData)
@@ -930,7 +988,7 @@ function AddQuestionModal({
       console.error("Response:", error.response?.data);
 
       alert(`Failed to ${initialData ? "update" : "create"} question.`);
-    }
+    } finally { setSaving(false); }
   };
 
   // =========================================================
@@ -1172,6 +1230,7 @@ function AddQuestionModal({
                     className="aq-search-select"
                     classNamePrefix="aq-select"
                     options={questionTypeOptions}
+                    isDisabled={Boolean(initialData?.questionId)}
                     value={questionTypeId}
                     onChange={(option) => {
                       setQuestionTypeId(option);
@@ -1227,7 +1286,24 @@ function AddQuestionModal({
               MATCHING QUESTION
           ================================================= */}
 
-          {isMcqQuestion ? (
+          {detailsLoading && <p role="status">Loading question details…</p>}
+          {detailsError && <p className="text-danger" role="alert">{detailsError}</p>}
+          {isFillBlankQuestion ? (
+            <div className="table-responsive">
+              <table className="table">
+                <thead><tr><th>Blank number</th><th>Answer / option</th><th>Correct</th><th>Action</th></tr></thead>
+                <tbody>{blankAnswers.map((answer, index) => (
+                  <tr key={answer.answerId ?? index}>
+                    <td><input className="form-control" type="number" min="1" aria-label="Blank number" value={answer.blankNumber ?? 1} onChange={(event) => setBlankAnswers((rows) => rows.map((row, i) => i === index ? { ...row, blankNumber: event.target.value } : row))} /></td>
+                    <td><input className="form-control" aria-label="Blank answer" value={answer.answerText ?? ""} onChange={(event) => setBlankAnswers((rows) => rows.map((row, i) => i === index ? { ...row, answerText: event.target.value } : row))} /></td>
+                    <td><input type="checkbox" aria-label="Correct answer" checked={Boolean(answer.isCorrect)} onChange={(event) => setBlankAnswers((rows) => rows.map((row, i) => i === index ? { ...row, isCorrect: event.target.checked } : row))} /></td>
+                    <td><button type="button" className="btn btn-outline-danger" aria-label="Remove answer" disabled={blankAnswers.length <= 1} onClick={() => setBlankAnswers((rows) => rows.filter((_, i) => i !== index))}><FaTrash /></button></td>
+                  </tr>
+                ))}</tbody>
+              </table>
+              <button type="button" className="btn btn-primary" onClick={() => setBlankAnswers((rows) => [...rows, { answerText: "", blankNumber: 1, isCorrect: false }])}><FaPlus /> Add answer</button>
+            </div>
+          ) : isMcqQuestion ? (
             <div className="form-card question-attributes-section">
               <h3 className="section-title">Answer Options</h3>
               <div className="form-group">
@@ -1406,6 +1482,9 @@ function AddQuestionModal({
                 Add Pair
               </button>
             </div>
+          ) : isAdjustmentQuestion ? (
+            <CreateDragAndDropWithAdj value={adjustmentForm} onChange={setAdjustmentForm}
+              attributes={adjustmentAttributes} disabled={saving || detailsLoading} />
           ) : (
             /* =================================================
                NORMAL QUESTION ATTRIBUTES
@@ -1609,7 +1688,8 @@ function AddQuestionModal({
             className="btn btn-primary"
             onClick={handleSave}
             disabled={
-              isMcqQuestion && (mcqLoading || !!mcqLoadError || mcqSaving)
+              detailsLoading || !!detailsError || saving || !questionTypeId ||
+              (isMcqQuestion && (mcqLoading || !!mcqLoadError || mcqSaving))
             }
           >
             <FaSave className="me-2" />

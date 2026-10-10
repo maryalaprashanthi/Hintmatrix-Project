@@ -1,8 +1,10 @@
 import { DragDropProvider } from "@dnd-kit/react";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import QuestionTable from "./QuestionTable";
+import DragAndDropWithAdj from "./DragAndDropWithAdj";
+import { normalizeQuestionType } from "../../utils/questionType";
 import useQuestionStore, { getRuleAnswers } from "./questionStore";
 
 import JournalPage from "../JournalQuestion/JournalPage";
@@ -20,7 +22,9 @@ import FillInBlankQuestionService from "../../services/FillInBlankQuestionServic
 
 import { data, normalizeFinalAccountTarget } from "./SampleData";
 import { getCurrentUserId } from "../../utils/user";
+import { buildQuestionSequence, getQuestionNavigationIds, questionDisplayNumber, questionIndex } from "../../utils/questionNavigation";
 
+import QuestionNavigation from "./QuestionNavigation";
 import "./QuestionPage.css";
 
 // =============================================================
@@ -38,6 +42,7 @@ const getQuestionType = (question) => {
     question?.typeName;
 
   if (typeof type === "string") {
+    if (normalizeQuestionType(type) === "DRAG_AND_DROP_WITH_ADJ") return "DRAG_AND_DROP_WITH_ADJ";
     const normalizedType = type.trim().toUpperCase().replace(/\s+/g, "_");
 
     const normalizedQuestionType = normalizedType.replace(/-/g, "_");
@@ -99,6 +104,8 @@ const answerMap = {
 
 const QuestionPage = () => {
   const { questionId } = useParams();
+  const navigate = useNavigate();
+  const { state: navigationState } = useLocation();
 
   const {
     moveQuestion,
@@ -126,6 +133,7 @@ const QuestionPage = () => {
   ].includes(questionType);
 
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [placementError, setPlacementError] = useState("");
 
   const [matchingQuestion, setMatchingQuestion] = useState(null);
@@ -134,7 +142,10 @@ const QuestionPage = () => {
   const [testQuestions, setTestQuestions] = useState([]);
 
   // Current question index
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const currentQuestionIndex = questionIndex(testQuestions, questionId);
+  const displayQuestionNumber = questionDisplayNumber(
+    testQuestions, questionId, navigationState?.questionNavigationNumbers,
+  );
 
   // Completed questions
   const [completedQuestions, setCompletedQuestions] = useState({});
@@ -145,7 +156,7 @@ const QuestionPage = () => {
   // TOTAL QUESTIONS
   // ===========================================================
 
-  const totalQuestions = testQuestions.length > 0 ? testQuestions.length : 20;
+  const totalQuestions = testQuestions.length || 1;
 
   // ===========================================================
   // CURRENT QUESTION
@@ -167,110 +178,17 @@ const QuestionPage = () => {
   // LOAD QUESTION
   // ===========================================================
 
-  useEffect(() => {
-    const init = async () => {
-      setIsLoading(true);
-      setPlacementError("");
-
-      try {
-        const response = await loadQuestions(questionId);
-
-        if (!response?.data) {
-          return;
-        }
-
-        let type = getQuestionType(response.data);
-
-        const questionTypeId =
-          response.data?.questionTypeId ?? response.data?.question_type_id;
-
-        if (!type && questionTypeId) {
-          const typeResponse =
-            await QuestionTypeService.getById(questionTypeId);
-
-          type = getQuestionType(typeResponse?.data);
-        }
-
-        let questionData = response.data;
-
-        if (
-          type === "MATCH_THE_FOLLOWING" &&
-          !Array.isArray(questionData?.pairs)
-        ) {
-          try {
-            const matchingResponse = await MatchingQuestionService.getById(
-              questionData.questionId ?? questionId,
-            );
-
-            questionData = {
-              ...questionData,
-              ...matchingResponse.data,
-            };
-            setMatchingQuestion(questionData);
-          } catch (matchingError) {
-            console.error("Failed to load matching pairs:", matchingError);
-          }
-        }
-
-        if (
-          type === "FILL_IN_THE_BLANKS" &&
-          !Array.isArray(questionData?.blanks)
-        ) {
-          try {
-            const fillBlankResponse = await FillInBlankQuestionService.getById(
-              questionData.questionId ?? questionId,
-            );
-
-            questionData = {
-              ...questionData,
-              ...fillBlankResponse.data,
-            };
-          } catch (fillBlankError) {
-            console.error(
-              "Failed to load fill-in-the-blanks data:",
-              fillBlankError,
-            );
-          }
-        }
-
-        setQuestionType(type);
-
-        // -----------------------------------------------------
-        // Load all questions for navigation
-        // -----------------------------------------------------
-
-        await loadTestQuestions(questionData);
-
-        // -----------------------------------------------------
-        // Restore drag/drop answers
-        // -----------------------------------------------------
-
-        if (type === "DRAG_AND_DROP") {
-          await loadAnsweredQuestions();
-        }
-      } catch (error) {
-        console.error("Failed to initialize question:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    init();
-  }, [questionId]);
-
-  // ===========================================================
-  // LOAD QUESTION
-  // ===========================================================
-
-  const loadQuestions = async (qId) => {
+  const loadQuestions = useCallback(async (qId, isCurrent = () => true) => {
     try {
       const response = await QuestionService.getQuestionById(qId || questionId);
+      if (!isCurrent()) return null;
 
       const allStrings = data.flatMap((obj) =>
         obj.headers.map((header) => `${obj.name}-${header}`),
       );
 
       await setQuestions([response.data]);
+      if (!isCurrent()) return null;
 
       setMatchingQuestion(response.data);
 
@@ -282,14 +200,21 @@ const QuestionPage = () => {
 
       return null;
     }
-  };
+  }, [questionId, setQuestions, setMatchingQuestion, setTableData]);
 
   // ===========================================================
   // LOAD TEST QUESTIONS
   // ===========================================================
 
-  const loadTestQuestions = async (currentQuestionData) => {
+  const loadTestQuestions = useCallback(async (currentQuestionData, isCurrent = () => true) => {
     try {
+      const navigationIds = getQuestionNavigationIds(
+        navigationState?.questionNavigationIds, currentQuestionData?.questionId,
+      );
+      if (navigationIds.length > 0) {
+        setTestQuestions(buildQuestionSequence([], currentQuestionData, navigationIds));
+        return;
+      }
       const courseId = currentQuestionData?.courseId;
 
       const chapterId = currentQuestionData?.chapterId;
@@ -300,7 +225,6 @@ const QuestionPage = () => {
       if (!courseId || !chapterId || !topicId) {
         setTestQuestions([currentQuestionData]);
 
-        setCurrentQuestionIndex(0);
 
         return;
       }
@@ -310,6 +234,7 @@ const QuestionPage = () => {
         chapterId,
         topicId,
       );
+      if (!isCurrent()) return;
 
       const result = Array.isArray(response?.data)
         ? response.data
@@ -317,68 +242,26 @@ const QuestionPage = () => {
           ? response
           : [];
 
-      // -------------------------------------------------------
-      // Remove inactive questions if activeRow exists
-      // -------------------------------------------------------
-
-      const activeQuestions = result.filter(
-        (question) => question?.activeRow !== false,
-      );
-
-      // -------------------------------------------------------
-      // If API didn't return the current question,
-      // add it.
-      // -------------------------------------------------------
-
-      const containsCurrent = activeQuestions.some(
-        (question) =>
-          Number(question.questionId) ===
-          Number(currentQuestionData.questionId),
-      );
-
-      let finalQuestions = activeQuestions;
-
-      if (!containsCurrent) {
-        finalQuestions = [currentQuestionData, ...activeQuestions];
-      }
-
-      // -------------------------------------------------------
-      // Keep maximum 20 questions for this test UI
-      // -------------------------------------------------------
-
-      finalQuestions = finalQuestions.slice(0, 20);
-
-      setTestQuestions(finalQuestions);
-
-      // -------------------------------------------------------
-      // Find current question
-      // -------------------------------------------------------
-
-      const currentIndex = finalQuestions.findIndex(
-        (question) =>
-          Number(question.questionId) ===
-          Number(currentQuestionData.questionId),
-      );
-
-      setCurrentQuestionIndex(currentIndex >= 0 ? currentIndex : 0);
+      setTestQuestions(buildQuestionSequence(result, currentQuestionData));
     } catch (error) {
       console.error("Failed to load test questions:", error);
 
-      setTestQuestions([currentQuestionData]);
-
-      setCurrentQuestionIndex(0);
+      if (isCurrent()) setTestQuestions([currentQuestionData]);
     }
-  };
+  }, [navigationState, setTestQuestions]);
 
   // ===========================================================
   // LOAD ANSWERED QUESTIONS
   // ===========================================================
 
-  const loadAnsweredQuestions = async () => {
+  const loadAnsweredQuestions = useCallback(async (isCurrent = () => true) => {
     const correctAnswers =
       await QuestionAnswerService.getAnswersByUserAndQuestion(
-        getCurrentUserId(), questionId,
+        getCurrentUserId(),
+        questionId,
       );
+
+    if (!isCurrent()) return;
 
     const savedAnswers = Array.isArray(correctAnswers) ? correctAnswers : [];
 
@@ -390,13 +273,18 @@ const QuestionPage = () => {
     const groupedAnswers = new Map();
     for (const answer of savedAnswers) {
       if (!answer) continue;
-      const candidates = rows.filter((row) => answer.questionAttributeId != null
-        ? String(row.questionAttributeId) === String(answer.questionAttributeId)
-        : String(row.attributeId) === String(answer.attributeId));
+      const candidates = rows.filter((row) =>
+        answer.questionAttributeId != null
+          ? String(row.questionAttributeId) ===
+            String(answer.questionAttributeId)
+          : String(row.attributeId) === String(answer.attributeId),
+      );
       // Old answers did not identify repeated trial-balance accounts. Preserve
       // them in storage without incorrectly assigning one balance to another.
       if (candidates.length !== 1) {
-        setPlacementError("Some older saved answers cannot identify a repeated account row. Reset the question to place those balances again.");
+        setPlacementError(
+          "Some older saved answers cannot identify a repeated account row. Reset the question to place those balances again.",
+        );
         continue;
       }
       const row = candidates[0];
@@ -405,14 +293,100 @@ const QuestionPage = () => {
       groupedAnswers.set(row.id, entries);
     }
     for (const [sourceId, answers] of groupedAnswers) {
-      setTotalAnswers(sourceId, Math.max(answers.length, ...answers.map((answer) => Number(answer.totalAnswers) || 1)));
+      setTotalAnswers(
+        sourceId,
+        Math.max(
+          answers.length,
+          ...answers.map((answer) => Number(answer.totalAnswers) || 1),
+        ),
+      );
       for (const answer of answers) {
-        moveQuestion(sourceId,
-          normalizeFinalAccountTarget(`${answer.tableName}-${answer.headerName}-${answer.arithmetic}`),
-          answer.conditionId, answer.pairAttributeId, answer.amount);
+        moveQuestion(
+          sourceId,
+          normalizeFinalAccountTarget(
+            `${answer.tableName}-${answer.headerName}-${answer.arithmetic}`,
+          ),
+          answer.conditionId,
+          answer.pairAttributeId,
+          answer.amount,
+        );
       }
     }
-  };
+  }, [questionId, setPlacementError, setTotalAnswers, moveQuestion]);
+
+  // ===========================================================
+  // LOAD QUESTION
+  // ===========================================================
+
+  useEffect(() => {
+    let active = true;
+    const isCurrent = () => active;
+    const init = async () => {
+      setIsLoading(true);
+      setLoadError("");
+      setPlacementError("");
+
+      try {
+        const response = await loadQuestions(questionId, isCurrent);
+
+        if (!active || !response?.data) {
+          if (active) setLoadError("Unable to load this question. Please refresh to retry.");
+          return;
+        }
+
+        let type = getQuestionType(response.data);
+        const questionTypeId = response.data?.questionTypeId ?? response.data?.question_type_id;
+
+        if (!type && questionTypeId) {
+          const typeResponse = await QuestionTypeService.getById(questionTypeId);
+          if (!active) return;
+          type = getQuestionType(typeResponse?.data);
+        }
+
+        let questionData = response.data;
+
+        if (type === "MATCH_THE_FOLLOWING" && !Array.isArray(questionData?.pairs)) {
+          try {
+            const matchingResponse = await MatchingQuestionService.getById(
+              questionData.questionId ?? questionId,
+            );
+            if (!active) return;
+            questionData = { ...questionData, ...matchingResponse.data };
+            setMatchingQuestion(questionData);
+          } catch (matchingError) {
+            console.error("Failed to load matching pairs:", matchingError);
+          }
+        }
+
+        if (type === "FILL_IN_THE_BLANKS" && !Array.isArray(questionData?.blanks)) {
+          try {
+            const fillBlankResponse = await FillInBlankQuestionService.getById(
+              questionData.questionId ?? questionId,
+            );
+            if (!active) return;
+            questionData = { ...questionData, ...fillBlankResponse.data };
+            setMatchingQuestion(questionData);
+          } catch (fillBlankError) {
+            console.error("Failed to load fill-in-the-blanks data:", fillBlankError);
+          }
+        }
+
+        if (!active) return;
+        setQuestionType(type);
+        await loadTestQuestions(questionData, isCurrent);
+        if (!active) return;
+        if (type === "DRAG_AND_DROP") await loadAnsweredQuestions(isCurrent);
+      } catch (error) {
+        console.error("Failed to initialize question:", error);
+        if (active) setLoadError("Unable to load this question. Please refresh to retry.");
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    };
+
+    init();
+    return () => { active = false; };
+  }, [questionId, navigationState, loadQuestions, loadTestQuestions, loadAnsweredQuestions]);
 
   // ===========================================================
   // QUESTION COMPLETED
@@ -427,101 +401,38 @@ const QuestionPage = () => {
 
   // ===========================================================
   // SELECT QUESTION
+
   // ===========================================================
 
-  const handleSelectQuestion = async (index) => {
-  if (index < 0 || index >= testQuestions.length) {
-    return;
-  }
-
-  let selected = testQuestions[index];
-
-  const type = getQuestionType(selected);
-
-  // =========================================================
-  // LOAD FILL-IN-THE-BLANKS DATA IF MISSING
-  // =========================================================
-
-  if (
-    type === "FILL_IN_THE_BLANKS" &&
-    !Array.isArray(selected?.blanks)
-  ) {
-    try {
-      const fillBlankResponse =
-        await FillInBlankQuestionService.getById(
-          selected.questionId
-        );
-
-      selected = {
-        ...selected,
-        ...fillBlankResponse.data,
-      };
-
-      // Update the question inside testQuestions
-      setTestQuestions((currentQuestions) =>
-        currentQuestions.map((question, questionIndex) =>
-          questionIndex === index
-            ? selected
-            : question
-        )
-      );
-    } catch (error) {
-      console.error(
-        "Failed to load fill-in-the-blanks data:",
-        error
-      );
+  const handleSelectQuestion = (index) => {
+    if (isLoading || currentQuestionIndex < 0 ||
+        String(matchingQuestion?.questionId) !== String(questionId)) return;
+    if (index < 0 || index >= testQuestions.length) {
+      return;
     }
-  }
 
-  // =========================================================
-  // LOAD MATCHING DATA IF MISSING
-  // =========================================================
+    const target = testQuestions[index];
 
-  if (
-    type === "MATCH_THE_FOLLOWING" &&
-    !Array.isArray(selected?.pairs)
-  ) {
-    try {
-      const matchingResponse =
-        await MatchingQuestionService.getById(
-          selected.questionId
-        );
-
-      selected = {
-        ...selected,
-        ...matchingResponse.data,
-      };
-
-      setTestQuestions((currentQuestions) =>
-        currentQuestions.map((question, questionIndex) =>
-          questionIndex === index
-            ? selected
-            : question
-        )
-      );
-    } catch (error) {
-      console.error(
-        "Failed to load matching pairs:",
-        error
-      );
+    if (!target?.questionId || String(target.questionId) === String(questionId)) {
+      return;
     }
-  }
 
-  setCurrentQuestionIndex(index);
+    setCurrentScore(0);
 
-  setMatchingQuestion(selected);
-
-  setQuestionType(type);
-
-  setCurrentScore(0);
-};
+    navigate(`/questions/${target.questionId}`, {
+      state: {
+        questionNavigationIds: testQuestions.map((row) => String(row.questionId)),
+        questionNavigationNumbers: navigationState?.questionNavigationNumbers,
+      },
+    });
+  };
 
   // ===========================================================
   // NEXT QUESTION
   // ===========================================================
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < testQuestions.length - 1) {
+    if (currentQuestionIndex >= 0 && currentQuestionIndex < testQuestions.length - 1) {
       handleSelectQuestion(currentQuestionIndex + 1);
     }
   };
@@ -550,7 +461,8 @@ const QuestionPage = () => {
   // LOADING
   // ===========================================================
 
-  if (isLoading) {
+  if (loadError && !isLoading) return <div className="alert alert-danger" role="alert">{loadError}</div>;
+  if (isLoading || String(matchingQuestion?.questionId) !== String(questionId)) {
     return <div className="question-page-loading">Loading question...</div>;
   }
 
@@ -580,30 +492,60 @@ const QuestionPage = () => {
   // ===========================================================
 
   if (questionType === "JOURNAL") {
-    return <JournalPage />;
-  }
-
-  if (isMcq) {
     return (
-      <McqQuestionView
-        key={questionId}
-        questionId={questionId}
-        questionType={questionType}
+      <JournalPage
+        displayQuestionNumber={displayQuestionNumber}
+        questionNumber={currentQuestionIndex + 1}
+        totalQuestions={totalQuestions}
+        onPrevious={handlePreviousQuestion}
+        onNext={handleNextQuestion}
       />
     );
   }
 
+  // if (isMcq) {
+  //   return (
+  //     <McqQuestionView
+  //       key={questionId}
+  //       questionId={questionId}
+  //       questionType={questionType}
+  //     />
+  //   );
+  // }
+  if (isMcq) {
+    return (
+      <McqQuestionView
+        displayQuestionNumber={displayQuestionNumber}
+        key={questionId}
+        questionId={questionId}
+        questionType={questionType}
+        questionNumber={currentQuestionIndex + 1}
+        totalQuestions={totalQuestions}
+        onPrevious={handlePreviousQuestion}
+        onNext={handleNextQuestion}
+      />
+    );
+  }
   // ===========================================================
   // DROPDOWN
   // ===========================================================
 
   if (questionType === "DROPDOWN") {
-    return <DropdownPage />;
+    return (
+      <DropdownPage
+        displayQuestionNumber={displayQuestionNumber}
+        questionNumber={currentQuestionIndex + 1}
+        totalQuestions={totalQuestions}
+        onPrevious={handlePreviousQuestion}
+        onNext={handleNextQuestion}
+      />
+    );
   }
 
   if (questionType === "FILL_IN_THE_BLANKS") {
     return (
       <FillInBlankQuestionView
+        displayQuestionNumber={displayQuestionNumber}
         key={(currentQuestion || matchingQuestion)?.questionId}
         question={currentQuestion || matchingQuestion}
         questionNumber={currentQuestionIndex + 1}
@@ -614,6 +556,7 @@ const QuestionPage = () => {
         onCompleted={handleQuestionCompleted}
         onQuestionSelect={handleSelectQuestion}
         onNext={handleNextQuestion}
+        onPrevious={handlePreviousQuestion}
         onSubmitTest={handleSubmitTest}
       />
     );
@@ -626,6 +569,7 @@ const QuestionPage = () => {
   if (questionType === "MATCH_THE_FOLLOWING") {
     return (
       <MatchingQuestionView
+        displayQuestionNumber={displayQuestionNumber}
         key={(currentQuestion || matchingQuestion)?.questionId}
         question={currentQuestion || matchingQuestion}
         questionNumber={currentQuestionIndex + 1}
@@ -644,6 +588,13 @@ const QuestionPage = () => {
   // ===========================================================
   // DRAG AND DROP
   // ===========================================================
+
+  if (questionType === "DRAG_AND_DROP_WITH_ADJ") {
+    return <DragAndDropWithAdj key={currentQuestion?.questionId}
+      question={currentQuestion || matchingQuestion} onCompleted={handleQuestionCompleted}
+      questionNumber={currentQuestionIndex + 1} displayQuestionNumber={displayQuestionNumber}
+      totalQuestions={totalQuestions} onPrevious={handlePreviousQuestion} onNext={handleNextQuestion} />;
+  }
 
   if (questionType !== "DRAG_AND_DROP") {
     return <div>Unsupported question type.</div>;
@@ -669,42 +620,75 @@ const QuestionPage = () => {
         }
 
         const [first, second, third] = targetId.split("-");
-        const operation = useQuestionStore.getState().beginOperation(questionId, "drop");
+        const operation = useQuestionStore
+          .getState()
+          .beginOperation(questionId, "drop");
         if (!operation) return;
 
         try {
-          let myQuestion = useQuestionStore.getState().questions.find((q) => String(q.id) === String(sourceId));
+          let myQuestion = useQuestionStore
+            .getState()
+            .questions.find((q) => String(q.id) === String(sourceId));
           if (!myQuestion || myQuestion.status === "solved") return;
           let actualAnswers = myQuestion.actualAnswers;
 
           if (myQuestion.actualAnswers.length === 0) {
-            const response =
-              await RuleEngineService.getAttributeAnswers(myQuestion.attributeId);
-            if (!useQuestionStore.getState().isOperationCurrent(operation)) return;
-            myQuestion = useQuestionStore.getState().questions.find((q) => String(q.id) === String(sourceId));
+            const response = await RuleEngineService.getAttributeAnswers(
+              myQuestion.attributeId,
+            );
+            if (!useQuestionStore.getState().isOperationCurrent(operation))
+              return;
+            myQuestion = useQuestionStore
+              .getState()
+              .questions.find((q) => String(q.id) === String(sourceId));
             if (!myQuestion) return;
 
-            actualAnswers = getRuleAnswers(response, useQuestionStore.getState().question.chapterId, myQuestion)
-              .map((answer) => ({ ...answer, answer: normalizeFinalAccountTarget(answer.answer) }));
+            actualAnswers = getRuleAnswers(
+              response,
+              useQuestionStore.getState().question.chapterId,
+              myQuestion,
+            ).map((answer) => ({
+              ...answer,
+              answer: normalizeFinalAccountTarget(answer.answer),
+            }));
 
             setActualAnswers(sourceId, actualAnswers);
             setTotalAnswers(sourceId, actualAnswers.length);
-            setHints(sourceId, actualAnswers.map((answer) => answer.information).filter(Boolean));
+            setHints(
+              sourceId,
+              actualAnswers.map((answer) => answer.information).filter(Boolean),
+            );
           }
           setPlacementError("");
-          const answeredIds = myQuestion.answered.map((answer) => answer.conditionId);
+          const answeredIds = myQuestion.answered.map(
+            (answer) => answer.conditionId,
+          );
           const correctAnswer = actualAnswers.find(
-            (answer) => answer.answer === targetId && !answeredIds.includes(answer.conditionId),
+            (answer) =>
+              answer.answer === targetId &&
+              !answeredIds.includes(answer.conditionId),
           );
           if (!correctAnswer) {
             // Dropping onto an already completed destination is a harmless no-op.
-            if (actualAnswers.some((answer) => answer.answer === targetId)) return;
+            if (actualAnswers.some((answer) => answer.answer === targetId))
+              return;
             if (myQuestion.status !== "wrong") {
               setError(sourceId);
+            } else {
+              // The row was already wrong, so setError does not run again.
+              // Open its popover anyway, so that every wrong drop shows Hint
+              // and Auto Fill.
+              useQuestionStore.getState().openErrorPopover(sourceId);
             }
-            const attemptedAnswer = actualAnswers.find((answer) =>
-              answer.conditionId === myQuestion.attemptingId && !answeredIds.includes(answer.conditionId)) ??
-              actualAnswers.find((answer) => !answeredIds.includes(answer.conditionId));
+            const attemptedAnswer =
+              actualAnswers.find(
+                (answer) =>
+                  answer.conditionId === myQuestion.attemptingId &&
+                  !answeredIds.includes(answer.conditionId),
+              ) ??
+              actualAnswers.find(
+                (answer) => !answeredIds.includes(answer.conditionId),
+              );
             if (!attemptedAnswer) return;
             setAttributeId(sourceId, attemptedAnswer.conditionId);
 
@@ -735,7 +719,8 @@ const QuestionPage = () => {
             };
 
             await QuestionAnswerService.processAnswerEvent({
-              ...body, questionAttributeId: myQuestion.questionAttributeId,
+              ...body,
+              questionAttributeId: myQuestion.questionAttributeId,
             });
           } else {
             const body = {
@@ -790,12 +775,15 @@ const QuestionPage = () => {
             };
 
             await QuestionAnswerService.processAnswerEvent({
-              ...body, questionAttributeId: myQuestion.questionAttributeId,
+              ...body,
+              questionAttributeId: myQuestion.questionAttributeId,
             });
-            if (!useQuestionStore.getState().isOperationCurrent(operation)) return;
+            if (!useQuestionStore.getState().isOperationCurrent(operation))
+              return;
 
             await QuestionAnswerService.saveAnswer(questionBody);
-            if (!useQuestionStore.getState().isOperationCurrent(operation)) return;
+            if (!useQuestionStore.getState().isOperationCurrent(operation))
+              return;
 
             moveQuestion(
               sourceId,
@@ -811,14 +799,28 @@ const QuestionPage = () => {
             }
           }
         } catch (error) {
-          setPlacementError(error.response?.data?.message ?? error.message ?? "Unable to save this placement.");
+          setPlacementError(
+            error.response?.data?.message ??
+              error.message ??
+              "Unable to save this placement.",
+          );
         } finally {
           useQuestionStore.getState().endOperation(operation);
         }
       }}
     >
-      {placementError && <div className="alert alert-warning" role="alert">{placementError}</div>}
-      <QuestionTable />
+      {placementError && (
+        <div className="alert alert-warning" role="alert">
+          {placementError}
+        </div>
+      )}
+      <QuestionTable questionNumber={displayQuestionNumber} />
+      <QuestionNavigation
+        questionNumber={currentQuestionIndex + 1}
+        totalQuestions={totalQuestions}
+        onPrevious={handlePreviousQuestion}
+        onNext={handleNextQuestion}
+      />
     </DragDropProvider>
   );
 };

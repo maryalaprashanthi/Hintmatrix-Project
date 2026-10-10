@@ -44,8 +44,8 @@ test("gross loss and net loss balance on the correct sides and deduct from capit
   assert.equal(result.netResult, -2500);
   assert.equal(result.derivedRows[tradingCredit][0].name, "Gross Loss c/d");
   assert.equal(result.derivedRows[pnlDebit][0].name, "Gross Loss b/d");
-  assert.equal(result.derivedRows[pnlCredit][0].name, "Net Loss transferred to Capital");
-  assert.equal(result.derivedRows[liabilities][0].operation, "less");
+  assert.equal(result.derivedRows[pnlCredit].find((entry) => entry.name === "Net Loss transferred to Capital").name, "Net Loss transferred to Capital");
+  assert.equal(result.derivedRows[liabilities].find((entry) => entry.name === "Less: Net Loss from Capital").operation, "less");
   assert.equal(result.accounts["Balance Sheet"]["Liabilities Side"].total, 7500);
   assert.equal(result.balanced, true);
 });
@@ -68,7 +68,7 @@ test("gross profit may turn into net loss", () => {
   });
   assert.equal(result.grossResult, 300);
   assert.equal(result.netResult, -100);
-  assert.equal(result.derivedRows[liabilities][0].amount, 100);
+  assert.equal(result.derivedRows[liabilities].find((entry) => entry.name === "Less: Net Loss from Capital").amount, 100);
 });
 
 test("decimal sums, repeated accounts, resets and rerenders do not accumulate transfers", () => {
@@ -86,7 +86,12 @@ test("decimal sums, repeated accounts, resets and rerenders do not accumulate tr
   assert.equal(reset.grossResult, 0);
   assert.equal(reset.netResult, 0);
   assert.equal(reset.hasBalanceSheet, false);
-  assert.deepEqual(reset.derivedRows[tradingDebit], []);
+  assert.deepEqual(reset.derivedRows[tradingDebit].map((entry) => [entry.name, entry.amount]), [["Gross Profit c/d", 0]]);
+  assert.deepEqual(reset.derivedRows[tradingCredit].map((entry) => [entry.name, entry.amount]), [["Gross Loss c/d", 0]]);
+  assert.deepEqual(reset.derivedRows[pnlDebit].map((entry) => [entry.name, entry.amount]), [["Gross Loss b/d", 0], ["Net Profit transferred to Capital", 0]]);
+  assert.deepEqual(reset.derivedRows[pnlCredit].map((entry) => [entry.name, entry.amount]), [["Gross Profit b/d", 0], ["Net Loss transferred to Capital", 0]]);
+  assert.deepEqual(reset.derivedRows[liabilities].map((entry) => [entry.name, entry.amount]), [["Add: Net Profit to Capital", 0], ["Less: Net Loss from Capital", 0]]);
+  assert.ok(Object.values(reset.accounts).every((account) => Object.values(account).every((side) => side.total === 0)));
 });
 
 test("old saved names normalize without silently accepting arbitrary destinations", () => {

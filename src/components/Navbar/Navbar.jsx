@@ -11,6 +11,7 @@ import CollegeService from "../../services/CollegeService";
 import BranchService from "../../services/BranchService";
 import SectionService from "../../services/SectionService";
 import NotificationService from "../../services/NotificationService";
+import { loadOncePerLogin, updatePageLoadCache } from "../../utils/pageLoadCache";
 import {
   canAccessFeature,
   normalizeRole,
@@ -52,40 +53,49 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
     logoutUser(navigate);
   };
 
-  const loadNotifications = useCallback(async ({ showLoading = false } = {}) => {
-    if (document.visibilityState !== "visible") return;
+  const loadNotifications = useCallback(async ({ showLoading = false, isActive = () => true } = {}) => {
+    // if (document.visibilityState !== "visible") return;
     if (showLoading) setNotificationsLoading(true);
     try {
-      const [itemsResponse, countResponse] = await Promise.all([
+      // const [itemsResponse, countResponse] = await Promise.all([...]);
+      const [itemsResponse, countResponse] = await loadOncePerLogin("navbar-notifications", () => Promise.all([
         NotificationService.getMine(12),
         NotificationService.getUnreadCount(),
-      ]);
+      ]));
+      if (!isActive()) return;
       setNotifications(Array.isArray(itemsResponse.data) ? itemsResponse.data : []);
       setUnreadCount(Number(countResponse.data?.unreadCount) || 0);
     } catch (error) {
       console.error("Unable to load notifications:", error);
     } finally {
-      if (showLoading) setNotificationsLoading(false);
+      if (showLoading && isActive()) setNotificationsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    loadNotifications({ showLoading: true });
-    const intervalId = window.setInterval(loadNotifications, 45_000);
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible") loadNotifications();
-    };
-    document.addEventListener("visibilitychange", handleVisibility);
-    return () => {
-      window.clearInterval(intervalId);
-      document.removeEventListener("visibilitychange", handleVisibility);
-    };
+    // loadNotifications({ showLoading: true });
+    let active = true;
+    loadNotifications({ showLoading: true, isActive: () => active });
+    // const intervalId = window.setInterval(loadNotifications, 45_000);
+    // const handleVisibility = () => {
+    //   if (document.visibilityState === "visible") loadNotifications();
+    // };
+    // document.addEventListener("visibilitychange", handleVisibility);
+    // return () => {
+    //   window.clearInterval(intervalId);
+    //   document.removeEventListener("visibilitychange", handleVisibility);
+    // };
+    return () => { active = false; };
   }, [loadNotifications]);
 
   const markAllNotificationsRead = async () => {
     if (!unreadCount) return;
     try {
       await NotificationService.markAllRead();
+      await updatePageLoadCache("navbar-notifications", ([items, count]) => {
+        items.data = (Array.isArray(items.data) ? items.data : []).map((item) => ({ ...item, read: true }));
+        count.data = { ...count.data, unreadCount: 0 };
+      });
       setNotifications((items) => items.map((item) => ({ ...item, read: true })));
       setUnreadCount(0);
     } catch (error) {
@@ -97,6 +107,12 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
     if (!notification.read) {
       try {
         await NotificationService.markRead(notification.notificationId);
+        await updatePageLoadCache("navbar-notifications", ([items, count]) => {
+          items.data = (Array.isArray(items.data) ? items.data : []).map((item) =>
+            item.notificationId === notification.notificationId ? { ...item, read: true } : item,
+          );
+          count.data = { ...count.data, unreadCount: Math.max(0, (Number(count.data?.unreadCount) || 0) - 1) };
+        });
         setNotifications((items) =>
           items.map((item) =>
             item.notificationId === notification.notificationId
@@ -277,33 +293,36 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
     async function loadSearchItems() {
       setSearchLoading(true);
       const canBrowseCourses = canAccessFeature("courses", normalizedUserRole);
-      const requests = [
-        canBrowseCourses
-          ? CourseService.getAllCourses()
-          : Promise.resolve({ data: [] }),
-        canBrowseCourses
-          ? SubjectService.getAll()
-          : Promise.resolve({ data: [] }),
-        canBrowseCourses
-          ? ChapterService.getAll()
-          : Promise.resolve({ data: [] }),
-        canBrowseCourses
-          ? TopicService.getAll()
-          : Promise.resolve({ data: [] }),
-        canBrowseCourses
-          ? QuestionService.getAll()
-          : Promise.resolve({ data: [] }),
-        canAccessFeature("colleges", normalizedUserRole)
-          ? CollegeService.getAllColleges()
-          : Promise.resolve({ data: [] }),
-        canAccessFeature("branches", normalizedUserRole)
-          ? BranchService.getAllBranches()
-          : Promise.resolve({ data: [] }),
-        canAccessFeature("sections", normalizedUserRole)
-          ? SectionService.getAllSections()
-          : Promise.resolve({ data: [] }),
-      ];
-      const results = await Promise.allSettled(requests);
+      const results = await loadOncePerLogin("navbar-search", () => {
+        const requests = [
+          canBrowseCourses
+            ? CourseService.getAllCourses()
+            : Promise.resolve({ data: [] }),
+          canBrowseCourses
+            ? SubjectService.getAll()
+            : Promise.resolve({ data: [] }),
+          canBrowseCourses
+            ? ChapterService.getAll()
+            : Promise.resolve({ data: [] }),
+          canBrowseCourses
+            ? TopicService.getAll()
+            : Promise.resolve({ data: [] }),
+          canBrowseCourses
+            ? QuestionService.getAll()
+            : Promise.resolve({ data: [] }),
+          canAccessFeature("colleges", normalizedUserRole)
+            ? CollegeService.getAllColleges()
+            : Promise.resolve({ data: [] }),
+          canAccessFeature("branches", normalizedUserRole)
+            ? BranchService.getAllBranches()
+            : Promise.resolve({ data: [] }),
+          canAccessFeature("sections", normalizedUserRole)
+            ? SectionService.getAllSections()
+            : Promise.resolve({ data: [] }),
+        ];
+        // const results = await Promise.allSettled(requests);
+        return Promise.allSettled(requests);
+      });
 
       if (!mounted) return;
 
@@ -560,7 +579,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
             aria-expanded={showNotifications}
             onClick={() => {
               setShowNotifications((visible) => {
-                if (!visible) loadNotifications({ showLoading: true });
+                // if (!visible) loadNotifications({ showLoading: true });
                 return !visible;
               });
               setShowMenu(false);

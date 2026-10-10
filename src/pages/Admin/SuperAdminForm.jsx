@@ -33,12 +33,7 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
       setDesignation(selectedSuperAdminData.designation || "");
       setEmail(selectedSuperAdminData.email || "");
       setPhoneNumber(selectedSuperAdminData.phoneNumber || "");
-      setPassword(
-        selectedSuperAdminData.password ||
-          selectedSuperAdminData.passwordHash ||
-          selectedSuperAdminData.userPassword ||
-          "",
-      );
+      setPassword("");
       setAddress(selectedSuperAdminData.address || "");
       setActiveRow(selectedSuperAdminData.activeRow !== false);
     } else {
@@ -64,6 +59,7 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
       phoneNumber,
       password,
       address,
+      isEdit: Boolean(selectedSuperAdminData),
     });
 
     if (!validation.isValid) {
@@ -81,7 +77,7 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
       designation: designation.trim(),
       email: email.trim(),
       phoneNumber: String(phoneNumber).replace(/\D/g, ""),
-      password: password.trim(),
+      ...(password.trim() ? { password: password.trim() } : {}),
       address: address.trim(),
       activeRow,
     };
@@ -217,7 +213,7 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
               {/* Password */}
               <div className="form-group">
                 <label>
-                  Password <span>*</span>
+                  Password {selectedSuperAdminData ? <span className="text-muted">(optional)</span> : <span>*</span>}
                 </label>
 
                 <div className="input-box">
@@ -225,7 +221,8 @@ function SuperAdminForm({ show, onClose, onSave, selectedSuperAdminData }) {
 
                   <input
                     type="password"
-                    placeholder="Enter Password"
+                    placeholder={selectedSuperAdminData ? "Leave blank to keep current password" : "Enter Password"}
+                    autoComplete="new-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />

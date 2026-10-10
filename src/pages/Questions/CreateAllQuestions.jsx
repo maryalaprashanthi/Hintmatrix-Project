@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useEffect, useMemo, useState } from "react";
 import {
   FaEdit,
@@ -19,6 +20,11 @@ import SubjectService from "../../services/SubjectService";
 import TableAttributeService from "../../services/TableAttributeService";
 import TableHeaderService from "../../services/TableHeaderService";
 import TopicService from "../../services/TopicService";
+import { normalizeQuestionType } from "../../utils/questionType";
+import { AdjustmentQuestionPreview } from "./CreateDragAndDropWithAdj";
+import DragAndDropAttributeEditor from "./DragAndDropAttributeEditor";
+import { getQuestionAttributeSide } from "../../utils/questionAttributeSide";
+import { emptyAdjustmentForm, buildAdjustmentAttributes, validateAdjustmentForm } from "./adjustmentQuestionForm";
 import "./CreateAllQuestions.css";
 
 const emptyMcqOptions = () =>
@@ -118,28 +124,7 @@ const labelOf = (item, type) => {
   return labels[type] ?? item?.name ?? "";
 };
 
-const normalizeType = (value = "") => {
-  let normalized = String(value)
-    .trim()
-    .toUpperCase()
-    .replace(/[\s-]+/g, "_");
-
-  if (normalized.startsWith("MCQ_")) {
-    normalized = normalized.slice(4);
-  }
-
-  if (normalized.endsWith("_QUESTION")) {
-    normalized = normalized.slice(0, -9);
-  }
-
-  const aliases = {
-    DRAGANDDROP: "DRAG_AND_DROP",
-    SINGLECHOICE: "SINGLE_CHOICE",
-    MULTIPLECHOICE: "MULTIPLE_CHOICE",
-  };
-
-  return aliases[normalized] ?? normalized;
-};
+const normalizeType = normalizeQuestionType;
 
 const isMcqType = (type) =>
   type === "SINGLE_CHOICE" || type === "MULTIPLE_CHOICE";
@@ -182,6 +167,7 @@ function searchableSelect({
   placeholder,
   disabled = false,
   getLabel,
+  ariaLabel,
 }) {
   const options = items.map((item) => ({
     value: String(idOf(item, type)),
@@ -190,6 +176,7 @@ function searchableSelect({
 
   return (
     <Select
+      aria-label={ariaLabel}
       className="aq-search-select"
       classNamePrefix="aq-select"
       options={options}
@@ -230,6 +217,7 @@ function QuestionPreviewCard({
     type &&
     !isMcqType(type) &&
     type !== "DRAG_AND_DROP" &&
+    type !== "DRAG_AND_DROP_WITH_ADJ" &&
     !isMatchingType(type) &&
     !isFillBlankType(type);
 
@@ -344,6 +332,7 @@ function QuestionPreviewCard({
       )}
 
       {/* DRAG AND DROP - ledger table */}
+      {type === "DRAG_AND_DROP_WITH_ADJ" && <AdjustmentQuestionPreview value={s.adjustmentForm} attributeLabel={attributeLabel} />}
       {type === "DRAG_AND_DROP" && (
         <div className="aq-live-table-wrap">
           <table className="aq-live-table">
@@ -445,6 +434,7 @@ function CreateAllQuestions() {
   const [mcqOptions, setMcqOptions] = useState(emptyMcqOptions);
   const [attributeRows, setAttributeRows] = useState([emptyAttributeRow()]);
   const [ledgerRows, setLedgerRows] = useState([emptyLedgerRow()]);
+  const [adjustmentForm, setAdjustmentForm] = useState(emptyAdjustmentForm);
   const [matchingPairs, setMatchingPairs] = useState(emptyMatchingPairs);
   const [blanks, setBlanks] = useState(emptyBlanks);
 
@@ -721,6 +711,7 @@ function CreateAllQuestions() {
     setMcqOptions(emptyMcqOptions());
     setAttributeRows([emptyAttributeRow()]);
     setLedgerRows([emptyLedgerRow()]);
+    setAdjustmentForm(emptyAdjustmentForm());
     setMatchingPairs(emptyMatchingPairs());
     setBlanks(emptyBlanks());
 
@@ -740,6 +731,7 @@ function CreateAllQuestions() {
     setMcqOptions(emptyMcqOptions());
     setAttributeRows([emptyAttributeRow()]);
     setLedgerRows([emptyLedgerRow()]);
+    setAdjustmentForm(emptyAdjustmentForm());
     setMatchingPairs(emptyMatchingPairs());
     setBlanks(emptyBlanks());
     setEditingDraftId(null);
@@ -864,7 +856,9 @@ function CreateAllQuestions() {
     }
 
     const questionAttributes =
-      selectedType === "DRAG_AND_DROP"
+      selectedType === "DRAG_AND_DROP_WITH_ADJ"
+        ? buildAdjustmentAttributes(adjustmentForm, tableAttributes, tableHeaders)
+        : selectedType === "DRAG_AND_DROP"
         ? ledgerRows.flatMap((row) => {
             const attributes = [];
 
@@ -975,6 +969,8 @@ function CreateAllQuestions() {
           "Add at least one answer and select the correct option for each blank.",
         );
       }
+    } else if (selectedType === "DRAG_AND_DROP_WITH_ADJ") {
+      errors.push(...validateAdjustmentForm(adjustmentForm, tableAttributes, tableHeaders));
     } else if (selectedType === "DRAG_AND_DROP") {
       if (
         !ledgerRows.some((row) => row.debitAttributeId || row.creditAttributeId)
@@ -1036,6 +1032,7 @@ function CreateAllQuestions() {
         mcqOptions,
         attributeRows,
         ledgerRows,
+        adjustmentForm,
         matchingPairs,
         blanks,
       },
@@ -1071,6 +1068,7 @@ function CreateAllQuestions() {
     setMcqOptions(snapshot.mcqOptions);
     setAttributeRows(snapshot.attributeRows);
     setLedgerRows(snapshot.ledgerRows);
+    setAdjustmentForm(snapshot.adjustmentForm ?? emptyAdjustmentForm());
     setMatchingPairs(snapshot.matchingPairs ?? emptyMatchingPairs());
 
     setBlanks(
@@ -1156,13 +1154,18 @@ function CreateAllQuestions() {
     setSubmitting(false);
   };
 
-  const renderAttributeSelect = (value, onChange) =>
+  const renderAttributeSelect = (value, onChange, side, disabled = false, ariaLabel) =>
     searchableSelect({
-      items: tableAttributes,
+      items: selectedType === "DRAG_AND_DROP_WITH_ADJ"
+        ? tableAttributes.filter((attribute) => attribute.activeRow !== false &&
+          (!side || getQuestionAttributeSide({ headerName: attribute.tableHeaderName }) === side))
+        : tableAttributes,
       type: "attribute",
       value,
       onChange,
       placeholder: "Search transaction",
+      disabled,
+      ariaLabel,
     });
 
   return (
@@ -1320,6 +1323,7 @@ function CreateAllQuestions() {
                       setMcqOptions(emptyMcqOptions());
                       setAttributeRows([emptyAttributeRow()]);
                       setLedgerRows([emptyLedgerRow()]);
+                      setAdjustmentForm(emptyAdjustmentForm());
                       setMatchingPairs(emptyMatchingPairs());
                       setBlanks(emptyBlanks());
                     },
@@ -1454,119 +1458,19 @@ function CreateAllQuestions() {
               </section>
             )}
 
-            {/* DRAG AND DROP */}
-            {selectedType === "DRAG_AND_DROP" && (
-              <section className="aq-card aq-ledger-card">
-                <div className="aq-section-heading">
-                  <span className="aq-section-icon">
-                    <FaListUl />
-                  </span>
-
-                  <div>
-                    <h2>Debit and credit attributes</h2>
-                    <p>Build the pairs used by the drag-and-drop question.</p>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="aq-secondary"
-                    onClick={() =>
-                      setLedgerRows((current) => [...current, emptyLedgerRow()])
-                    }
-                  >
-                    <FaPlus />
-                    Add row
-                  </button>
-                </div>
-
-                <div className="aq-table-wrap">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Debit</th>
-                        <th>Debit amount</th>
-                        <th>Credit</th>
-                        <th>Credit amount</th>
-                        <th />
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      {ledgerRows.map((row, index) => (
-                        <tr key={index}>
-                          <td>
-                            {renderAttributeSelect(
-                              row.debitAttributeId,
-                              (value) =>
-                                updateRow(
-                                  setLedgerRows,
-                                  index,
-                                  "debitAttributeId",
-                                  value,
-                                ),
-                            )}
-                          </td>
-
-                          <td>
-                            <input
-                              type="number"
-                              value={row.debitAmount}
-                              onChange={(event) =>
-                                updateRow(
-                                  setLedgerRows,
-                                  index,
-                                  "debitAmount",
-                                  event.target.value,
-                                )
-                              }
-                            />
-                          </td>
-
-                          <td>
-                            {renderAttributeSelect(
-                              row.creditAttributeId,
-                              (value) =>
-                                updateRow(
-                                  setLedgerRows,
-                                  index,
-                                  "creditAttributeId",
-                                  value,
-                                ),
-                            )}
-                          </td>
-
-                          <td>
-                            <input
-                              type="number"
-                              value={row.creditAmount}
-                              onChange={(event) =>
-                                updateRow(
-                                  setLedgerRows,
-                                  index,
-                                  "creditAmount",
-                                  event.target.value,
-                                )
-                              }
-                            />
-                          </td>
-
-                          <td>
-                            <button
-                              type="button"
-                              onClick={() => removeRow(setLedgerRows, index)}
-                              disabled={ledgerRows.length <= 1}
-                            >
-                              <FaTrash />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
+            {/* Both drag-and-drop types share the balance editor. */}
+            {["DRAG_AND_DROP", "DRAG_AND_DROP_WITH_ADJ"].includes(selectedType) && (
+              <DragAndDropAttributeEditor
+                balances={selectedType === "DRAG_AND_DROP_WITH_ADJ" ? adjustmentForm.balances : ledgerRows}
+                onBalancesChange={selectedType === "DRAG_AND_DROP_WITH_ADJ"
+                  ? (update) => setAdjustmentForm((current) => ({ ...current, balances: update(current.balances) }))
+                  : setLedgerRows}
+                adjustments={selectedType === "DRAG_AND_DROP_WITH_ADJ" ? adjustmentForm.adjustments : undefined}
+                onAdjustmentsChange={(update) => setAdjustmentForm((current) => ({ ...current, adjustments: update(current.adjustments) }))}
+                renderAttributeSelect={renderAttributeSelect}
+                disabled={submitting}
+              />
             )}
-
             {/* MATCHING */}
             {isMatchingType(selectedType) && (
               <section className="aq-card">
@@ -1774,6 +1678,7 @@ function CreateAllQuestions() {
             {selectedType &&
               !isMcqType(selectedType) &&
               selectedType !== "DRAG_AND_DROP" &&
+              selectedType !== "DRAG_AND_DROP_WITH_ADJ" &&
               !isMatchingType(selectedType) &&
               !isFillBlankType(selectedType) && (
                 <section className="aq-card">

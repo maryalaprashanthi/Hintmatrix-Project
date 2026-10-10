@@ -12,7 +12,10 @@ import QuestionAnswerService from "../../services/QuestionAnswerService";
 import { isJournalAttributeSolved } from "./journalAnswerStatus";
 import MistakesModal from "../Question/MistakesModal";
 import useQuestionStore from "../Question/questionStore";
+import QuestionNavigation from "../Question/QuestionNavigation";
 import { getCurrentUserId } from "../../utils/user";
+
+import "../Question/FillInBlankQuestionView.css";
 
 const getRuleConditions = (rule) =>
   [1, 2, 3, 4].map((index) => {
@@ -42,7 +45,13 @@ const getRuleConditions = (rule) =>
     };
   });
 
-const JournalPage = () => {
+const JournalPage = ({
+  questionNumber = 1,
+  displayQuestionNumber = questionNumber,
+  totalQuestions = 1,
+  onPrevious,
+  onNext,
+}) => {
   let { questionId } = useParams();
   const [question, setQuestion] = useState(null);
   const [answeredData, setAnsweredData] = useState({});
@@ -351,24 +360,22 @@ const JournalPage = () => {
   return (
     <div>
       <Header
+        questionNumber={displayQuestionNumber}
         question={question}
         answeredData={answeredData}
         setAnsweredData={setAnsweredData}
         setCheckMistakes={setCheckMistakes}
       />
 
-      <Row>
-        <SummaryCards
-          debit={0}
-          credit={0}
-          total={question.questionAttributes?.length || 0}
-          solved={solved}
-          totalScore={totalScore}
-        />
-      </Row>
+      <SummaryCards
+        showBalances={false}
+        total={question.questionAttributes?.length || 0}
+        solved={solved}
+        totalScore={totalScore}
+      />
 
-      <Row>
-        <Col>
+      <Row className="g-4 align-items-start">
+        <Col xs={12} lg={6}>
           <JournalQuestion
             data={question.questionAttributes || []}
             questionText={question.questionText}
@@ -379,13 +386,20 @@ const JournalPage = () => {
           />
         </Col>
 
-        <Col>
+        <Col xs={12} lg={6}>
           <JournalSolution
             answeredData={answeredData}
             answerScrollTarget={answerScrollTarget}
           />
         </Col>
       </Row>
+
+      <QuestionNavigation
+        questionNumber={questionNumber}
+        totalQuestions={totalQuestions}
+        onPrevious={onPrevious}
+        onNext={onNext}
+      />
     </div>
   );
 };

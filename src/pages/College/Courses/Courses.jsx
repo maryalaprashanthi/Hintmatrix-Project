@@ -180,7 +180,7 @@ function Courses() {
           </div>
 
           <div>
-            <h2>Courses Management</h2>
+            <h2>Course Management</h2>
 
             <p>Create, organize and manage all your learning programs.</p>
           </div>
@@ -229,7 +229,7 @@ function Courses() {
             <div>
               <small>Total Courses</small>
               <h3>{courses.length}</h3>
-              <span>Available Courses</span>
+             {/* <span>Available Courses</span> */}
             </div>
           </div>
         </div>
@@ -243,7 +243,7 @@ function Courses() {
             <div>
               <small>Active Courses</small>
               <h3>{totals.activeCourses}</h3>
-              <span>Currently Running</span>
+              {/* <span>Currently Running</span> */}
             </div>
           </div>
         </div>
@@ -257,7 +257,7 @@ function Courses() {
             <div>
               <small>Inactive Courses</small>
               <h3>{totals.inactiveCourses}</h3>
-              <span>Currently Inactive</span>
+             {/* <span>Currently Inactive</span> */}
             </div>
           </div>
         </div>
@@ -271,7 +271,7 @@ function Courses() {
             <div>
               <small>Total Chapters</small>
               <h3>{totals.totalChapters}</h3>
-              <span>Learning Modules</span>
+              {/* <span>Learning Modules</span> */}
             </div>
           </div>
         </div>

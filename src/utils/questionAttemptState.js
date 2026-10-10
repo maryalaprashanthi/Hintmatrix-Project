@@ -45,5 +45,6 @@ export const restoreMcqAnswer = (events, options, multiple) => {
   const selected = ids.map((id) => options.find((option) => String(option.optionId) === String(id))?.optionId);
   if (selected.some((id) => id == null)) return null;
   return { selected, result: { status: event.isCorrect ? "CORRECT" : "WRONG",
+    marksAwarded: Number(event.marks) || 0,
     correctOptionIds: options.filter((option) => option.isCorrect === true).map((option) => option.optionId) } };
 };

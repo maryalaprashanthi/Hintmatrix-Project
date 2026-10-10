@@ -10,6 +10,7 @@ import {
   FaTrophy,
 } from "react-icons/fa";
 import ExamService from "../../services/ExamService";
+import { loadOncePerLogin } from "../../utils/pageLoadCache";
 
 const testStyles = [
   { color: "#7c3aed", icon: <FaCalendarCheck />, iconBg: "#F3E8FF", iconColor: "#7C3AED" },
@@ -57,7 +58,8 @@ function UpcomingTests() {
         setLoading(true);
         setError(false);
 
-        const response = await ExamService.getAll();
+        // const response = await ExamService.getAll();
+        const response = await loadOncePerLogin("dashboard-exams", () => ExamService.getAll());
         const exams = Array.isArray(response.data) ? response.data : [];
         const now = new Date();
 
@@ -72,7 +74,10 @@ function UpcomingTests() {
           upcoming.map(async (exam, index) => {
             let questionCount = null;
             try {
-              const qRes = await ExamService.getExamQuestions(exam.examId);
+              // const qRes = await ExamService.getExamQuestions(exam.examId);
+              const qRes = await loadOncePerLogin(`dashboard-exam-questions:${exam.examId}`, () =>
+                ExamService.getExamQuestions(exam.examId),
+              );
               questionCount = Array.isArray(qRes.data) ? qRes.data.length : null;
             } catch {
               questionCount = null;

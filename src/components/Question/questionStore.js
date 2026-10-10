@@ -60,6 +60,14 @@ const useQuestionStore = create((set, get) => ({
   score: 0,
   busyOperation: null,
   operationSequence: 0,
+  // The id of the one row whose "wrong answer" popover is open. setError
+  // sets it, so the open popover always belongs to the latest mistake.
+  errorPopoverId: null,
+  openErrorPopover: (id) => set({ errorPopoverId: id }),
+  toggleErrorPopover: (id) => set((state) => ({
+    errorPopoverId: String(state.errorPopoverId) === String(id) ? null : id,
+  })),
+  closeErrorPopover: () => set({ errorPopoverId: null }),
   beginOperation: (questionId, kind) => {
     const state = get();
     if (state.busyOperation || String(state.question.questionId) !== String(questionId)) return null;
@@ -153,6 +161,7 @@ const useQuestionStore = create((set, get) => ({
       droppableData: Object.fromEntries(
         Object.keys(state.droppableData).map((key) => [key, []]),
       ),
+      errorPopoverId: null,
     }));
   },
 
@@ -185,6 +194,7 @@ const useQuestionStore = create((set, get) => ({
       });
       return {
         questions: nextQuestions,
+        errorPopoverId: id,
       };
     }),
 
