@@ -26,7 +26,7 @@ Amounts initialize before rule retrieval. A missing rule is logged to the develo
 
 The latest student-view cleanup removes the **Amount for this effect** editors, effect-count text, adjustment instruction paragraph and visible feedback box. Students drag plain account/amount tiles, including a second tile for a distinct second amount. Dragging either tile retains the original question-row identity and uses that tile's amount for validation and saving. Rule configuration diagnostics are kept out of the student layout and Auto Fill popover. Normal answer status remains accessible through a visually hidden live region, and wrong-answer tiles retain Hint / Auto Fill actions.
 
-Create All uses `DragAndDropAttributeEditor.jsx` for both drag-and-drop types. Both render the same debit/amount/credit/amount table and existing CSS; the adjustment type adds an adjustment name/amount table directly below it. The extra information and second-amount controls are omitted. Add/remove rows and saved draft reopening use the existing form state and serialization. `CreateDragAndDropWithAdj.jsx` remains in use by the separate Add Question modal and supplies the existing draft preview. No question-code database field was invented.
+Create All and the Add Question modal use `DragAndDropAttributeEditor.jsx` for both drag-and-drop types. Both render the same debit/amount/credit/amount table and existing CSS; the adjustment type adds an adjustment name/amount table directly below it. The extra information and second-amount controls are omitted. Add/remove rows and saved draft reopening use the existing form state and serialization. Both draft previews share the inline ledger table in `CreateAllQuestions.jsx`; adjustments add a second inline table using the same `aq-live-table` styles. The unused `CreateDragAndDropWithAdj.jsx` and `.css` files and separate adjustment preview files have been deleted. No question-code database field was invented.
 
 ## Backend and deployment
 
@@ -122,3 +122,23 @@ Pre-existing backend log changes were left alone and are not implementation file
 Created `src/pages/Questions/DragAndDropAttributeEditor.jsx` and `DragAndDropAttributeEditor.test.js`. Modified `CreateAllQuestions.jsx`, `CreateAllQuestions.css`, and this report. Both `DRAG_AND_DROP` and `DRAG_AND_DROP_WITH_ADJ` select the shared authoring component. Only the latter supplies adjustment rows, which render in a second table below the identical debit/credit card using existing CSS. The adjustment table contains only the account selector, amount and add/remove controls; information and second-amount controls are removed. Existing serialization remains compatible with saved data. No backend changes are required for this correction.
 
 Verification: all **7** shared-editor and adjustment-form tests passed; scoped ESLint passed; production Vite build passed with the existing bundle-size warning; whitespace check passed. Browser visual verification was unavailable in this environment.
+
+## Shared Answered section correction (October 11, 2026)
+
+Both practice types now partition source rows using `src/components/Question/questionSourceSections.js` and render completed rows in the existing `QuestionTable.jsx` Answered accordion below active debit/credit balances. `DragAndDropWithAdj.jsx` supplies the shared partitioned lists rather than leaving solved rows in their original sections. Completed adjustments appear under Adjustments within the same Answered accordion; partial adjustments remain draggable until every configured effect is saved. Reset or removal of an effect returns the row to its active section. Row identity, ordering, score, and statement totals are preserved. No stylesheet or backend changes were needed.
+
+Created `questionSourceSections.js`; modified `QuestionTable.jsx`, `DragAndDropWithAdj.jsx`, `QuestionTable.test.js`, and this report. Verification: **42** focused shared-layout, draggable and adjustment-controller tests passed; scoped ESLint and production build passed, with the existing bundle-size warning. Browser visual verification was not performed.
+
+The adjustment Previous/Next navigation now renders after the entire `QuestionTable`, matching ordinary drag-and-drop, rather than inside the right statement column. Both use the same `QuestionNavigation` component and CSS. The change is in `DragAndDropWithAdj.jsx`; lint and whitespace checks passed.
+
+## Add Question modal shared editor correction (October 11, 2026)
+
+`AddQuestionModal.jsx` now selects `DragAndDropAttributeEditor.jsx` for both drag-and-drop types, using `CreateAllQuestions.css`. Adjustments appear below the balance card, with only account and amount controls. New questions opened in the Final Accounts with Adjustments chapter default to the adjustment type option returned by the API; explicit selections and existing question types remain preserved. `addQuestionDragDropForm.js` adapts ordinary modal rows while retaining manual amounts, saved header metadata, account amount defaults and row operations. Existing adjustment save/validation APIs remain in place.
+
+Created `addQuestionDragDropForm.js` and `addQuestionDragDropForm.test.js`; modified `AddQuestionModal.jsx` and this report. All **10** focused authoring tests, scoped ESLint, whitespace checks and the production build passed. The existing bundle-size warning remains. Browser visual verification was not performed.
+
+## Unused authoring editor removal (October 11, 2026)
+
+Deleted `src/pages/Questions/CreateDragAndDropWithAdj.jsx` and `CreateDragAndDropWithAdj.css`. Their only remaining consumer was Create All's draft preview. That preview is preserved in `AdjustmentQuestionPreview.jsx` and `AdjustmentQuestionPreview.css`, containing only the used preview layout and styles. Updated `CreateAllQuestions.jsx` to import the dedicated preview. No references to the old files remain in `src`.
+
+The subsequent preview cleanup moves the adjustment preview into the existing `QuestionPreviewCard` in `CreateAllQuestions.jsx` and deletes `AdjustmentQuestionPreview.jsx` and `AdjustmentQuestionPreview.css`. Both drag-and-drop types now reuse the same inline ledger preview markup; the adjustment table uses the existing common preview table CSS. No new files or stylesheet rules were created. Lint and whitespace checks passed.

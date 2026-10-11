@@ -11,7 +11,9 @@ import QuestionTypeService from "../../services/QuestionTypeService";
 import TableAttributeService from "../../services/TableAttributeService";
 import TableHeaderService from "../../services/TableHeaderService";
 import QuestionService from "../../services/QuestionService";
-import CreateDragAndDropWithAdj from "./CreateDragAndDropWithAdj";
+import DragAndDropAttributeEditor from "./DragAndDropAttributeEditor";
+import { adjustmentTypeForChapter, modalBalanceRows, updateModalBalanceRows } from "./addQuestionDragDropForm";
+import "./CreateAllQuestions.css";
 import { emptyAdjustmentForm, hydrateAdjustmentForm, validateAdjustmentForm, buildAdjustmentAttributes } from "./adjustmentQuestionForm";
 import MatchingQuestionService from "../../services/MatchingQuestionService";
 import McqQuestionService from "../../services/McqQuestionService";
@@ -51,6 +53,7 @@ function AddQuestionModal({
   const [adjustmentForm, setAdjustmentForm] = useState(emptyAdjustmentForm);
   const [adjustmentAttributes, setAdjustmentAttributes] = useState([]);
   const isAdjustmentQuestion = normalizeQuestionType(questionTypeId?.label) === "DRAG_AND_DROP_WITH_ADJ";
+  const isDragDropQuestion = ["DRAG_AND_DROP", "DRAG_AND_DROP_WITH_ADJ"].includes(normalizeQuestionType(questionTypeId));
   const [mcqOptions, setMcqOptions] = useState([]);
   const [marks, setMarks] = useState(1);
   const [mcqLoading, setMcqLoading] = useState(false);
@@ -115,6 +118,12 @@ function AddQuestionModal({
   const [questionTypeOptions, setQuestionTypeOptions] = useState([]);
   const [balanceOptions, setBalanceOptions] = useState([]);
   const [tableHeaders, setTableHeaders] = useState([]);
+
+  useEffect(() => {
+    if (initialData?.questionId || initialData?.questionTypeId || initialData?.question_type_id) return;
+    const preferred = adjustmentTypeForChapter(chapterId?.label, questionTypeOptions);
+    if (preferred) setQuestionTypeId((current) => current ?? preferred);
+  }, [chapterId?.label, questionTypeOptions, initialData]);
 
   // =========================================================
   // NORMAL QUESTION ATTRIBUTES
@@ -1482,9 +1491,31 @@ function AddQuestionModal({
                 Add Pair
               </button>
             </div>
-          ) : isAdjustmentQuestion ? (
-            <CreateDragAndDropWithAdj value={adjustmentForm} onChange={setAdjustmentForm}
-              attributes={adjustmentAttributes} disabled={saving || detailsLoading} />
+          ) : isDragDropQuestion ? (
+            <div className="all-question-create" style={{ padding: 0, background: "transparent", minHeight: 0 }}>
+              <DragAndDropAttributeEditor
+                balances={isAdjustmentQuestion ? adjustmentForm.balances : modalBalanceRows(attributes)}
+                onBalancesChange={isAdjustmentQuestion
+                  ? (update) => setAdjustmentForm((current) => ({ ...current, balances: update(current.balances) }))
+                  : (update) => setAttributes((current) => updateModalBalanceRows(current, update, balanceOptions))}
+                adjustments={isAdjustmentQuestion ? adjustmentForm.adjustments : undefined}
+                onAdjustmentsChange={(update) => setAdjustmentForm((current) => ({ ...current, adjustments: update(current.adjustments) }))}
+                disabled={saving || detailsLoading}
+                renderAttributeSelect={(id, onChange, side, disabled, label) => {
+                  const options = isAdjustmentQuestion
+                    ? adjustmentAttributes.filter((item) => item.activeRow !== false && (!side ||
+                      getQuestionAttributeSide({ headerName: item.tableHeaderName }) === side))
+                      .map((item) => ({ value: item.attributeId, label: item.name ?? item.attributeName }))
+                    : balanceOptions;
+                  const selected = options.find((item) => String(item.value) === String(id));
+                  return <Select className="aq-search-select" classNamePrefix="aq-select" aria-label={label}
+                    options={options} value={selected ?? (id ? { value: id, label: `Account ${id}` } : null)}
+                    onChange={(option) => onChange(option?.value ?? "")} placeholder="Search transaction"
+                    isSearchable isClearable isDisabled={disabled} menuPortalTarget={document.body} menuPosition="fixed"
+                    styles={{ menuPortal: (base) => ({ ...base, zIndex: 99999 }) }} />;
+                }}
+              />
+            </div>
           ) : (
             /* =================================================
                NORMAL QUESTION ATTRIBUTES

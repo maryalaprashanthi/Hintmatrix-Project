@@ -11,6 +11,7 @@ import { calculateFinalAccounts, data } from "./SampleData";
 import { useParams } from "react-router-dom";
 import MistakesModal from "./MistakesModal";
 import { useEffect, useRef, useState } from "react";
+import { questionSourceSections } from "./questionSourceSections";
 
 const HOVER_OPEN_DELAY_MS = 250;
 
@@ -33,6 +34,7 @@ const QuestionLayout = ({
   creditBalances = [],
   answeredDebits,
   answeredCredits,
+  answeredAdjustments,
   debitTotal,
   creditTotal,
   total,
@@ -63,7 +65,7 @@ const QuestionLayout = ({
   const openTables = hoverTable && !clickedTables.includes(hoverTable)
     ? [...clickedTables, hoverTable]
     : clickedTables;
-  const hasAnsweredSection = answeredDebits !== undefined || answeredCredits !== undefined;
+  const hasAnsweredSection = answeredDebits !== undefined || answeredCredits !== undefined || answeredAdjustments !== undefined;
 
   useEffect(() => () => clearTimeout(hoverTimer.current), []);
 
@@ -154,11 +156,11 @@ const QuestionLayout = ({
                 <Accordion.Header>
                   <span className="tb-accordion-title">Answered</span>
                   <span className="tb-accordion-amount">
-                    {(answeredDebits?.length ?? 0) + (answeredCredits?.length ?? 0)}
+                    {(answeredDebits?.length ?? 0) + (answeredCredits?.length ?? 0) + (answeredAdjustments?.length ?? 0)}
                   </span>
                 </Accordion.Header>
                 <Accordion.Body>
-                  {!answeredDebits?.length && !answeredCredits?.length && (
+                  {!answeredDebits?.length && !answeredCredits?.length && !answeredAdjustments?.length && (
                     <p className="tb-answered-empty">Rows that you place correctly move here.</p>
                   )}
                   {answeredDebits?.length > 0 && (
@@ -171,6 +173,12 @@ const QuestionLayout = ({
                     <>
                       <div className="tb-answered-label">Credit</div>
                       {answeredCredits.map(renderSource)}
+                    </>
+                  )}
+                  {answeredAdjustments?.length > 0 && (
+                    <>
+                      <div className="tb-answered-label">Adjustments</div>
+                      {answeredAdjustments.map(renderSource)}
                     </>
                   )}
                 </Accordion.Body>
@@ -240,10 +248,8 @@ const StoredQuestionTable = ({ questionNumber }) => {
   const score = useQuestionStore((state) => state.score);
   const droppableData = useQuestionStore((state) => state.droppableData);
   const { questionId } = useParams();
-  const debitBalances = questions.filter((row) => row.type === "debit" && row.status !== "solved");
-  const creditBalances = questions.filter((row) => row.type === "credit" && row.status !== "solved");
-  const answeredDebits = questions.filter((row) => row.type === "debit" && row.status === "solved");
-  const answeredCredits = questions.filter((row) => row.type === "credit" && row.status === "solved");
+  const { debitBalances, creditBalances, answeredDebits, answeredCredits } =
+    questionSourceSections(questions, (row) => row.status === "solved", (row) => row.type);
   const balanceTotal = (balances) => balances.reduce((sum, row) => sum +
     (row.status === "pending" || row.status === "wrong" ? Number(row.amount || 0) : 0), 0);
 

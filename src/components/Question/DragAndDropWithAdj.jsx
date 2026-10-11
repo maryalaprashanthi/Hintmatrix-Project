@@ -9,6 +9,7 @@ import { adjustmentRows, adjustmentTableRows, matchAdjustmentEffect, placementKe
 import QuestionTable from "./QuestionTable";
 import QuestionNavigation from "./QuestionNavigation";
 import Draggable from "./Draggable";
+import { questionSourceSections } from "./questionSourceSections";
 import { getQuestionAttributeSide } from "../../utils/questionAttributeSide";
 import MistakesModal from "./MistakesModal";
 import { getCurrentUserId } from "../../utils/user";
@@ -284,7 +285,8 @@ export default function DragAndDropWithAdj({
 
   if (loading) return <p role="status">Loading adjustment rules and saved answers…</p>;
   const count = (row) => currentPlacements.filter((entry) => String(entry.id) === String(row.id)).length;
-  const solved = (row) => effects[row.id]?.length != null && effects[row.id].length === count(row);
+  const solved = (row) => effects[row.id]?.length > 0 && effects[row.id].length === count(row);
+  const sourceSections = questionSourceSections(rows, solved);
   const balances = (side) => rows.filter((row) => getQuestionAttributeSide(row) === side);
   const total = (side) => balances(side).filter((row) => !solved(row))
     .reduce((sum, row) => sum + (Number.isFinite(Number(row.amount)) ? Number(row.amount) : 0), 0);
@@ -310,17 +312,16 @@ export default function DragAndDropWithAdj({
       const choice = choices.find((item) => item.sourceId === event.operation.source.id);
       if (choice) place(choice.row.id, event.operation.target.id, choice.amount);
     }}>
-      <QuestionTable model={{ question, questionNumber: displayQuestionNumber, headerActions, debitBalances: balances("debit"), creditBalances: balances("credit"),
+      <QuestionTable model={{ question, questionNumber: displayQuestionNumber, headerActions, ...sourceSections,
         debitTotal: total("debit"), creditTotal: total("credit"), total: rows.length, solved: rows.filter(solved).length, score,
         balanceCount: balances("debit").length + balances("credit").length,
-        adjustments: rows.filter((row) => getQuestionAttributeSide(row) == null), renderSource,
+        renderSource,
         rowsByTarget: tableRows, finalAccounts: result, fullyPlaced: complete, busy, feedback,
         previewText: "Final Accounts preview — totals update as you place each balance and adjustment.",
         onPlaceSelected: (target) => place(selected?.rowId, target, selected?.amount), onRemove: exam ? remove : null,
-        footer: typeof onPrevious === "function" || typeof onNext === "function"
-          ? <QuestionNavigation questionNumber={questionNumber} totalQuestions={totalQuestions} onPrevious={onPrevious} onNext={onNext} />
-          : null,
       }} />
+      {(typeof onPrevious === "function" || typeof onNext === "function") &&
+        <QuestionNavigation questionNumber={questionNumber} totalQuestions={totalQuestions} onPrevious={onPrevious} onNext={onNext} />}
     </DragDropProvider>
     {checkMistakes && <MistakesModal questionId={questionId} checkMistakes={checkMistakes} setCheckMistakes={setCheckMistakes} />}
   </>;
