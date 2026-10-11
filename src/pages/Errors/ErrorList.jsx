@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   FaArrowLeft,
+  FaBookOpen,
   FaChevronRight,
   FaRedo,
   FaSearch,
@@ -90,9 +91,8 @@ export default function ErrorList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
-  const [chapterSearch, setChapterSearch] = useState("");
-  const [mistakeSearch, setMistakeSearch] = useState("");
-  const [dateOrder, setDateOrder] = useState("newest");
+  const [topicSearch, setTopicSearch] = useState("");
+  const dateOrder = "newest";
 
 
   // =========================================================
@@ -164,38 +164,21 @@ export default function ErrorList() {
           chapterId: mistake.chapterId,
           name: getChapterName(mistake),
           count: 0,
+          topics: new Set(),
         });
       }
 
-      groups.get(key).count += 1;
+      const group = groups.get(key);
+      group.count += 1;
+      const topicName = getDisplayText(mistake.topicName, "");
+      if (topicName) group.topics.add(topicName);
     });
 
-    return Array.from(groups.values());
+    return Array.from(groups.values(), (chapter) => ({
+      ...chapter,
+      topics: Array.from(chapter.topics),
+    }));
   }, [mistakes]);
-
-  const filteredChapters = useMemo(() => {
-    const query = chapterSearch.trim().toLowerCase();
-    if (!query) {
-      return chapters;
-    }
-
-    return chapters.filter((chapter) =>
-      chapter.name.toLowerCase().includes(query),
-    );
-  }, [chapters, chapterSearch]);
-
-  const topicCount = useMemo(
-    () =>
-      new Set(
-        mistakes.map((mistake) =>
-          mistake.topicId !== null && mistake.topicId !== undefined
-            ? String(mistake.topicId)
-            : getDisplayText(mistake.topicName, "Unknown topic").toLowerCase(),
-        ),
-      ).size,
-    [mistakes],
-  );
-
 
   // =========================================================
   // SELECTED CHAPTER
@@ -224,18 +207,9 @@ export default function ErrorList() {
   }, [mistakes, selectedChapter]);
 
   const filteredChapterMistakes = useMemo(() => {
-    const query = mistakeSearch.trim().toLowerCase();
+    const query = topicSearch.trim().toLowerCase();
     const filtered = chapterMistakes.filter((mistake) => {
-      if (!query) {
-        return true;
-      }
-
-      return [
-        mistake.topicName,
-        mistake.attributeName,
-        mistake.questionText,
-        mistake.userAnswer,
-      ].some((value) => getDisplayText(value, "").toLowerCase().includes(query));
+      return !query || getDisplayText(mistake.topicName, "").toLowerCase().includes(query);
     });
 
     return filtered.sort((first, second) =>
@@ -243,7 +217,7 @@ export default function ErrorList() {
         ? getTimestamp(second.createdAt) - getTimestamp(first.createdAt)
         : getTimestamp(first.createdAt) - getTimestamp(second.createdAt),
     );
-  }, [chapterMistakes, dateOrder, mistakeSearch]);
+  }, [chapterMistakes, dateOrder, topicSearch]);
 
   // =========================================================
   // LOADING
@@ -381,7 +355,7 @@ export default function ErrorList() {
           </div>
 
           <span className="error-list-total">
-            {chapterMistakes.length} mistakes
+            {filteredChapterMistakes.length} of {chapterMistakes.length} mistakes
           </span>
         </header>
 
@@ -396,6 +370,17 @@ export default function ErrorList() {
           </Link>
 
           <h2>{selectedChapter.name}</h2>
+
+          <label className="error-list-search error-list-chapter-search">
+            <FaSearch aria-hidden="true" />
+            <input
+              type="search"
+              value={topicSearch}
+              onChange={(event) => setTopicSearch(event.target.value)}
+              placeholder="Search topics in this chapter"
+              aria-label="Search errors by topic in this chapter"
+            />
+          </label>
 
           {/* =================================================
             MISTAKE TABLE
@@ -421,7 +406,13 @@ export default function ErrorList() {
               </thead>
 
               <tbody>
-                {chapterMistakes.map((mistake, index) => {
+                {filteredChapterMistakes.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="error-list-table-empty">
+                      No errors match “{topicSearch}”.
+                    </td>
+                  </tr>
+                ) : filteredChapterMistakes.map((mistake, index) => {
                   const questionId = mistake.questionId;
 
                   const attributeName = getDisplayText(
@@ -541,14 +532,22 @@ export default function ErrorList() {
               to={`/errors/${encodeURIComponent(chapter.key)}`}
             >
               <div className="error-list-chapter-info">
+                <span className="error-list-chapter-icon" aria-hidden="true">
+                  <FaBookOpen />
+                </span>
                 <span className="error-list-chapter-name">{chapter.name}</span>
+                <span className="error-list-chapter-context">
+                  {chapter.topics.slice(0, 3).join(", ") || "Topic unavailable"}
+                </span>
               </div>
 
               <span className="error-list-chapter-trailing">
                 <span className="error-list-chapter-count">
                   {chapter.count} {chapter.count === 1 ? "mistake" : "mistakes"}
                 </span>
-                <FaChevronRight aria-hidden="true" />
+                <span className="error-list-chapter-open">
+                  Review <FaChevronRight aria-hidden="true" />
+                </span>
               </span>
             </Link>
           ))}

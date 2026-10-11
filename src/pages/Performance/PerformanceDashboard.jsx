@@ -159,7 +159,7 @@ function StudentPerformanceView({ data, status, onRetry }) {
           <span className="spinner-border spinner-border-sm" /> Loading
           performance...
         </div>
-        <StudentLearningAnalytics />
+        <StudentPracticeAnalytics />
       </>
     );
   }
@@ -179,7 +179,7 @@ function StudentPerformanceView({ data, status, onRetry }) {
             Try again
           </button>
         </div>
-        <StudentLearningAnalytics />
+        <StudentPracticeAnalytics />
       </>
     );
   }
@@ -223,7 +223,7 @@ function StudentPerformanceView({ data, status, onRetry }) {
           <SummaryCard key={label} label={label} value={value} tone={tone} />
         ))}
       </div>
-      <StudentLearningAnalytics />
+      <StudentPracticeAnalytics />
       <div className="row g-4 performance-charts-row">
         <div className="col-12 col-xl-8">
           <section className="performance-panel performance-chart-panel">
@@ -322,49 +322,13 @@ const formatStudyTime = (value) => {
   return null;
 };
 
-function StudentLearningAnalytics() {
+function StudentPracticeAnalytics() {
   const [reloadKey, setReloadKey] = useState(0);
-  const [days, setDays] = useState(7);
-  const [studyTime, setStudyTime] = useState({ status: "loading", value: "" });
-  const [dailyTime, setDailyTime] = useState({ status: "loading", items: [] });
   const [practice, setPractice] = useState({ status: "loading", courses: [] });
 
   useEffect(() => {
     let active = true;
-    setStudyTime({ status: "loading", value: "" });
-    setDailyTime({ status: "loading", items: [] });
     setPractice({ status: "loading", courses: [] });
-
-    ActivitySessionService.getTotalTime()
-      .then((response) => {
-        if (!active) return;
-        const formatted = formatStudyTime(response?.data);
-        setStudyTime(
-          formatted
-            ? { status: "ready", value: formatted }
-            : { status: "unavailable", value: "" },
-        );
-      })
-      .catch((error) => {
-        console.error("Failed to load total study time:", error);
-        if (active) setStudyTime({ status: "error", value: "" });
-      });
-
-    ActivitySessionService.getDailyTime(days)
-      .then((response) => {
-        if (!active) return;
-        const payload = response?.data;
-        const items = Array.isArray(payload)
-          ? payload
-          : Array.isArray(payload?.items)
-            ? payload.items
-            : [];
-        setDailyTime({ status: "ready", items });
-      })
-      .catch((error) => {
-        console.error("Failed to load daily study time:", error);
-        if (active) setDailyTime({ status: "error", items: [] });
-      });
 
     PracticePerformanceService.getMyLevel("course")
       .then((response) => {
@@ -385,7 +349,7 @@ function StudentLearningAnalytics() {
     return () => {
       active = false;
     };
-  }, [days, reloadKey]);
+  }, [reloadKey]);
 
   const attempted = practice.courses.reduce(
     (total, course) => total + numberValue(course.attemptedUnits),
@@ -404,90 +368,26 @@ function StudentLearningAnalytics() {
         numberValue(first.accuracyPercentage),
     )
     .slice(0, 5);
-  const periodSeconds = dailyTime.items.reduce(
-    (total, item) => total + numberValue(item.activeSeconds),
-    0,
-  );
-  const dailyLabels = dailyTime.items.map((item) => {
-    const [year, month, dayOfMonth] = String(item.date || "")
-      .split("-")
-      .map(Number);
-    const date = new Date(year, month - 1, dayOfMonth);
-    return Number.isNaN(date.getTime())
-      ? String(item.date || "")
-      : date.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
-  });
-
   return (
     <section className="performance-panel student-learning-analytics">
       <div className="performance-panel-heading">
         <div>
-          <h2>Study Time & Practice</h2>
-          <p>Active time tracked in the app and your course-level practice.</p>
+          <h2>Practice Insights</h2>
+          <p>Your course-level practice activity and accuracy.</p>
         </div>
         <div className="student-learning-actions">
-          <label className="visually-hidden" htmlFor="student-study-time-days">
-            Daily study-time range
-          </label>
-          <select
-            id="student-study-time-days"
-            className="form-select form-select-sm"
-            value={days}
-            onChange={(event) => setDays(Number(event.target.value))}
-          >
-            <option value={7}>Last 7 days</option>
-            <option value={30}>Last 30 days</option>
-            <option value={90}>Last 90 days</option>
-          </select>
           <button
             type="button"
             className="btn btn-sm btn-outline-primary"
             onClick={() => setReloadKey((key) => key + 1)}
-            aria-label="Refresh study time and practice analytics"
+            aria-label="Refresh practice analytics"
           >
             <FaRedo /> Refresh
           </button>
         </div>
       </div>
       <div className="row g-3">
-        <div className="col-12 col-sm-6 col-xl-3">
-          <div className="student-learning-metric">
-            <FaClock aria-hidden="true" />
-            <span>All-time active study</span>
-            <strong>
-              {studyTime.status === "loading"
-                ? "Loading..."
-                : studyTime.status === "ready"
-                  ? studyTime.value
-                  : "Unavailable"}
-            </strong>
-            {studyTime.status === "error" && (
-              <small role="alert">Could not load tracked study time.</small>
-            )}
-            {studyTime.status === "unavailable" && (
-              <small role="status">
-                The time total was returned in an unsupported format.
-              </small>
-            )}
-          </div>
-        </div>
-        <div className="col-12 col-sm-6 col-xl-3">
-          <div className="student-learning-metric">
-            <FaClock aria-hidden="true" />
-            <span>Study time (last {days} days)</span>
-            <strong>
-              {dailyTime.status === "loading"
-                ? "Loading..."
-                : dailyTime.status === "error"
-                  ? "Unavailable"
-                  : formatStudyTime(periodSeconds)}
-            </strong>
-            {dailyTime.status === "error" && (
-              <small role="alert">Could not load daily study time.</small>
-            )}
-          </div>
-        </div>
-        <div className="col-12 col-sm-6 col-xl-3">
+        <div className="col-12 col-sm-6 col-xl-6">
           <div className="student-learning-metric">
             <FaBullseye aria-hidden="true" />
             <span>Practice accuracy</span>
@@ -505,7 +405,7 @@ function StudentLearningAnalytics() {
             )}
           </div>
         </div>
-        <div className="col-12 col-sm-6 col-xl-3">
+        <div className="col-12 col-sm-6 col-xl-6">
           <div className="student-learning-metric">
             <FaCheck aria-hidden="true" />
             <span>Practice questions attempted</span>
@@ -518,62 +418,6 @@ function StudentLearningAnalytics() {
             </strong>
           </div>
         </div>
-      </div>
-      <div className="student-daily-study-chart">
-        <h3>Daily study time</h3>
-        {dailyTime.status === "loading" ? (
-          <div className="performance-notice" role="status">
-            <span className="spinner-border spinner-border-sm" /> Loading daily
-            study time...
-          </div>
-        ) : dailyTime.status === "error" ? (
-          <div className="performance-notice performance-notice-error" role="alert">
-            Daily study-time data could not be loaded. Please refresh to try
-            again.
-          </div>
-        ) : dailyTime.items.length ? (
-          <div className="performance-chart-wrap">
-            <BarChart
-              className="performance-chart"
-              xAxis={[
-                {
-                  scaleType: "band",
-                  data: dailyLabels,
-                  tickLabelStyle: { fill: "#64748b", fontSize: 11 },
-                },
-              ]}
-              yAxis={[
-                {
-                  min: 0,
-                  tickLabelStyle: { fill: "#64748b", fontSize: 11 },
-                  valueFormatter: (value) => formatStudyTime(value),
-                },
-              ]}
-              series={[
-                {
-                  data: dailyTime.items.map((item) =>
-                    numberValue(item.activeSeconds),
-                  ),
-                  label: "Active study time",
-                  valueFormatter: (value) => formatStudyTime(value),
-                  color: "#6366f1",
-                },
-              ]}
-              grid={{ horizontal: true }}
-              height={280}
-              margin={{ left: 64, right: 20, top: 24, bottom: 48 }}
-              slotProps={{ legend: { hidden: true } }}
-            />
-          </div>
-        ) : (
-          <div className="performance-empty">
-            No daily study-time data is available for this period.
-          </div>
-        )}
-        <p className="student-daily-study-note">
-          Daily history is collected from the rollout of daily tracking; older
-          session totals cannot be reliably assigned to dates.
-        </p>
       </div>
       {practice.status === "ready" && (
         <div className="student-practice-courses">

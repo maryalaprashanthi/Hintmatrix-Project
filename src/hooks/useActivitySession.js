@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import ActivitySessionService from "../services/ActivitySessionService";
 import { logoutUser } from "../interceptors/axiosInterceptor";
 import { useToast } from "../components/Toast/useToast";
@@ -10,7 +10,21 @@ const HEARTBEAT_INTERVAL_MS = 30_000;
 const IDLE_AFTER_MS = 5 * 60_000;
 const LOGOUT_AFTER_MS = 30 * 60_000;
 
+const getContentContext = (pathname) => {
+  const chapterMatch = pathname.match(/^\/chapters\/(\d+)\/topics\/?$/);
+  if (chapterMatch) return { chapterId: Number(chapterMatch[1]) };
+
+  const topicMatch = pathname.match(/^\/topics\/(\d+)\/questions\/?$/);
+  if (topicMatch) return { topicId: Number(topicMatch[1]) };
+
+  const questionMatch = pathname.match(/^\/(?:questions|journal|dropdown)\/(\d+)\/?$/);
+  if (questionMatch) return { questionId: Number(questionMatch[1]) };
+
+  return {};
+};
+
 export default function useActivitySession() {
+  const location = useLocation();
   const navigate = useNavigate();
   const toast = useToast();
   const toastRef = useRef(toast);
@@ -22,6 +36,8 @@ export default function useActivitySession() {
   const requestInFlightRef = useRef(false);
   const lastRecordedEventRef = useRef(0);
   const sessionExpiredRef = useRef(false);
+  const contentContextRef = useRef(getContentContext(location.pathname));
+  contentContextRef.current = getContentContext(location.pathname);
 
   toastRef.current = toast;
 
@@ -63,6 +79,12 @@ export default function useActivitySession() {
         } else {
           saveSession(await ActivitySessionService.start());
         }
+        if (sessionKeyRef.current) {
+          await ActivitySessionService.heartbeat(
+            sessionKeyRef.current,
+            contentContextRef.current,
+          );
+        }
       } catch (error) {
         if (isInactivityExpiry(error)) {
           expireForInactivity();
@@ -102,7 +124,11 @@ export default function useActivitySession() {
       ) {
         requestInFlightRef.current = true;
         ActivitySessionService.resume(sessionKeyRef.current)
-          .then(() => {
+          .then(async () => {
+            await ActivitySessionService.heartbeat(
+              sessionKeyRef.current,
+              contentContextRef.current,
+            );
             idleRef.current = false;
           })
           .catch((error) => {
@@ -137,7 +163,10 @@ export default function useActivitySession() {
             idleRef.current = true;
           }
         } else if (document.visibilityState === "visible") {
-          await ActivitySessionService.heartbeat(sessionKey);
+          await ActivitySessionService.heartbeat(
+            sessionKey,
+            contentContextRef.current,
+          );
           idleRef.current = false;
         }
       } catch (error) {
@@ -172,4 +201,18 @@ export default function useActivitySession() {
       window.removeEventListener("focus", markActive);
     };
   }, [navigate]);
+
+  useEffect(() => {
+    const sessionKey = sessionKeyRef.current;
+    if (!sessionKey || idleRef.current || requestInFlightRef.current) return;
+
+    requestInFlightRef.current = true;
+    ActivitySessionService.heartbeat(sessionKey, contentContextRef.current)
+      .catch(() => {
+        // The periodic heartbeat will retry context attribution.
+      })
+      .finally(() => {
+        requestInFlightRef.current = false;
+      });
+  }, [location.pathname]);
 }

@@ -21,6 +21,7 @@ import {
   MdAssignmentTurnedIn,
   MdBarChart,
   MdInsights,
+  MdAccessTime,
   MdSettings,
   MdLogout,
   MdKeyboardArrowDown,
@@ -54,6 +55,7 @@ export default function Sidebar({
   const canAccessAdminMenu = canAccessFeature("subscriptions", userRole);
   const canAccessPlans = canAccessFeature("subscriptionsPlans", userRole);
   const canAccessPerformance = canAccessFeature("performance", userRole);
+  const canAccessTimeAnalytics = canAccessFeature("timeAnalytics", userRole);
   const canAccessPracticePerformance = canAccessFeature(
     "practicePerformance",
     userRole,
@@ -510,8 +512,21 @@ export default function Sidebar({
               <div className="menu-left">
                 <MdBarChart className="menu-icon" />
                 <span>
-                  {isStudent ? "Performance & Study Time" : "Exam Performance"}
+                  {isStudent ? "Performance" : "Exam Performance"}
                 </span>
+              </div>
+            </NavLink>
+          )}
+
+          {canAccessTimeAnalytics && (
+            <NavLink
+              to="/time-analytics"
+              className={menuClass}
+              onClick={closeSidebar}
+            >
+              <div className="menu-left">
+                <MdAccessTime className="menu-icon" />
+                <span>Study Time Tracking</span>
               </div>
             </NavLink>
           )}
