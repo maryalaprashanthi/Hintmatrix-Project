@@ -21,7 +21,6 @@ import TableAttributeService from "../../services/TableAttributeService";
 import TableHeaderService from "../../services/TableHeaderService";
 import TopicService from "../../services/TopicService";
 import { normalizeQuestionType } from "../../utils/questionType";
-import { AdjustmentQuestionPreview } from "./CreateDragAndDropWithAdj";
 import DragAndDropAttributeEditor from "./DragAndDropAttributeEditor";
 import { getQuestionAttributeSide } from "../../utils/questionAttributeSide";
 import { emptyAdjustmentForm, buildAdjustmentAttributes, validateAdjustmentForm } from "./adjustmentQuestionForm";
@@ -221,7 +220,7 @@ function QuestionPreviewCard({
     !isMatchingType(type) &&
     !isFillBlankType(type);
 
-  const ledger = (s.ledgerRows ?? []).filter(
+  const ledger = (type === "DRAG_AND_DROP_WITH_ADJ" ? s.adjustmentForm?.balances ?? [] : s.ledgerRows ?? []).filter(
     (r) => r.debitAttributeId || r.creditAttributeId,
   );
   const attrs = (s.attributeRows ?? []).filter((r) => r.attributeId);
@@ -332,8 +331,7 @@ function QuestionPreviewCard({
       )}
 
       {/* DRAG AND DROP - ledger table */}
-      {type === "DRAG_AND_DROP_WITH_ADJ" && <AdjustmentQuestionPreview value={s.adjustmentForm} attributeLabel={attributeLabel} />}
-      {type === "DRAG_AND_DROP" && (
+      {["DRAG_AND_DROP", "DRAG_AND_DROP_WITH_ADJ"].includes(type) && (
         <div className="aq-live-table-wrap">
           <table className="aq-live-table">
             <thead>
@@ -362,6 +360,20 @@ function QuestionPreviewCard({
                 </tr>
               ))}
             </tbody>
+          </table>
+        </div>
+      )}
+
+      {type === "DRAG_AND_DROP_WITH_ADJ" && (
+        <div className="aq-live-table-wrap">
+          <table className="aq-live-table">
+            <thead><tr><th>Adjustments</th><th className="num">Amount</th></tr></thead>
+            <tbody>{(s.adjustmentForm?.adjustments ?? []).filter((row) => row.attributeId).map((row, i) => (
+              <tr key={i}>
+                <td>{attributeLabel(row.attributeId)}{row.note && <p>{row.note}</p>}</td>
+                <td className="num">{row.amount}{row.amount2 !== "" && row.amount2 != null && <div>Amount 2: {row.amount2}</div>}</td>
+              </tr>
+            ))}</tbody>
           </table>
         </div>
       )}

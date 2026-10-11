@@ -7,6 +7,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { build } from "esbuild";
 import { calculateFinalAccounts, data } from "./SampleData.js";
 import { adjustmentTableRows } from "./adjustmentPlacement.js";
+import { questionSourceSections } from "./questionSourceSections.js";
 
 // Exercise the real shared table, draggable tiles, accounting cells and cards.
 // Replace only external drag sensors, network access and the store boundary.
@@ -80,12 +81,12 @@ function renderControlled({ rows = defaultRows(), busy = false, score = 42.5, ro
   counts = {}, effects = {}, feedback = "", selected, fullyPlaced = false } = {}) {
   resetBoundaries();
   const count = (row) => counts[row.id] ?? 0;
-  const isSolved = (row) => effects[row.id] != null && count(row) >= effects[row.id];
+  const isSolved = (row) => effects[row.id] > 0 && count(row) === effects[row.id];
   const balances = (side) => rows.filter((row) => !row.adjustment && row.type === side);
   const total = (side) => balances(side).filter((row) => !isSolved(row)).reduce((sum, row) => sum + Number(row.amount || 0), 0);
   const model = {
     question, headerActions: createElement("span", null, createElement("button", { type: "button" }, "Reset"), createElement("button", { type: "button" }, "Check")),
-    debitBalances: balances("debit"), creditBalances: balances("credit"), adjustments: rows.filter((row) => row.adjustment),
+    ...questionSourceSections(rows, isSolved),
     debitTotal: total("debit"), creditTotal: total("credit"), total: rows.length,
     solved: rows.filter(isSolved).length, score, balanceCount: balances("debit").length + balances("credit").length,
     rowsByTarget, finalAccounts: calculateFinalAccounts(rowsByTarget), fullyPlaced, busy, feedback,
@@ -191,6 +192,50 @@ test("an adjustment remains pending until every effect is placed and then shows 
   assert.match(complete, /fill="#10b981"/);
   assert.equal(globalThis.__dragSources.find((item) => item.id === 13).disabled, true);
   assert.equal(summaryValues(complete).Progress, "1/3");
+  const answered = (html) => html.slice(html.indexOf('class="tb-accordion-title">Answered'), html.indexOf("Adjustments</h5>"));
+  assert.doesNotMatch(answered(partial), /Outstanding Rent/);
+  assert.match(answered(complete), /Outstanding Rent/);
+  assert.doesNotMatch(complete.slice(complete.indexOf("Adjustments</h5>"), complete.indexOf("Trading Account</span>")), /Outstanding Rent/);
+});
+
+test("both types move solved balances below active debit and credit rows in the shared Answered section", () => {
+  const adjusted = renderControlled({ counts: { 11: 1, 12: 1 }, effects: { 11: 1, 12: 1, 13: 2 } });
+  const beforeAnswered = adjusted.slice(0, adjusted.indexOf('class="tb-accordion-title">Answered'));
+  const answered = adjusted.slice(adjusted.indexOf('class="tb-accordion-title">Answered'), adjusted.indexOf("Adjustments</h5>"));
+  assert.doesNotMatch(beforeAnswered, /Purchases|Sales/);
+  assert.match(answered, /Purchases/); assert.match(answered, /Sales/);
+  assert.doesNotMatch(answered, /Outstanding Rent/);
+  assert.equal((adjusted.match(/>Purchases<\/span>/g) ?? []).length, 1);
+  assert.equal((adjusted.match(/>Sales<\/span>/g) ?? []).length, 1);
+  assert.ok(adjusted.indexOf("Credit Balances") < adjusted.indexOf('class="tb-accordion-title">Answered'));
+  resetBoundaries({ questions: [
+    { id: 11, name: "Purchases", amount: 7425, type: "debit", status: "solved", hints: [] },
+    { id: 12, name: "Sales", amount: 12000, type: "credit", status: "solved", hints: [] },
+  ] });
+  const ordinary = renderToStaticMarkup(createElement(Table));
+  assert.doesNotMatch(ordinary.slice(0, ordinary.indexOf('class="tb-accordion-title">Answered')), /Purchases|Sales/);
+  assert.match(ordinary.slice(ordinary.indexOf('class="tb-accordion-title">Answered')), /Purchases/);
+  assert.match(ordinary.slice(ordinary.indexOf('class="tb-accordion-title">Answered')), /Sales/);
+});
+
+test("shared source grouping preserves row identity through partial effects, saved answers and reset", () => {
+  const rows = [...defaultRows(), { id: 14, name: "Outstanding Rent", amount: 70, adjustment: true }];
+  let counts = { 11: 1, 13: 1, 14: 2 };
+  const required = { 11: 1, 13: 2, 14: 2 };
+  const grouped = () => questionSourceSections(rows, (row) => required[row.id] > 0 && counts[row.id] === required[row.id]);
+  let result = grouped();
+  assert.deepEqual(result.answeredDebits, [rows[0]]);
+  assert.deepEqual(result.adjustments, [rows[2]]);
+  assert.deepEqual(result.answeredAdjustments, [rows[3]]);
+  assert.equal(result.answeredAdjustments[0], rows[3]);
+  counts[13] = 2; result = grouped();
+  assert.deepEqual(result.adjustments, []);
+  assert.deepEqual(result.answeredAdjustments, [rows[2], rows[3]]);
+  counts = {}; result = grouped();
+  assert.deepEqual(result.answeredDebits, []); assert.deepEqual(result.answeredAdjustments, []);
+  assert.deepEqual(result.debitBalances, [rows[0]]);
+  assert.deepEqual(result.creditBalances, [rows[1]]);
+  assert.deepEqual(result.adjustments, [rows[2], rows[3]]);
 });
 
 test("busy adjustment state locks the shared draggable and all add/less sensors", () => {
