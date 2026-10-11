@@ -79,21 +79,21 @@ const CheckMistakes = ({ userId, questionId }) => {
         <Table borderless size="sm" className="check-mistakes-table">
           <thead>
             <tr>
-              <th className="date-cell">Date</th>
-              <th className="date-cell">Element</th>
-              <th className="date-cell">Option Selected</th>
+              <th className="mistake-date-cell">Date</th>
+              <th className="mistake-attribute-cell">Attribute</th>
+              <th className="mistake-answer-cell">Option Selected</th>
             </tr>
           </thead>
           <tbody>
             {mistakes.map((mistake, idx) => (
               <tr key={idx}>
-                <td className="date-cell">
+                <td className="mistake-date-cell">
                   {formattedTime(mistake.createdAt)}
                 </td>
-                <td>
+                <td className="mistake-attribute-cell">
                   <strong>{mistake.attributeName ?? ""}</strong>
                 </td>
-                <td className="date-cell">{mistake.userAnswer ?? ""}</td>
+                <td className="mistake-answer-cell">{mistake.userAnswer ?? ""}</td>
               </tr>
             ))}
           </tbody>

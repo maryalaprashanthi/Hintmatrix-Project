@@ -1,41 +1,63 @@
-import React from "react";
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
+import { FaTimes } from "react-icons/fa";
 import CheckMistakes from "./CheckMistakes";
-import { Button, Modal } from "react-bootstrap";
-import useQuestionStore from "./questionStore";
 import { getCurrentUserId } from "../../utils/user";
+import "./CheckMistakes.css";
 
-const MistakesModal = ({ questionId, setCheckMistakes, checkMistakes }) => {
-  const handleClose = () => {
-    setCheckMistakes(false); // Reset the showCheckMistakes state when closing the modal
-  };
+const MistakesModal = ({ questionId, setCheckMistakes }) => {
+  const handleClose = () => setCheckMistakes(false);
 
-  return (
-    <div className="row g-4 align-items-start">
-      <Modal
-        show={checkMistakes}
-        onHide={handleClose}
-        centered
-        backdrop={true}
-        size="xl"
-        contentClassName="check-mistakes-modal"
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") setCheckMistakes(false);
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [setCheckMistakes]);
+
+  return createPortal(
+    <div
+      className="check-mistakes-overlay"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) handleClose();
+      }}
+    >
+      <section
+        className="check-mistakes-popup"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="check-mistakes-title"
       >
-        <Modal.Header closeButton className="check-mistakes-header">
-          <Modal.Title className="check-mistakes-title">
-            Check Mistakes
-          </Modal.Title>
-        </Modal.Header>
+        <header className="check-mistakes-header">
+          <div className="check-mistakes-heading">
+            <h2 id="check-mistakes-title">Check Mistakes</h2>
+            <p>Review the incorrect answers you have submitted for this question.</p>
+          </div>
+          <button
+            type="button"
+            className="check-mistakes-close"
+            aria-label="Close check mistakes"
+            onClick={handleClose}
+          >
+            <FaTimes />
+          </button>
+        </header>
 
-        <Modal.Body>
+        <div className="check-mistakes-body">
           <CheckMistakes userId={getCurrentUserId()} questionId={questionId} />
-        </Modal.Body>
+        </div>
 
-        <Modal.Footer className="check-mistakes-footer">
-          <Button className="close-fix-btn" onClick={handleClose}>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </div>
+      </section>
+    </div>,
+    document.body,
   );
 };
 
