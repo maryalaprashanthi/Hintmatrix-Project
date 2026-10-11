@@ -79,6 +79,7 @@ import MockExamCatalog from "./pages/MockExamCatalog/MockExamCatalog";
 import ExamReview from "./pages/ExamReview/ExamReview";
 import ExamPaper from "./pages/ExamPaper/ExamPaper";
 import PerformanceDashboard from "./pages/Performance/PerformanceDashboard";
+import TimeAnalytics from "./pages/TimeAnalytics/TimeAnalytics";
 import PracticePerformance from "./pages/PracticePerformance/PracticePerformance";
 import ErrorList from "./pages/Errors/ErrorList";
 
@@ -210,6 +211,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={ATTEMPT_ROLES}>
               <PracticePerformance />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/time-analytics"
+          element={
+            <ProtectedRoute allowedRoles={ATTEMPT_ROLES}>
+              <TimeAnalytics />
             </ProtectedRoute>
           }
         />

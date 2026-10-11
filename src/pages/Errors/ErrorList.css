@@ -152,19 +152,27 @@
 
 .error-list-chapters {
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
   gap: 10px;
 }
 
 .error-list-search {
   display: flex;
+  max-width: 460px;
   min-height: 42px;
   align-items: center;
   gap: 10px;
+  margin: 12px 0 16px;
   padding: 0 12px;
   color: var(--error-muted);
   background: #fff;
   border: 1px solid var(--error-border);
   border-radius: 9px;
+}
+
+.error-list-search:focus-within {
+  border-color: #86a9ff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
 }
 
 .error-list-search input {
@@ -174,27 +182,16 @@
   background: transparent;
   border: 0;
   outline: none;
-  box-shadow: none;
-  appearance: none;
-  -webkit-appearance: none;
   font: inherit;
   font-size: 13px;
-}
-
-.error-list-search input:focus,
-.error-list-search input:focus-visible {
-  border: 0;
-  outline: none;
-  box-shadow: none;
 }
 
 .error-list-search input::placeholder {
   color: #98a2b3;
 }
 
-.error-list-chapter-search {
-  max-width: 420px;
-  margin: 0 0 14px;
+.error-list-search input:focus-visible {
+  outline: none;
 }
 
 .error-list-toolbar {
@@ -202,10 +199,6 @@
   align-items: center;
   gap: 12px;
   margin: 14px 0;
-}
-
-.error-list-toolbar .error-list-search {
-  flex: 1 1 320px;
 }
 
 .error-list-sort {
@@ -237,17 +230,9 @@
 }
 
 .error-list-sort select:focus,
-.error-list-sort select:focus-visible,
-.error-list-search input:focus-visible,
-.error-list-clear-search:focus-visible {
+.error-list-sort select:focus-visible {
   outline: none;
   box-shadow: none;
-}
-
-.error-list-search input:focus-visible,
-.error-list-clear-search:focus-visible {
-  outline: 2px solid var(--error-blue);
-  outline-offset: 2px;
 }
 
 .error-list-result-count {
@@ -282,37 +267,24 @@
   font-size: 13px;
 }
 
-.error-list-clear-search {
-  padding: 3px 6px;
-  color: var(--error-blue);
-  background: transparent;
-  border: 0;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.error-list-clear-search:hover {
-  text-decoration: underline;
-}
-
 .error-list-chapter {
   display: flex;
-  min-height: 60px;
-  align-items: center;
+  min-height: 190px;
+  align-items: stretch;
   justify-content: space-between;
-  gap: 16px;
-  padding: 12px 16px;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
   color: var(--error-text);
   background: #fff;
   border: 1px solid var(--error-border);
-  border-radius: 10px;
+  border-radius: 16px;
   text-decoration: none;
   transition:
     border-color 0.15s ease,
     background-color 0.15s ease,
     box-shadow 0.15s ease,
+    transform 0.15s ease,
     color 0.15s ease;
 }
 
@@ -321,6 +293,7 @@
   background: #f8faff;
   border-color: #b8cdfc;
   box-shadow: 0 2px 6px rgba(21, 94, 239, 0.08);
+  transform: translateY(-3px);
 }
 
 .error-list-chapter:focus-visible,
@@ -332,31 +305,63 @@
 }
 
 .error-list-chapter-info {
-  display: flex;
+  display: grid;
   min-width: 0;
-  align-items: center;
+  gap: 8px;
+}
+
+.error-list-chapter-icon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  margin-bottom: 4px;
+  color: #4f46e5;
+  background: #eef2ff;
+  border-radius: 14px;
+  font-size: 20px;
 }
 
 .error-list-chapter-name {
+  color: var(--error-navy);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.error-list-chapter-context {
   overflow: hidden;
-  font-size: 14px;
-  font-weight: 600;
+  color: var(--error-muted);
+  font-size: 12px;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .error-list-chapter-trailing {
-  display: inline-flex;
-  flex: 0 0 auto;
+  display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 10px;
   color: var(--error-muted);
 }
 
 .error-list-chapter-count {
+  padding: 5px 9px;
+  color: var(--error-blue);
+  background: var(--error-blue-light);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.error-list-chapter-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   color: var(--error-blue);
   font-size: 13px;
   font-weight: 600;
-  white-space: nowrap;
 }
 
 .error-list-back {
@@ -542,10 +547,6 @@
   .error-list-toolbar {
     align-items: stretch;
     flex-direction: column;
-  }
-
-  .error-list-toolbar .error-list-search {
-    flex-basis: auto;
   }
 
   .error-list-sort {
