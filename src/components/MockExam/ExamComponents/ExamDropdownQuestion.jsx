@@ -3,16 +3,90 @@ import "../../DropdownQuestions/DropdownQuestion.css";
 import Select from "react-select";
 import { useState } from "react";
 import { useOverlayContainer } from "../ExamShell/useOverlayContainer";
+import { useRuleTables } from "./useRuleTables";
+
+const menuPortalStyles = { menuPortal: (base) => ({ ...base, zIndex: 9999 }) };
+
+// The Debit and Credit selects inside an open transaction. The popover mounts
+// this only while it is open, so the rule engine calls happen when the student
+// first opens a transaction. Every transaction offers the same list: all the
+// accounts that any attribute of the question can use. Later opens reuse the
+// first requests (see examRules).
+const DropdownSelects = ({
+  item,
+  attributeIds,
+  chapterId,
+  onTablesLoaded,
+  debitValue,
+  creditValue,
+  isFilled,
+  overlayContainer,
+  onPick,
+}) => {
+  const { status, tables, retry } = useRuleTables(attributeIds, chapterId, onTablesLoaded);
+  const loading = status === "loading";
+
+  const optionsDebitData = tables.map((table) => ({
+    label: `${table.name} ... Dr`,
+    value: table.id,
+  }));
+  const optionsCreditData = tables.map((table) => ({
+    label: `To ${table.name}`,
+    value: table.id,
+  }));
+
+  return (
+    <div style={{ width: "400px" }}>
+      {status === "error" && (
+        <p className="small" role="alert">
+          The accounts did not load.{" "}
+          <button type="button" className="btn btn-link btn-sm p-0 align-baseline" onClick={retry}>
+            Try again
+          </button>
+        </p>
+      )}
+      <div className="mb-4">
+        <Select
+          options={optionsDebitData}
+          placeholder={loading ? "Loading accounts…" : "Select Debit A/C"}
+          value={debitValue}
+          closeMenuOnSelect={false}
+          menuPortalTarget={overlayContainer}
+          styles={menuPortalStyles}
+          onChange={(selected) => onPick(item.questionAttributeId, "Debit", selected)}
+          isDisabled={isFilled || loading}
+          isLoading={loading}
+          isSearchable
+        />
+      </div>
+
+      <Select
+        options={optionsCreditData}
+        placeholder={loading ? "Loading accounts…" : "Select Credit A/C"}
+        value={creditValue}
+        closeMenuOnSelect={false}
+        menuPortalTarget={overlayContainer}
+        styles={menuPortalStyles}
+        onChange={(selected) => onPick(item.questionAttributeId, "Credit", selected)}
+        isDisabled={isFilled || loading}
+        isLoading={loading}
+        isSearchable
+      />
+    </div>
+  );
+};
 
 // Exam version of DropdownQuestion: any option the user picks is accepted
 // and shown, there is no rule-matching / correct-incorrect check, and no
 // hint or autofill affordance.
 const ExamDropdownQuestion = ({
   data,
-  questionTables,
+  chapterId,
+  onTablesLoaded,
   answeredData,
   setAnsweredData,
 }) => {
+  const attributeIds = [...new Set(data.map((item) => String(item.attributeId)))];
   const [openAttributeId, setOpenAttributeId] = useState(null);
   // Must follow the fullscreen element, or the popover and its menus render
   // outside the painted subtree once the exam starts.
@@ -104,16 +178,6 @@ const ExamDropdownQuestion = ({
 
           <tbody>
             {data.map((item) => {
-              const optionsCreditData = questionTables.map((table) => ({
-                label: `To ${table.name}`,
-                value: table.id,
-              }));
-
-              const optionsDebitData = questionTables.map((table) => ({
-                label: `${table.name} ... Dr`,
-                value: table.id,
-              }));
-
               const debitValue = pickedFor(item.questionAttributeId, "Debit");
               const creditValue = pickedFor(item.questionAttributeId, "Credit");
 
@@ -147,47 +211,17 @@ const ExamDropdownQuestion = ({
                       </Popover.Header>
 
                       <Popover.Body>
-                        <div style={{ width: "400px" }}>
-                          <div className="mb-4">
-                            <Select
-                              options={optionsDebitData}
-                              placeholder="Select Debit A/C"
-                              value={debitValue}
-                              closeMenuOnSelect={false}
-                              menuPortalTarget={overlayContainer}
-                              styles={{
-                                menuPortal: (base) => ({
-                                  ...base,
-                                  zIndex: 9999,
-                                }),
-                              }}
-                              onChange={(selected) => {
-                                handleAdd(item.questionAttributeId, "Debit", selected);
-                              }}
-                              isDisabled={isFilled}
-                              isSearchable
-                            />
-                          </div>
-
-                          <Select
-                            options={optionsCreditData}
-                            placeholder="Select Credit A/C"
-                            value={creditValue}
-                            closeMenuOnSelect={false}
-                            menuPortalTarget={overlayContainer}
-                            styles={{
-                              menuPortal: (base) => ({
-                                ...base,
-                                zIndex: 9999,
-                              }),
-                            }}
-                            onChange={(selected) => {
-                              handleAdd(item.questionAttributeId, "Credit", selected);
-                            }}
-                            isDisabled={isFilled}
-                            isSearchable
-                          />
-                        </div>
+                        <DropdownSelects
+                          item={item}
+                          attributeIds={attributeIds}
+                          chapterId={chapterId}
+                          onTablesLoaded={onTablesLoaded}
+                          debitValue={debitValue}
+                          creditValue={creditValue}
+                          isFilled={isFilled}
+                          overlayContainer={overlayContainer}
+                          onPick={handleAdd}
+                        />
                       </Popover.Body>
                     </Popover>
                   }

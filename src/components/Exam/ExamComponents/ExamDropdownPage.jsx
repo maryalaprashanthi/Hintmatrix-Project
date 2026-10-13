@@ -8,42 +8,11 @@ import ExamDropdownSolution from "./ExamDropdownSolution";
 import useExamSessionStore from "./examSessionStore";
 
 import QuestionService from "../../../services/QuestionService";
-import RuleEngineService from "../../../services/RuleEngineService";
 
-const getRuleConditions = (rule) =>
-  [1, 2, 3, 4]
-    .map((index) => {
-      const nestedCondition = rule?.[`condition${index}`];
-
-      if (nestedCondition) {
-        return {
-          ...nestedCondition,
-          position: index,
-        };
-      }
-
-      const tableId = rule?.[`table${index}Id`];
-      const tableName = rule?.[`table${index}Name`];
-
-      if (tableId == null || !tableName) {
-        return null;
-      }
-
-      return {
-        tableId,
-        tableName,
-        headerId: rule?.[`header${index}Id`],
-        headerName: rule?.[`header${index}Name`],
-        arithmetic: rule?.[`arithmetic${index}`],
-        information: rule?.[`information${index}`],
-        position: index,
-      };
-    })
-    .filter(Boolean);
-
-// Exam version of DropdownPage: RuleEngineService is used only to know which
-// ledger accounts are valid options for each attribute (content), never to
-// grade the user's choice. There is no score, no "check mistakes" affordance,
+// Exam version of DropdownPage. Loading the question makes no rule engine
+// call: ExamDropdownQuestion fetches the account list when the student first
+// opens a transaction, then stores it here as questionTables (buildSubmission
+// reads it). Nothing here grades the user's choice. There is no score, no "check mistakes" affordance,
 // and everything the user picks stays in the shared exam session cache
 // (examSessionStore) until they explicitly hit Reset - navigating away and
 // back does not refetch or wipe it.
@@ -56,59 +25,27 @@ const ExamDropdownPage = ({ id, question: sourceQuestion }) => {
   const setAnsweredData = useExamSessionStore((state) => state.setAnsweredData);
 
   const question = entry?.question ?? null;
-  const questionTables = entry?.questionTables ?? [];
   const answeredData = entry?.answeredData ?? {};
 
   const loadPage = async () => {
     // The API paper passes the question object in; the sample paper doesn't,
-    // so fall back to fetching it by id. RuleEngine is still queried per
-    // attribute to build the dropdown options.
+    // so fall back to fetching it by id.
     const questionData =
       sourceQuestion ??
       (await QuestionService.getQuestionById(questionId)).data;
-    const attributes = questionData.questionAttributes || [];
-
-    const dropdownAttributes = await Promise.all(
-      attributes.map(async (attribute) => {
-        // A dropdown question may have no rule-engine row for an attribute
-        // (the rules only drive the option list, never grading). A 404 there
-        // must not blow up the whole page - it just means no options yet.
-        const ruleResponse = await RuleEngineService.getRuleEngineByAttributeId(
-          attribute.attributeId,
-        ).catch(() => null);
-
-        const rule = ruleResponse?.[0];
-        const ruleConditions = getRuleConditions(rule);
-
-        return {
-          ...attribute,
-          id: String(attribute.questionAttributeId),
-          questionId: questionData.questionId,
-          question: attribute.attributeName,
-          amount1: attribute.amount,
-          amount2: attribute.amount2,
-          ruleConditions,
-        };
+    const dropdownAttributes = (questionData.questionAttributes || []).map(
+      (attribute) => ({
+        ...attribute,
+        id: String(attribute.questionAttributeId),
+        questionId: questionData.questionId,
+        question: attribute.attributeName,
+        amount1: attribute.amount,
+        amount2: attribute.amount2,
       }),
-    );
-
-    const allTables = [];
-    dropdownAttributes.forEach((attribute) => {
-      (attribute.ruleConditions || []).forEach((condition) => {
-        if (condition?.tableId != null && condition?.tableName) {
-          allTables.push({ id: condition.tableId, name: condition.tableName });
-        }
-      });
-    });
-
-    const uniqueQuestionTables = allTables.filter(
-      (table, index, self) =>
-        index === self.findIndex((item) => String(item.id) === String(table.id)),
     );
 
     setQuestionData(questionId, {
       question: { ...questionData, questionAttributes: dropdownAttributes },
-      questionTables: uniqueQuestionTables,
     });
   };
 
@@ -151,7 +88,10 @@ const ExamDropdownPage = ({ id, question: sourceQuestion }) => {
         <Col md={6}>
           <ExamDropdownQuestion
             data={question.questionAttributes || []}
-            questionTables={questionTables}
+            chapterId={question.chapterId}
+            onTablesLoaded={(tables) =>
+              setQuestionData(questionId, { questionTables: tables })
+            }
             answeredData={answeredData}
             setAnsweredData={(updater) => setAnsweredData(questionId, updater)}
           />
