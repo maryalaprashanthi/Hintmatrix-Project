@@ -4,6 +4,44 @@ import Button from "react-bootstrap/Button";
 import { Overlay, Popover } from "react-bootstrap";
 import "../../JournalQuestion/JournalQuestion.css";
 import { useOverlayContainer } from "../ExamShell/useOverlayContainer";
+import { useRuleTables } from "./useRuleTables";
+
+// The account list inside an open transaction. The popover mounts this only
+// while it is open, so the rule engine call happens when the student opens
+// the transaction, not when the question loads.
+const JournalAccounts = ({ item, chapterId, onAdd }) => {
+  const { status, tables, retry } = useRuleTables([item.attributeId], chapterId);
+
+  if (status === "loading") {
+    return <p className="text-muted small mb-0" role="status">Loading accounts…</p>;
+  }
+  if (status === "error") {
+    return (
+      <p className="small mb-0" role="alert">
+        The accounts did not load.{" "}
+        <Button size="sm" variant="link" className="p-0 align-baseline" onClick={retry}>
+          Try again
+        </Button>
+      </p>
+    );
+  }
+  if (tables.length === 0) {
+    return <p className="text-muted small mb-0">No accounts are set up for this transaction.</p>;
+  }
+  return tables.map((table) => (
+    <div key={table.id} className="account-row">
+      <strong className="account-name">{table.name}</strong>
+
+      <Button onClick={() => onAdd(item, "Debit", table)} className="def transaction-btn">
+        Debit
+      </Button>
+
+      <Button onClick={() => onAdd(item, "Credit", table)} className="def transaction-btn">
+        Credit
+      </Button>
+    </div>
+  ));
+};
 
 // Exam version of JournalQuestion: any account the user picks for Debit or
 // Credit is accepted and shown, there is no rule-matching / correct-incorrect
@@ -11,7 +49,7 @@ import { useOverlayContainer } from "../ExamShell/useOverlayContainer";
 // some transactions legitimately need more than one Debit/Credit line, so
 // the popover stays reachable and duplicate entries are removed via
 // ExamJournalSolution instead of the row auto-disabling itself.
-const ExamJournalQuestion = ({ data = [], answeredData, setAnsweredData }) => {
+const ExamJournalQuestion = ({ data = [], chapterId, answeredData, setAnsweredData }) => {
   const [openAttributeId, setOpenAttributeId] = useState(null);
   const attributeTargets = useRef({});
   // Must follow the fullscreen element, or the popover renders outside the
@@ -147,27 +185,7 @@ const ExamJournalQuestion = ({ data = [], answeredData, setAnsweredData }) => {
                       </div>
 
                       <div className="popover-account-list">
-                        {item.tables?.map((table) => (
-                          <div key={table.id} className="account-row">
-                            <strong className="account-name">
-                              {table.name}
-                            </strong>
-
-                            <Button
-                              onClick={() => handleAdd(item, "Debit", table)}
-                              className="def transaction-btn"
-                            >
-                              Debit
-                            </Button>
-
-                            <Button
-                              onClick={() => handleAdd(item, "Credit", table)}
-                              className="def transaction-btn"
-                            >
-                              Credit
-                            </Button>
-                          </div>
-                        ))}
+                        <JournalAccounts item={item} chapterId={chapterId} onAdd={handleAdd} />
                       </div>
                     </Popover.Body>
                   </Popover>

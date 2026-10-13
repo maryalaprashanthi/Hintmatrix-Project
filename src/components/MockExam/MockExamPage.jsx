@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ExamQuestionRenderer from "./ExamQuestionRenderer";
+import { clearAttributeRules } from "./ExamComponents/examRules";
 import MockExamService from "../../services/MockExamService";
 import ExamTopBar from "./ExamShell/ExamTopBar";
 import QuestionRail from "./ExamShell/QuestionRail";
@@ -125,6 +126,9 @@ const MockExamPage = () => {
   const clearDragState = useExamQuestionStore((state) => state.reset);
 
   useEffect(() => {
+    // Rule requests are kept for one exam only (see examRules).
+    clearAttributeRules();
+
     const load = async () => {
       try {
         // /exams/:examId loads the paper from the API; /exam-mine keeps the

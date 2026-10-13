@@ -8,7 +8,7 @@ import useExamSessionStore from "./examSessionStore";
 import ExamJournalPage from "./ExamJournalPage";
 import ExamDropdownPage from "./ExamDropdownPage";
 import QuestionService from "../../../services/QuestionService";
-import RuleEngineService from "../../../services/RuleEngineService";
+import { fetchAttributeRules, pickRule, ruleDropCount } from "./examRules";
 import { questionTypeOf } from "./questionTypeOf";
 import { data } from "./SampleData";
 
@@ -20,41 +20,28 @@ import { data } from "./SampleData";
 // back (examQuestionStore / examSessionStore are keyed by questionId and are
 // only cleared by an explicit Reset) - nothing is refetched or wiped just
 // because the component remounted.
-// An attribute belongs in one account per rule condition (1-4) that has an
-// arithmetic set. That count is how many times the student may drop it.
-const countRuleDrops = (rules, chapterId) => {
-  const activeRules = (Array.isArray(rules) ? rules : []).filter(
-    (rule) => rule.activeRow !== false,
-  );
-  const rule =
-    activeRules.find(
-      (item) => chapterId != null && String(item.chapterId) === String(chapterId),
-    ) ?? activeRules[0];
-  if (!rule) return null;
-
-  const count = [1, 2, 3, 4].filter(
-    (index) => rule[`condition${index}`]?.arithmetic != null,
-  ).length;
-  return count > 0 ? count : null;
+// The rule is not loaded with the question. When the student starts to drag
+// a row, the page fetches that row's rule (once per attribute per exam) and
+// stores how many accounts the row belongs in. The drop waits for that rule,
+// then checks the limit.
+const ensureDropLimit = async (questionId, row, chapterId) => {
+  if (!row || row.maxDrops !== undefined) return;
+  try {
+    const rules = await fetchAttributeRules(row.attributeId);
+    useExamQuestionStore
+      .getState()
+      .setDropLimit(questionId, row.attributeId, ruleDropCount(pickRule(rules, chapterId)));
+  } catch (error) {
+    // Leave the limit unknown: this drop is allowed, and the next drag of
+    // this row tries again.
+    console.error("Failed to load the rule for this row:", error);
+  }
 };
 
-// One rule-engine call per distinct attribute. A failed call leaves that
-// attribute without a limit rather than blocking the question.
-const loadDropLimits = async (questionData) => {
-  const attributeIds = [
-    ...new Set(
-      (questionData.questionAttributes || []).map((attribute) => attribute.attributeId),
-    ),
-  ];
-  const entries = await Promise.all(
-    attributeIds.map(async (attributeId) => {
-      const rules = await RuleEngineService.getRuleEngineByAttributeId(attributeId)
-        .catch(() => null);
-      return [attributeId, countRuleDrops(rules, questionData.chapterId)];
-    }),
-  );
-  return Object.fromEntries(entries);
-};
+const rowFor = (questionId, sourceId) =>
+  useExamQuestionStore
+    .getState()
+    .byQuestionId[questionId]?.questions.find((row) => String(row.id) === String(sourceId));
 
 const ExamQuestionPage = ({ id, question: sourceQuestion }) => {
   const { questionId: paramsQuestionId } = useParams();
@@ -62,8 +49,9 @@ const ExamQuestionPage = ({ id, question: sourceQuestion }) => {
 
   const [questionType, setQuestionType] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { moveQuestion, setQuestions, setTableData, setActiveQuestion, setDropLimits } =
+  const { moveQuestion, setQuestions, setTableData, setActiveQuestion } =
     useExamQuestionStore();
+  const chapterId = sourceQuestion?.chapterId;
   const cacheQuestionType = useExamSessionStore(
     (state) => state.setQuestionType,
   );
@@ -88,7 +76,6 @@ const ExamQuestionPage = ({ id, question: sourceQuestion }) => {
 
       setQuestions(questionId, [questionData]);
       setTableData(allStrings);
-      setDropLimits(questionId, await loadDropLimits(questionData));
     }
 
     return type;
@@ -138,7 +125,13 @@ const ExamQuestionPage = ({ id, question: sourceQuestion }) => {
 
   return (
     <DragDropProvider
-      onDragEnd={(event) => {
+      onDragStart={(event) => {
+        // Fetch the rule while the student is still dragging, so the drop
+        // rarely has to wait for it.
+        const sourceId = event.operation.source?.id;
+        void ensureDropLimit(questionId, rowFor(questionId, sourceId), chapterId);
+      }}
+      onDragEnd={async (event) => {
         if (event.canceled) return;
 
         const sourceId = event.operation.source.id;
@@ -147,6 +140,15 @@ const ExamQuestionPage = ({ id, question: sourceQuestion }) => {
         if (targetId == null) {
           return;
         }
+
+        // Shares the request that onDragStart sent; resolves at once when
+        // the rule is already known.
+        await ensureDropLimit(questionId, rowFor(questionId, sourceId), chapterId);
+
+        // The student can move to another question while the rule loads.
+        // moveQuestion acts on the active question, so drop only if this
+        // question is still the active one.
+        if (useExamQuestionStore.getState().activeQuestionId !== questionId) return;
 
         moveQuestion(sourceId, targetId);
       }}

@@ -7,38 +7,11 @@ import ExamJournalQuestion from "./ExamJournalQuestion";
 import ExamJournalSolution from "./ExamJournalSolution";
 import useExamSessionStore from "./examSessionStore";
 import QuestionService from "../../../services/QuestionService";
-import RuleEngineService from "../../../services/RuleEngineService";
 
-const getRuleConditions = (rule) =>
-  [1, 2, 3, 4].map((index) => {
-    const nestedCondition = rule?.[`condition${index}`];
-
-    if (nestedCondition) {
-      return { ...nestedCondition, position: index };
-    }
-
-    const tableId = rule?.[`table${index}Id`];
-    const tableName = rule?.[`table${index}Name`];
-
-    if (tableId == null || !tableName) {
-      return null;
-    }
-
-    return {
-      tableId,
-      tableName,
-      headerId: rule?.[`header${index}Id`],
-      headerName: rule?.[`header${index}Name`],
-      arithmetic: rule?.[`arithmetic${index}`],
-      information: rule?.[`information${index}`],
-      position: index,
-    };
-  });
-
-// Exam version of JournalPage: RuleEngineService is used only to build the
-// list of ledger accounts (content) available for each transaction, never
-// to grade the user's choice. There is no score and no "check mistakes"
-// affordance, and everything the user picks stays in the shared exam
+// Exam version of JournalPage. Loading the question makes no rule engine
+// call: ExamJournalQuestion fetches a transaction's ledger accounts when the
+// student opens that transaction. Nothing here grades the user's choice.
+// There is no score and no "check mistakes" affordance, and everything the user picks stays in the shared exam
 // session cache (examSessionStore) until they explicitly hit Reset -
 // navigating away and back does not refetch or wipe it.
 const ExamJournalPage = ({ id, question: sourceQuestion }) => {
@@ -54,70 +27,18 @@ const ExamJournalPage = ({ id, question: sourceQuestion }) => {
 
   const loadQuestion = async () => {
     // The API paper passes the question object in; the sample paper doesn't,
-    // so fall back to fetching it by id. RuleEngine is still queried per
-    // attribute to build the ledger-account options.
+    // so fall back to fetching it by id.
     const questionData =
       sourceQuestion ??
       (await QuestionService.getQuestionById(questionId)).data;
-    const attributes = questionData.questionAttributes || [];
-
-    const journalAttributes = await Promise.all(
-      attributes.map(async (attribute) => {
-        // A missing rule-engine row (404) for an attribute must not blow up the
-        // whole page - the rules only build the ledger-account options here.
-        const ruleResponse = await RuleEngineService.getRuleEngineByAttributeId(
-          attribute.attributeId,
-        ).catch(() => null);
-
-        const rule = ruleResponse?.[0];
-        const tables = [];
-        const conditions = getRuleConditions(rule);
-
-        conditions.forEach((condition) => {
-          if (!condition?.tableId || !condition?.tableName) {
-            return;
-          }
-
-          let table = tables.find(
-            (item) => String(item.id) === String(condition.tableId),
-          );
-
-          if (!table) {
-            table = {
-              id: condition.tableId,
-              name: condition.tableName,
-              debit: null,
-              credit: null,
-            };
-            tables.push(table);
-          }
-
-          if (condition.headerName === "Debit Particulars") {
-            table.debit = {
-              headerId: condition.headerId,
-              arithmetic: condition.arithmetic,
-              position: condition.position,
-            };
-          }
-
-          if (condition.headerName === "Credit Particulars") {
-            table.credit = {
-              headerId: condition.headerId,
-              arithmetic: condition.arithmetic,
-              position: condition.position,
-            };
-          }
-        });
-
-        return {
-          ...attribute,
-          id: String(attribute.questionAttributeId),
-          questionId: questionData.questionId,
-          question: attribute.attributeName,
-          amount1: attribute.amount,
-          amount2: attribute.amount2,
-          tables,
-        };
+    const journalAttributes = (questionData.questionAttributes || []).map(
+      (attribute) => ({
+        ...attribute,
+        id: String(attribute.questionAttributeId),
+        questionId: questionData.questionId,
+        question: attribute.attributeName,
+        amount1: attribute.amount,
+        amount2: attribute.amount2,
       }),
     );
 
@@ -167,6 +88,7 @@ const ExamJournalPage = ({ id, question: sourceQuestion }) => {
         <Col>
           <ExamJournalQuestion
             data={question.questionAttributes || []}
+            chapterId={question.chapterId}
             answeredData={answeredData}
             setAnsweredData={updateAnswered}
           />

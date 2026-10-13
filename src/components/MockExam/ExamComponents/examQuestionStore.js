@@ -33,9 +33,9 @@ const useExamQuestionStore = create((set, get) => ({
         amountSelection: "amount",
         type: getQuestionAttributeSide(attribute) ?? "adjustment",
         status: "pending",
-        // Filled in by setDropLimits once the rule engine answers. null means
-        // the limit is unknown, so drops stay unlimited.
-        maxDrops: null,
+        // undefined until the student first drags this row, then filled in by
+        // setDropLimit from the rule engine. null means no limit.
+        maxDrops: undefined,
       })),
     );
     set((state) => ({
@@ -47,8 +47,9 @@ const useExamQuestionStore = create((set, get) => ({
     }));
   },
 
-  // limits maps attributeId -> how many accounts that attribute belongs in.
-  setDropLimits: (questionId, limits) => set((state) => {
+  // Sets the drop limit on every row of one attribute in one question. The
+  // question id is explicit: the rule can arrive after the student moved on.
+  setDropLimit: (questionId, attributeId, maxDrops) => set((state) => {
     const slice = state.byQuestionId[questionId];
     if (!slice) return state;
     return {
@@ -56,10 +57,8 @@ const useExamQuestionStore = create((set, get) => ({
         ...state.byQuestionId,
         [questionId]: {
           ...slice,
-          questions: slice.questions.map((question) => ({
-            ...question,
-            maxDrops: limits[question.attributeId] ?? null,
-          })),
+          questions: slice.questions.map((question) => sameId(question.attributeId, attributeId)
+            ? { ...question, maxDrops } : question),
         },
       },
     };
