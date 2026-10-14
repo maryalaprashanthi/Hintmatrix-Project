@@ -33,7 +33,7 @@ const bundleOptions = {
 };
 const compiled = await build({
   stdin: {
-    contents: 'export { default as Table } from "./QuestionTable.jsx"; export { default as Draggable } from "./Draggable.jsx";',
+    contents: 'export { default as Table } from "./QuestionTable.jsx"; export { default as Draggable } from "./Draggable.jsx"; export { default as Droppable } from "./Droppable.jsx";',
     resolveDir: fileURLToPath(new URL(".", import.meta.url)),
     sourcefile: "shared-question-test.js",
   },
@@ -41,7 +41,7 @@ const compiled = await build({
 });
 const module = { exports: {} };
 new Function("require", "module", "exports", compiled.outputFiles[0].text)(createRequire(import.meta.url), module, module.exports);
-const { Table, Draggable } = module.exports;
+const { Table, Draggable, Droppable } = module.exports;
 
 // Inspect actual tile callback props with only local React hooks stubbed. The
 // SSR assertions above still run with real React and React Bootstrap.
@@ -272,18 +272,44 @@ test("shared accounting cells group outstanding additions and prepaid deductions
   placements.forEach((row) => { row.target = `Profit & Loss Account-Debit Particulars-${row.operation}`; });
   const rowsByTarget = adjustmentTableRows(placements);
   const html = renderControlled({ rowsByTarget });
-  const cells = tableCells(html, 2);
+  assert.deepEqual(tableCells(html, 2)[0], ["Less: Prepaid Rent", "-100", "1,100"]);
+  assert.doesNotMatch(html, /To Rent|Add: Outstanding Rent|To Other Expense/);
+  const renderFullSide = (rows) => renderToStaticMarkup(createElement(Droppable, {
+    id: "Profit & Loss Account-Debit Particulars", rows, readOnly: true,
+  }));
+  const cells = tableCells(renderFullSide(rowsByTarget["Profit & Loss Account-Debit Particulars"]), 0);
   assert.deepEqual(cells.slice(0, 3), [["To Rent", "1,000", ""], ["Add: Outstanding Rent", "200", ""], ["Less: Prepaid Rent", "-100", "1,100"]]);
   assert.deepEqual(cells[3], ["To Other Expense", "", "50"]);
   assert.match(html, /To Net Profit/); assert.match(html, /By Net Loss/);
-  const reverse = renderControlled({ rowsByTarget: adjustmentTableRows([placements[2], placements[3], placements[1], placements[0]]) });
-  assert.deepEqual(tableCells(reverse, 2).slice(0, 3), cells.slice(0, 3));
+  const reverse = renderFullSide(adjustmentTableRows([placements[2], placements[3], placements[1], placements[0]])["Profit & Loss Account-Debit Particulars"]);
+  assert.deepEqual(tableCells(reverse, 0).slice(0, 3), cells.slice(0, 3));
   const assetRows = [
     { id: 21, attributeId: 20, name: "Machinery", amount: 5000, operation: "add", target: "Balance Sheet-Asset Side-add" },
     { id: 22, attributeId: 21, name: "Depreciation", amount: 500, operation: "less", pairId: 20, target: "Balance Sheet-Asset Side-less" },
   ];
   const balanceSheet = renderControlled({ rowsByTarget: adjustmentTableRows([...placements, ...assetRows]) });
-  assert.deepEqual(tableCells(balanceSheet, 5).slice(0, 2), [["Machinery", "5,000", ""], ["Less: Depreciation", "-500", "4,500"]]);
+  assert.deepEqual(tableCells(balanceSheet, 5)[0], ["Less: Depreciation", "-500", "4,500"]);
+  assert.doesNotMatch(balanceSheet, />Machinery/);
+});
+
+test("accounts start expanded with View controls; latest rows preserve complete totals and read-only history", () => {
+  const rowsByTarget = blankTables();
+  const id = "Balance Sheet-Asset Side";
+  rowsByTarget[id] = [
+    { id: 21, name: "Cash", amount: 100, operation: "add" },
+    { id: 22, name: "Bank", amount: 200, operation: "add" },
+  ];
+  const html = renderControlled({ rowsByTarget });
+  for (const table of data) assert.ok(html.includes(`aria-label="View all attributes in ${table.name.replaceAll("&", "&amp;")}"`));
+  assert.equal((html.match(/accordion-collapse collapse show/g) ?? []).length, 6);
+  assert.deepEqual(tableCells(html, 5)[0], ["Bank", "", "200"]);
+  assert.doesNotMatch(html, />Cash/);
+  const latest = renderToStaticMarkup(createElement(Droppable, { id, rows: rowsByTarget[id], latestOnly: true }));
+  assert.match(latest, />300<\/td>/);
+  const history = renderToStaticMarkup(createElement(Droppable, { id, rows: rowsByTarget[id], readOnly: true }));
+  assert.deepEqual(tableCells(history, 0).slice(0, 2), [["Cash", "", "100"], ["Bank", "", "200"]]);
+  assert.doesNotMatch(history, /drop-overlay|drop-remove/);
+  assert.ok(globalThis.__dragTargets.slice(-2).every((target) => target.disabled));
 });
 
 test("completed adjustments use the shared balanced proforma and final result label", () => {

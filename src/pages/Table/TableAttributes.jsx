@@ -237,11 +237,12 @@ function TableAttributes() {
       />
 
       {/* Data Grid */}
-      <div className="card shadow-sm border-0">
-        <div className="card-body">
-          <DataGrid rowData={tableAttributes} columnDefs={columnDefs} />
-        </div>
-      </div>
+      <DataGrid
+        rowData={tableAttributes}
+        columnDefs={columnDefs}
+        title="Table attribute records"
+        description="Manage the attributes available for tables and rules."
+      />
 
       {/* Modal */}
 

@@ -376,6 +376,111 @@
   width: 100%;
 }
 
+.performance-page .performance-comparison-panel {
+  min-width: 0;
+}
+
+.performance-page .performance-comparison-panel .performance-panel-heading {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.performance-page .performance-comparison-selector {
+  width: 230px;
+  max-width: 100%;
+}
+
+.performance-page .performance-comparison-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.performance-page .performance-comparison-scroll:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.performance-page .performance-result-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+}
+
+.performance-page .performance-result-donut {
+  position: relative;
+  height: 220px;
+  width: 100%;
+}
+
+.performance-page .performance-result-total {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.performance-page .performance-result-total strong {
+  font-size: 28px;
+  line-height: 1.2;
+  color: #0f172a;
+}
+
+.performance-page .performance-result-total span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.performance-page .performance-result-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.performance-page .performance-result-stat {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(70px, auto);
+  align-items: center;
+  gap: 16px;
+  padding: 12px 14px;
+  border: 1px solid #e8edf5;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.performance-page .performance-result-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #334155;
+}
+
+.performance-page .performance-result-label i {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+.performance-page .performance-result-stat.failed i {
+  background: #ef4444;
+}
+
+.performance-page .performance-result-share {
+  text-align: right;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
 .performance-table-panel {
   padding: 0;
   overflow: hidden;

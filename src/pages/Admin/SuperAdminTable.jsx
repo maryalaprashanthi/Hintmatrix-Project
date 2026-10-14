@@ -135,6 +135,8 @@ function SuperAdminTable({ data, onEdit, refreshData }) {
         pageSize={10}
         paginationPageSizeSelector={false}
         rowHeight={50}
+        title="Super admin records"
+        description="Manage users with platform-wide administration access."
       />
 
       <ConfirmDialog

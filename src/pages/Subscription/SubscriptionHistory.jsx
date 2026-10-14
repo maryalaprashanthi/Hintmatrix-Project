@@ -2,9 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Alert, Button, Spinner } from "react-bootstrap";
 import { FaArrowLeft, FaBan, FaHistory } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { AgGridReact } from "ag-grid-react";
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
+import DataGrid from "../../components/DataGrid";
 
 import SubscriptionService from "../../services/SubscriptionService";
 import { getCurrentUserName } from "../../utils/user";
@@ -195,12 +193,6 @@ export default function SubscriptionHistory() {
             <p>Review current and previous course subscriptions.</p>
           </div>
         </div>
-        <input
-          className="subscription-history-search"
-          placeholder="Search student, plan or course"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
       </header>
 
       {error && <Alert variant="danger">{error}</Alert>}
@@ -208,18 +200,24 @@ export default function SubscriptionHistory() {
       {loading ? (
         <div className="subscription-history-loading"><Spinner animation="border" /></div>
       ) : (
-        <div className="ag-theme-alpine subscription-history-grid">
-          <AgGridReact
-            rowData={rowData}
-            columnDefs={columnDefs}
-            quickFilterText={query}
-            defaultColDef={{ sortable: true, filter: true, resizable: true }}
-            domLayout="autoHeight"
-            rowHeight={58}
-            headerHeight={48}
-            overlayNoRowsTemplate="No subscription history found."
-          />
-        </div>
+        <DataGrid
+          rowData={rowData}
+          columnDefs={columnDefs}
+          quickFilterText={query}
+          onQuickFilterTextChange={setQuery}
+          searchPlaceholder="Search student, plan or course"
+          defaultColDef={{ sortable: true, filter: true, resizable: true }}
+          height="auto"
+          domLayout="autoHeight"
+          pagination
+          pageSize={10}
+          rowHeight={58}
+          headerHeight={48}
+          title="Subscription records"
+          description="Review student, plan, course, and access details."
+          className="subscription-history-grid"
+          overlayNoRowsTemplate="No subscription history found."
+        />
       )}
     </div>
   );

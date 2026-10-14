@@ -6,7 +6,6 @@ import {
   FaBullseye,
   FaCheck,
   FaChartLine,
-  FaClock,
   FaClipboardList,
   FaExternalLinkAlt,
   FaRedo,
@@ -15,14 +14,13 @@ import {
   FaUserCheck,
   FaUsers,
 } from "react-icons/fa";
-import { BarChart, PieChart } from "@mui/x-charts";
+import { BarChart, LineChart, PieChart } from "@mui/x-charts";
 
 import CourseService from "../../services/CourseService";
 import BranchService from "../../services/BranchService";
 import CollegeService from "../../services/CollegeService";
 import ExamService from "../../services/ExamService";
 import PerformanceService from "../../services/PerformanceService";
-import ActivitySessionService from "../../services/ActivitySessionService";
 import PracticePerformanceService from "../../services/PracticePerformanceService";
 import SectionService from "../../services/SectionService";
 import UserService from "../../services/UserService";
@@ -257,71 +255,6 @@ function StudentPerformanceView({ data, status, onRetry }) {
   );
 }
 
-const formatStudySeconds = (seconds) => {
-  if (!Number.isFinite(seconds)) return null;
-  const totalSeconds = Math.floor(seconds);
-  if (totalSeconds < 60) return `${totalSeconds}s`;
-
-  const totalMinutes = Math.floor(totalSeconds / 60);
-  return totalMinutes >= 60
-    ? `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m`
-    : `${totalMinutes}m`;
-};
-
-const formatStudyTime = (value) => {
-  if (typeof value === "number") return formatStudySeconds(value);
-
-  if (typeof value === "string" && /^\d{1,3}:\d{2}(:\d{2})?$/.test(value)) {
-    const [hours, minutes, seconds = 0] = value.split(":").map(Number);
-    return formatStudySeconds(hours * 3600 + minutes * 60 + seconds);
-  }
-
-  if (!value || typeof value !== "object") return null;
-  const nestedTime = value.totalTime ?? value.totalDuration ?? value.duration;
-  if (typeof nestedTime === "string") {
-    const formatted = formatStudyTime(nestedTime);
-    if (formatted) return formatted;
-  }
-  if (value.data && typeof value.data === "object") {
-    const formatted = formatStudyTime(value.data);
-    if (formatted) return formatted;
-  }
-
-  const seconds =
-    value.totalSeconds ??
-    value.totalActiveSeconds ??
-    value.totalTimeSeconds ??
-    value.totalDurationSeconds ??
-    value.durationSeconds;
-  if (seconds !== undefined && Number.isFinite(Number(seconds))) {
-    return formatStudySeconds(Number(seconds));
-  }
-
-  const minutes = value.totalMinutes ?? value.totalTimeMinutes;
-  if (minutes !== undefined && Number.isFinite(Number(minutes))) {
-    return formatStudySeconds(Number(minutes) * 60);
-  }
-
-  const hours = value.totalHours ?? value.totalTimeHours;
-  if (hours !== undefined && Number.isFinite(Number(hours))) {
-    return formatStudySeconds(Number(hours) * 3600);
-  }
-
-  if (
-    value.hours !== undefined ||
-    value.minutes !== undefined ||
-    value.seconds !== undefined
-  ) {
-    const totalSeconds =
-      Number(value.hours || 0) * 3600 +
-      Number(value.minutes || 0) * 60 +
-      Number(value.seconds || 0);
-    return formatStudySeconds(totalSeconds);
-  }
-
-  return null;
-};
-
 function StudentPracticeAnalytics() {
   const [reloadKey, setReloadKey] = useState(0);
   const [practice, setPractice] = useState({ status: "loading", courses: [] });
@@ -458,152 +391,6 @@ function StudentPracticeAnalytics() {
   );
 }
 
-function AdminDailyStudyTime({ filters }) {
-  const [days, setDays] = useState(7);
-  const [reloadKey, setReloadKey] = useState(0);
-  const [state, setState] = useState({ status: "loading", items: [] });
-  const filtersKey = JSON.stringify(filters);
-
-  useEffect(() => {
-    let active = true;
-    setState({ status: "loading", items: [] });
-    ActivitySessionService.getDailyTime(days, JSON.parse(filtersKey))
-      .then((response) => {
-        if (!active) return;
-        const payload = response?.data;
-        const items = Array.isArray(payload)
-          ? payload
-          : Array.isArray(payload?.items)
-            ? payload.items
-            : [];
-        setState({ status: "ready", items });
-      })
-      .catch((error) => {
-        console.error("Failed to load scoped daily study time:", error);
-        if (active) setState({ status: "error", items: [] });
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [days, filtersKey, reloadKey]);
-
-  const labels = state.items.map((item) => {
-    const [year, month, dayOfMonth] = String(item.date || "")
-      .split("-")
-      .map(Number);
-    const date = new Date(year, month - 1, dayOfMonth);
-    return Number.isNaN(date.getTime())
-      ? String(item.date || "")
-      : date.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
-  });
-  const periodSeconds = state.items.reduce(
-    (total, item) => total + numberValue(item.activeSeconds),
-    0,
-  );
-
-  return (
-    <section className="performance-panel student-learning-analytics">
-      <div className="performance-panel-heading">
-        <div>
-          <h2>Daily Student Study Time</h2>
-          <p>
-            Aggregated active study time for students in your authorized scope.
-          </p>
-        </div>
-        <div className="student-learning-actions">
-          <label className="visually-hidden" htmlFor="admin-study-time-days">
-            Daily study-time range
-          </label>
-          <select
-            id="admin-study-time-days"
-            className="form-select form-select-sm"
-            value={days}
-            onChange={(event) => setDays(Number(event.target.value))}
-          >
-            <option value={7}>Last 7 days</option>
-            <option value={30}>Last 30 days</option>
-            <option value={90}>Last 90 days</option>
-          </select>
-          <button
-            type="button"
-            className="btn btn-sm btn-outline-primary"
-            onClick={() => setReloadKey((key) => key + 1)}
-            aria-label="Refresh daily student study time"
-          >
-            <FaRedo /> Refresh
-          </button>
-        </div>
-      </div>
-      <div className="student-learning-metric student-learning-period-total">
-        <FaClock aria-hidden="true" />
-        <span>Total student study time (last {days} days)</span>
-        <strong>
-          {state.status === "loading"
-            ? "Loading..."
-            : state.status === "error"
-              ? "Unavailable"
-              : formatStudyTime(periodSeconds)}
-        </strong>
-      </div>
-      {state.status === "loading" ? (
-        <div className="performance-notice" role="status">
-          <span className="spinner-border spinner-border-sm" /> Loading daily
-          study time...
-        </div>
-      ) : state.status === "error" ? (
-        <div className="performance-notice performance-notice-error" role="alert">
-          Daily student study-time data could not be loaded. Please refresh to
-          try again.
-        </div>
-      ) : state.items.length ? (
-        <div className="student-daily-study-chart">
-          <div className="performance-chart-wrap">
-            <BarChart
-              className="performance-chart"
-              xAxis={[
-                {
-                  scaleType: "band",
-                  data: labels,
-                  tickLabelStyle: { fill: "#64748b", fontSize: 11 },
-                },
-              ]}
-              yAxis={[
-                {
-                  min: 0,
-                  tickLabelStyle: { fill: "#64748b", fontSize: 11 },
-                  valueFormatter: (value) => formatStudyTime(value),
-                },
-              ]}
-              series={[
-                {
-                  data: state.items.map((item) =>
-                    numberValue(item.activeSeconds),
-                  ),
-                  label: "Student active study time",
-                  valueFormatter: (value) => formatStudyTime(value),
-                  color: "#6366f1",
-                },
-              ]}
-              grid={{ horizontal: true }}
-              height={280}
-              margin={{ left: 64, right: 20, top: 24, bottom: 48 }}
-              slotProps={{ legend: { hidden: true } }}
-            />
-          </div>
-        </div>
-      ) : (
-        <div className="performance-empty">
-          No student study-time data is available for this period.
-        </div>
-      )}
-      <p className="student-daily-study-note">
-        Aggregates are limited to students in the selected authorized scope.
-      </p>
-    </section>
-  );
-}
-
 function TrendChart({ trend, onBarClick }) {
   if (!trend.length) {
     return (
@@ -616,7 +403,7 @@ function TrendChart({ trend, onBarClick }) {
 
   return (
     <div className="performance-chart-wrap">
-      <BarChart
+      <LineChart
         className="performance-chart performance-chart-clickable"
         xAxis={[
           {
@@ -639,20 +426,23 @@ function TrendChart({ trend, onBarClick }) {
             data: values,
             label: "Average percentage",
             valueFormatter: (value) => formatPercentage(value),
-            color: "#22c55e",
+            color: "#3b82f6",
+            curve: "catmullRom",
+            area: true,
+            showMark: true,
           },
         ]}
         grid={{ horizontal: true, vertical: false }}
         height={280}
         margin={{ left: 52, right: 20, top: 18, bottom: 52 }}
         slotProps={{ legend: { hidden: true } }}
-        onItemClick={(event, barItem) => {
-          const item = trend[barItem?.dataIndex];
+        onMarkClick={(event, pointItem) => {
+          const item = trend[pointItem?.dataIndex];
           if (item && onBarClick) onBarClick(item);
         }}
       />
       <p className="performance-chart-hint">
-        Click a bar to see its chapters and marks.
+        Click a point to see its chapters and marks.
       </p>
     </div>
   );
@@ -786,13 +576,15 @@ function ChapterBreakdownPanel({ trendItem, state, data, error, onClose }) {
 function ResultPieChart({ passed, failed }) {
   const passedValue = numberValue(passed);
   const failedValue = numberValue(failed);
+  const total = passedValue + failedValue;
 
   if (passedValue === 0 && failedValue === 0) {
     return <div className="performance-empty">No result data available.</div>;
   }
 
   return (
-    <div className="performance-pie-wrap">
+    <div className="performance-result-summary">
+      <div className="performance-result-donut">
       <PieChart
         className="performance-pie-chart"
         series={[
@@ -801,7 +593,7 @@ function ResultPieChart({ passed, failed }) {
               { id: 0, value: passedValue, label: "Passed" },
               { id: 1, value: failedValue, label: "Failed" },
             ],
-            innerRadius: 56,
+            innerRadius: 68,
             outerRadius: 92,
             paddingAngle: 2,
             cornerRadius: 8,
@@ -809,18 +601,27 @@ function ResultPieChart({ passed, failed }) {
           },
         ]}
         colors={["#22c55e", "#ef4444"]}
-        height={250}
-        margin={{ top: 8, right: 8, bottom: 28, left: 8 }}
-        slotProps={{
-          legend: {
-            direction: "row",
-            position: { vertical: "bottom", horizontal: "middle" },
-            itemMarkWidth: 10,
-            itemMarkHeight: 10,
-            labelStyle: { fontSize: 12, fill: "#475569" },
-          },
-        }}
+        height={220}
+        margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+        hideLegend
       />
+      <div className="performance-result-total">
+        <strong>{formatNumber(total)}</strong>
+        <span>Total results</span>
+      </div>
+      </div>
+      <ul className="performance-result-stats">
+        {[
+          { label: "Passed", count: passedValue, tone: "passed" },
+          { label: "Failed", count: failedValue, tone: "failed" },
+        ].map(({ label, count, tone }) => (
+          <li key={label} className={`performance-result-stat ${tone}`}>
+            <span className="performance-result-label"><i aria-hidden="true" />{label}</span>
+            <strong>{formatNumber(count)}</strong>
+            <span className="performance-result-share">{formatPercentage((count / total) * 100)}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -930,10 +731,6 @@ function PerformanceDashboard() {
       ),
     }),
     [scope, hierarchy],
-  );
-  const activityScope = useMemo(
-    () => scopeToParams(scope),
-    [scope],
   );
 
   const loadPerformance = useCallback(
@@ -1464,7 +1261,6 @@ function PerformanceDashboard() {
             />
           </div>
 
-          <AdminDailyStudyTime filters={activityScope} />
 
           <div className="row g-4 performance-charts-row">
             <div className="col-12 col-xl-8">
@@ -1500,38 +1296,10 @@ function PerformanceDashboard() {
             </div>
           </div>
 
-          <PerformanceTable
-            title="Course Performance"
-            icon={<FaUsers />}
-            rows={coursePerformance}
-            columns={[
-              ["Course", (row) => row.courseName || "Course"],
-              ["Students", (row) => formatNumber(row.totalStudents)],
-              ["Exams", (row) => formatNumber(row.examsConducted)],
-              ["Average %", (row) => formatPercentage(row.averagePercentage)],
-              ["Pass Rate", (row) => formatPercentage(row.passRate)],
-              ["Passed", (row) => formatNumber(row.passedResults)],
-              ["Failed", (row) => formatNumber(row.failedResults)],
-            ]}
-          />
-
-          {isCollegeAdmin && (
-            <PerformanceTable
-              title="Branch Performance"
-              icon={<FaUsers />}
-              rows={branchPerformance}
-              columns={[
-                ["Branch", (row) => row.branchName || "Branch"],
-                ["Students", (row) => formatNumber(row.totalStudents)],
-                ["Exams", (row) => formatNumber(row.examsConducted)],
-                ["Average %", (row) => formatPercentage(row.averagePercentage)],
-                ["Pass Rate", (row) => formatPercentage(row.passRate)],
-                ["Passed", (row) => formatNumber(row.passedResults)],
-                ["Failed", (row) => formatNumber(row.failedResults)],
-              ]}
-            />
+          <PerformanceComparisonGraph title="Course Performance" rows={coursePerformance} nameKey="courseName" />
+          {(isSuperAdmin || isCollegeAdmin) && (
+            <PerformanceComparisonGraph title="Branch Performance" rows={branchPerformance} nameKey="branchName" />
           )}
-
           <div className="row g-4">
             <div className="col-12 col-xl-7">
               <PerformanceTable
@@ -1600,6 +1368,63 @@ function PerformanceDashboard() {
   );
 }
 
+function PerformanceComparisonGraph({ title, rows, nameKey }) {
+  const [metric, setMetric] = useState("percentages");
+  const metrics = {
+    percentages: [
+      { field: "averagePercentage", label: "Average percentage", color: "#3b82f6" },
+      { field: "passRate", label: "Pass rate", color: "#14b8a6" },
+    ],
+    results: [
+      { field: "passedResults", label: "Passed", color: "#22c55e" },
+      { field: "failedResults", label: "Failed", color: "#ef4444" },
+    ],
+    participation: [
+      { field: "totalStudents", label: "Students", color: "#6366f1" },
+      { field: "examsConducted", label: "Exams", color: "#f59e0b" },
+    ],
+  };
+  const percentage = metric === "percentages";
+  const isBranch = nameKey === "branchName";
+  const ComparisonChart = isBranch ? BarChart : LineChart;
+  const chartHeight = 320;
+  const labels = rows.map((row) => row[nameKey] || "Unnamed");
+  const labelWidth = Math.max(140, ...labels.map((label) => String(label).length * 7 + 30));
+  return (
+    <section className="performance-panel performance-comparison-panel">
+      <div className="performance-panel-heading">
+        <div><h2>{title}</h2><p>Compare outcomes within the selected dashboard filters.</p></div>
+        <label className="performance-comparison-selector">
+          <span className="visually-hidden">Metrics for {title}</span>
+          <select className="form-select form-select-sm" value={metric} onChange={(event) => setMetric(event.target.value)}>
+            <option value="percentages">Average % &amp; pass rate</option>
+            <option value="results">Passed &amp; failed results</option>
+            <option value="participation">Students &amp; exams</option>
+          </select>
+        </label>
+      </div>
+      {rows.length ? (
+        <div className="performance-comparison-scroll" tabIndex={0} role="region" aria-label={`${title} graph`}>
+          <div style={{ minWidth: Math.max(440, rows.length * labelWidth + 80), height: chartHeight }}>
+            <ComparisonChart
+              height={chartHeight}
+              xAxis={[{ scaleType: "band", data: labels, tickLabelInterval: () => true, tickLabelStyle: { fontSize: 11 } }]}
+              yAxis={[{ min: 0, ...(percentage ? { max: 100, valueFormatter: (value) => `${value}%` } : {}) }]}
+              series={metrics[metric].map(({ field, label, color }) => ({
+                data: rows.map((row) => numberValue(row[field])), label, color,
+                ...(!isBranch ? { curve: "monotoneX", showMark: true } : {}),
+                valueFormatter: (value) => percentage ? formatPercentage(value) : formatNumber(value),
+              }))}
+              grid={{ horizontal: true }}
+              borderRadius={4}
+              margin={{ left: 55, right: 20, top: 30, bottom: 65 }}
+            />
+          </div>
+        </div>
+      ) : <div className="performance-empty">No performance data in this view.</div>}
+    </section>
+  );
+}
 function PerformanceTable({
   title,
   icon,

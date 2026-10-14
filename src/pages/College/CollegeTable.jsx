@@ -175,6 +175,8 @@ function CollegeTable({ onEdit, onDelete, refresh, onCountsChange }) {
         columnDefs={columnDefs}
         height="450px"
         pageSize={10}
+        title="College records"
+        description="Manage the colleges registered on the platform."
       />
     </div>
   );

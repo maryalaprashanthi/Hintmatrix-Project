@@ -166,6 +166,8 @@ function CollegeAdminTable({ data, onEdit, refreshData }) {
         pageSize={10}
         paginationPageSizeSelector={false}
         rowHeight={50}
+        title="College admin records"
+        description="Manage administrator access for colleges."
       />
 
       <ConfirmDialog

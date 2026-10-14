@@ -32,21 +32,38 @@ import {
   MdAdminPanelSettings,
 } from "react-icons/md";
 
+const MENU_PREFIXES = {
+  subscription: ["/subscriptions", "/course-subscription"],
+  college: ["/college", "/branch", "/section"],
+  admin: ["/admin"],
+  question: ["/questions"],
+  table: ["/table-"],
+};
+
+const getMenuForPath = (path) =>
+  Object.keys(MENU_PREFIXES).find((key) =>
+    MENU_PREFIXES[key].some((prefix) => path.startsWith(prefix)),
+  ) || null;
+
 export default function Sidebar({
   sidebarOpen,
   setSidebarOpen,
   collapsed,
   setCollapsed,
 }) {
-  const [collegeOpen, setCollegeOpen] = useState(false);
-  const [tableOpen, setTableOpen] = useState(false);
-  const [questionOpen, setQuestionOpen] = useState(false);
-  const [adminOpen, setAdminOpen] = useState(false);
-  const [subscriptionOpen, setSubscriptionOpen] = useState(
-    window.location.pathname.startsWith("/subscriptions"),
-  );
-
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  const [openMenu, setOpenMenu] = useState(() => getMenuForPath(pathname));
+
+  const toggleMenu = (key) =>
+    setOpenMenu((current) => (current === key ? null : key));
+
+  const subscriptionOpen = openMenu === "subscription";
+  const collegeOpen = openMenu === "college";
+  const adminOpen = openMenu === "admin";
+  const questionOpen = openMenu === "question";
+  const tableOpen = openMenu === "table";
 
   const userRole = normalizeRole(localStorage.getItem("role") || ROLES.GUEST);
 
@@ -99,7 +116,6 @@ export default function Sidebar({
 
   // /exam and /mock-exam are the landing pages; their catalogs live at /exams
   // and /mock-exams, which don't prefix-match, so keep the tab lit there too.
-  const { pathname } = useLocation();
   const examMenuClass = ({ isActive }) =>
     isActive || pathname === "/exams" ? "menu-item active" : "menu-item";
   const mockExamMenuClass = ({ isActive }) =>
@@ -107,6 +123,9 @@ export default function Sidebar({
 
   const subMenuClass = ({ isActive }) =>
     isActive ? "submenu-item active-submenu" : "submenu-item";
+
+  const parentClass = (isOpen) =>
+    isOpen ? "menu-item group-open" : "menu-item";
 
   return (
     <aside
@@ -150,20 +169,20 @@ export default function Sidebar({
           </NavLink>
 
           {/* Subscription */}
-
           {(canAccessAdminMenu || canAccessPlans) && (
             <div
               className={`subscription-menu ${subscriptionOpen ? "open" : ""}`}
             >
               <div
-                className={`menu-item ${subscriptionOpen ? "active" : ""}`}
-                onClick={() => setSubscriptionOpen((current) => !current)}
+                className={parentClass(subscriptionOpen)}
+                onClick={() => toggleMenu("subscription")}
               >
                 <div className="menu-left">
                   <FaCreditCard className="menu-icon" />
                   <span>Subscription</span>
                 </div>
               </div>
+
               {subscriptionOpen && (
                 <div className="submenu">
                   {canAccessAdminMenu && (
@@ -177,6 +196,7 @@ export default function Sidebar({
                       <span>Overview</span>
                     </NavLink>
                   )}
+
                   <NavLink
                     to="/subscriptions/plans"
                     className={subMenuClass}
@@ -185,6 +205,7 @@ export default function Sidebar({
                     <FaCreditCard />
                     <span>{canAccessAdminMenu ? "Manage Plans" : "Plans"}</span>
                   </NavLink>
+
                   {isStudent && (
                     <NavLink
                       to="/course-subscription"
@@ -195,6 +216,7 @@ export default function Sidebar({
                       <span>Course Subscription</span>
                     </NavLink>
                   )}
+
                   {canAccessAdminMenu && (
                     <NavLink
                       to="/subscriptions/history"
@@ -217,9 +239,9 @@ export default function Sidebar({
                 <NavLink
                   to="/college"
                   className="college-menu-link"
-                  onClick={() => setCollegeOpen((current) => !current)}
+                  onClick={() => toggleMenu("college")}
                 >
-                  <div className={`menu-item ${collegeOpen ? "active" : ""}`}>
+                  <div className={parentClass(collegeOpen)}>
                     <div className="menu-left">
                       <MdSchool className="menu-icon" />
                       <span>College</span>
@@ -228,8 +250,8 @@ export default function Sidebar({
                 </NavLink>
               ) : (
                 <div
-                  className={`menu-item ${collegeOpen ? "active" : ""}`}
-                  onClick={() => setCollegeOpen((current) => !current)}
+                  className={parentClass(collegeOpen)}
+                  onClick={() => toggleMenu("college")}
                 >
                   <div className="menu-left">
                     <MdSchool className="menu-icon" />
@@ -287,8 +309,8 @@ export default function Sidebar({
           {canAccessAdminMenu && (
             <div className={`admin-menu ${adminOpen ? "open" : ""}`}>
               <div
-                className={`menu-item ${adminOpen ? "active" : ""}`}
-                onClick={() => setAdminOpen(!adminOpen)}
+                className={parentClass(adminOpen)}
+                onClick={() => toggleMenu("admin")}
               >
                 <div className="menu-left">
                   <MdAdminPanelSettings className="menu-icon" />
@@ -351,8 +373,8 @@ export default function Sidebar({
           {canAccessQuestionMenu && (
             <div className={`question-menu ${questionOpen ? "open" : ""}`}>
               <div
-                className={`menu-item ${questionOpen ? "active" : ""}`}
-                onClick={() => setQuestionOpen((current) => !current)}
+                className={parentClass(questionOpen)}
+                onClick={() => toggleMenu("question")}
               >
                 <div className="menu-left">
                   <MdQuiz className="menu-icon" />
@@ -390,8 +412,8 @@ export default function Sidebar({
           {canAccessTableMenu && (
             <div className={`table-menu ${tableOpen ? "open" : ""}`}>
               <div
-                className={`menu-item ${tableOpen ? "active" : ""}`}
-                onClick={() => setTableOpen((current) => !current)}
+                className={parentClass(tableOpen)}
+                onClick={() => toggleMenu("table")}
               >
                 <div className="menu-left">
                   <MdTableChart className="menu-icon" />
@@ -511,9 +533,7 @@ export default function Sidebar({
             >
               <div className="menu-left">
                 <MdBarChart className="menu-icon" />
-                <span>
-                  {isStudent ? "Performance" : "Exam Performance"}
-                </span>
+                <span>{isStudent ? "Performance" : "Exam Performance"}</span>
               </div>
             </NavLink>
           )}

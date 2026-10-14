@@ -37,21 +37,9 @@
   color: #64748b;
 }
 
-.subscription-history-search {
-  width: 280px;
-  padding: 11px 14px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  background: #fff;
-}
-
 .subscription-history-grid {
   width: 100%;
   min-height: 180px;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
 }
 
 .history-grid-email {
@@ -101,7 +89,4 @@
     flex-direction: column;
   }
 
-  .subscription-history-search {
-    width: 100%;
-  }
 }

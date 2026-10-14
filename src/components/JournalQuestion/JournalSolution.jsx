@@ -3,23 +3,32 @@ import { Table } from "react-bootstrap";
 import useAnswerRowScroll from "../../hooks/useAnswerRowScroll";
 import "./JournalSolution.css";
 
-const JournalSolution = ({ answeredData, answerScrollTarget }) => {
+const JournalSolution = ({ answeredData, answerScrollTarget, expanded, onToggleView }) => {
   const answerRows = useAnswerRowScroll(answeredData, answerScrollTarget);
+  const answeredIds = Object.keys(answeredData ?? {}).filter((id) => answeredData[id]?.length);
   return (
-    <Table className="journal-solution-table">
+    <Table className="journal-solution-table" style={{ overflow: "visible" }}>
       <thead>
         <tr>
-          <th>Date</th>
-          <th>Particulars</th>
-          <th>L.F.</th>
-          <th>Debit Amount (₹)</th>
-          <th>Credit Amount (₹)</th>
+          {["Date", "Particulars", "L.F.", "Debit Amount (₹)", "Credit Amount (₹)"].map((label, index) => (
+            <th key={label} scope="col" style={{ position: "sticky", top: 0, zIndex: 2,
+              width: ["14%", "32%", "6%", "24%", "24%"][index] }}>
+              {index === 1 && onToggleView ? <div className="d-flex align-items-center justify-content-center gap-2">
+                <span>{label}</span>
+                <button type="button"
+                  style={{ border: 0, background: "transparent", color: "inherit", padding: "0 4px", lineHeight: 1, fontSize: "18px", cursor: "pointer" }}
+                  aria-expanded={expanded} aria-controls="journal-answer-table"
+                  aria-label={expanded ? "Collapse journal answers" : "Expand journal answers"}
+                  onClick={onToggleView}><span aria-hidden="true">{expanded ? "⌄" : "⌃"}</span></button>
+              </div> : label}
+            </th>
+          ))}
         </tr>
       </thead>
 
       <tbody>
         {answeredData &&
-          Object.keys(answeredData).map((id) => {
+          answeredIds.map((id) => {
             const txnData = answeredData[id];
 
             return (

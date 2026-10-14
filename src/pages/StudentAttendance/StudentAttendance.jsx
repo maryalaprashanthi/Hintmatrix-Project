@@ -6,8 +6,8 @@ import React, {
   useState,
 } from "react";
 
-import { AgGridReact } from "ag-grid-react";
 import { BarChart } from "@mui/x-charts/BarChart";
+import DataGrid from "../../components/DataGrid";
 
 import {
   FaCalendarAlt,
@@ -23,9 +23,6 @@ import {
   FaClipboardList,
   FaGraduationCap,
 } from "react-icons/fa";
-
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-quartz.css";
 
 import "./StudentAttendance.css";
 
@@ -780,21 +777,14 @@ function StudentAttendance() {
                 </div>
               </div>
 
-              <div
-                className="ag-theme-quartz"
-                style={{
-                  height: 320,
-                  width: "100%",
-                }}
-              >
-                <AgGridReact
-                  rowData={studentRows}
-                  columnDefs={studentColumns}
-                  pagination={true}
-                  paginationPageSize={5}
-                  animateRows={true}
-                />
-              </div>
+              <DataGrid
+                rowData={studentRows}
+                columnDefs={studentColumns}
+                height={320}
+                pageSize={5}
+                description="Review which students checked in today."
+                animateRows
+              />
             </div>
 
             <div className="attendance-data-card">
@@ -806,21 +796,14 @@ function StudentAttendance() {
                 </div>
               </div>
 
-              <div
-                className="ag-theme-quartz"
-                style={{
-                  height: 320,
-                  width: "100%",
-                }}
-              >
-                <AgGridReact
-                  rowData={sectionRows}
-                  columnDefs={sectionColumns}
-                  pagination={true}
-                  paginationPageSize={5}
-                  animateRows={true}
-                />
-              </div>
+              <DataGrid
+                rowData={sectionRows}
+                columnDefs={sectionColumns}
+                height={320}
+                pageSize={5}
+                description="Compare today's attendance totals across sections."
+                animateRows
+              />
             </div>
           </section>
         )}

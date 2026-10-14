@@ -14,11 +14,9 @@ import {
   Col,
   Button,
   Form,
-  ListGroup,
-  Badge,
 } from "react-bootstrap";
 
-import { FaSearch, FaPlus, FaQuestionCircle, FaTimes } from "react-icons/fa";
+import { FaBan, FaCheck, FaFilter, FaPlus, FaQuestionCircle, FaTimes, FaTrash } from "react-icons/fa";
 
 import { useNavigate, useParams } from "react-router-dom";
 import { canManageContent } from "../../utils/roles";
@@ -28,13 +26,13 @@ import ConfirmDialog from "../../components/Common/ConfirmDialog";
 import ManagementCountTiles from "../../components/Common/ManagementCountTiles";
 import { getManagementCounts } from "../../utils/managementCounts";
 import TopicService from "../../services/TopicService";
-import { useDeleteConfirm } from "../../hooks/useDeleteConfirm";
 import { useToast } from "../../components/Toast/useToast";
 import ActionIconButton from "../../components/Common/ActionIconButton";
 import "./QuestionList.css";
 import AddQuestionModal from "./AddQuestionModal";
 import { normalizeQuestionType } from "../../utils/questionType";
 import QuestionType2Modal from "./QuestionType2Modal";
+import DataGrid from "../../components/DataGrid";
 
 const getQuestionType = (question) => {
   const type =
@@ -51,6 +49,23 @@ const QuestionList = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [typeFilter, setTypeFilter] = useState("ALL");
+  const [recentOnly, setRecentOnly] = useState(false);
+  const [visibleQuestionColumns, setVisibleQuestionColumns] = useState([
+    "questionText",
+    "learningPath",
+    "typeLabel",
+    "statusLabel",
+    "actions",
+  ]);
+  const [showColumnMenu, setShowColumnMenu] = useState(false);
+  const [bulkUpdatingStatus, setBulkUpdatingStatus] = useState(false);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
+  const [questionsLoadError, setQuestionsLoadError] = useState("");
+  const [selectedQuestionRows, setSelectedQuestionRows] = useState([]);
+  const [questionGridApi, setQuestionGridApi] = useState(null);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [bulkDeleteError, setBulkDeleteError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
 
@@ -232,6 +247,8 @@ const QuestionList = () => {
   }, [topic, topicId]);
 
   const loadQuestions = async () => {
+    setLoadingQuestions(true);
+    setQuestionsLoadError("");
     try {
       let response;
 
@@ -262,6 +279,9 @@ const QuestionList = () => {
       }
     } catch (error) {
       console.error("Error loading questions:", error);
+      setQuestionsLoadError("Questions could not be loaded. Check your connection and try again.");
+    } finally {
+      setLoadingQuestions(false);
     }
   };
 
@@ -282,36 +302,118 @@ const QuestionList = () => {
         question.chapterName,
         question.topicName,
         getQuestionType(question),
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
+      ].filter(Boolean).join(" ").toLowerCase();
       const searchMatch = searchableText.includes(search.trim().toLowerCase());
-      const active =
-        question.activeRow !== false && question.activeRow !== "false";
-      const statusMatch =
-        statusFilter === "ALL" ||
+      const active = question.activeRow !== false && question.activeRow !== "false";
+      const statusMatch = statusFilter === "ALL" ||
         (statusFilter === "ACTIVE" && active) ||
         (statusFilter === "INACTIVE" && !active);
-      const typeMatch =
-        typeFilter === "ALL" || getQuestionType(question) === typeFilter;
-
-      return searchMatch && statusMatch && typeMatch;
+      const typeMatch = typeFilter === "ALL" || getQuestionType(question) === typeFilter;
+      const createdAt = new Date(question.createdAt).getTime();
+      const recentMatch = !recentOnly || (
+        Number.isFinite(createdAt) && createdAt >= Date.now() - 7 * 24 * 60 * 60 * 1000
+      );
+      return searchMatch && statusMatch && typeMatch && recentMatch;
     })
-    .sort(
-      (first, second) =>
-        Number(second.questionId || 0) - Number(first.questionId || 0),
-    );
+    .sort((first, second) => {
+      const firstCreated = new Date(first.createdAt).getTime();
+      const secondCreated = new Date(second.createdAt).getTime();
+      if (first.createdAt && second.createdAt && Number.isFinite(firstCreated) && Number.isFinite(secondCreated)) {
+        return secondCreated - firstCreated;
+      }
+      return Number(second.questionId || 0) - Number(first.questionId || 0);
+    });
   const questionCounts = getManagementCounts(questions);
-  const hasActiveFilters =
-    search.trim() || statusFilter !== "ALL" || typeFilter !== "ALL";
+  const hasActiveFilters = search.trim() || statusFilter !== "ALL" || typeFilter !== "ALL" || recentOnly;
+  const activeFilterCount = [Boolean(search.trim()), statusFilter !== "ALL", typeFilter !== "ALL", recentOnly].filter(Boolean).length;
 
-  // =========================================================
-  // QUESTION ACTIVE CHECK
-  // =========================================================
+  const questionColumns = [
+    {
+      headerName: "Question",
+      field: "questionText",
+      flex: 2.6,
+      minWidth: 300,
+      cellRenderer: ({ data }) => (
+        <div className="question-grid-question">
+          <span className="question-grid-number">Q{data.questionId}</span>
+          <span className="question-grid-text" title={data.questionText}>
+            {data.questionText || "Untitled question"}
+          </span>
+        </div>
+      ),
+    },
+    {
+      headerName: "Learning path",
+      field: "learningPath",
+      minWidth: 250,
+      flex: 1.5,
+      cellRenderer: ({ data }) => (
+        <div className="question-grid-path" title={data.learningPath}>
+          <span>{[data.courseName, data.subjectName].filter(Boolean).join(" › ") || "Course path unavailable"}</span>
+          <strong>{[data.chapterName, data.topicName].filter(Boolean).join(" › ") || "No chapter or topic"}</strong>
+        </div>
+      ),
+    },
+    {
+      headerName: "Type",
+      field: "typeLabel",
+      minWidth: 135,
+      flex: 0.9,
+      cellRenderer: ({ value }) => <span className="question-grid-type">{value}</span>,
+    },
+    {
+      headerName: "Status",
+      field: "statusLabel",
+      minWidth: 105,
+      maxWidth: canManage ? 190 : 125,
+      cellRenderer: ({ data }) => (
+        <div className="question-grid-status-cell">
+          <span className={`question-grid-status ${data.isActive ? "is-active" : "is-inactive"}`}>
+            <i /> {data.statusLabel}
+          </span>
+          {canManage && (
+            <Form.Check
+              type="switch"
+              id={`question-status-${data.questionId}`}
+              checked={data.isActive}
+              onChange={() => handleToggle(data.questionId)}
+              aria-label={`Set question ${data.questionId} ${data.isActive ? "inactive" : "active"}`}
+            />
+          )}
+        </div>
+      ),
+    },
+    {
+      headerName: "Actions",
+      field: "actions",
+      width: 74,
+      minWidth: 74,
+      maxWidth: 74,
+      sortable: false,
+      filter: false,
+      resizable: false,
+      cellRenderer: ({ data }) => (
+        <div className="question-grid-actions">
+          <ActionIconButton type="view" disabled={!data.isActive} onClick={() => handleView(data.question)} title="View question" />
+        </div>
+      ),
+    },
+  ];
 
   const isQuestionActive = (question) =>
     question.activeRow !== false && question.activeRow !== "false";
+
+  const questionRows = filteredQuestions.map((question) => ({
+    ...question,
+    questionText: question.questionText || "",
+    learningPath: [question.courseName, question.subjectName, question.chapterName, question.topicName]
+      .filter(Boolean)
+      .join(" "),
+    typeLabel: getQuestionType(question)?.replace(/_/g, " ") || "Unspecified",
+    statusLabel: isQuestionActive(question) ? "Active" : "Inactive",
+    isActive: isQuestionActive(question),
+    question,
+  }));
 
   // =========================================================
   // QUESTION EXCEL UPLOAD
@@ -827,32 +929,69 @@ const QuestionList = () => {
   // ENABLE / DISABLE
   // =========================================================
 
-  const handleToggle = (id) => {
-    setQuestions((prevQuestions) =>
-      prevQuestions.map((question) =>
-        question.questionId === id
-          ? {
-              ...question,
-              activeRow: !isQuestionActive(question),
-            }
-          : question,
-      ),
-    );
+  const handleToggle = async (id) => {
+    const question = questions.find((item) => item.questionId === id);
+    if (!question) return;
+    const active = !isQuestionActive(question);
+    try {
+      await QuestionService.setActive(id, active);
+      setQuestions((current) => current.map((item) =>
+        item.questionId === id ? { ...item, activeRow: active } : item,
+      ));
+    } catch (error) {
+      console.error("Failed to update question status:", error);
+      toast.error("Question status could not be updated.");
+    }
   };
 
-  // =========================================================
-  // DELETE
-  // =========================================================
+  const handleBulkSetActive = async (active) => {
+    if (!selectedQuestionRows.length || bulkUpdatingStatus) return;
+    setBulkUpdatingStatus(true);
+    const results = await Promise.allSettled(
+      selectedQuestionRows.map((row) => QuestionService.setActive(row.questionId, active)),
+    );
+    const succeededIds = new Set(
+      selectedQuestionRows
+        .filter((_, index) => results[index].status === "fulfilled")
+        .map((row) => row.questionId),
+    );
+    const failedRows = selectedQuestionRows.filter((_, index) => results[index].status === "rejected");
+    if (succeededIds.size) {
+      setQuestions((current) => current.map((item) =>
+        succeededIds.has(item.questionId) ? { ...item, activeRow: active } : item,
+      ));
+      toast.success(`${succeededIds.size} question${succeededIds.size === 1 ? "" : "s"} ${active ? "activated" : "deactivated"}.`);
+    }
+    setSelectedQuestionRows(failedRows);
+    if (failedRows.length) toast.error(`${failedRows.length} question status update${failedRows.length === 1 ? "" : "s"} failed.`);
+    setBulkUpdatingStatus(false);
+  };
 
-  const del = useDeleteConfirm({
-    entity: "question",
-    deleteFn: async (question) => {
-      await QuestionService.deleteQuestion(question.questionId);
-      setQuestions((prevQuestions) =>
-        prevQuestions.filter((q) => q.questionId !== question.questionId),
-      );
-    },
-  });
+  const confirmBulkDelete = async () => {
+    if (!selectedQuestionRows.length || bulkDeleting) return;
+    setBulkDeleting(true);
+    setBulkDeleteError(null);
+    const results = await Promise.allSettled(
+      selectedQuestionRows.map((row) => QuestionService.deleteQuestion(row.questionId)),
+    );
+    const failedRows = selectedQuestionRows.filter((_, index) => results[index].status === "rejected");
+    const deletedIds = new Set(
+      selectedQuestionRows
+        .filter((_, index) => results[index].status === "fulfilled")
+        .map((row) => row.questionId),
+    );
+    if (deletedIds.size) {
+      setQuestions((current) => current.filter((question) => !deletedIds.has(question.questionId)));
+    }
+    setSelectedQuestionRows(failedRows);
+    if (failedRows.length) {
+      setBulkDeleteError(`${deletedIds.size} deleted; ${failedRows.length} could not be deleted. Retry to continue.`);
+    } else {
+      setShowBulkDeleteConfirm(false);
+      toast.success(`${deletedIds.size} question${deletedIds.size === 1 ? "" : "s"} deleted.`);
+    }
+    setBulkDeleting(false);
+  };
 
   // =========================================================
   // UI
@@ -897,7 +1036,7 @@ const QuestionList = () => {
             {topic?.name ? `${topic.name} — Questions` : "All Questions"}
           </h2>
 
-          <p className="question-count">{filteredQuestions.length} Questions</p>
+          <p className="question-count">Manage, review and organize your question bank</p>
         </Col>
 
         {canManage && (
@@ -979,166 +1118,164 @@ const QuestionList = () => {
         icon={FaQuestionCircle}
       />
 
+      {questionsLoadError && (
+        <div className="question-load-error" role="alert">
+          <span>{questionsLoadError}</span>
+          <Button size="sm" variant="outline-danger" onClick={loadQuestions}>
+            Try again
+          </Button>
+        </div>
+      )}
+
       {/* =====================================================
           SEARCH
       ====================================================== */}
 
-      <div className="question-filters mb-3">
-        <div className="question-search">
-          <div className="input-group shadow-sm rounded-3 overflow-hidden">
-            <span className="input-group-text bg-white border-0">
-              <FaSearch />
-            </span>
-
-            <input
-              type="text"
-              className="form-control border-0"
-              placeholder="Search Questions..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <Form.Select
-          className="question-filter-select"
-          aria-label="Filter questions by status"
-          value={statusFilter}
-          onChange={(event) => setStatusFilter(event.target.value)}
-        >
-          <option value="ALL">All Statuses</option>
-          <option value="ACTIVE">Active</option>
-          <option value="INACTIVE">Inactive</option>
-        </Form.Select>
-
-        <Form.Select
-          className="question-filter-select"
-          aria-label="Filter questions by type"
-          value={typeFilter}
-          onChange={(event) => setTypeFilter(event.target.value)}
-        >
-          <option value="ALL">All Types</option>
-          {availableQuestionTypes.map((type) => (
-            <option key={type} value={type}>
-              {type.replace(/_/g, " ")}
-            </option>
-          ))}
-        </Form.Select>
-
-        {hasActiveFilters && (
-          <Button
-            variant="outline-secondary"
-            className="question-clear-filters"
-            onClick={() => {
-              setSearch("");
-              setStatusFilter("ALL");
-              setTypeFilter("ALL");
-            }}
-          >
-            <FaTimes /> Clear
-          </Button>
-        )}
-      </div>
-
-      <div className="question-results-summary">
-        Showing <strong>{filteredQuestions.length}</strong> of{" "}
-        <strong>{questions.length}</strong> questions
-      </div>
-
-      {/* =====================================================
-          QUESTION LIST
-      ====================================================== */}
-
-      <ListGroup className="question-list">
-        {filteredQuestions.length > 0 ? (
-          filteredQuestions.map((question, index) => (
-            <ListGroup.Item
-              key={question.questionId}
-              className={`question-item ${
-                !isQuestionActive(question) ? "disabled-question" : ""
-              }`}
-            >
-              <Row className="align-items-center">
-                <Col lg={8}>
-                  <h5 className="question-title">
-                    {index + 1}. {question.questionText}
-                  </h5>
-
-                  <div className="question-meta">
-                    <Badge bg="success">{question.courseName}</Badge>
-
-                    <Badge bg="secondary">{question.subjectName}</Badge>
-
-                    <Badge bg="warning">{question.chapterName}</Badge>
-
-                    <Badge bg="info">{question.topicName}</Badge>
-                    <Badge bg="primary">
-                      {getQuestionType(question)?.replace(/_/g, " ") ||
-                        "Type not specified"}
-                    </Badge>
+      <DataGrid
+        rowData={questionRows}
+        title="Question bank"
+        description="Browse questions with their learning path, type and availability."
+        toolbarFilters={canManage ? (
+          <div className="question-grid-toolbar-content">
+            <div className="question-grid-filters">
+              <div className="question-filter-main">
+                <div className="question-filter-controls">
+                  <span className="question-filter-caption">
+                    <FaFilter aria-hidden="true" /> Quick filters
+                  </span>
+                  <Form.Select className={`question-filter-select${statusFilter !== "ALL" ? " has-value" : ""}`} aria-label="Filter questions by status" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+                    <option value="ALL">All Statuses</option><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option>
+                  </Form.Select>
+                  <Form.Select className={`question-filter-select${typeFilter !== "ALL" ? " has-value" : ""}`} aria-label="Filter questions by type" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
+                    <option value="ALL">All Types</option>
+                    {availableQuestionTypes.map((type) => <option key={type} value={type}>{type.replace(/_/g, " ")}</option>)}
+                  </Form.Select>
+                  <div className="question-quick-filter-chips">
+                    <button
+                      type="button"
+                      className={`question-recent-chip${recentOnly ? " is-selected" : ""}`}
+                      aria-pressed={recentOnly}
+                      onClick={() => setRecentOnly((active) => !active)}
+                    >
+                      Added in last 7 days
+                    </button>
                   </div>
-                </Col>
-
-                <Col
-                  lg={4}
-                  className="d-flex justify-content-lg-end align-items-center flex-wrap gap-2 mt-3 mt-lg-0"
+                  {hasActiveFilters && <Button variant="outline-secondary" className="question-clear-filters" onClick={() => { setSearch(""); setStatusFilter("ALL"); setTypeFilter("ALL"); setRecentOnly(false); }}><FaTimes /> Clear {activeFilterCount}</Button>}
+                  <div className="question-column-menu-wrap">
+              <Button
+                variant="outline-secondary"
+                className="question-column-menu-trigger"
+                aria-expanded={showColumnMenu}
+                onClick={() => setShowColumnMenu((visible) => !visible)}
+              >
+                Columns
+              </Button>
+              {showColumnMenu && (
+                <div className="question-column-menu" role="group" aria-label="Choose visible columns">
+                  {[
+                    ["questionText", "Question"],
+                    ["learningPath", "Learning path"],
+                    ["typeLabel", "Type"],
+                    ["statusLabel", "Status"],
+                    ["actions", "Actions"],
+                  ].map(([field, label]) => (
+                    <Form.Check
+                      key={field}
+                      type="checkbox"
+                      label={label}
+                      checked={visibleQuestionColumns.includes(field)}
+                      disabled={visibleQuestionColumns.length === 1 && visibleQuestionColumns.includes(field)}
+                      onChange={(event) => setVisibleQuestionColumns((current) =>
+                        event.target.checked
+                          ? [...current, field]
+                          : current.filter((column) => column !== field),
+                      )}
+                    />
+                  ))}
+                  <button type="button" onClick={() => setShowColumnMenu(false)}>Done</button>
+                </div>
+              )}
+              </div>
+                  </div>
+                </div>
+              </div>
+              {hasActiveFilters && (
+                <div className="question-applied-filters" aria-live="polite">
+                  <span className="question-applied-label">Applied</span>
+                  {search.trim() && <button type="button" onClick={() => setSearch("")}>Search: “{search.trim()}” <FaTimes /></button>}
+                  {statusFilter !== "ALL" && <button type="button" onClick={() => setStatusFilter("ALL")}>{statusFilter === "ACTIVE" ? "Active" : "Inactive"} <FaTimes /></button>}
+                  {typeFilter !== "ALL" && <button type="button" onClick={() => setTypeFilter("ALL")}>{typeFilter.replace(/_/g, " ")} <FaTimes /></button>}
+                  {recentOnly && <button type="button" onClick={() => setRecentOnly(false)}>Added in last 7 days <FaTimes /></button>}
+                  <span className="question-applied-count">{questionRows.length} results</span>
+                </div>
+              )}
+          {canManage && selectedQuestionRows.length > 0 && (
+            <div className="question-selection-toolbar">
+              <div className="question-selection-summary">
+                <span className="question-selection-count">{selectedQuestionRows.length}</span>
+                <span>{selectedQuestionRows.length === 1 ? "question selected" : "questions selected"}</span>
+                <button type="button" className="question-clear-selection" onClick={() => questionGridApi?.deselectAll()}>
+                  Clear selection
+                </button>
+              </div>
+              <div className="question-selection-actions">
+                {selectedQuestionRows.length === 1 && (
+                  <Button
+                    className="question-bulk-action-edit"
+                    size="sm"
+                    variant="outline-primary"
+                    disabled={!selectedQuestionRows[0].isActive}
+                    onClick={() => handleEdit(selectedQuestionRows[0].question)}
+                  >
+                    Edit
+                  </Button>
+                )}
+                <Button className="question-bulk-action-activate" size="sm" variant="outline-success" disabled={bulkUpdatingStatus} onClick={() => handleBulkSetActive(true)}>
+                  <FaCheck aria-hidden="true" />
+                  Activate
+                </Button>
+                <Button className="question-bulk-action-deactivate" size="sm" variant="outline-warning" disabled={bulkUpdatingStatus} onClick={() => handleBulkSetActive(false)}>
+                  <FaBan aria-hidden="true" />
+                  Deactivate
+                </Button>
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  onClick={() => {
+                    setBulkDeleteError(null);
+                    setShowBulkDeleteConfirm(true);
+                  }}
                 >
-                  {/* VIEW */}
-
-                  <ActionIconButton
-                    type="view"
-                    disabled={!isQuestionActive(question)}
-                    onClick={() => handleView(question)}
-                    title="View question"
-                  />
-
-                  {canManage && (
-                    <>
-                      {/* EDIT */}
-
-                      <ActionIconButton
-                        type="edit"
-                        disabled={!isQuestionActive(question)}
-                        onClick={() => handleEdit(question)}
-                        title="Edit question"
-                      />
-
-                      {/* DELETE */}
-
-                      <ActionIconButton
-                        type="delete"
-                        disabled={!isQuestionActive(question)}
-                        onClick={() => del.request(question)}
-                        title="Delete question"
-                      />
-
-                      {/* ENABLE / DISABLE */}
-
-                      <Form.Check
-                        type="switch"
-                        id={`switch-${question.questionId}`}
-                        checked={isQuestionActive(question)}
-                        onChange={() => handleToggle(question.questionId)}
-                        label={
-                          isQuestionActive(question) ? "Active" : "Inactive"
-                        }
-                      />
-                    </>
-                  )}
-                </Col>
-              </Row>
-            </ListGroup.Item>
-          ))
-        ) : (
-          <ListGroup.Item className="text-center py-5">
-            <h5>No Questions Found</h5>
-
-            <p className="text-muted mb-0">
-              Try searching with a different keyword.
-            </p>
-          </ListGroup.Item>
-        )}
-      </ListGroup>
+                  <FaTrash aria-hidden="true" />
+                  Delete selected
+                </Button>
+              </div>
+            </div>
+          )}
+          </div>
+        ) : null}
+        quickFilterText={search}
+        onQuickFilterTextChange={setSearch}
+        searchPlaceholder="Search questions, topics, chapters..."
+        countLabel="question"
+        countLabelPlural="questions"
+        loading={loadingQuestions}
+        columnDefs={questionColumns.filter((column) => visibleQuestionColumns.includes(column.field))}
+        height={520}
+        pageSize={5}
+        rowHeight={76}
+        rowSelection={canManage ? {
+          mode: "multiRow",
+          checkboxes: true,
+          headerCheckbox: true,
+          enableClickSelection: false,
+        } : undefined}
+        getRowId={({ data }) => String(data.questionId)}
+        onGridReady={(event) => setQuestionGridApi(event.api)}
+        onSelectionChanged={(event) => setSelectedQuestionRows(event.api.getSelectedRows())}
+        noRowsMessage={questionsLoadError ? "Question list unavailable" : questions.length === 0 ? "No questions available yet" : "No questions match these filters. Clear filters to see the full list."}
+        defaultColDef={{ wrapHeaderText: true, autoHeaderHeight: true }}
+      />
 
       {/* =====================================================
           ADD / EDIT QUESTION MODAL
@@ -1378,20 +1515,16 @@ const QuestionList = () => {
       />
 
       <ConfirmDialog
-        open={Boolean(del.pending)}
-        title="Delete this question?"
-        body={
-          del.pending?.questionText
-            ? `"${del.pending.questionText.slice(0, 120)}${
-                del.pending.questionText.length > 120 ? "…" : ""
-              }" will be removed. This can't be undone.`
-            : "This question will be removed. This can't be undone."
-        }
-        confirmLabel="Delete question"
-        loading={del.deleting}
-        error={del.error}
-        onConfirm={del.confirm}
-        onCancel={del.close}
+        open={showBulkDeleteConfirm}
+        title={`Delete ${selectedQuestionRows.length} selected questions?`}
+        body="The selected questions will be removed. This can't be undone."
+        confirmLabel={`Delete ${selectedQuestionRows.length} questions`}
+        loading={bulkDeleting}
+        error={bulkDeleteError}
+        onConfirm={confirmBulkDelete}
+        onCancel={() => {
+          if (!bulkDeleting) setShowBulkDeleteConfirm(false);
+        }}
       />
     </Container>
   );

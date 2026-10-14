@@ -153,6 +153,8 @@ function BranchAdminTable({ data, onEdit, refreshData }) {
         pageSize={10}
         paginationPageSizeSelector={false}
         rowHeight={50}
+        title="Branch admin records"
+        description="Manage administrator access for branches."
       />
 
       <ConfirmDialog
