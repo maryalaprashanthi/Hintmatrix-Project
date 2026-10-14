@@ -245,11 +245,12 @@ function TableNames() {
       />
 
       {/* Data Grid */}
-      <div className="card shadow-sm border-0">
-        <div className="card-body">
-          <DataGrid rowData={tableNames} columnDefs={columnDefs} />
-        </div>
-      </div>
+      <DataGrid
+        rowData={tableNames}
+        columnDefs={columnDefs}
+        title="Table records"
+        description="Manage the tables available in the question builder."
+      />
 
       {/* Add / Edit Modal */}
 

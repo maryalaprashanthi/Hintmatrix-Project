@@ -147,6 +147,8 @@ function SectionTable({ refresh, onDelete, onEdit, onCountsChange }) {
         paginationPageSizeSelector={false}
         rowHeight={50}
         popupParent={document.body}
+        title="Section records"
+        description="Manage the sections assigned to this branch."
       />
     </div>
   );

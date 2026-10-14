@@ -1,0 +1,211 @@
+/* Shared AG Grid styling used by the reusable grid and standalone grids. */
+.shared-ag-grid-block {
+  width: 100%;
+  min-width: 0;
+}
+
+.shared-ag-grid-block.has-toolbar {
+  overflow: hidden;
+  border: 1px solid #e7edf5;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(16, 36, 59, 0.05);
+}
+
+.shared-ag-grid-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #e9eef5;
+  background: #fff;
+}
+
+.shared-ag-grid-heading h3 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.shared-ag-grid-heading p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.shared-ag-grid-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.shared-ag-grid-count {
+  padding: 6px 10px;
+  border: 1px solid #dbeafe;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.shared-ag-grid-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: min(280px, 32vw);
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #d7e0eb;
+  border-radius: 10px;
+  background: #fff;
+  color: #64748b;
+}
+
+.shared-ag-grid-search:focus-within {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.shared-ag-grid-search input {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #1e293b;
+  font-size: 13px;
+}
+
+.shared-ag-grid-search input::placeholder {
+  color: #94a3b8;
+}
+
+.shared-ag-grid.ag-theme-quartz {
+  --ag-background-color: #fff;
+  --ag-foreground-color: #334155;
+  --ag-border-color: #e8edf4;
+  --ag-header-background-color: #f8fafc;
+  --ag-header-foreground-color: #475569;
+  --ag-row-border-color: #edf1f6;
+  --ag-row-hover-color: #f3f8ff;
+  --ag-font-family: inherit;
+  --ag-font-size: 13px;
+  --ag-cell-horizontal-padding: 14px;
+  --ag-header-height: 48px;
+  --ag-row-height: 52px;
+  --ag-wrapper-border-radius: 0;
+}
+
+.shared-ag-grid .ag-root-wrapper {
+  border: 0;
+  border-radius: 0;
+}
+
+.shared-ag-grid .ag-header {
+  border-bottom: 1px solid #dfe7f1;
+}
+
+.shared-ag-grid .ag-header-cell {
+  padding-inline: 14px;
+  border-right: 1px solid #e4eaf2;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+.shared-ag-grid .ag-header-cell-label {
+  gap: 8px;
+}
+
+.shared-ag-grid .ag-header-cell:last-child,
+.shared-ag-grid .ag-cell:last-child {
+  border-right: 0;
+}
+
+.shared-ag-grid .ag-header-cell-resize::after {
+  width: 2px;
+  background-color: #d7e0eb;
+}
+
+.shared-ag-grid .ag-row {
+  border-bottom: 1px solid #eef2f7;
+}
+
+.shared-ag-grid .ag-row-odd {
+  background-color: #fbfcfe;
+}
+
+.shared-ag-grid .ag-row-hover {
+  background-color: #f3f8ff;
+}
+
+.shared-ag-grid .ag-cell {
+  display: flex;
+  align-items: center;
+  padding-inline: 14px;
+  border-right: 1px solid #edf1f6;
+  color: #344054;
+  line-height: 1.45;
+}
+
+.shared-ag-grid .ag-paging-panel {
+  min-height: 54px;
+  padding-inline: 18px;
+  border-top: 1px solid #e9eef5;
+  background: #fbfcfe;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.shared-ag-grid .ag-paging-button {
+  border-radius: 7px;
+}
+
+.shared-ag-grid .ag-paging-button:hover:not(.ag-disabled) {
+  background: #eaf2ff;
+  color: #1d4ed8;
+}
+
+@media (max-width: 768px) {
+  .shared-ag-grid-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .shared-ag-grid-tools {
+    justify-content: space-between;
+  }
+
+  .shared-ag-grid-search {
+    width: min(320px, 70vw);
+  }
+
+  .shared-ag-grid.ag-theme-quartz {
+    --ag-cell-horizontal-padding: 10px;
+  }
+
+  .shared-ag-grid .ag-header-cell,
+  .shared-ag-grid .ag-cell {
+    padding-inline: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .shared-ag-grid-tools {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .shared-ag-grid-search {
+    width: 100%;
+  }
+}

@@ -1,10 +1,15 @@
-import React from "react";
-import { AgGridReact } from "ag-grid-react";
+import React, { useState } from "react";
 import { themeQuartz } from "ag-grid-community";
+import DataGrid from "../../components/DataGrid";
 import ActionIconButton from "../../components/Common/ActionIconButton";
 import { getActiveRow } from "../../utils/managementCounts";
 
-function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
+function RuleEngineTable({
+  ruleEngineList,
+  onEdit,
+  onDelete,
+}) {
+  const [quickFilter, setQuickFilter] = useState("");
   // ============================================================
   // DEFAULT COLUMN CONFIGURATION
   // ============================================================
@@ -274,9 +279,9 @@ function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
       field: "chapterName",
       headerName: "Chapter Name",
 
-      flex: 1,
+      flex: 1.45,
 
-      minWidth: 130,
+      minWidth: 180,
 
       tooltipField: "chapterName",
     },
@@ -323,9 +328,9 @@ function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
       field: "relationshipName",
       headerName: "Relationship",
 
-      flex: 1,
+      flex: 0.55,
 
-      minWidth: 140,
+      minWidth: 84,
 
       tooltipField: "relationshipName",
     },
@@ -338,9 +343,9 @@ function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
       field: "pairOrder",
       headerName: "Pair Order",
 
-      flex: 0.6,
+      flex: 0.65,
 
-      minWidth: 90,
+      minWidth: 105,
     },
 
     // ==========================================================
@@ -350,9 +355,9 @@ function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
     {
       headerName: "Status",
 
-      flex: 1.6,
+      flex: 0.75,
 
-      minWidth: 240,
+      minWidth: 122,
 
       sortable: true,
 
@@ -679,15 +684,7 @@ function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
   // ============================================================
 
   return (
-    <div
-      style={{
-        marginTop: "20px",
-
-        width: "100%",
-
-        overflow: "hidden",
-      }}
-    >
+    <>
       {/* ========================================================
           AG GRID STYLING
       ======================================================== */}
@@ -755,37 +752,27 @@ function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
           GRID
       ======================================================== */}
 
-      <div
-        className="ag-theme-quartz"
-        style={{
-          width: "100%",
-
-          height: "450px",
-
-          overflow: "hidden",
-        }}
-      >
-        <AgGridReact
-          rowData={formattedRuleEngineList}
-          columnDefs={columnDefs}
-          defaultColDef={defaultColDef}
-          theme={themeQuartz}
-          pagination={true}
-          paginationPageSize={10}
-          paginationPageSizeSelector={false}
-          rowHeight={50}
-          popupParent={document.body}
-          // Prevent unnecessary horizontal scrolling
-          suppressHorizontalScroll={true}
-          // Automatically fit columns to available width
-          onGridReady={(params) => {
-            setTimeout(() => {
-              params.api.sizeColumnsToFit();
-            }, 100);
-          }}
-        />
-      </div>
-    </div>
+      <DataGrid
+        rowData={formattedRuleEngineList}
+        columnDefs={columnDefs}
+        defaultColDef={defaultColDef}
+        theme={themeQuartz}
+        height="520px"
+        pageSize={8}
+        paginationPageSizeSelector={false}
+        rowHeight={50}
+        popupParent={document.body}
+        title="Rule records"
+        description="Search and manage configured grading rules."
+        quickFilterText={quickFilter}
+        onQuickFilterTextChange={setQuickFilter}
+        searchPlaceholder="Search rules..."
+        countLabel="rule"
+        className="rule-engine-grid"
+        onGridReady={(params) => params.api.sizeColumnsToFit()}
+        onGridSizeChanged={(params) => params.api.sizeColumnsToFit()}
+      />
+    </>
   );
 }
 

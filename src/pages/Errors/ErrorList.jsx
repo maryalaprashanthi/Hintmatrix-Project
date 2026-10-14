@@ -5,8 +5,8 @@ import {
   FaBookOpen,
   FaChevronRight,
   FaRedo,
-  FaSearch,
 } from "react-icons/fa";
+import DataGrid from "../../components/DataGrid";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import { getApiErrorMessage } from "../../utils/apiError";
 import { getCurrentUserId } from "../../utils/user";
@@ -47,6 +47,16 @@ const getDisplayText = (value, fallback = "—") => {
 const getChapterName = (mistake) =>
   getDisplayText(mistake.chapterName, "Unknown chapter");
 
+const getSubjectName = (mistake) => {
+  const subject = mistake?.subject;
+  return getDisplayText(
+    mistake?.subjectName ??
+      mistake?.subject_name ??
+      (typeof subject === "object" ? subject?.name ?? subject?.subjectName : subject),
+    "Unknown subject",
+  );
+};
+
 // =========================================================
 // FORMAT DATE
 // =========================================================
@@ -70,6 +80,72 @@ const getTimestamp = (value) => {
   return Number.isNaN(timestamp) ? 0 : timestamp;
 };
 
+const errorListColumns = [
+  {
+    field: "createdAt",
+    headerName: "Date",
+    flex: 0.9,
+    minWidth: 155,
+    sort: "desc",
+    comparator: (first, second) => getTimestamp(first) - getTimestamp(second),
+    valueFormatter: (params) => formatDate(params.value),
+  },
+  {
+    field: "topicName",
+    headerName: "Topic",
+    flex: 1,
+    minWidth: 130,
+    valueGetter: (params) => getDisplayText(params.data?.topicName),
+    tooltipValueGetter: (params) => getDisplayText(params.data?.topicName),
+  },
+  {
+    colId: "subjectName",
+    headerName: "Subject",
+    flex: 1,
+    minWidth: 130,
+    valueGetter: (params) => getSubjectName(params.data),
+    tooltipValueGetter: (params) => getSubjectName(params.data),
+  },
+  {
+    field: "attributeName",
+    headerName: "Attribute",
+    flex: 1,
+    minWidth: 140,
+    valueGetter: (params) =>
+      getDisplayText(params.data?.attributeName, "Unknown attribute"),
+    cellRenderer: (params) => {
+      const questionId = params.data?.questionId;
+      const text = getDisplayText(params.value, "Unknown attribute");
+      return questionId !== null && questionId !== undefined && String(questionId)
+        ? <Link className="error-list-question-link" to={`/questions/${questionId}`}>{text}</Link>
+        : text;
+    },
+  },
+  {
+    field: "userAnswer",
+    headerName: "Your Answer",
+    flex: 1,
+    minWidth: 140,
+    valueGetter: (params) => getDisplayText(params.data?.userAnswer),
+    tooltipValueGetter: (params) => getDisplayText(params.data?.userAnswer),
+  },
+  {
+    field: "questionText",
+    headerName: "Question",
+    flex: 1.6,
+    minWidth: 200,
+    valueGetter: (params) => getDisplayText(params.data?.questionText, "Open question"),
+    cellRenderer: (params) => {
+      const questionId = params.data?.questionId;
+      const text = getDisplayText(params.value, "Open question");
+      return questionId !== null && questionId !== undefined && String(questionId)
+        ? <Link className="error-list-question-link" to={`/questions/${questionId}`}>{text}</Link>
+        : text;
+    },
+    tooltipValueGetter: (params) => getDisplayText(params.data?.questionText, "Open question"),
+  },
+];
+
 // =========================================================
 // GET CHAPTER KEY
 // =========================================================
@@ -92,7 +168,6 @@ export default function ErrorList() {
   const [error, setError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
   const [topicSearch, setTopicSearch] = useState("");
-  const dateOrder = "newest";
 
 
   // =========================================================
@@ -206,18 +281,14 @@ export default function ErrorList() {
     );
   }, [mistakes, selectedChapter]);
 
-  const filteredChapterMistakes = useMemo(() => {
-    const query = topicSearch.trim().toLowerCase();
-    const filtered = chapterMistakes.filter((mistake) => {
-      return !query || getDisplayText(mistake.topicName, "").toLowerCase().includes(query);
-    });
-
-    return filtered.sort((first, second) =>
-      dateOrder === "newest"
-        ? getTimestamp(second.createdAt) - getTimestamp(first.createdAt)
-        : getTimestamp(first.createdAt) - getTimestamp(second.createdAt),
-    );
-  }, [chapterMistakes, dateOrder, topicSearch]);
+  const sortedChapterMistakes = useMemo(
+    () =>
+      [...chapterMistakes].sort(
+        (first, second) =>
+          getTimestamp(second.createdAt) - getTimestamp(first.createdAt),
+      ),
+    [chapterMistakes],
+  );
 
   // =========================================================
   // LOADING
@@ -225,7 +296,7 @@ export default function ErrorList() {
 
   if (loading) {
     return (
-      <main className="error-list-page" aria-busy="true">
+      <main className="container-fluid py-4 error-list-page" aria-busy="true">
         <header className="error-list-header">
           <div>
             <p className="error-list-eyebrow">PRACTICE REVIEW</p>
@@ -252,7 +323,7 @@ export default function ErrorList() {
 
   if (error) {
     return (
-      <main className="error-list-page">
+      <main className="container-fluid py-4 error-list-page">
         <header className="error-list-header">
           <div>
             <p className="error-list-eyebrow">PRACTICE REVIEW</p>
@@ -282,7 +353,7 @@ export default function ErrorList() {
 
   if (mistakes.length === 0) {
     return (
-      <main className="error-list-page">
+      <main className="container-fluid py-4 error-list-page">
         <header className="error-list-header">
           <div>
             <p className="error-list-eyebrow">PRACTICE REVIEW</p>
@@ -318,7 +389,7 @@ export default function ErrorList() {
   if (chapterKey) {
     if (!selectedChapter) {
       return (
-        <main className="error-list-page">
+        <main className="container-fluid py-4 error-list-page">
           <header className="error-list-header">
             <div>
               <p className="error-list-eyebrow">PRACTICE REVIEW</p>
@@ -340,7 +411,7 @@ export default function ErrorList() {
     }
 
     return (
-      <main className="error-list-page">
+      <main className="container-fluid py-4 error-list-page">
         {/* =================================================
             HEADER
         ================================================= */}
@@ -355,7 +426,7 @@ export default function ErrorList() {
           </div>
 
           <span className="error-list-total">
-            {filteredChapterMistakes.length} of {chapterMistakes.length} mistakes
+            {chapterMistakes.length} {chapterMistakes.length === 1 ? "mistake" : "mistakes"}
           </span>
         </header>
 
@@ -371,118 +442,21 @@ export default function ErrorList() {
 
           <h2>{selectedChapter.name}</h2>
 
-          <label className="error-list-search error-list-chapter-search">
-            <FaSearch aria-hidden="true" />
-            <input
-              type="search"
-              value={topicSearch}
-              onChange={(event) => setTopicSearch(event.target.value)}
-              placeholder="Search topics in this chapter"
-              aria-label="Search errors by topic in this chapter"
-            />
-          </label>
-
-          {/* =================================================
-            MISTAKE TABLE
-          ================================================= */}
-
-          <div className="error-list-table-wrap">
-            <table className="error-list-table">
-              <caption className="visually-hidden">
-                Incorrect attempts in {selectedChapter.name}
-              </caption>
-              <thead>
-                <tr>
-                  <th scope="col">Date</th>
-
-                  <th scope="col">Topic</th>
-
-                  <th scope="col">Attribute</th>
-
-                  <th scope="col">Your Answer</th>
-
-                  <th scope="col">Question</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {filteredChapterMistakes.length === 0 ? (
-                  <tr>
-                    <td colSpan="5" className="error-list-table-empty">
-                      No errors match “{topicSearch}”.
-                    </td>
-                  </tr>
-                ) : filteredChapterMistakes.map((mistake, index) => {
-                  const questionId = mistake.questionId;
-
-                  const attributeName = getDisplayText(
-                    mistake.attributeName,
-                    "Unknown attribute",
-                  );
-                  const topicName = getDisplayText(mistake.topicName);
-                  const questionText = getDisplayText(
-                    mistake.questionText,
-                    "Open question",
-                  );
-                  const hasQuestionId =
-                    questionId !== null &&
-                    questionId !== undefined &&
-                    String(questionId).length > 0;
-
-                  return (
-                    <tr
-                      key={
-                        mistake.answerEventId ||
-                        `${questionId}-${mistake.attributeId}-${index}`
-                      }
-                    >
-                      {/* DATE */}
-
-                      <td>{formatDate(mistake.createdAt)}</td>
-
-                      {/* TOPIC */}
-
-                      <td>{topicName}</td>
-
-                      {/* ATTRIBUTE */}
-
-                      <td>
-                        {hasQuestionId ? (
-                          <Link
-                            className="error-list-question-link"
-                            to={`/questions/${questionId}`}
-                          >
-                            {attributeName}
-                          </Link>
-                        ) : (
-                          attributeName
-                        )}
-                      </td>
-
-                      {/* USER ANSWER */}
-
-                      <td>{getDisplayText(mistake.userAnswer)}</td>
-
-                      {/* QUESTION */}
-
-                      <td>
-                        {hasQuestionId ? (
-                          <Link
-                            className="error-list-question-link"
-                            to={`/questions/${questionId}`}
-                          >
-                            {questionText}
-                          </Link>
-                        ) : (
-                          questionText
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-            </tbody>
-            </table>
-          </div>
+          <DataGrid
+            rowData={sortedChapterMistakes}
+            columnDefs={errorListColumns}
+            height="520px"
+            pageSize={10}
+            rowHeight={52}
+            title="Incorrect attempts"
+            description={`Review mistakes recorded in ${selectedChapter.name}.`}
+            quickFilterText={topicSearch}
+            onQuickFilterTextChange={setTopicSearch}
+            searchPlaceholder="Search topic, subject, answer or question..."
+            countLabel="mistake"
+            noRowsMessage="No mistakes match your search."
+            className="error-list-grid"
+          />
         </section>
       </main>
     );
@@ -493,7 +467,7 @@ export default function ErrorList() {
   // =========================================================
 
   return (
-    <main className="error-list-page">
+    <main className="container-fluid py-4 error-list-page">
       <header className="error-list-header">
         <div>
           <p className="error-list-eyebrow">PRACTICE REVIEW</p>
