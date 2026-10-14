@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Table, Spinner, Alert } from "react-bootstrap";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
+import formatOptionSelected from "../../utils/formatOptionSelected";
 import "./CheckMistakes.css";
 
 const CheckMistakes = ({ userId, questionId }) => {
@@ -93,7 +94,9 @@ const CheckMistakes = ({ userId, questionId }) => {
                 <td className="mistake-attribute-cell">
                   <strong>{mistake.attributeName ?? ""}</strong>
                 </td>
-                <td className="mistake-answer-cell">{mistake.userAnswer ?? ""}</td>
+                <td className="mistake-answer-cell">
+                  {formatOptionSelected(mistake.userAnswer)}
+                </td>
               </tr>
             ))}
           </tbody>

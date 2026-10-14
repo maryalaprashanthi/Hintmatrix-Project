@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
@@ -9,6 +10,7 @@ import {
 import DataGrid from "../../components/DataGrid";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import { getApiErrorMessage } from "../../utils/apiError";
+import formatOptionSelected from "../../utils/formatOptionSelected";
 import { getCurrentUserId } from "../../utils/user";
 import "./ErrorList.css";
 
