@@ -4,12 +4,7 @@ import { themeQuartz } from "ag-grid-community";
 import ActionIconButton from "../../components/Common/ActionIconButton";
 import { getActiveRow } from "../../utils/managementCounts";
 
-function RuleEngineTable({
-  ruleEngineList,
-  onEdit,
-  onDelete,
-}) {
-
+function RuleEngineTable({ ruleEngineList, onEdit, onDelete }) {
   // ============================================================
   // DEFAULT COLUMN CONFIGURATION
   // ============================================================
@@ -25,13 +20,11 @@ function RuleEngineTable({
   // ============================================================
 
   const getReadableFieldName = (field) => {
-
     if (!field) {
       return "";
     }
 
     const fieldNames = {
-
       chapter: "Chapter",
 
       pair_attribute: "Pair Attribute",
@@ -69,11 +62,7 @@ function RuleEngineTable({
 
     return (
       fieldNames[field] ||
-      field
-        .replaceAll("_", " ")
-        .replace(/\b\w/g, (char) =>
-          char.toUpperCase()
-        )
+      field.replaceAll("_", " ").replace(/\b\w/g, (char) => char.toUpperCase())
     );
   };
 
@@ -82,7 +71,6 @@ function RuleEngineTable({
   // ============================================================
 
   const getIssues = (data) => {
-
     if (!data) {
       return [];
     }
@@ -105,7 +93,6 @@ function RuleEngineTable({
   // ============================================================
 
   const getTableAttributeValue = (data) => {
-
     if (!data) {
       return "";
     }
@@ -126,15 +113,11 @@ function RuleEngineTable({
   // ============================================================
 
   const isChapterIssue = (issue) => {
-
     if (!issue) {
       return false;
     }
 
-    const field =
-      typeof issue === "string"
-        ? issue
-        : issue.field;
+    const field = typeof issue === "string" ? issue : issue.field;
 
     return field === "chapter";
   };
@@ -155,7 +138,6 @@ function RuleEngineTable({
   // ============================================================
 
   const getEffectiveIssues = (data) => {
-
     if (!data) {
       return [];
     }
@@ -166,51 +148,36 @@ function RuleEngineTable({
     // Remove Chapter issues
     // ----------------------------------------------------------
 
-    issues = issues.filter(
-      (issue) => !isChapterIssue(issue)
-    );
+    issues = issues.filter((issue) => !isChapterIssue(issue));
 
     // ----------------------------------------------------------
     // Determine whether row is DRAFT
     // ----------------------------------------------------------
 
-    const isDraft =
-      data.uploadStatus === "DRAFT" ||
-      data.rowStatus === 0;
+    const isDraft = data.uploadStatus === "DRAFT" || data.rowStatus === 0;
 
     // ----------------------------------------------------------
     // Get Table Attribute
     // ----------------------------------------------------------
 
-    const tableAttribute =
-      getTableAttributeValue(data);
+    const tableAttribute = getTableAttributeValue(data);
 
     // ----------------------------------------------------------
     // If DRAFT and Table Attribute is empty,
     // create the warning even after page refresh.
     // ----------------------------------------------------------
 
-    const hasTableAttributeIssue =
-      issues.some((issue) => {
+    const hasTableAttributeIssue = issues.some((issue) => {
+      if (!issue) {
+        return false;
+      }
 
-        if (!issue) {
-          return false;
-        }
+      const field = typeof issue === "string" ? issue : issue.field;
 
-        const field =
-          typeof issue === "string"
-            ? issue
-            : issue.field;
+      return field === "attribute";
+    });
 
-        return field === "attribute";
-      });
-
-    if (
-      isDraft &&
-      !tableAttribute &&
-      !hasTableAttributeIssue
-    ) {
-
+    if (isDraft && !tableAttribute && !hasTableAttributeIssue) {
       issues.push({
         field: "attribute",
         value: null,
@@ -226,9 +193,7 @@ function RuleEngineTable({
   // ============================================================
 
   const getMissingFieldNames = (data) => {
-
-    const issues =
-      getEffectiveIssues(data);
+    const issues = getEffectiveIssues(data);
 
     if (!issues.length) {
       return [];
@@ -236,23 +201,18 @@ function RuleEngineTable({
 
     return issues
       .map((issue) => {
-
         if (!issue) {
           return null;
         }
 
         // String issue
         if (typeof issue === "string") {
-
           return getReadableFieldName(issue);
         }
 
         // Object issue
         if (issue.field) {
-
-          return getReadableFieldName(
-            issue.field
-          );
+          return getReadableFieldName(issue.field);
         }
 
         return null;
@@ -265,9 +225,7 @@ function RuleEngineTable({
   // ============================================================
 
   const getIssueMessages = (data) => {
-
-    const issues =
-      getEffectiveIssues(data);
+    const issues = getEffectiveIssues(data);
 
     if (!issues.length) {
       return "";
@@ -275,29 +233,20 @@ function RuleEngineTable({
 
     return issues
       .map((issue) => {
-
         if (!issue) {
           return "";
         }
 
         // String issue
         if (typeof issue === "string") {
-
           return getReadableFieldName(issue);
         }
 
-        const field =
-          issue.field
-            ? getReadableFieldName(
-                issue.field
-              )
-            : "";
+        const field = issue.field ? getReadableFieldName(issue.field) : "";
 
-        const message =
-          issue.message || "";
+        const message = issue.message || "";
 
         if (field && message) {
-
           return `${field}: ${message}`;
         }
 
@@ -317,7 +266,6 @@ function RuleEngineTable({
   // ============================================================
 
   const columnDefs = [
-
     // ==========================================================
     // CHAPTER
     // ==========================================================
@@ -363,10 +311,7 @@ function RuleEngineTable({
       tooltipField: "tableAttributeName",
 
       valueGetter: (params) => {
-
-        return getTableAttributeValue(
-          params.data
-        );
+        return getTableAttributeValue(params.data);
       },
     },
 
@@ -414,13 +359,11 @@ function RuleEngineTable({
       filter: true,
 
       cellRenderer: (params) => {
-
         if (!params.data) {
           return null;
         }
 
-        const data =
-          params.data;
+        const data = params.data;
 
         if (!getActiveRow(data)) {
           return (
@@ -459,14 +402,11 @@ function RuleEngineTable({
         // GET EFFECTIVE ISSUES
         // ------------------------------------------------------
 
-        const issues =
-          getEffectiveIssues(data);
+        const issues = getEffectiveIssues(data);
 
-        const missingFields =
-          getMissingFieldNames(data);
+        const missingFields = getMissingFieldNames(data);
 
-        const issueMessages =
-          getIssueMessages(data);
+        const issueMessages = getIssueMessages(data);
 
         // ------------------------------------------------------
         // DETERMINE DRAFT
@@ -482,7 +422,6 @@ function RuleEngineTable({
         // ======================================================
 
         if (isDraft) {
-
           return (
             <div
               style={{
@@ -496,7 +435,6 @@ function RuleEngineTable({
                 overflow: "hidden",
               }}
             >
-
               {/* ==================================================
                   RED DOT
               ================================================== */}
@@ -537,7 +475,6 @@ function RuleEngineTable({
               ================================================== */}
 
               {missingFields.length > 0 && (
-
                 <span
                   title={issueMessages}
                   style={{
@@ -554,7 +491,6 @@ function RuleEngineTable({
                 >
                   ⚠
                 </span>
-
               )}
 
               {/* ==================================================
@@ -562,7 +498,6 @@ function RuleEngineTable({
               ================================================== */}
 
               {missingFields.length > 0 && (
-
                 <span
                   title={issueMessages}
                   style={{
@@ -583,12 +518,9 @@ function RuleEngineTable({
                     minWidth: 0,
                   }}
                 >
-                  Missing:{" "}
-                  {missingFields.join(", ")}
+                  Missing: {missingFields.join(", ")}
                 </span>
-
               )}
-
             </div>
           );
         }
@@ -609,7 +541,6 @@ function RuleEngineTable({
               height: "100%",
             }}
           >
-
             {/* GREEN DOT */}
 
             <span
@@ -641,7 +572,6 @@ function RuleEngineTable({
             >
               Active
             </span>
-
           </div>
         );
       },
@@ -665,7 +595,6 @@ function RuleEngineTable({
       filter: false,
 
       cellRenderer: (params) => {
-
         if (!params.data) {
           return null;
         }
@@ -682,14 +611,11 @@ function RuleEngineTable({
               height: "100%",
             }}
           >
-
             {/* EDIT */}
 
             <ActionIconButton
               type="edit"
-              onClick={() =>
-                onEdit(params.data)
-              }
+              onClick={() => onEdit(params.data)}
               title="Edit rule"
             />
 
@@ -700,7 +626,6 @@ function RuleEngineTable({
               onClick={() => onDelete(params.data)}
               title="Delete rule"
             />
-
           </div>
         );
       },
@@ -711,54 +636,43 @@ function RuleEngineTable({
   // FORMAT DATA
   // ============================================================
 
-  const formattedRuleEngineList =
-    (ruleEngineList || []).map((item) => {
+  const formattedRuleEngineList = (ruleEngineList || []).map((item) => {
+    const backendIssues = Array.isArray(item.uploadIssues)
+      ? item.uploadIssues
+      : Array.isArray(item.missingFields)
+        ? item.missingFields
+        : [];
 
-      const backendIssues =
-        Array.isArray(item.uploadIssues)
-          ? item.uploadIssues
-          : Array.isArray(item.missingFields)
-          ? item.missingFields
-          : [];
+    return {
+      ...item,
 
-      return {
+      // ======================================================
+      // TABLE ATTRIBUTE
+      // ======================================================
 
-        ...item,
+      tableAttributeName:
+        item.tableAttributeName ||
+        item.attributeName ||
+        item.tableAttribute?.name ||
+        item.tableAttributeid?.name ||
+        "",
 
-        // ======================================================
-        // TABLE ATTRIBUTE
-        // ======================================================
+      // ======================================================
+      // ISSUES
+      // ======================================================
 
-        tableAttributeName:
-          item.tableAttributeName ||
-          item.attributeName ||
-          item.tableAttribute?.name ||
-          item.tableAttributeid?.name ||
-          "",
+      uploadIssues: backendIssues,
 
-        // ======================================================
-        // ISSUES
-        // ======================================================
+      missingFields: backendIssues,
 
-        uploadIssues:
-          backendIssues,
+      // ======================================================
+      // STATUS
+      // ======================================================
 
-        missingFields:
-          backendIssues,
-
-        // ======================================================
-        // STATUS
-        // ======================================================
-
-        uploadStatus:
-          item.uploadStatus ||
-          (
-            item.rowStatus === 0
-              ? "DRAFT"
-              : "RULE"
-          ),
-      };
-    });
+      uploadStatus:
+        item.uploadStatus || (item.rowStatus === 0 ? "DRAFT" : "RULE"),
+    };
+  });
 
   // ============================================================
   // RETURN
@@ -774,7 +688,6 @@ function RuleEngineTable({
         overflow: "hidden",
       }}
     >
-
       {/* ========================================================
           AG GRID STYLING
       ======================================================== */}
@@ -843,6 +756,7 @@ function RuleEngineTable({
       ======================================================== */}
 
       <div
+        className="ag-theme-quartz"
         style={{
           width: "100%",
 
@@ -851,43 +765,26 @@ function RuleEngineTable({
           overflow: "hidden",
         }}
       >
-
         <AgGridReact
           rowData={formattedRuleEngineList}
-
           columnDefs={columnDefs}
-
           defaultColDef={defaultColDef}
-
           theme={themeQuartz}
-
           pagination={true}
-
           paginationPageSize={10}
-
           paginationPageSizeSelector={false}
-
           rowHeight={50}
-
           popupParent={document.body}
-
           // Prevent unnecessary horizontal scrolling
           suppressHorizontalScroll={true}
-
           // Automatically fit columns to available width
           onGridReady={(params) => {
-
             setTimeout(() => {
-
               params.api.sizeColumnsToFit();
-
             }, 100);
-
           }}
         />
-
       </div>
-
     </div>
   );
 }
