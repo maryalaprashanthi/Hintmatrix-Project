@@ -10,9 +10,10 @@
 
   height: 75px;
 
-  background: linear-gradient(90deg, #406eae 0%, #3479bd 50%, #9ccfec 120%);
+  background: linear-gradient(90deg, #f4f8ff 0%, #eaf1fd 50%, #f1f6ff 100%);
 
-  border-bottom: none;
+  border-bottom: 1px solid #e3ebf8;
+  box-shadow: 0 1px 4px rgba(30, 60, 120, 0.06);
 
   display: flex;
   align-items: center;
@@ -46,7 +47,7 @@
 
 .menu-btn svg {
   font-size: 24px;
-  color: #ffffff;
+  color: #1e3a6e;
 }
 
 /* =====================================
@@ -75,9 +76,9 @@
   align-items: center;
   box-sizing: border-box;
 
-  background: rgb(219, 229, 244) !important;
+  background: #ffffff !important;
 
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid #e3ebf8;
 
   border-radius: 20px;
 
@@ -94,7 +95,7 @@
 
 .search-icon {
   font-size: 18px;
-  color: #ffffff;
+  color: #6b7a99;
   margin-right: 10px;
 }
 
@@ -113,7 +114,7 @@
 }
 
 .search-box input::placeholder {
-  color: black;
+  color: #8a97b2;
 }
 
 .navbar-search-results {
@@ -241,7 +242,7 @@
   border-radius: 50%;
 
   cursor: pointer;
-  color: #ffffff;
+  color: #1e3a6e;
 }
 
 .notification-menu {
@@ -264,7 +265,7 @@ button.notification-trigger {
   padding: 0 4px;
   display: grid;
   place-items: center;
-  border: 2px solid #5c9acf;
+  border: 2px solid #eef4fe;
   border-radius: 999px;
   background: #ef4444;
   color: #fff;
@@ -317,19 +318,19 @@ button.notification-trigger {
 
 .notification-list {
   display: grid;
-    max-height: 420px;
-    overflow-y: auto;
+  max-height: 420px;
+  overflow-y: auto;
 }
 .notification-state {
-    padding: 28px 18px;
-    color: #718096;
-    font-size: 13px;
-    text-align: center;
-  }
+  padding: 28px 18px;
+  color: #718096;
+  font-size: 13px;
+  text-align: center;
+}
 .notification-header button:disabled {
-    color: #a0aec0;
-    cursor: default;
-  }
+  color: #a0aec0;
+  cursor: default;
+}
 .notification-item {
   width: 100%;
   padding: 14px 18px;
@@ -397,7 +398,7 @@ button.notification-trigger {
 }
 
 .nav-icon:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(37, 99, 235, 0.08);
 }
 
 .nav-icon svg {
@@ -436,12 +437,12 @@ button.notification-trigger {
 .profile-name {
   font-size: 13px;
   font-weight: 600;
-  color: #ffffff;
+  color: #1f2a44;
 }
 
 .profile-role {
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.8);
+  color: #6b7a99;
 }
 
 .profile-dropdown {
