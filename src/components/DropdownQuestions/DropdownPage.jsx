@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Row, Col } from "react-bootstrap";
 
@@ -66,6 +66,23 @@ const DropdownPage = ({
   const [totalScore, setTotalScore] = useState(0);
   const [checkMistakes, setCheckMistakes] = useState(false);
   const [answerScrollTarget, setAnswerScrollTarget] = useState(null);
+  const [expandedAnswers, setExpandedAnswers] = useState(false);
+  const questionTableContainer = useRef(null);
+  const [answerMaxHeight, setAnswerMaxHeight] = useState(undefined);
+
+  useEffect(() => {
+    setExpandedAnswers(false);
+  }, [questionId]);
+
+  useEffect(() => {
+    const table = questionTableContainer.current?.querySelector("table");
+    if (!table) return undefined;
+    const updateHeight = () => setAnswerMaxHeight(table.getBoundingClientRect().height || undefined);
+    updateHeight();
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(table);
+    return () => observer.disconnect();
+  }, [question, checkMistakes]);
 
   useEffect(() => {
     setAnswerScrollTarget(null);
@@ -385,6 +402,7 @@ const DropdownPage = ({
 
       <Row className="align-items-start">
         <Col md={6}>
+          <div ref={questionTableContainer}>
           <DropdownQuestion
             data={question.questionAttributes || []}
             questionTables={questionTables}
@@ -394,13 +412,20 @@ const DropdownPage = ({
             loadTotalScore={loadTotalScore}
             onAnswerAdded={setAnswerScrollTarget}
           />
+          </div>
         </Col>
 
         <Col md={6}>
+          <div id="dropdown-answer-table"
+            style={{ maxHeight: expandedAnswers ? undefined : answerMaxHeight, overflowY: "auto" }}
+            tabIndex={0} role="region" aria-label="Dropdown answers">
           <DropdownSolution
             answeredData={answeredData}
             answerScrollTarget={answerScrollTarget}
+            expanded={expandedAnswers}
+            onToggleView={() => setExpandedAnswers((current) => !current)}
           />
+          </div>
         </Col>
       </Row>
 
