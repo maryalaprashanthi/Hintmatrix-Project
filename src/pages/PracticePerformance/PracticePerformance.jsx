@@ -16,6 +16,9 @@ import {
   X,
 } from "lucide-react";
 
+import { BarChart } from "@mui/x-charts/BarChart";
+import { LineChart } from "@mui/x-charts/LineChart";
+
 import PracticePerformanceService, {
   PRACTICE_LEVELS,
 } from "../../services/PracticePerformanceService";
@@ -232,113 +235,64 @@ const UnitDonut = ({ total, attempted, correct }) => {
   );
 };
 
-const PerformanceTrendChart = ({ items }) => {
-  const data = items
-    .filter((item) => num(item.attemptedUnits) > 0)
-    .map((item) => ({
-      name: String(item.name ?? "Unnamed"),
-      value: Math.min(100, Math.max(0, num(item.accuracyPercentage))),
-    }));
-
-  if (data.length === 0) {
-    return (
-      <p className="pp-empty">
-        No completed practice results are available for this view.
-      </p>
-    );
+const PracticeComparisonCharts = ({ items, kind = "accuracy" }) => {
+  const data = items.filter((item) => num(item.attemptedUnits) > 0);
+  if (!data.length) {
+    return <p className="pp-empty">No attempted practice units are available for this view.</p>;
   }
-
-  const width = Math.max(440, data.length * 88 + 72);
-  const height = 280;
-  const left = 52;
-  const right = width - 24;
-  const top = 20;
-  const bottom = 218;
-  const plotWidth = right - left;
-  const plotHeight = bottom - top;
-  const points = data.map((item, index) => ({
-    ...item,
-    x:
-      data.length === 1
-        ? left + plotWidth / 2
-        : left + (index * plotWidth) / (data.length - 1),
-    y: bottom - (item.value / 100) * plotHeight,
-  }));
-  const linePoints = points.map(({ x, y }) => `${x},${y}`).join(" ");
-  const areaPoints = `${left},${bottom} ${linePoints} ${right},${bottom}`;
-
+  const labels = data.map((item) => String(item.name ?? "Unnamed"));
+  const labelWidth = Math.max(110, ...labels.map((label) => label.length * 7 + 24));
+  const edgeSpace = Math.ceil(labelWidth / 2) + 16;
+  const width = Math.max(440, data.length * labelWidth + 80);
+  const common = {
+    height: 300,
+    xAxis: [{ scaleType: "band", data: labels, tickLabelInterval: () => true, tickLabelStyle: { fontSize: 11 } }],
+    grid: { horizontal: true },
+    margin: { left: 55, right: 20, top: 30, bottom: 65 },
+    borderRadius: 4,
+  };
   return (
-    <div className="pp-trend-scroll">
-      <svg
-        className="pp-trend-chart"
-        viewBox={`0 0 ${width} ${height}`}
-        style={{ "--pp-trend-width": `${width}px` }}
-        role="img"
-        aria-label="Average practice accuracy across the selected categories"
-      >
-        {[0, 25, 50, 75, 100].map((tick) => {
-          const y = bottom - (tick / 100) * plotHeight;
-
-          return (
-            <g key={tick}>
-              <line
-                className="pp-trend-grid"
-                x1={left}
-                x2={right}
-                y1={y}
-                y2={y}
-              />
-              <text
-                className="pp-trend-tick"
-                x={left - 10}
-                y={y + 4}
-                textAnchor="end"
-              >
-                {tick}%
-              </text>
-            </g>
-          );
-        })}
-        {points.length > 1 && (
-          <>
-            <polygon className="pp-trend-area" points={areaPoints} />
-            <polyline className="pp-trend-line" points={linePoints} />
-          </>
-        )}
-        {points.map((point, index) => (
-          <g key={`${point.name}-${index}`}>
-            <circle
-              className="pp-trend-point"
-              cx={point.x}
-              cy={point.y}
-              r="5"
-            />
-            <text
-              className="pp-trend-value"
-              x={point.x}
-              y={Math.max(top - 2, point.y - 12)}
-              textAnchor="middle"
-            >
-              {formatPct(point.value)}
-            </text>
-            <text
-              className="pp-trend-label"
-              x={point.x}
-              y={bottom + 24}
-              textAnchor="middle"
-            >
-              <title>{point.name}</title>
-              {point.name.length > 12
-                ? `${point.name.slice(0, 11)}…`
-                : point.name}
-            </text>
-          </g>
-        ))}
-      </svg>
-    </div>
+    <>
+      {kind === "accuracy" && <>
+<h3 className="pp-chart-heading">Accuracy by category</h3>
+      <div className="pp-trend-scroll" role="region" aria-label="Practice accuracy by category" tabIndex={0}>
+        <div className="pp-chart-canvas" style={{ minWidth: width }}>
+        <LineChart
+          {...common}
+          margin={{ ...common.margin, left: Math.max(55, edgeSpace), right: edgeSpace }}
+          xAxis={[{ ...common.xAxis[0], scaleType: "band" }]}
+          yAxis={[{ min: 0, max: 100, valueFormatter: (value) => `${value}%` }]}
+          series={[{
+            data: data.map((item) => num(item.accuracyPercentage)),
+            label: "Accuracy",
+            color: "#3b82f6",
+            curve: "monotoneX",
+            area: true,
+            showMark: true,
+            valueFormatter: (value) => formatPct(value),
+          }]}
+        />
+        </div>
+      </div>
+      </>}
+{kind === "units" && <>
+<h3 className="pp-chart-heading">Attempted vs correct units</h3>
+      <div className="pp-trend-scroll" role="region" aria-label="Attempted and correct practice units by category" tabIndex={0}>
+        <div className="pp-chart-canvas" style={{ minWidth: width }}>
+        <BarChart
+          {...common}
+          yAxis={[{ min: 0 }]}
+          series={[
+            { data: data.map((item) => num(item.attemptedUnits)), label: "Attempted", color: "#6366f1", valueFormatter: (value) => formatCount(value) },
+            { data: data.map((item) => num(item.correctUnits)), label: "Correct", color: "#16a34a", valueFormatter: (value) => formatCount(value) },
+          ]}
+        />
+        </div>
+      </div>
+      </>}
+    </>
   );
 };
-
 // One clickable row of a level list: name, the level above it, a bar of
 // accuracy and how much of it has been attempted.
 const ItemRow = ({ item, active, onSelect }) => {
@@ -948,7 +902,8 @@ const PracticePerformance = () => {
         </label>
 
         {hasPath && (
-          <button type="button" className="pp-link" onClick={resetHierarchy}>
+          <button type="button" className="pp-clear-filters" onClick={resetHierarchy}>
+            <X size={16} aria-hidden="true" />
             Clear course &amp; subject
           </button>
         )}
@@ -1018,7 +973,7 @@ const PracticePerformance = () => {
               <section className="pp-card pp-trend-card">
                 <div className="pp-card__head">
                   <div>
-                    <h2 className="pp-card__title">Performance Trend</h2>
+                    <h2 className="pp-card__title">Practice Comparison</h2>
                     <p className="pp-card__sub">
                       Average accuracy across{" "}
                       {trendCourseId ? "subjects" : "courses"}
@@ -1026,7 +981,7 @@ const PracticePerformance = () => {
                   </div>
                   <select
                     className="pp-select pp-trend-select"
-                    aria-label="Filter performance trend by course"
+                    aria-label="Filter practice comparison by course"
                     value={trendCourseId}
                     onChange={(event) => setTrendCourseId(event.target.value)}
                   >
@@ -1039,17 +994,17 @@ const PracticePerformance = () => {
                   </select>
                 </div>
                 {trend.status === "loading" ? (
-                  <p className="pp-empty">Loading trend…</p>
+                  <p className="pp-empty">Loading charts…</p>
                 ) : trend.status === "error" ? (
                   <p className="pp-empty" role="alert">
-                    Couldn&rsquo;t load trend data.
+                    Couldn&rsquo;t load comparison data.
                   </p>
                 ) : (
-                  <PerformanceTrendChart items={trend.items} />
+                  <PracticeComparisonCharts items={trend.items} />
                 )}
               </section>
 
-              <section className="pp-card">
+              <section className="pp-card pp-unit-breakdown-card">
                 <h2 className="pp-card__title">Unit Breakdown</h2>
                 <p className="pp-card__sub">
                   Every unit students could attempt, by current result
@@ -1062,6 +1017,17 @@ const PracticePerformance = () => {
               </section>
             </div>
 
+            <section className="pp-card pp-trend-card">
+              <h2 className="pp-card__title">Attempted vs Correct Units</h2>
+              <p className="pp-card__sub">Uses the same course selection as Practice Comparison.</p>
+              {trend.status === "loading" ? (
+                <p className="pp-empty">Loading charts…</p>
+              ) : trend.status === "error" ? (
+                <p className="pp-empty" role="alert">Couldn&rsquo;t load comparison data.</p>
+              ) : (
+                <PracticeComparisonCharts items={trend.items} kind="units" />
+              )}
+            </section>
             {/* ---- hierarchy tiles ---- */}
             <section className="pp-card">
               <h2 className="pp-card__title">
@@ -1235,7 +1201,14 @@ const PracticePerformance = () => {
                                 {formatPct(row.summary.completionPercentage)}
                               </td>
                               <td className="pp-table__chev">
-                                <ChevronRight size={16} aria-hidden="true" />
+                                <button
+                                  type="button"
+                                  className="pp-table__open"
+                                  aria-label={`Open performance for ${row.name}`}
+                                  onClick={() => applyScopeTarget(row.target)}
+                                >
+                                  <ChevronRight size={16} aria-hidden="true" />
+                                </button>
                               </td>
                             </tr>
                           );

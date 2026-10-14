@@ -156,6 +156,7 @@
 
 .pp-page .pp-trend-card .pp-card__head {
   align-items: center;
+  flex-wrap: wrap;
   margin-bottom: 12px;
 }
 
@@ -169,7 +170,64 @@
 
 .pp-page .pp-trend-scroll {
   width: 100%;
+  min-width: 0;
   overflow-x: auto;
+  overflow-y: hidden;
+  border: 1px solid var(--pp-border);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.pp-page .pp-chart-canvas {
+  width: 100%;
+  height: 300px;
+}
+
+.pp-page .pp-chart-heading {
+  margin: 18px 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pp-text);
+}
+
+.pp-page .pp-grid-2.pp-trend-breakdown {
+  align-items: stretch;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+}
+
+.pp-page .pp-unit-breakdown-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.pp-page .pp-unit-breakdown-card .pp-donut {
+  flex: 1;
+  align-content: center;
+  align-items: center;
+}
+
+.pp-page .pp-trend-scroll:focus-visible {
+  outline: 2px solid var(--pp-blue);
+  outline-offset: 2px;
+}
+
+@media (max-width: 1000px) {
+  .pp-page .pp-grid-2.pp-trend-breakdown {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .pp-page .pp-trend-card .pp-card__head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pp-page .pp-trend-card .pp-trend-select {
+    flex: none;
+    width: 100%;
+    max-width: none;
+  }
 }
 
 .pp-page .pp-trend-chart {
@@ -295,6 +353,31 @@
 }
 
 /* ---- notes ---- */
+.pp-page .pp-clear-filters {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 14px;
+  min-height: 40px;
+  border: 1px solid var(--pp-border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--pp-text);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pp-page .pp-clear-filters:hover {
+  border-color: var(--pp-blue);
+  background: var(--pp-blue-light);
+  color: var(--pp-blue);
+}
+
 .pp-page .pp-note {
   margin-bottom: 16px;
   padding: 12px 16px;
@@ -735,6 +818,24 @@
 .pp-page .pp-table__chev {
   width: 32px;
   color: var(--pp-muted);
+}
+
+.pp-page .pp-table__open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--pp-blue);
+  cursor: pointer;
+}
+
+.pp-page .pp-table__open:hover {
+  background: var(--pp-blue-light);
 }
 
 /* ---- revision list ---- */
