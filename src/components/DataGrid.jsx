@@ -32,6 +32,7 @@ function DataGrid({
     noRowsMessage = "No rows to show",
     title,
     description,
+    toolbarFilters,
     quickFilterText,
     onQuickFilterTextChange,
     searchable = true,
@@ -56,7 +57,7 @@ function DataGrid({
         popupParent ?? (typeof document !== "undefined" ? document.body : undefined);
 
     const rows = Array.isArray(rowData) ? rowData : [];
-    const hasToolbar = title || description || searchable;
+    const hasToolbar = title || description || searchable || toolbarFilters;
 
     const handleQuickFilterChange = (value) => {
         if (onQuickFilterTextChange) {
@@ -69,28 +70,33 @@ function DataGrid({
     return (
         <div className={`shared-ag-grid-block${hasToolbar ? " has-toolbar" : ""}`}>
             {hasToolbar && (
-                <div className="shared-ag-grid-toolbar">
-                    <div className="shared-ag-grid-heading">
-                        {title && <h3>{title}</h3>}
-                        {description && <p>{description}</p>}
+                <div className={`shared-ag-grid-toolbar${toolbarFilters ? " has-filters" : ""}`}>
+                    <div className="shared-ag-grid-toolbar-main">
+                        <div className="shared-ag-grid-heading">
+                            {title && <h3>{title}</h3>}
+                            {description && <p>{description}</p>}
+                        </div>
+                        <div className="shared-ag-grid-tools">
+                            <span className="shared-ag-grid-count">
+                                {rows.length} {rows.length === 1 ? countLabel : countLabelPlural}
+                            </span>
+                            {searchable && (
+                                <label className="shared-ag-grid-search">
+                                    <FaSearch aria-hidden="true" />
+                                    <input
+                                        type="search"
+                                        aria-label={searchPlaceholder}
+                                        placeholder={searchPlaceholder}
+                                        value={activeQuickFilter}
+                                        onChange={(event) => handleQuickFilterChange(event.target.value)}
+                                    />
+                                </label>
+                            )}
+                        </div>
                     </div>
-                    <div className="shared-ag-grid-tools">
-                        <span className="shared-ag-grid-count">
-                            {rows.length} {rows.length === 1 ? countLabel : countLabelPlural}
-                        </span>
-                        {searchable && (
-                            <label className="shared-ag-grid-search">
-                                <FaSearch aria-hidden="true" />
-                                <input
-                                    type="search"
-                                    aria-label={searchPlaceholder}
-                                    placeholder={searchPlaceholder}
-                                    value={activeQuickFilter}
-                                    onChange={(event) => handleQuickFilterChange(event.target.value)}
-                                />
-                            </label>
-                        )}
-                    </div>
+                    {toolbarFilters && (
+                        <div className="shared-ag-grid-filter-row">{toolbarFilters}</div>
+                    )}
                 </div>
             )}
             <div
