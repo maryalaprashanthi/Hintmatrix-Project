@@ -11,7 +11,15 @@ import { restoreMcqAnswer } from "../../utils/questionAttemptState";
 import "./McqQuestionView.css";
 import "./FillInBlankQuestionView.css";
 
-export default function McqQuestionView({ questionId, questionType, questionNumber = 1, displayQuestionNumber = questionNumber, totalQuestions = 1, onPrevious, onNext }) {
+export default function McqQuestionView({
+  questionId,
+  questionType,
+  questionNumber = 1,
+  displayQuestionNumber = questionNumber,
+  totalQuestions = 1,
+  onPrevious,
+  onNext,
+}) {
   const metadata = useQuestionStore((state) => state.question);
   const [question, setQuestion] = useState(null);
   const [selected, setSelected] = useState([]);
@@ -29,11 +37,14 @@ export default function McqQuestionView({ questionId, questionType, questionNumb
     const request = ++tracker.version;
     setScoreError("");
     try {
-      const marks = await QuestionAnswerService.getOverallMarks(getCurrentUserId());
+      const marks =
+        await QuestionAnswerService.getOverallMarks(getCurrentUserId());
       if (request === tracker.version) setTotalScore(Number(marks) || 0);
     } catch {
       if (request === tracker.version) {
-        setScoreError("Unable to refresh total score. Reopen the question to retry.");
+        setScoreError(
+          "Unable to refresh total score. Reopen the question to retry.",
+        );
       }
     }
   }, []);
@@ -42,7 +53,9 @@ export default function McqQuestionView({ questionId, questionType, questionNumb
     const tracker = scoreRequest.current;
     setTotalScore(null);
     if (questionId) void loadTotalScore();
-    return () => { tracker.version++; };
+    return () => {
+      tracker.version++;
+    };
   }, [questionId, loadTotalScore]);
 
   useEffect(() => {
@@ -171,7 +184,11 @@ export default function McqQuestionView({ questionId, questionType, questionNumb
       {error && <Alert variant="danger">{error}</Alert>}
       {scoreError && <Alert variant="warning">{scoreError}</Alert>}
       <div className="row mb-4">
-        <div className="col-12 col-md-6 col-xl-3" role="status" aria-live="polite">
+        <div
+          className="col-12 col-md-6 col-xl-3"
+          role="status"
+          aria-live="polite"
+        >
           <StatCard
             icon={<FaBalanceScale />}
             title="Total Score"
@@ -240,22 +257,29 @@ export default function McqQuestionView({ questionId, questionType, questionNumb
       </Card>
       <div className="matching-nav-row matching-nav-bottom">
         <div className="matching-nav-left">
-          <Button
-            className="matching-prev-btn"
-            disabled={busy || questionNumber <= 1 || typeof onPrevious !== "function"}
-            onClick={onPrevious}
-          >
-            ← Previous 
-          </Button>
+          {questionNumber > 1 && (
+            <button
+              type="button"
+              className="matching-prev-btn"
+              onClick={onPrevious}
+              disabled={busy}
+            >
+              ← Previous
+            </button>
+          )}
         </div>
 
         <div className="matching-nav-right">
           <Button
             className="matching-next-btn"
-            disabled={busy || questionNumber >= totalQuestions || typeof onNext !== "function"}
+            disabled={
+              busy ||
+              questionNumber >= totalQuestions ||
+              typeof onNext !== "function"
+            }
             onClick={onNext}
           >
-            Next  →
+            Next →
           </Button>
         </div>
       </div>
