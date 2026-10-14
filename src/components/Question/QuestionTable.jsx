@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { Accordion } from "react-bootstrap";
+import { Accordion, Button } from "react-bootstrap";
 import { useDragDropMonitor } from "@dnd-kit/react";
 import Draggable from "./Draggable";
 import Droppable from "./Droppable";
@@ -55,10 +55,11 @@ const QuestionLayout = ({
   className = "",
   closeStorePopover = false,
 }) => {
-  const rowCount = (table) => Math.max(...table.headers.map((header) =>
-    (rowsByTarget[`${table.name}-${header}`]?.length ?? 0) +
+  const rowCount = (table, latestOnly = true) => Math.max(...table.headers.map((header) =>
+    (latestOnly ? Math.min(rowsByTarget[`${table.name}-${header}`]?.length ?? 0, 1) : rowsByTarget[`${table.name}-${header}`]?.length ?? 0) +
     (finalAccounts.derivedRows[`${table.name}-${header}`]?.length ?? 0)));
-  const [clickedTables, setClickedTables] = useState([]);
+  const [clickedTables, setClickedTables] = useState(() => data.map((table) => table.name));
+  const [expandedTables, setExpandedTables] = useState([]);
   const [hoverTable, setHoverTable] = useState(null);
   const hoveredTable = useRef(null);
   const hoverTimer = useRef(null);
@@ -214,7 +215,19 @@ const QuestionLayout = ({
               key={table.name}
               data-account-table={table.name}
             >
-              <Accordion.Header><span className="acc-title">{table.name}</span></Accordion.Header>
+              <div className="d-flex align-items-center">
+                <div className="flex-grow-1">
+                  <Accordion.Header><span className="acc-title">{table.name}</span></Accordion.Header>
+                </div>
+                <Button variant="outline-primary" size="sm" className="me-3"
+                  aria-label={`${expandedTables.includes(table.name) ? "Show latest attribute in" : "View all attributes in"} ${table.name}`}
+                  aria-expanded={expandedTables.includes(table.name)}
+                  onClick={() => {
+                    setExpandedTables((current) => current.includes(table.name)
+                      ? current.filter((name) => name !== table.name) : [...current, table.name]);
+                    setClickedTables((current) => current.includes(table.name) ? current : [...current, table.name]);
+                  }}>{expandedTables.includes(table.name) ? "Show latest" : "View"}</Button>
+              </div>
               <Accordion.Body>
                 <div className="row g-3">
                   {table.headers.map((header, index) => {
@@ -225,7 +238,8 @@ const QuestionLayout = ({
                           {header === "Debit Particulars" ? "Debit" : header === "Credit Particulars" ? "Credit" : header}
                         </div>
                         <Droppable id={id} rows={rowsByTarget[id] ?? []} derivedRows={finalAccounts.derivedRows[id]}
-                          isCreditSide={index === 1} matchRowCount={rowCount(table)}
+                          isCreditSide={index === 1} matchRowCount={rowCount(table, !expandedTables.includes(table.name))}
+                          latestOnly={!expandedTables.includes(table.name)}
                           total={finalAccounts.accounts[table.name][header].total} busy={busy}
                           onPlaceSelected={onPlaceSelected} onRemove={onRemove} />
                       </div>

@@ -1,7 +1,7 @@
 import JournalQuestion from "./JournalQuestion";
 import JournalSolution from "./JournalSolution";
 import { Col, Row } from "react-bootstrap";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import Header from "../Question/Header";
@@ -58,9 +58,23 @@ const JournalPage = ({
   const [totalScore, setTotalScore] = useState(0);
   const [checkMistakes, setCheckMistakes] = useState(false);
   const [answerScrollTarget, setAnswerScrollTarget] = useState(null);
+  const [showAllAnswers, setShowAllAnswers] = useState(false);
+  const questionTableContainer = useRef(null);
+  const [answerMaxHeight, setAnswerMaxHeight] = useState(undefined);
+
+  useEffect(() => {
+    const table = questionTableContainer.current?.querySelector("table");
+    if (!table) return undefined;
+    const updateHeight = () => setAnswerMaxHeight(table.getBoundingClientRect().height || undefined);
+    updateHeight();
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(table);
+    return () => observer.disconnect();
+  }, [question, checkMistakes]);
 
   useEffect(() => {
     setAnswerScrollTarget(null);
+    setShowAllAnswers(false);
   }, [questionId]);
   useEffect(() => {
     const loadPage = async () => {
@@ -376,6 +390,7 @@ const JournalPage = ({
 
       <Row className="g-4 align-items-start">
         <Col xs={12} lg={6}>
+          <div ref={questionTableContainer}>
           <JournalQuestion
             data={question.questionAttributes || []}
             questionText={question.questionText}
@@ -384,13 +399,21 @@ const JournalPage = ({
             loadTotalScore={loadTotalScore}
             onAnswerAdded={setAnswerScrollTarget}
           />
+          </div>
         </Col>
 
         <Col xs={12} lg={6}>
+          <div style={{ maxHeight: showAllAnswers ? undefined : answerMaxHeight, display: "flex", flexDirection: "column" }}>
+            <div id="journal-answer-table" style={{ overflowY: "auto", minHeight: 0 }}
+              tabIndex={0} role="region" aria-label="Journal answers">
           <JournalSolution
             answeredData={answeredData}
             answerScrollTarget={answerScrollTarget}
+            expanded={showAllAnswers}
+            onToggleView={() => setShowAllAnswers((current) => !current)}
           />
+            </div>
+          </div>
         </Col>
       </Row>
 

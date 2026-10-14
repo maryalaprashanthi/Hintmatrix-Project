@@ -51,6 +51,8 @@ const DropTable = ({
   busy = false,
   onPlaceSelected,
   onRemove,
+  latestOnly = false,
+  readOnly = false,
 }) => {
   const rows = [...orderGroupedRows(placedRows), ...derivedRows];
 
@@ -61,11 +63,11 @@ const DropTable = ({
 
   const { ref: addRef, isDropTarget: isAddOver } = useDroppable({
     id: `${id}-add`,
-    disabled: busy,
+    disabled: busy || readOnly,
   });
   const { ref: subRef, isDropTarget: isSubOver } = useDroppable({
     id: `${id}-less`,
-    disabled: busy,
+    disabled: busy || readOnly,
   });
 
   const addTotal = rows
@@ -108,8 +110,9 @@ const DropTable = ({
     return `${row.operation === "less" ? "Less" : "Add"}: ${name}`;
   };
 
-  const targetRows = Math.max(rows.length, matchRowCount ?? rows.length);
-  const displayRows = [...rows];
+  const visibleRows = latestOnly ? [...placedRows.slice(-1), ...derivedRows] : rows;
+  const targetRows = Math.max(visibleRows.length, matchRowCount ?? visibleRows.length);
+  const displayRows = [...visibleRows];
 
   while (displayRows.length < targetRows) {
     displayRows.push({
@@ -194,7 +197,7 @@ const DropTable = ({
 
         {/* Transparent drop targets layered over the table columns so the
             table itself stays a single, aligned grid. */}
-        {onPlaceSelected ? <button
+        {!readOnly && (onPlaceSelected ? <button
           ref={mergeRefs(addRef, addZoneRef)}
           className={`drop-overlay drop-overlay-add ${isAddOver ? "is-over" : ""}`}
           type="button"
@@ -207,8 +210,8 @@ const DropTable = ({
             isAddOver ? "is-over" : ""
           }`}
           aria-hidden="true"
-        />}
-        {onPlaceSelected ? <button
+        />)}
+        {!readOnly && (onPlaceSelected ? <button
           ref={mergeRefs(subRef, subZoneRef)}
           className={`drop-overlay drop-overlay-sub ${isSubOver ? "is-over" : ""}`}
           type="button"
@@ -221,7 +224,7 @@ const DropTable = ({
             isSubOver ? "is-over" : ""
           }`}
           aria-hidden="true"
-        />}
+        />)}
       </div>
 
       <Overlay
