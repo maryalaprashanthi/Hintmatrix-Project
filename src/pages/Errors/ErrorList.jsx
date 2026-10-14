@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import { getApiErrorMessage } from "../../utils/apiError";
+import formatOptionSelected from "../../utils/formatOptionSelected";
 import { getCurrentUserId } from "../../utils/user";
 import "./ErrorList.css";
 
@@ -93,7 +94,6 @@ export default function ErrorList() {
   const [reloadKey, setReloadKey] = useState(0);
   const [topicSearch, setTopicSearch] = useState("");
   const dateOrder = "newest";
-
 
   // =========================================================
   // LOAD USER MISTAKES
@@ -209,7 +209,10 @@ export default function ErrorList() {
   const filteredChapterMistakes = useMemo(() => {
     const query = topicSearch.trim().toLowerCase();
     const filtered = chapterMistakes.filter((mistake) => {
-      return !query || getDisplayText(mistake.topicName, "").toLowerCase().includes(query);
+      return (
+        !query ||
+        getDisplayText(mistake.topicName, "").toLowerCase().includes(query)
+      );
     });
 
     return filtered.sort((first, second) =>
@@ -355,7 +358,8 @@ export default function ErrorList() {
           </div>
 
           <span className="error-list-total">
-            {filteredChapterMistakes.length} of {chapterMistakes.length} mistakes
+            {filteredChapterMistakes.length} of {chapterMistakes.length}{" "}
+            mistakes
           </span>
         </header>
 
@@ -412,75 +416,78 @@ export default function ErrorList() {
                       No errors match “{topicSearch}”.
                     </td>
                   </tr>
-                ) : filteredChapterMistakes.map((mistake, index) => {
-                  const questionId = mistake.questionId;
+                ) : (
+                  filteredChapterMistakes.map((mistake, index) => {
+                    const questionId = mistake.questionId;
 
-                  const attributeName = getDisplayText(
-                    mistake.attributeName,
-                    "Unknown attribute",
-                  );
-                  const topicName = getDisplayText(mistake.topicName);
-                  const questionText = getDisplayText(
-                    mistake.questionText,
-                    "Open question",
-                  );
-                  const hasQuestionId =
-                    questionId !== null &&
-                    questionId !== undefined &&
-                    String(questionId).length > 0;
+                    const attributeName = getDisplayText(
+                      mistake.attributeName,
+                      // "Unknown attribute",
+                      "N/A",
+                    );
+                    const topicName = getDisplayText(mistake.topicName);
+                    const questionText = getDisplayText(
+                      mistake.questionText,
+                      "Open question",
+                    );
+                    const hasQuestionId =
+                      questionId !== null &&
+                      questionId !== undefined &&
+                      String(questionId).length > 0;
 
-                  return (
-                    <tr
-                      key={
-                        mistake.answerEventId ||
-                        `${questionId}-${mistake.attributeId}-${index}`
-                      }
-                    >
-                      {/* DATE */}
+                    return (
+                      <tr
+                        key={
+                          mistake.answerEventId ||
+                          `${questionId}-${mistake.attributeId}-${index}`
+                        }
+                      >
+                        {/* DATE */}
 
-                      <td>{formatDate(mistake.createdAt)}</td>
+                        <td>{formatDate(mistake.createdAt)}</td>
 
-                      {/* TOPIC */}
+                        {/* TOPIC */}
 
-                      <td>{topicName}</td>
+                        <td>{topicName}</td>
 
-                      {/* ATTRIBUTE */}
+                        {/* ATTRIBUTE */}
 
-                      <td>
-                        {hasQuestionId ? (
-                          <Link
-                            className="error-list-question-link"
-                            to={`/questions/${questionId}`}
-                          >
-                            {attributeName}
-                          </Link>
-                        ) : (
-                          attributeName
-                        )}
-                      </td>
+                        <td>
+                          {hasQuestionId ? (
+                            <Link
+                              className="error-list-question-link"
+                              to={`/questions/${questionId}`}
+                            >
+                              {attributeName}
+                            </Link>
+                          ) : (
+                            attributeName
+                          )}
+                        </td>
 
-                      {/* USER ANSWER */}
+                        {/* USER ANSWER */}
 
-                      <td>{getDisplayText(mistake.userAnswer)}</td>
+                        <td>{formatOptionSelected(mistake.userAnswer)}</td>
 
-                      {/* QUESTION */}
+                        {/* QUESTION */}
 
-                      <td>
-                        {hasQuestionId ? (
-                          <Link
-                            className="error-list-question-link"
-                            to={`/questions/${questionId}`}
-                          >
-                            {questionText}
-                          </Link>
-                        ) : (
-                          questionText
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-            </tbody>
+                        <td>
+                          {hasQuestionId ? (
+                            <Link
+                              className="error-list-question-link"
+                              to={`/questions/${questionId}`}
+                            >
+                              {questionText}
+                            </Link>
+                          ) : (
+                            questionText
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
             </table>
           </div>
         </section>

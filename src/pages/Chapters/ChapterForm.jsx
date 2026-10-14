@@ -84,6 +84,23 @@ function ChapterForm({
     }
   }, [show, selectedChapterData, presetCourseId, presetSubjectId]);
 
+  useEffect(() => {
+    if (!show || selectedChapterData || presetCourseId || !presetSubjectId) {
+      return;
+    }
+
+    const presetSubject = subjects.find(
+      (subject) =>
+        String(subject.subjectId ?? subject.subject_id) ===
+        String(presetSubjectId),
+    );
+    const subjectCourseId = presetSubject?.courseId ?? presetSubject?.course_id;
+
+    if (subjectCourseId != null) {
+      setCourseId(String(subjectCourseId));
+    }
+  }, [show, selectedChapterData, presetCourseId, presetSubjectId, subjects]);
+
   if (!show) return null;
 
   const resetFields = () => {
@@ -186,8 +203,22 @@ function ChapterForm({
                       ) || null
                     }
                     onChange={(option) => {
-                      setCourseId(option?.value || "");
-                      setSubjectId("");
+                      const nextCourseId = option?.value || "";
+                      const selectedSubject = subjects.find(
+                        (subject) =>
+                          String(subject.subjectId ?? subject.subject_id) ===
+                          String(subjectId),
+                      );
+                      const selectedSubjectCourseId =
+                        selectedSubject?.courseId ?? selectedSubject?.course_id;
+
+                      setCourseId(nextCourseId);
+                      if (
+                        !nextCourseId ||
+                        String(selectedSubjectCourseId) !== nextCourseId
+                      ) {
+                        setSubjectId("");
+                      }
                     }}
                     placeholder="Select Course"
                     isSearchable
