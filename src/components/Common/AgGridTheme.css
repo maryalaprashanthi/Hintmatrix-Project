@@ -14,12 +14,24 @@
 
 .shared-ag-grid-toolbar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  flex-direction: column;
+  gap: 14px;
   padding: 18px 20px;
   border-bottom: 1px solid #e9eef5;
   background: #fff;
+}
+
+.shared-ag-grid-toolbar-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+  min-width: 0;
+}
+
+.shared-ag-grid-toolbar:not(.has-filters) {
+  flex-direction: row;
 }
 
 .shared-ag-grid-heading h3 {
@@ -39,6 +51,12 @@
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.shared-ag-grid-filter-row {
+  min-width: 0;
+  padding-top: 13px;
+  border-top: 1px solid #eef2f7;
 }
 
 .shared-ag-grid-count {
@@ -179,6 +197,11 @@
     flex-direction: column;
     gap: 14px;
     padding: 16px;
+  }
+
+  .shared-ag-grid-toolbar-main {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .shared-ag-grid-tools {

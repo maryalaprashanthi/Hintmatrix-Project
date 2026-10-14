@@ -45,6 +45,13 @@ class QuestionService {
     });
   }
 
+  setActive(questionId, active) {
+    return apiClient.patch(`${BASE_URL}/${questionId}/active`, null, {
+      params: { active },
+      withCredentials: true,
+    });
+  }
+
   uploadExcel(formData) {
     return apiClient.post(`${BASE_QUESTION_URL}/upload`, formData, {
       withCredentials: true,

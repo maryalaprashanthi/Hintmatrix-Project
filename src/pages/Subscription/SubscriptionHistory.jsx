@@ -209,7 +209,8 @@ export default function SubscriptionHistory() {
           defaultColDef={{ sortable: true, filter: true, resizable: true }}
           height="auto"
           domLayout="autoHeight"
-          pagination={false}
+          pagination
+          pageSize={10}
           rowHeight={58}
           headerHeight={48}
           title="Subscription records"
