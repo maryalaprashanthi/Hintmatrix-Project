@@ -134,6 +134,8 @@ function StudentTable({ data, onEdit, onDeleted, refreshData, canManageGuests = 
         pageSize={10}
         paginationPageSizeSelector={false}
         rowHeight={50}
+        title="Student records"
+        description="Manage student accounts and access."
       />
 
       <ConfirmDialog

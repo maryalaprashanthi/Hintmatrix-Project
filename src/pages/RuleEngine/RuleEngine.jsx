@@ -227,19 +227,11 @@ function RuleEngine() {
         ]}
       />
 
-      <div className="card shadow-sm border-0">
-
-        <div className="card-body">
-
-          <RuleEngineTable
-            ruleEngineList={ruleEngineList}
-            onEdit={handleEdit}
-            onDelete={del.request}
-          />
-
-        </div>
-
-      </div>
+      <RuleEngineTable
+        ruleEngineList={ruleEngineList}
+        onEdit={handleEdit}
+        onDelete={del.request}
+      />
 
       {}
       <RuleEngineForm

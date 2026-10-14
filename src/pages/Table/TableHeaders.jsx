@@ -224,11 +224,12 @@ function TableHeaders() {
       />
 
       {/* Data Grid */}
-      <div className="card shadow-sm border-0">
-        <div className="card-body">
-          <DataGrid rowData={tableHeaders} columnDefs={columnDefs} />
-        </div>
-      </div>
+      <DataGrid
+        rowData={tableHeaders}
+        columnDefs={columnDefs}
+        title="Table header records"
+        description="Manage the headers used to organize table data."
+      />
 
       {/* Modal */}
 

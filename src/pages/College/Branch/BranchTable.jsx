@@ -183,6 +183,8 @@ function BranchTable({ onEdit, onDelete, refresh, onCountsChange }) {
         paginationPageSizeSelector={false}
         rowHeight={50}
         popupParent={document.body}
+        title="Branch records"
+        description="Manage branches associated with each college."
       />
     </div>
   );
