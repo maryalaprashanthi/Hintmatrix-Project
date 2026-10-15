@@ -22,9 +22,11 @@ import FillInBlankQuestionService from "../../services/FillInBlankQuestionServic
 
 import { data, normalizeFinalAccountTarget } from "./SampleData";
 import { getCurrentUserId } from "../../utils/user";
-import { buildQuestionSequence, getQuestionNavigationIds, questionDisplayNumber, questionIndex } from "../../utils/questionNavigation";
+import { buildQuestionSequence, getQuestionListPath, getQuestionNavigationIds, questionDisplayNumber, questionIndex } from "../../utils/questionNavigation";
 
 import QuestionNavigation from "./QuestionNavigation";
+import Breadcrumbs from "../Breadcrumbs/Breadcrumbs";
+import { paths } from "../../routes/paths";
 import "./QuestionPage.css";
 
 // =============================================================
@@ -423,6 +425,7 @@ const QuestionPage = () => {
       state: {
         questionNavigationIds: testQuestions.map((row) => String(row.questionId)),
         questionNavigationNumbers: navigationState?.questionNavigationNumbers,
+        questionListPath: getQuestionListPath(matchingQuestion, navigationState),
       },
     });
   };
@@ -466,6 +469,8 @@ const QuestionPage = () => {
     return <div className="question-page-loading">Loading question...</div>;
   }
 
+  // Keep one shared navigation trail above every question-type renderer.
+  const renderQuestionView = () => {
   // ===========================================================
   // TEST SUBMITTED
   // ===========================================================
@@ -822,6 +827,35 @@ const QuestionPage = () => {
         onNext={handleNextQuestion}
       />
     </DragDropProvider>
+  );
+  };
+
+  return (
+    <>
+      <Breadcrumbs
+        items={[
+          { label: matchingQuestion.courseName, to: paths.courses() },
+          {
+            label: matchingQuestion.subjectName,
+            to: matchingQuestion.courseId
+              ? paths.courseSubjects(matchingQuestion.courseId) : undefined,
+          },
+          {
+            label: matchingQuestion.chapterName,
+            to: matchingQuestion.subjectId
+              ? paths.subjectChapters(matchingQuestion.subjectId) : undefined,
+          },
+          {
+            label: matchingQuestion.topicName,
+            to: matchingQuestion.chapterId
+              ? paths.chapterTopics(matchingQuestion.chapterId) : undefined,
+          },
+          { label: "Questions", to: getQuestionListPath(matchingQuestion, navigationState) },
+          { label: `Q${displayQuestionNumber}` },
+        ]}
+      />
+      {renderQuestionView()}
+    </>
   );
 };
 

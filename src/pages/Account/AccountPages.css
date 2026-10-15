@@ -96,6 +96,30 @@ html[data-theme="dark"] .setting-select-row select {
   margin: 0 0 4px;
   font-size: 24px;
 }
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+.profile-details { margin-bottom: 0; }
+.profile-details dt {
+  color: #718096;
+  font-size: 12px;
+  font-weight: 400;
+}
+.profile-details dd {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.profile-status-inactive { color: #b91c1c; }
+.profile-status-inactive span { background: #ef4444; }
+.profile-status-unknown { color: #64748b; }
+.profile-status-unknown span { background: #94a3b8; }
 .profile-identity p {
   margin: 0 0 10px;
   color: #718096;

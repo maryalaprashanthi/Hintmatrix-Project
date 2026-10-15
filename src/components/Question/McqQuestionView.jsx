@@ -8,6 +8,7 @@ import QuestionAnswerService from "../../services/QuestionAnswerService";
 import useQuestionStore from "./questionStore";
 import { getCurrentUserId } from "../../utils/user";
 import { restoreMcqAnswer } from "../../utils/questionAttemptState";
+import { shuffleOptions } from "../../utils/shuffleOptions";
 import "./McqQuestionView.css";
 import "./FillInBlankQuestionView.css";
 
@@ -74,7 +75,9 @@ export default function McqQuestionView({
     ])
       .then(([{ data }, events]) => {
         if (!active) return;
-        setQuestion(data);
+        // Shuffle only when opening a question, not on selection, score
+        // updates, submit, or reset. Grading still uses original option IDs.
+        setQuestion({ ...data, options: shuffleOptions(data.options || []) });
         const restored = restoreMcqAnswer(events, data.options || [], multiple);
         if (restored) {
           setSelected(restored.selected);
@@ -144,9 +147,7 @@ export default function McqQuestionView({
   };
 
   if (!question) return <div>{error || "Loading question..."}</div>;
-  const options = [...(question.options || [])].sort(
-    (a, b) => a.optionOrder - b.optionOrder,
-  );
+  const options = question.options || [];
   const correct = result?.status === "CORRECT";
   const correctOptionIds = new Set(
     (result?.correctOptionIds || []).map(String),

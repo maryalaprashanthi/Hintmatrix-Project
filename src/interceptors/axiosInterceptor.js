@@ -75,7 +75,21 @@ apiClient.interceptors.request.use(
 );
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Refresh hierarchy completion after a persisted answer, autofill, reset,
+    // or question edit. Keep reporting history separate from current progress.
+    const method = String(response.config?.method ?? "get").toLowerCase();
+    const url = response.config?.url ?? "";
+    if (["post", "put", "patch", "delete"].includes(method) &&
+        /\/api\/(question_answers|answer_events|mcq-questions|questions)(\/|$)/.test(url) &&
+        typeof window !== "undefined") {
+      window.dispatchEvent(new Event("practice-progress-changed"));
+      try {
+        localStorage.setItem("practice-progress-changed", `${Date.now()}-${Math.random()}`);
+      } catch { /* Storage may be disabled; this tab still refreshes. */ }
+    }
+    return response;
+  },
   (error) => {
     const statusCode = error.response?.status;
     const isAuthRequest = error.config?.url?.includes("/api/auth/");

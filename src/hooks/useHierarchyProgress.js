@@ -12,8 +12,7 @@ const clampPercentage = (value) =>
   Math.min(100, Math.max(0, Number(value) || 0));
 
 /**
- * Loads the same completion percentages used by Practice Performance and
- * exposes them by course/subject/chapter/topic id.
+ * Current fully completed questions / active questions, not historical attempts.
  */
 export const useHierarchyProgress = (level, params = {}, enabled = true) => {
   const parameterKey = useMemo(() => JSON.stringify(params), [params]);
@@ -28,25 +27,39 @@ export const useHierarchyProgress = (level, params = {}, enabled = true) => {
     let cancelled = false;
     const requestParams = JSON.parse(parameterKey);
 
-    PracticePerformanceService.getMyLevel(level, requestParams)
-      .then((response) => {
-        if (cancelled) return;
+    let requestVersion = 0;
+    const refresh = () => {
+      const version = ++requestVersion;
+      return PracticePerformanceService.getMyQuestionCompletion(level, requestParams)
+        .then((response) => {
+          if (cancelled || version !== requestVersion) return;
 
-        setProgressById(
-          new Map(
-            asItems(response.data).map((item) => [
-              String(item.id),
-              clampPercentage(item.completionPercentage),
-            ]),
-          ),
-        );
-      })
-      .catch(() => {
-        if (!cancelled) setProgressById(new Map());
-      });
+          setProgressById(
+            new Map(
+              asItems(response.data).map((item) => [
+                String(item.id),
+                clampPercentage(item.completionPercentage),
+              ]),
+            ),
+          );
+        })
+        .catch(() => {
+          if (!cancelled && version === requestVersion) setProgressById(new Map());
+        });
+    };
+    const onStorage = (event) => {
+      if (event.key === "practice-progress-changed") void refresh();
+    };
+    void refresh();
+    window.addEventListener("practice-progress-changed", refresh);
+    window.addEventListener("focus", refresh);
+    window.addEventListener("storage", onStorage);
 
     return () => {
       cancelled = true;
+      window.removeEventListener("practice-progress-changed", refresh);
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("storage", onStorage);
     };
   }, [level, parameterKey, enabled]);
 
