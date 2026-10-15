@@ -470,7 +470,8 @@ function StudentAttendance() {
 
       console.log("Upload response:", response);
 
-      setSuccessMessage("Attendance Excel uploaded successfully.");
+      // Success is announced by the notification popup; avoid a duplicate banner.
+      // setSuccessMessage("Attendance Excel uploaded successfully.");
 
       // Reload dashboard
       await loadAttendance();

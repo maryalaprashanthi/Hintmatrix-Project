@@ -80,6 +80,11 @@ apiClient.interceptors.response.use(
     // or question edit. Keep reporting history separate from current progress.
     const method = String(response.config?.method ?? "get").toLowerCase();
     const url = response.config?.url ?? "";
+    if (typeof window !== "undefined" && ["post", "put", "patch", "delete"].includes(method) &&
+        (/\/upload(?:\/|$)/.test(url) || /\/api\/(?:mock-exams|exams)\/[^/]+\/submit/.test(url) ||
+          /\/api\/subscriptions\/(?:activate|bulk|bulk-assign|[^/]+\/deactivate)/.test(url))) {
+      window.dispatchEvent(new Event("notifications-changed"));
+    }
     if (["post", "put", "patch", "delete"].includes(method) &&
         /\/api\/(question_answers|answer_events|mcq-questions|questions)(\/|$)/.test(url) &&
         typeof window !== "undefined") {

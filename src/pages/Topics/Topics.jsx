@@ -85,13 +85,15 @@ export default function Topics() {
     if (!file) return;
 
     try {
-      const response = await TopicService.uploadExcel(file);
+      // const response = await TopicService.uploadExcel(file);
+      await TopicService.uploadExcel(file);
 
-      toast.success(
-        typeof response.data === "string"
-          ? response.data
-          : "Topic Excel uploaded.",
-      );
+      // Success is announced by the notification popup; avoid a duplicate toast.
+      // toast.success(
+        // typeof response.data === "string"
+          // ? response.data
+          // : "Topic Excel uploaded.",
+      // );
     } catch (error) {
       console.error(error);
       toast.error(getApiErrorMessage(error, "Topic upload failed."));
