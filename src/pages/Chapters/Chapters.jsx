@@ -340,13 +340,15 @@ function Chapters() {
     if (!file) return;
 
     try {
-      const response = await ChapterService.uploadExcel(file);
+      // const response = await ChapterService.uploadExcel(file);
+      await ChapterService.uploadExcel(file);
 
-      toast.success(
-        typeof response.data === "string"
-          ? response.data
-          : "Chapter Excel uploaded.",
-      );
+      // Success is announced by the notification popup; avoid a duplicate toast.
+      // toast.success(
+        // typeof response.data === "string"
+          // ? response.data
+          // : "Chapter Excel uploaded.",
+      // );
       loadChapters();
     } catch (error) {
       console.error("Upload Error:", error);

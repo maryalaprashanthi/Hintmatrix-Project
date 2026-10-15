@@ -68,11 +68,13 @@ function College() {
     if (!file) return;
 
     try {
-      const response = await CollegeService.uploadExcel(file);
+      // const response = await CollegeService.uploadExcel(file);
+      await CollegeService.uploadExcel(file);
 
-      toast.success(
-        typeof response.data === "string" ? response.data : "Upload complete.",
-      );
+      // Success is announced by the notification popup; avoid a duplicate toast.
+      // toast.success(
+        // typeof response.data === "string" ? response.data : "Upload complete.",
+      // );
 
       // Refresh the table after successful upload
       setRefreshTrigger((prev) => !prev);

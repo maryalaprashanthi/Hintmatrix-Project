@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 
 import App from "./App";
 import ToastProvider from "./components/Toast/ToastProvider";
+import NotificationProvider from "./components/Navbar/NotificationProvider";
 import "./index.css";
 import "./styles/commonDropdown.css";
 
@@ -17,7 +18,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
       <ToastProvider>
-        <App />
+        <NotificationProvider><App /></NotificationProvider>
       </ToastProvider>
     </BrowserRouter>
     ,

@@ -82,12 +82,13 @@ export default function CourseSubscribe() {
         ),
         response.data,
       ]);
-      const activatedCourse = selectedCourse.name || "the selected course";
-      setMessage({
-        type: "success",
-        text: `${plan.name} is now active for ${activatedCourse}.`,
-        subscription: response.data,
-      });
+      // Activation is announced by the notification popup, not a second success message.
+      // const activatedCourse = selectedCourse.name || "the selected course";
+      // setMessage({
+      //   type: "success",
+      //   text: `${plan.name} is now active for ${activatedCourse}.`,
+      //   subscription: response.data,
+      // });
     } catch (error) {
       const status = error.response?.status;
       const isAuthenticationRedirect =
@@ -126,17 +127,18 @@ export default function CourseSubscribe() {
           {message.type === "success" && message.subscription?.expiresAt && (
             <div>Valid until: {new Date(message.subscription.expiresAt).toLocaleDateString()}</div>
           )}
+        </Alert>
+      )}
 
-          {activeSubscription && (
-            <Alert variant="success" className="active-subscription-alert">
-              <strong>Active subscription: {activeSubscription.planName}</strong>
-              <span>Course access is enabled for {selectedCourse?.name}.</span>
-              {activeSubscription.expiresAt && (
-                <span>
-                  Valid until: {new Date(activeSubscription.expiresAt).toLocaleDateString()}
-                </span>
-              )}
-            </Alert>
+      {/* Persistent subscription details remain visible without a duplicate success message. */}
+      {activeSubscription && (
+        <Alert variant="success" className="active-subscription-alert">
+          <strong>Active subscription: {activeSubscription.planName}</strong>
+          <span>Course access is enabled for {selectedCourse?.name}.</span>
+          {activeSubscription.expiresAt && (
+            <span>
+              Valid until: {new Date(activeSubscription.expiresAt).toLocaleDateString()}
+            </span>
           )}
         </Alert>
       )}

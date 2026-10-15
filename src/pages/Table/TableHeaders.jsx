@@ -34,11 +34,13 @@ function TableHeaders() {
     }
 
     try {
-      const response = await TableHeaderService.uploadExcel(file);
+      // const response = await TableHeaderService.uploadExcel(file);
+      await TableHeaderService.uploadExcel(file);
 
-      toast.success(
-        typeof response.data === "string" ? response.data : "Upload complete.",
-      );
+      // Success is announced by the notification popup; avoid a duplicate toast.
+      // toast.success(
+        // typeof response.data === "string" ? response.data : "Upload complete.",
+      // );
 
       loadTableHeaders();
     } catch (error) {

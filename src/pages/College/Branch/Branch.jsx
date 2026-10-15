@@ -64,13 +64,15 @@ function Branch() {
     if (!file) return;
 
     try {
-      const response = await BranchService.uploadExcel(file);
+      // const response = await BranchService.uploadExcel(file);
+      await BranchService.uploadExcel(file);
 
-      toast.success(
-        typeof response.data === "string"
-          ? response.data
-          : "Branch Excel uploaded.",
-      );
+      // Success is announced by the notification popup; avoid a duplicate toast.
+      // toast.success(
+        // typeof response.data === "string"
+          // ? response.data
+          // : "Branch Excel uploaded.",
+      // );
 
       setRefreshTrigger((prev) => !prev);
     } catch (error) {

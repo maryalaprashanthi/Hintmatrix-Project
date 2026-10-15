@@ -61,11 +61,13 @@ function TableAttributes() {
     }
 
     try {
-      const response = await TableAttributeService.uploadExcel(file);
+      // const response = await TableAttributeService.uploadExcel(file);
+      await TableAttributeService.uploadExcel(file);
 
-      toast.success(
-        typeof response.data === "string" ? response.data : "Upload complete.",
-      );
+      // Success is announced by the notification popup; avoid a duplicate toast.
+      // toast.success(
+        // typeof response.data === "string" ? response.data : "Upload complete.",
+      // );
 
       loadTableAttributes();
     } catch (error) {

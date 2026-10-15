@@ -25,13 +25,15 @@ function Section() {
     if (!file) return;
 
     try {
-      const response = await SectionService.uploadExcel(file);
+      // const response = await SectionService.uploadExcel(file);
+      await SectionService.uploadExcel(file);
 
-      toast.success(
-        typeof response.data === "string"
-          ? response.data
-          : "Section Excel uploaded.",
-      );
+      // Success is announced by the notification popup; avoid a duplicate toast.
+      // toast.success(
+        // typeof response.data === "string"
+          // ? response.data
+          // : "Section Excel uploaded.",
+      // );
 
       setRefreshTrigger((prev) => !prev);
     } catch (error) {

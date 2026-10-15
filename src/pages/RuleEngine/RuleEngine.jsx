@@ -79,10 +79,11 @@ function RuleEngine() {
 
       setRuleEngineList(rulesWithIssues);
 
-      toast.success(
-        `Excel upload complete — ${response.rulesUploaded || 0} uploaded, ` +
-          `${response.draftsCreated || 0} drafts, ${response.failedRows || 0} failed.`,
-      );
+      // Success is announced by the notification popup; avoid a duplicate toast.
+      // toast.success(
+        // `Excel upload complete — ${response.rulesUploaded || 0} uploaded, ` +
+          // `${response.draftsCreated || 0} drafts, ${response.failedRows || 0} failed.`,
+      // );
     } catch (error) {
       console.error("Upload Error:", error);
       toast.error(getApiErrorMessage(error, "Rule upload failed."));

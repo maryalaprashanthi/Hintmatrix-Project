@@ -586,9 +586,10 @@ const QuestionList = () => {
         // IF NO ERRORS
         // ===================================================
         else {
-          toast.success(
-            result?.message || "Fill-in-the-Blanks questions uploaded.",
-          );
+          // Success is announced by the notification popup; avoid a duplicate toast.
+          // toast.success(
+            // result?.message || "Fill-in-the-Blanks questions uploaded.",
+          // );
 
           setUploadErrors([]);
 
@@ -687,9 +688,10 @@ const QuestionList = () => {
 
           setShowUploadErrors(true);
         } else {
-          toast.success(
-            result?.message || "Match-the-Following questions uploaded.",
-          );
+          // Success is announced by the notification popup; avoid a duplicate toast.
+          // toast.success(
+            // result?.message || "Match-the-Following questions uploaded.",
+          // );
 
           setUploadErrors([]);
 
@@ -755,9 +757,9 @@ const QuestionList = () => {
           );
         } else {
           localStorage.removeItem(QUESTION_UPLOAD_ERRORS_KEY);
-          if (result.success) {
-            toast.success(result.message || "MCQ questions uploaded.");
-          } else {
+          // Success is announced by the notification popup; avoid a duplicate toast.
+          // toast.success(result.message || "MCQ questions uploaded.");
+          if (!result.success) {
             toast.error(result.message || "MCQ upload failed.");
           }
         }
@@ -837,7 +839,8 @@ const QuestionList = () => {
       // IF NO ERRORS
       // =====================================================
       else {
-        toast.success("Questions uploaded.");
+        // Success is announced by the notification popup; avoid a duplicate toast.
+        // toast.success("Questions uploaded.");
 
         setUploadErrors([]);
 
