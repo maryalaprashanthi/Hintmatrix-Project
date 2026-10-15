@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { compareQuestionIds } from "../../utils/questionNavigation";
 import { createPortal } from "react-dom";
 import Select from "react-select";
 import CourseService from "../../services/CourseService";
@@ -19,7 +20,8 @@ import {
 import { FaBan, FaCheck, FaFilter, FaPlus, FaQuestionCircle, FaTimes, FaTrash } from "react-icons/fa";
 
 import { useNavigate, useParams } from "react-router-dom";
-import { canManageContent } from "../../utils/roles";
+import { canManageContent, currentRole, ROLES } from "../../utils/roles";
+import { useQuestionStatuses } from "../../hooks/useQuestionStatuses";
 import { paths } from "../../routes/paths";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 import ConfirmDialog from "../../components/Common/ConfirmDialog";
@@ -166,6 +168,8 @@ const QuestionList = () => {
   // filter call, the create-question modal and the breadcrumb all need.
   // No topicId (the flat /questions route) = admin "all questions" mode.
   const { topicId } = useParams();
+  const isStudent = currentRole() === ROLES.STUDENT;
+  const answerStatuses = useQuestionStatuses(topicId, isStudent);
   const [topic, setTopic] = useState(null);
 
   useEffect(() => {
@@ -315,14 +319,7 @@ const QuestionList = () => {
       );
       return searchMatch && statusMatch && typeMatch && recentMatch;
     })
-    .sort((first, second) => {
-      const firstCreated = new Date(first.createdAt).getTime();
-      const secondCreated = new Date(second.createdAt).getTime();
-      if (first.createdAt && second.createdAt && Number.isFinite(firstCreated) && Number.isFinite(secondCreated)) {
-        return secondCreated - firstCreated;
-      }
-      return Number(second.questionId || 0) - Number(first.questionId || 0);
-    });
+    .sort(compareQuestionIds);
   const questionCounts = getManagementCounts(questions);
   const hasActiveFilters = search.trim() || statusFilter !== "ALL" || typeFilter !== "ALL" || recentOnly;
   const activeFilterCount = [Boolean(search.trim()), statusFilter !== "ALL", typeFilter !== "ALL", recentOnly].filter(Boolean).length;
@@ -364,11 +361,11 @@ const QuestionList = () => {
     {
       headerName: "Status",
       field: "statusLabel",
-      minWidth: 105,
-      maxWidth: canManage ? 190 : 125,
+      minWidth: isStudent ? 180 : 105,
+      maxWidth: isStudent ? 205 : canManage ? 190 : 125,
       cellRenderer: ({ data }) => (
         <div className="question-grid-status-cell">
-          <span className={`question-grid-status ${data.isActive ? "is-active" : "is-inactive"}`}>
+          <span className={`question-grid-status ${isStudent ? `is-${data.answerStatus.toLowerCase()}` : data.isActive ? "is-active" : "is-inactive"}`}>
             <i /> {data.statusLabel}
           </span>
           {canManage && (
@@ -386,9 +383,13 @@ const QuestionList = () => {
     {
       headerName: "Actions",
       field: "actions",
-      width: 74,
-      minWidth: 74,
-      maxWidth: 74,
+      width: 110,
+      minWidth: 110,
+      maxWidth: 110,
+      headerClass: "question-grid-actions-header",
+      cellClass: "question-grid-actions-cell",
+      wrapHeaderText: false,
+      suppressHeaderMenuButton: true,
       sortable: false,
       filter: false,
       resizable: false,
@@ -410,7 +411,12 @@ const QuestionList = () => {
       .filter(Boolean)
       .join(" "),
     typeLabel: getQuestionType(question)?.replace(/_/g, " ") || "Unspecified",
-    statusLabel: isQuestionActive(question) ? "Active" : "Inactive",
+    answerStatus: answerStatuses.items.get(String(question.questionId))?.status || "UNANSWERED",
+    statusLabel: isStudent
+      ? answerStatuses.loading ? "Loading…" : answerStatuses.error ? "Unavailable"
+        : ({ ANSWERED: "Answered", PARTIAL: "Partially answered", UNANSWERED: "Unanswered" }[
+          answerStatuses.items.get(String(question.questionId))?.status || "UNANSWERED"])
+      : isQuestionActive(question) ? "Active" : "Inactive",
     isActive: isQuestionActive(question),
     question,
   }));
@@ -899,6 +905,7 @@ const QuestionList = () => {
 
     navigate(paths.question(question.questionId), {
       state: {
+        questionListPath: topicId ? paths.topicQuestions(topicId) : paths.allQuestions(),
         questionNavigationIds: filteredQuestions
           .filter(isQuestionActive)
           .map((row) => String(row.questionId)),
@@ -1131,6 +1138,7 @@ const QuestionList = () => {
           SEARCH
       ====================================================== */}
 
+      {isStudent && answerStatuses.error && <div className="alert alert-warning" role="alert">{answerStatuses.error}</div>}
       <DataGrid
         rowData={questionRows}
         title="Question bank"

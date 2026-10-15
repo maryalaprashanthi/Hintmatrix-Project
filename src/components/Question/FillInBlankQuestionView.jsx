@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import { getCurrentUserId } from "../../utils/user";
 import { restoreBlankAnswers } from "../../utils/questionAttemptState";
+import { shuffleOptions as shuffleArray } from "../../utils/shuffleOptions";
 
 import "./FillInBlankQuestionView.css";
 import "./MatchingQuestionView.css";
@@ -33,21 +34,6 @@ const normalizeAnswerValues = (value) => {
     .split(",")
     .map((answer) => String(answer).trim())
     .filter(Boolean);
-};
-
-const shuffleArray = (items) => {
-  const nextItems = [...items];
-
-  for (let index = nextItems.length - 1; index > 0; index -= 1) {
-    const randomIndex = Math.floor(Math.random() * (index + 1));
-
-    [nextItems[index], nextItems[randomIndex]] = [
-      nextItems[randomIndex],
-      nextItems[index],
-    ];
-  }
-
-  return nextItems;
 };
 
 const acceptedAnswersFromBlank = (blank = {}) => {
