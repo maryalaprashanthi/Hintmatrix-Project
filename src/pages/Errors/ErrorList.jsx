@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
@@ -54,7 +53,9 @@ const getSubjectName = (mistake) => {
   return getDisplayText(
     mistake?.subjectName ??
       mistake?.subject_name ??
-      (typeof subject === "object" ? subject?.name ?? subject?.subjectName : subject),
+      (typeof subject === "object"
+        ? (subject?.name ?? subject?.subjectName)
+        : subject),
     "Unknown subject",
   );
 };
@@ -113,14 +114,22 @@ const errorListColumns = [
     headerName: "Attribute",
     flex: 1,
     minWidth: 140,
-    valueGetter: (params) =>
-      getDisplayText(params.data?.attributeName, "Unknown attribute"),
+    valueGetter: (params) => getDisplayText(params.data?.attributeName, "N/A"),
     cellRenderer: (params) => {
       const questionId = params.data?.questionId;
-      const text = getDisplayText(params.value, "Unknown attribute");
-      return questionId !== null && questionId !== undefined && String(questionId)
-        ? <Link className="error-list-question-link" to={`/questions/${questionId}`}>{text}</Link>
-        : text;
+      const text = getDisplayText(params.value, "N/A");
+      return questionId !== null &&
+        questionId !== undefined &&
+        String(questionId) ? (
+        <Link
+          className="error-list-question-link"
+          to={`/questions/${questionId}`}
+        >
+          {text}
+        </Link>
+      ) : (
+        text
+      );
     },
   },
   {
@@ -128,23 +137,36 @@ const errorListColumns = [
     headerName: "Your Answer",
     flex: 1,
     minWidth: 140,
-    valueGetter: (params) => getDisplayText(params.data?.userAnswer),
-    tooltipValueGetter: (params) => getDisplayText(params.data?.userAnswer),
+    valueGetter: (params) =>
+      formatOptionSelected(getDisplayText(params.data?.userAnswer, "")),
+    tooltipValueGetter: (params) =>
+      formatOptionSelected(getDisplayText(params.data?.userAnswer, "")),
   },
   {
     field: "questionText",
     headerName: "Question",
     flex: 1.6,
     minWidth: 200,
-    valueGetter: (params) => getDisplayText(params.data?.questionText, "Open question"),
+    valueGetter: (params) =>
+      getDisplayText(params.data?.questionText, "Open question"),
     cellRenderer: (params) => {
       const questionId = params.data?.questionId;
       const text = getDisplayText(params.value, "Open question");
-      return questionId !== null && questionId !== undefined && String(questionId)
-        ? <Link className="error-list-question-link" to={`/questions/${questionId}`}>{text}</Link>
-        : text;
+      return questionId !== null &&
+        questionId !== undefined &&
+        String(questionId) ? (
+        <Link
+          className="error-list-question-link"
+          to={`/questions/${questionId}`}
+        >
+          {text}
+        </Link>
+      ) : (
+        text
+      );
     },
-    tooltipValueGetter: (params) => getDisplayText(params.data?.questionText, "Open question"),
+    tooltipValueGetter: (params) =>
+      getDisplayText(params.data?.questionText, "Open question"),
   },
 ];
 
@@ -170,7 +192,6 @@ export default function ErrorList() {
   const [error, setError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
   const [topicSearch, setTopicSearch] = useState("");
-
 
   // =========================================================
   // LOAD USER MISTAKES
@@ -428,7 +449,8 @@ export default function ErrorList() {
           </div>
 
           <span className="error-list-total">
-            {chapterMistakes.length} {chapterMistakes.length === 1 ? "mistake" : "mistakes"}
+            {chapterMistakes.length}{" "}
+            {chapterMistakes.length === 1 ? "mistake" : "mistakes"}
           </span>
         </header>
 
