@@ -6,6 +6,7 @@ import CollegeService from "../../services/CollegeService";
 import ActivitySessionService from "../../services/ActivitySessionService";
 import PracticePerformanceService from "../../services/PracticePerformanceService";
 import SectionService from "../../services/SectionService";
+import UserService from "../../services/UserService";
 import { currentRole, ROLES } from "../../utils/roles";
 import "./TimeAnalytics.css";
 
@@ -76,8 +77,8 @@ export default function TimeAnalytics() {
   const isStudent = role === ROLES.STUDENT;
   const isSuperAdmin = role === ROLES.SUPER_ADMIN;
   const isCollegeAdmin = role === ROLES.COLLEGE_ADMIN;
-  const [options, setOptions] = useState({ colleges: [], branches: [], sections: [] });
-  const [filters, setFilters] = useState({ collegeId: "", branchId: "", sectionId: "" });
+  const [options, setOptions] = useState({ colleges: [], branches: [], sections: [], students: [] });
+  const [filters, setFilters] = useState({ collegeId: "", branchId: "", sectionId: "", studentId: "" });
   const [days, setDays] = useState(7);
   const [weeklyGoalHours, setWeeklyGoalHours] = useState("");
   const [weeklyGoalStatus, setWeeklyGoalStatus] = useState("loading");
@@ -93,6 +94,7 @@ export default function TimeAnalytics() {
   const [comparison, setComparison] = useState({ status: "loading" });
   const [content, setContent] = useState({ status: "loading", items: [] });
   const [practice, setPractice] = useState({ status: "loading", items: [] });
+  const [learningOverview, setLearningOverview] = useState({ status: "loading", summary: {}, topics: [] });
 
   useEffect(() => {
     if (isStudent) return undefined;
@@ -108,10 +110,19 @@ export default function TimeAnalytics() {
       const colleges = isSuperAdmin ? getArray(results[offset++]?.value?.data) : [];
       const branches = isSuperAdmin || isCollegeAdmin ? getArray(results[offset++]?.value?.data) : [];
       const sections = getArray(results[offset]?.value?.data);
-      setOptions({ colleges, branches, sections });
+      setOptions((current) => ({ ...current, colleges, branches, sections }));
     });
     return () => { active = false; };
   }, [isStudent, isSuperAdmin, isCollegeAdmin]);
+
+  useEffect(() => {
+    if (isStudent) return undefined;
+    let active = true;
+    UserService.getAllStudents().then((response) => {
+      if (active) setOptions((current) => ({ ...current, students: getArray(response?.data) }));
+    }).catch((error) => console.error("Failed to load students for study tracking:", error));
+    return () => { active = false; };
+  }, [isStudent]);
 
   const scopedFilters = useMemo(() => Object.fromEntries(
     Object.entries(filters).filter(([, value]) => value !== ""),
@@ -129,8 +140,20 @@ export default function TimeAnalytics() {
       && (!filters.collegeId || String(collegeId ?? "") === String(filters.collegeId));
   }), [options.sections, filters.branchId, filters.collegeId]);
 
+  const visibleStudents = useMemo(() => options.students.filter((student) => {
+    const sectionId = student.sectionId ?? student.section_id ?? student.section?.sectionId;
+    const branchId = student.branchId ?? student.branch_id ?? student.branch?.branchId;
+    const collegeId = student.collegeId ?? student.college_id ?? student.college?.collegeId;
+    return (!filters.sectionId || String(sectionId ?? "") === String(filters.sectionId))
+      && (!filters.branchId || String(branchId ?? "") === String(filters.branchId))
+      && (!filters.collegeId || String(collegeId ?? "") === String(filters.collegeId));
+  }).sort((first, second) => String(first.name ?? "").localeCompare(String(second.name ?? ""))), [options.students, filters.sectionId, filters.branchId, filters.collegeId]);
+
+  const selectedStudentLabel = optionLabel(visibleStudents, filters.studentId, ["userId", "id", "studentId"], ["name"], "Selected student");
+
   const scopeLabel = useMemo(() => {
     if (isStudent) return "Your study time";
+    if (filters.studentId) return `Student · ${selectedStudentLabel}`;
     if (filters.sectionId) {
       return `Section · ${optionLabel(visibleSections, filters.sectionId, ["sectionId", "id"], ["sectionName", "name"], "Selected section")}`;
     }
@@ -141,7 +164,7 @@ export default function TimeAnalytics() {
       return `College · ${optionLabel(options.colleges, filters.collegeId, ["collegeId", "id"], ["instituteName", "collegeName", "name"], "Selected college")}`;
     }
     return isSuperAdmin ? "All colleges" : isCollegeAdmin ? "Your college" : "Your branch";
-  }, [isStudent, isSuperAdmin, isCollegeAdmin, filters, visibleSections, visibleBranches, options.colleges]);
+  }, [isStudent, isSuperAdmin, isCollegeAdmin, filters, visibleSections, visibleBranches, options.colleges, selectedStudentLabel]);
 
   useEffect(() => {
     let active = true;
@@ -169,7 +192,7 @@ export default function TimeAnalytics() {
   }, [days, scopedFilters, isStudent]);
 
   useEffect(() => {
-    if (isStudent) return undefined;
+    if (isStudent || filters.studentId) return undefined;
     let active = true;
     setLoginInactivity((current) => ({ ...current, status: "loading" }));
     ActivitySessionService.getLoginInactivity(7, scopedFilters)
@@ -217,6 +240,27 @@ export default function TimeAnalytics() {
         console.error("Failed to load weekly study goal progress:", error);
         if (active) setWeeklyActivity({ status: "error", daily: [] });
       });
+    return () => { active = false; };
+  }, [isStudent]);
+
+  useEffect(() => {
+    if (!isStudent) return undefined;
+    let active = true;
+    setLearningOverview({ status: "loading", summary: {}, topics: [] });
+    Promise.all([
+      PracticePerformanceService.getMyLevel("course"),
+      PracticePerformanceService.getMyLevel("topic"),
+    ]).then(([courseResponse, topicResponse]) => {
+      if (!active) return;
+      setLearningOverview({
+        status: "ready",
+        summary: courseResponse?.data?.summary || {},
+        topics: getArray(topicResponse?.data?.items),
+      });
+    }).catch((error) => {
+      console.error("Failed to load student learning overview:", error);
+      if (active) setLearningOverview({ status: "error", summary: {}, topics: [] });
+    });
     return () => { active = false; };
   }, [isStudent]);
 
@@ -377,10 +421,10 @@ export default function TimeAnalytics() {
     : 0;
   const comparisonTimeNow = numberValue(comparison.currentSeconds);
   const comparisonTimeBefore = numberValue(comparison.previousSeconds);
-  const comparisonActivityNow = isStudent
+  const comparisonActivityNow = isStudent || filters.studentId
     ? numberValue(comparison.currentActiveDays)
     : numberValue(comparison.currentActiveStudentCount);
-  const comparisonActivityBefore = isStudent
+  const comparisonActivityBefore = isStudent || filters.studentId
     ? numberValue(comparison.previousActiveDays)
     : numberValue(comparison.previousActiveStudentCount);
   const trendLabel = (current, previous) => {
@@ -403,6 +447,11 @@ export default function TimeAnalytics() {
   const practiceScatterPoints = contentSummary.ranked
     .filter((item) => item.attempts > 0 && Number.isFinite(Number(item.accuracy)))
     .map((item) => ({ x: item.seconds, y: numberValue(item.accuracy), id: item.name }));
+  const topicsToReview = learningOverview.topics
+    .filter((item) => numberValue(item.attemptedUnits) > 0 && numberValue(item.accuracyPercentage) < 60)
+    .sort((first, second) => numberValue(first.accuracyPercentage) - numberValue(second.accuracyPercentage))
+    .slice(0, 3);
+  const learningSummary = learningOverview.summary;
 
   return (
     <main className="time-analytics-page">
@@ -434,12 +483,12 @@ export default function TimeAnalytics() {
         <section className="time-analytics-filters" aria-label="Student scope filters">
           <div className="time-analytics-filters-heading">
             <strong>Student scope</strong>
-            <span>Choose the group included in these totals and trends.</span>
+            <span>Choose a group, then select a student to view their individual study trends.</span>
           </div>
           {isSuperAdmin && (
             <label>
               <span>College</span>
-              <select value={filters.collegeId} onChange={(event) => setFilters({ collegeId: event.target.value, branchId: "", sectionId: "" })}>
+              <select value={filters.collegeId} onChange={(event) => setFilters({ collegeId: event.target.value, branchId: "", sectionId: "", studentId: "" })}>
                 <option value="">All colleges</option>
                 {options.colleges.map((item) => <option key={item.collegeId ?? item.id} value={item.collegeId ?? item.id}>{item.instituteName ?? item.collegeName ?? item.name}</option>)}
               </select>
@@ -448,7 +497,7 @@ export default function TimeAnalytics() {
           {role !== ROLES.BRANCH_ADMIN && (
             <label>
               <span>Branch</span>
-              <select value={filters.branchId} onChange={(event) => setFilters((current) => ({ ...current, branchId: event.target.value, sectionId: "" }))}>
+              <select value={filters.branchId} onChange={(event) => setFilters((current) => ({ ...current, branchId: event.target.value, sectionId: "", studentId: "" }))}>
                 <option value="">All branches</option>
                 {visibleBranches.map((item) => <option key={item.branchId ?? item.id} value={item.branchId ?? item.id}>{item.branchName ?? item.name}</option>)}
               </select>
@@ -456,55 +505,65 @@ export default function TimeAnalytics() {
           )}
           <label>
             <span>Section</span>
-            <select value={filters.sectionId} onChange={(event) => setFilters((current) => ({ ...current, sectionId: event.target.value }))}>
+            <select value={filters.sectionId} onChange={(event) => setFilters((current) => ({ ...current, sectionId: event.target.value, studentId: "" }))}>
               <option value="">All sections</option>
               {visibleSections.map((item) => <option key={item.sectionId ?? item.id} value={item.sectionId ?? item.id}>{item.sectionName ?? item.name}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>Student</span>
+            <select value={filters.studentId} onChange={(event) => setFilters((current) => ({ ...current, studentId: event.target.value }))}>
+              <option value="">All students in this scope</option>
+              {visibleStudents.map((student) => {
+                const studentId = student.userId ?? student.id ?? student.studentId;
+                return <option key={studentId} value={studentId}>{student.name ?? student.studentName ?? `Student ${studentId}`}{student.studentCode ? ` · ${student.studentCode}` : ""}</option>;
+              })}
             </select>
           </label>
         </section>
       )}
 
-      {overview.status === "error" ? (
-        <div className="time-analytics-state" role="alert">
-          Could not load study-time analytics. Please refresh and try again.
+      {overview.status === "error" && (
+        <div className="time-analytics-state time-analytics-state--error" role="alert">
+          Study-time totals could not be loaded. Student engagement metrics are shown below when available.
         </div>
-      ) : (
-        <>
+      )}
+      <>
           <section className="time-analytics-summary" aria-label="Study time summary">
             <article className="time-analytics-summary-card">
               <span><FaClock aria-hidden="true" /> All-time tracked time</span>
-              <strong>{overview.status === "loading" ? "Loading…" : formatDuration(overview.total)}</strong>
-              <small>{isStudent ? "Across your recorded sessions" : `Across students · ${scopeLabel}`}</small>
+              <strong>{overview.status === "loading" ? "Loading…" : overview.status === "error" ? "—" : formatDuration(overview.total)}</strong>
+              <small>{overview.status === "error" ? "Study-time totals are unavailable" : isStudent ? "Across your recorded sessions" : filters.studentId ? `Across ${selectedStudentLabel}’s recorded sessions` : `Across students · ${scopeLabel}`}</small>
             </article>
             <article className="time-analytics-summary-card">
               <span><FaChartLine aria-hidden="true" /> Tracked time · {days} days</span>
-              <strong>{overview.status === "loading" ? "Loading…" : formatDuration(periodSeconds)}</strong>
-              <small>{isStudent ? "Your selected date range" : "Combined student time in this scope"}</small>
+              <strong>{overview.status === "loading" ? "Loading…" : overview.status === "error" ? "—" : formatDuration(periodSeconds)}</strong>
+              <small>{overview.status === "error" ? "Study-time totals are unavailable" : isStudent ? "Your selected date range" : filters.studentId ? `${selectedStudentLabel}’s selected date range` : "Combined student time in this scope"}</small>
             </article>
             <article className="time-analytics-summary-card">
-              <span><FaCalendarDay aria-hidden="true" /> {isStudent ? "Active study days" : "Students active"}</span>
+              <span><FaCalendarDay aria-hidden="true" /> {isStudent || filters.studentId ? "Active study days" : "Students active"}</span>
               <strong>{overview.status === "loading" || (!isStudent && engagement.status === "loading")
                 ? "Loading…"
-                : isStudent
+                : isStudent || filters.studentId
                   ? `${activeDays} / ${days}`
                   : engagement.status === "error"
                     ? "—"
                     : formatNumber(engagement.activeStudentCount)}</strong>
-              <small>{isStudent
-                ? `Days with tracked time in the last ${days}`
+              <small>{isStudent || filters.studentId
+                ? `Days with tracked time${filters.studentId ? ` for ${selectedStudentLabel}` : ""} in the last ${days}`
                 : engagement.status === "error"
                   ? "Engagement data is unavailable"
                   : `${participationRate.toFixed(0)}% of ${formatNumber(engagement.totalStudentCount)} enrolled students`}</small>
             </article>
             <article className="time-analytics-summary-card">
-              <span><FaChartLine aria-hidden="true" /> {isStudent ? "Daily average" : "Avg. per active student"}</span>
+              <span><FaChartLine aria-hidden="true" /> {isStudent || filters.studentId ? "Daily average" : "Avg. per active student"}</span>
               <strong>{overview.status === "loading" || (!isStudent && engagement.status === "loading")
                 ? "Loading…"
                 : !isStudent && engagement.status === "error"
                   ? "—"
-                  : formatDuration(isStudent ? averageDailySeconds : averagePerActiveStudent)}</strong>
-              <small>{isStudent
-                ? `Across the selected ${days}-day range`
+                  : formatDuration(isStudent || filters.studentId ? averageDailySeconds : averagePerActiveStudent)}</strong>
+              <small>{isStudent || filters.studentId
+                ? `Per calendar day · last ${days} days`
                 : engagement.status === "error"
                   ? "Average per student is unavailable"
                   : `Per active student · last ${days} days`}</small>
@@ -524,9 +583,9 @@ export default function TimeAnalytics() {
                   <em className={`is-${trendTone(comparisonTimeNow, comparisonTimeBefore)}`}>{trendLabel(comparisonTimeNow, comparisonTimeBefore)}</em>
                 </article>
                 <article>
-                  <span>{isStudent ? "Active study days" : "Student participation"}</span>
-                  <strong>{isStudent ? `${formatNumber(comparisonActivityNow)} days` : `${comparison.totalStudentCount ? ((comparisonActivityNow / comparison.totalStudentCount) * 100).toFixed(0) : 0}%`}</strong>
-                  <small>Previous: {isStudent ? `${formatNumber(comparisonActivityBefore)} days` : `${comparison.totalStudentCount ? ((comparisonActivityBefore / comparison.totalStudentCount) * 100).toFixed(0) : 0}%`}</small>
+                  <span>{isStudent || filters.studentId ? "Active study days" : "Student participation"}</span>
+                  <strong>{isStudent || filters.studentId ? `${formatNumber(comparisonActivityNow)} days` : `${comparison.totalStudentCount ? ((comparisonActivityNow / comparison.totalStudentCount) * 100).toFixed(0) : 0}%`}</strong>
+                  <small>Previous: {isStudent || filters.studentId ? `${formatNumber(comparisonActivityBefore)} days` : `${comparison.totalStudentCount ? ((comparisonActivityBefore / comparison.totalStudentCount) * 100).toFixed(0) : 0}%`}</small>
                   <em className={`is-${trendTone(comparisonActivityNow, comparisonActivityBefore)}`}>{trendLabel(comparisonActivityNow, comparisonActivityBefore)}</em>
                 </article>
               </div>
@@ -564,12 +623,43 @@ export default function TimeAnalytics() {
             </section>
           )}
 
+          {isStudent && (
+            <section className="time-analytics-panel time-analytics-learning-overview" aria-label="Learning overview">
+              <div className="time-analytics-panel-heading">
+                <div><h2>Learning overview</h2><p>Your practice progress and topics that may need another look.</p></div>
+              </div>
+              {learningOverview.status === "loading" ? (
+                <div className="time-analytics-state" role="status">Loading your learning overview…</div>
+              ) : learningOverview.status === "error" ? (
+                <div className="time-analytics-state time-analytics-state--error" role="alert">Your learning overview could not be loaded.</div>
+              ) : (
+                <>
+                  <div className="time-analytics-learning-metrics">
+                    <article><span>Practice units attempted</span><strong>{formatNumber(learningSummary.attemptedUnits)}</strong><small>Across your courses</small></article>
+                    <article><span>Practice accuracy</span><strong>{numberValue(learningSummary.attemptedUnits) > 0 ? `${numberValue(learningSummary.accuracyPercentage).toFixed(0)}%` : "—"}</strong><small>{formatNumber(learningSummary.correctUnits)} correct out of {formatNumber(learningSummary.attemptedUnits)}</small></article>
+                    <article><span>Practice completion</span><strong>{numberValue(learningSummary.totalUnits) > 0 ? `${numberValue(learningSummary.completionPercentage).toFixed(0)}%` : "—"}</strong><small>{formatNumber(learningSummary.attemptedUnits)} of {formatNumber(learningSummary.totalUnits)} available units</small></article>
+                  </div>
+                  <div className="time-analytics-review-topics">
+                    <div><h3>Topics to review</h3><p>Topics with practice accuracy below 60%.</p></div>
+                    {topicsToReview.length ? (
+                      <ul>{topicsToReview.map((topic, index) => (
+                        <li key={`${topic.id ?? topic.name}-${index}`}><span>{topic.name || topic.topicName || `Topic ${index + 1}`}</span><strong>{numberValue(topic.accuracyPercentage).toFixed(0)}%</strong></li>
+                      ))}</ul>
+                    ) : (
+                      <div className="time-analytics-no-review">{learningOverview.topics.some((topic) => numberValue(topic.attemptedUnits) > 0) ? "No topics are currently below 60% accuracy." : "Practice a few topics to see review suggestions here."}</div>
+                    )}
+                  </div>
+                </>
+              )}
+            </section>
+          )}
+
           {!isStudent && (
             <section className="time-analytics-panel">
               <div className="time-analytics-panel-heading">
                 <div>
-                  <h2>Student engagement</h2>
-                  <p>Daily unique active students and participation across {scopeLabel}.</p>
+                  <h2>{filters.studentId ? `Study trends · ${selectedStudentLabel}` : "Student engagement"}</h2>
+                  <p>{filters.studentId ? `Daily study activity for ${selectedStudentLabel} · last ${days} days.` : `Daily unique active students and participation across ${scopeLabel}.`}</p>
                 </div>
               </div>
               {engagement.status === "loading" ? (
@@ -582,19 +672,19 @@ export default function TimeAnalytics() {
                     <BarChart
                       className="time-analytics-bar-chart"
                       xAxis={[{ scaleType: "band", data: engagement.daily.map((item) => formatDateLabel(item.date)), tickLabelInterval: (_value, index) => index % Math.max(1, Math.ceil(engagement.daily.length / 7)) === 0, tickLabelStyle: { fill: "#94a3b8", fontSize: 11 } }]}
-                      yAxis={[{ min: 0, tickLabelStyle: { fill: "#94a3b8", fontSize: 11 }, valueFormatter: (value) => formatNumber(value) }]}
-                      series={[{ data: engagement.daily.map((item) => numberValue(item.activeStudentCount)), label: "Active students", color: "#3b82f6", colorGetter: ({ value }) => intensityColor(value, peakActiveStudents), valueFormatter: (value) => `${formatNumber(value)} students` }]}
+                      yAxis={[{ min: 0, tickLabelStyle: { fill: "#94a3b8", fontSize: 11 }, valueFormatter: filters.studentId ? formatDuration : (value) => formatNumber(value) }]}
+                      series={[{ data: engagement.daily.map((item) => filters.studentId ? numberValue(item.activeSeconds) : numberValue(item.activeStudentCount)), label: filters.studentId ? "Study time" : "Active students", color: "#3b82f6", colorGetter: ({ value }) => intensityColor(value, filters.studentId ? peakDailySeconds : peakActiveStudents), valueFormatter: filters.studentId ? formatDuration : (value) => `${formatNumber(value)} students` }]}
                       grid={{ horizontal: true, vertical: false }} height={280} margin={{ left: 64, right: 20, top: 18, bottom: 48 }} slotProps={{ legend: { hidden: true } }}
                     />
                   </div>
                   <div className="time-analytics-participation">
-                    <h3>Participation by day</h3>
-                    <p>Share of enrolled students who studied</p>
+                    <h3>{filters.studentId ? "Daily study time" : "Participation by day"}</h3>
+                    <p>{filters.studentId ? "Tracked time for this student" : "Share of enrolled students who studied"}</p>
                     {engagement.daily.map((item) => {
                       const count = numberValue(item.activeStudentCount);
                       const rate = engagement.totalStudentCount ? (count / engagement.totalStudentCount) * 100 : 0;
                       return <div className="time-analytics-participation-row" key={item.date}>
-                        <span>{formatDateLabel(item.date)}</span><div className="time-analytics-ranking-track"><span style={{ width: `${rate}%` }} /></div><strong>{rate.toFixed(0)}%</strong>
+                        <span>{formatDateLabel(item.date)}</span><div className="time-analytics-ranking-track"><span style={{ width: `${filters.studentId ? Math.min(100, numberValue(item.activeSeconds) / Math.max(1, peakDailySeconds) * 100) : rate}%` }} /></div><strong>{filters.studentId ? formatDuration(item.activeSeconds) : `${rate.toFixed(0)}%`}</strong>
                       </div>;
                     })}
                   </div>
@@ -606,7 +696,7 @@ export default function TimeAnalytics() {
           {!isStudent && (
             <section className="time-analytics-panel">
               <div className="time-analytics-panel-heading">
-                <div><h2>Study consistency and follow-up</h2><p>Student activity across the last 30 days · {scopeLabel}</p></div>
+                <div><h2>{filters.studentId ? "Study consistency" : "Study consistency and follow-up"}</h2><p>{filters.studentId ? `Activity for ${selectedStudentLabel} across the last 30 days.` : `Student activity across the last 30 days · ${scopeLabel}`}</p></div>
               </div>
               {engagement.status === "loading" ? (
                 <div className="time-analytics-state" role="status">Loading consistency metrics…</div>
@@ -615,8 +705,8 @@ export default function TimeAnalytics() {
               ) : (
                 <div className="time-analytics-consistency-grid">
                   <div className="time-analytics-consistency-card">
-                    <h3>Active days per student</h3>
-                    <p>Each student is counted once in one band.</p>
+                    <h3>{filters.studentId ? "Active days" : "Active days per student"}</h3>
+                    <p>{filters.studentId ? "This student’s active day band" : "Each student is counted once in one band."}</p>
                     <div className="time-analytics-consistency-bars">
                       {[
                         ["0–3 days", engagement.consistency.lowConsistencyStudentCount, "low"],
@@ -629,7 +719,7 @@ export default function TimeAnalytics() {
                       ))}
                     </div>
                   </div>
-                  <div className="time-analytics-at-risk-card">
+                  {!filters.studentId && <div className="time-analytics-at-risk-card">
                     <div className="time-analytics-at-risk-heading">
                       <div><h3>May need follow-up</h3><p>Tracked study in days 8–30, none in the last 7 days.</p></div>
                       <strong>{formatNumber(engagement.consistency.atRiskStudentCount)}</strong>
@@ -643,13 +733,13 @@ export default function TimeAnalytics() {
                         {engagement.consistency.atRiskStudentCount > engagement.consistency.atRiskStudents.length && <small className="time-analytics-login-cap">Showing first 100 of {formatNumber(engagement.consistency.atRiskStudentCount)}.</small>}
                       </>
                     ) : <div className="time-analytics-no-risk">No recently inactive students found in this scope.</div>}
-                  </div>
+                  </div>}
                 </div>
               )}
             </section>
           )}
 
-          {!isStudent && (
+          {!isStudent && !filters.studentId && (
             <section className="time-analytics-panel time-analytics-login-panel">
               <div className="time-analytics-panel-heading">
                 <div><h2>Students not logged in for 7+ days</h2><p>Based on successful sign-ins · {scopeLabel}</p></div>
@@ -688,6 +778,8 @@ export default function TimeAnalytics() {
             </div>
             {overview.status === "loading" ? (
               <div className="time-analytics-state" role="status">Loading daily study time…</div>
+            ) : overview.status === "error" ? (
+              <div className="time-analytics-state time-analytics-state--error" role="alert">Daily study-time data is unavailable.</div>
             ) : dailyItems.length ? (
               <div className="time-analytics-chart">
                 <LineChart
@@ -714,8 +806,8 @@ export default function TimeAnalytics() {
           <section className="time-analytics-panel">
             <div className="time-analytics-panel-heading time-analytics-content-heading">
               <div>
-                <h2>{isStudent ? "Study time by content" : "Students’ study time by content"}</h2>
-                <p>{isStudent ? "See where your study time goes." : `See where students spend time · ${scopeLabel}`}</p>
+                <h2>{isStudent ? "Study time by content" : filters.studentId ? `Study time by content · ${selectedStudentLabel}` : "Students’ study time by content"}</h2>
+                <p>{isStudent ? "See where your study time goes." : filters.studentId ? `See where ${selectedStudentLabel} spends time · ${days}-day range` : `See where students spend time · ${scopeLabel}`}</p>
               </div>
               <div className="time-analytics-level-switch" role="group" aria-label="Content level">
                 {[["CHAPTER", "Chapters"], ["TOPIC", "Topics"], ["QUESTION", "Questions"]].map(([value, label]) => (
@@ -829,8 +921,7 @@ export default function TimeAnalytics() {
               )}
             </section>
           )}
-        </>
-      )}
+      </>
     </main>
   );
 }

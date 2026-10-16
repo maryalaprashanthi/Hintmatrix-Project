@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FaBookOpen,
   FaBullseye,
@@ -21,11 +21,11 @@ import BranchService from "../../services/BranchService";
 import CollegeService from "../../services/CollegeService";
 import ExamService from "../../services/ExamService";
 import PerformanceService from "../../services/PerformanceService";
-import PracticePerformanceService from "../../services/PracticePerformanceService";
 import SectionService from "../../services/SectionService";
 import UserService from "../../services/UserService";
 import { currentRole, ROLES } from "../../utils/roles";
 import { getApiErrorMessage } from "../../utils/apiError";
+import paths from "../../routes/paths";
 import "./PerformanceDashboard.css";
 
 // Same scope-tab pattern as the Practice Performance page: a role sees only
@@ -157,7 +157,6 @@ function StudentPerformanceView({ data, status, onRetry }) {
           <span className="spinner-border spinner-border-sm" /> Loading
           performance...
         </div>
-        <StudentPracticeAnalytics />
       </>
     );
   }
@@ -177,7 +176,6 @@ function StudentPerformanceView({ data, status, onRetry }) {
             Try again
           </button>
         </div>
-        <StudentPracticeAnalytics />
       </>
     );
   }
@@ -196,6 +194,10 @@ function StudentPerformanceView({ data, status, onRetry }) {
     ["Passed Exams", formatNumber(data.passedExams), "green"],
     ["Failed Exams", formatNumber(data.failedExams), "red"],
   ];
+  const chapterInsights = [...asArray(data.chapterPerformance)]
+    .filter((chapter) => numberValue(chapter.attemptedExams) > 0)
+    .sort((a, b) => numberValue(b.accuracyPercentage) - numberValue(a.accuracyPercentage));
+  const recentChange = data.percentageChange;
 
   return (
     <>
@@ -221,7 +223,47 @@ function StudentPerformanceView({ data, status, onRetry }) {
           <SummaryCard key={label} label={label} value={value} tone={tone} />
         ))}
       </div>
-      <StudentPracticeAnalytics />
+      <section className="performance-panel exam-insights-panel">
+        <div className="performance-panel-heading">
+          <div>
+            <h2>Exam learning insights</h2>
+            <p>Compare your latest result and find the chapters that deserve attention.</p>
+          </div>
+          <FaBullseye />
+        </div>
+        <div className="exam-insights-progress">
+          <span>Change from your previous exam</span>
+          <strong className={recentChange > 0 ? "is-positive" : recentChange < 0 ? "is-negative" : ""}>
+            {data.previousExamPercentage == null
+              ? "Take another exam to see your progress"
+              : `${recentChange > 0 ? "+" : ""}${numberValue(recentChange).toFixed(1)} percentage points`}
+          </strong>
+          {data.previousExamPercentage != null && (
+            <small>Previous: {formatPercentage(data.previousExamPercentage)} · Latest: {formatPercentage(data.latestExamPercentage)}</small>
+          )}
+        </div>
+        <div className="exam-chapter-insights">
+          {chapterInsights.length ? (
+            <>
+              <div className="exam-chapter-insight exam-chapter-insight--strength">
+                <span>Strongest chapter</span>
+                <strong>{chapterInsights[0].chapterName}</strong>
+                <small>{formatPercentage(chapterInsights[0].accuracyPercentage)} average · {formatNumber(chapterInsights[0].attemptedExams)} exam{numberValue(chapterInsights[0].attemptedExams) === 1 ? "" : "s"}</small>
+              </div>
+              {chapterInsights.length > 1 && (
+                <div className="exam-chapter-insight exam-chapter-insight--review">
+                  <span>Priority to review</span>
+                  <strong>{chapterInsights[chapterInsights.length - 1].chapterName}</strong>
+                  <small>{formatPercentage(chapterInsights[chapterInsights.length - 1].accuracyPercentage)} average · {formatNumber(chapterInsights[chapterInsights.length - 1].attemptedExams)} exam{numberValue(chapterInsights[chapterInsights.length - 1].attemptedExams) === 1 ? "" : "s"}</small>
+                  <Link className="exam-chapter-review-link" to={paths.chapterTopics(chapterInsights[chapterInsights.length - 1].chapterId)}>
+                    Review chapter topics <FaExternalLinkAlt aria-hidden="true" />
+                  </Link>
+                </div>
+              )}
+            </>
+          ) : <div className="performance-empty">Chapter insights will appear after exam results include chapter-level marks.</div>}
+        </div>
+      </section>
       <div className="row g-4 performance-charts-row">
         <div className="col-12 col-xl-8">
           <section className="performance-panel performance-chart-panel">
@@ -252,142 +294,6 @@ function StudentPerformanceView({ data, status, onRetry }) {
         </div>
       </div>
     </>
-  );
-}
-
-function StudentPracticeAnalytics() {
-  const [reloadKey, setReloadKey] = useState(0);
-  const [practice, setPractice] = useState({ status: "loading", courses: [] });
-
-  useEffect(() => {
-    let active = true;
-    setPractice({ status: "loading", courses: [] });
-
-    PracticePerformanceService.getMyLevel("course")
-      .then((response) => {
-        if (!active) return;
-        const payload = response?.data;
-        const courses = Array.isArray(payload)
-          ? payload
-          : Array.isArray(payload?.items)
-            ? payload.items
-            : [];
-        setPractice({ status: "ready", courses });
-      })
-      .catch((error) => {
-        console.error("Failed to load student practice analytics:", error);
-        if (active) setPractice({ status: "error", courses: [] });
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [reloadKey]);
-
-  const attempted = practice.courses.reduce(
-    (total, course) => total + numberValue(course.attemptedUnits),
-    0,
-  );
-  const correct = practice.courses.reduce(
-    (total, course) => total + numberValue(course.correctUnits),
-    0,
-  );
-  const accuracy = attempted > 0 ? (correct / attempted) * 100 : 0;
-  const courses = [...practice.courses]
-    .filter((course) => numberValue(course.attemptedUnits) > 0)
-    .sort(
-      (first, second) =>
-        numberValue(second.accuracyPercentage) -
-        numberValue(first.accuracyPercentage),
-    )
-    .slice(0, 5);
-  return (
-    <section className="performance-panel student-learning-analytics">
-      <div className="performance-panel-heading">
-        <div>
-          <h2>Practice Insights</h2>
-          <p>Your course-level practice activity and accuracy.</p>
-        </div>
-        <div className="student-learning-actions">
-          <button
-            type="button"
-            className="btn btn-sm btn-outline-primary"
-            onClick={() => setReloadKey((key) => key + 1)}
-            aria-label="Refresh practice analytics"
-          >
-            <FaRedo /> Refresh
-          </button>
-        </div>
-      </div>
-      <div className="row g-3">
-        <div className="col-12 col-sm-6 col-xl-6">
-          <div className="student-learning-metric">
-            <FaBullseye aria-hidden="true" />
-            <span>Practice accuracy</span>
-            <strong>
-              {practice.status === "loading"
-                ? "Loading..."
-                : practice.status === "error"
-                  ? "Unavailable"
-                  : attempted > 0
-                    ? formatPercentage(accuracy)
-                    : "—"}
-            </strong>
-            {practice.status === "error" && (
-              <small role="alert">Could not load practice results.</small>
-            )}
-          </div>
-        </div>
-        <div className="col-12 col-sm-6 col-xl-6">
-          <div className="student-learning-metric">
-            <FaCheck aria-hidden="true" />
-            <span>Practice questions attempted</span>
-            <strong>
-              {practice.status === "loading"
-                ? "Loading..."
-                : practice.status === "error"
-                  ? "Unavailable"
-                  : formatNumber(attempted)}
-            </strong>
-          </div>
-        </div>
-      </div>
-      {practice.status === "ready" && (
-        <div className="student-practice-courses">
-          <h3>Practice accuracy by course</h3>
-          {courses.length ? (
-            <div className="table-responsive">
-              <table className="table performance-table mb-0">
-                <thead>
-                  <tr>
-                    <th>Course</th>
-                    <th>Attempted</th>
-                    <th>Correct</th>
-                    <th>Accuracy</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {courses.map((course, index) => (
-                    <tr key={course.id ?? course.courseId ?? index}>
-                      <td>{course.name || course.courseName || "Course"}</td>
-                      <td>{formatNumber(course.attemptedUnits)}</td>
-                      <td>{formatNumber(course.correctUnits)}</td>
-                      <td>
-                        {formatPercentage(course.accuracyPercentage)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="performance-empty">
-              No attempted practice questions yet.
-            </div>
-          )}
-        </div>
-      )}
-    </section>
   );
 }
 
@@ -879,6 +785,7 @@ function PerformanceDashboard() {
   const trend = asArray(data.performanceTrend);
   const topPerformers = asArray(data.topPerformers);
   const studentsNeedingAttention = asArray(data.studentsNeedingAttention);
+  const examParticipation = asArray(data.examParticipation);
   const filteredTopPerformers = useMemo(() => {
     const query = topPerformersSearch.trim().toLowerCase();
     return query
@@ -1261,6 +1168,21 @@ function PerformanceDashboard() {
             />
           </div>
 
+          <ScoreDistribution bands={asArray(data.scoreBands)} />
+
+          <PerformanceTable
+            title="Exam participation"
+            rows={examParticipation}
+            columns={[
+              ["Exam", (row) => row.examName || "Exam"],
+              ["Section", (row) => row.sectionName || "-"],
+              ["Assigned", (row) => formatNumber(row.assignedStudents)],
+              ["Attempted", (row) => formatNumber(row.attemptedStudents)],
+              ["Not attempted", (row) => formatNumber(row.notAttemptedStudents)],
+              ["Participation", (row) => formatPercentage(row.participationRate)],
+            ]}
+          />
+
 
           <div className="row g-4 performance-charts-row">
             <div className="col-12 col-xl-8">
@@ -1422,6 +1344,30 @@ function PerformanceComparisonGraph({ title, rows, nameKey }) {
           </div>
         </div>
       ) : <div className="performance-empty">No performance data in this view.</div>}
+    </section>
+  );
+}
+
+function ScoreDistribution({ bands }) {
+  const labels = bands.map((band) => band.label);
+  const values = bands.map((band) => numberValue(band.resultCount));
+  return (
+    <section className="performance-panel performance-chart-panel score-distribution-panel">
+      <div className="performance-panel-heading">
+        <div><h2>Score distribution</h2><p>Exam results grouped by score range for the selected filters.</p></div>
+        <FaUsers />
+      </div>
+      {bands.length ? (
+        <BarChart
+          height={280}
+          xAxis={[{ scaleType: "band", data: labels, tickLabelStyle: { fontSize: 12 } }]}
+          yAxis={[{ min: 0, tickMinStep: 1, valueFormatter: (value) => formatNumber(value) }]}
+          series={[{ data: values, label: "Exam results", color: "#6366f1", valueFormatter: (value) => `${formatNumber(value)} results` }]}
+          grid={{ horizontal: true }}
+          borderRadius={6}
+          margin={{ left: 55, right: 20, top: 24, bottom: 48 }}
+        />
+      ) : <div className="performance-empty">No exam results match these filters.</div>}
     </section>
   );
 }

@@ -29,6 +29,18 @@ const PracticePerformanceService = {
       params: cleanParams(params),
     });
   },
+
+  getTimeline(params = {}) {
+    return apiClient.get(`${BASE_URL}/timeline`, {
+      params: cleanParams(params),
+    });
+  },
+
+  getStudentsNeedingSupport(params = {}) {
+    return apiClient.get(`${BASE_URL}/students-needing-support`, {
+      params: cleanParams(params),
+    });
+  },
 };
 
 export default PracticePerformanceService;

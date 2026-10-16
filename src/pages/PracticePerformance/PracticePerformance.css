@@ -206,6 +206,51 @@
   align-items: center;
 }
 
+.pp-page .pp-activity-card {
+  margin-bottom: 16px;
+}
+
+.pp-page .pp-activity-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0 10px;
+}
+
+.pp-page .pp-activity-summary > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px 14px;
+  border: 1px solid var(--pp-border);
+  border-radius: 10px;
+  background: #f8faff;
+}
+
+.pp-page .pp-activity-summary span {
+  color: var(--pp-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pp-page .pp-activity-summary strong {
+  color: var(--pp-navy);
+  font-size: 18px;
+}
+
+.pp-page .pp-activity-summary strong small {
+  color: var(--pp-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+@media (max-width: 620px) {
+  .pp-page .pp-activity-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
 .pp-page .pp-trend-scroll:focus-visible {
   outline: 2px solid var(--pp-blue);
   outline-offset: 2px;

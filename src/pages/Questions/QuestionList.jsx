@@ -16,15 +16,14 @@ import {
   Form,
 } from "react-bootstrap";
 
-import { FaBan, FaCheck, FaFilter, FaPlus, FaQuestionCircle, FaTimes, FaTrash } from "react-icons/fa";
+import { FaBan, FaCheck, FaFilter, FaPlus, FaTimes, FaTrash } from "react-icons/fa";
 
 import { useNavigate, useParams } from "react-router-dom";
-import { canManageContent } from "../../utils/roles";
+import { canManageContent, currentRole, ROLES } from "../../utils/roles";
 import { paths } from "../../routes/paths";
 import Breadcrumbs from "../../components/Breadcrumbs/Breadcrumbs";
 import ConfirmDialog from "../../components/Common/ConfirmDialog";
-import ManagementCountTiles from "../../components/Common/ManagementCountTiles";
-import { getManagementCounts } from "../../utils/managementCounts";
+import { getActiveRow, getManagementCounts } from "../../utils/managementCounts";
 import TopicService from "../../services/TopicService";
 import { useToast } from "../../components/Toast/useToast";
 import ActionIconButton from "../../components/Common/ActionIconButton";
@@ -83,6 +82,7 @@ const QuestionList = () => {
   const QUESTION_UPLOAD_ERRORS_KEY = "questionUploadErrors";
 
   const canManage = canManageContent();
+  const isStudent = currentRole() === ROLES.STUDENT;
 
   // =========================================================
   // FILE INPUT
@@ -304,10 +304,10 @@ const QuestionList = () => {
         getQuestionType(question),
       ].filter(Boolean).join(" ").toLowerCase();
       const searchMatch = searchableText.includes(search.trim().toLowerCase());
-      const active = question.activeRow !== false && question.activeRow !== "false";
-      const statusMatch = statusFilter === "ALL" ||
+      const active = getActiveRow(question);
+      const statusMatch = (isStudent ? active : statusFilter === "ALL" ||
         (statusFilter === "ACTIVE" && active) ||
-        (statusFilter === "INACTIVE" && !active);
+        (statusFilter === "INACTIVE" && !active));
       const typeMatch = typeFilter === "ALL" || getQuestionType(question) === typeFilter;
       const createdAt = new Date(question.createdAt).getTime();
       const recentMatch = !recentOnly || (
@@ -324,7 +324,7 @@ const QuestionList = () => {
       return Number(second.questionId || 0) - Number(first.questionId || 0);
     });
   const questionCounts = getManagementCounts(questions);
-  const hasActiveFilters = search.trim() || statusFilter !== "ALL" || typeFilter !== "ALL" || recentOnly;
+  const hasActiveFilters = search.trim() || (!isStudent && statusFilter !== "ALL") || typeFilter !== "ALL" || recentOnly;
   const activeFilterCount = [Boolean(search.trim()), statusFilter !== "ALL", typeFilter !== "ALL", recentOnly].filter(Boolean).length;
 
   const questionColumns = [
@@ -400,8 +400,7 @@ const QuestionList = () => {
     },
   ];
 
-  const isQuestionActive = (question) =>
-    question.activeRow !== false && question.activeRow !== "false";
+  const isQuestionActive = getActiveRow;
 
   const questionRows = filteredQuestions.map((question) => ({
     ...question,
@@ -1112,11 +1111,24 @@ const QuestionList = () => {
         )}
       </Row>
 
-      <ManagementCountTiles
-        label="Questions"
-        counts={questionCounts}
-        icon={FaQuestionCircle}
-      />
+      {!isStudent && <div className="question-status-tabs" role="group" aria-label="Filter questions by status">
+        {[
+          ["ALL", "All questions", questionCounts.total],
+          ["ACTIVE", "Active", questionCounts.active],
+          ["INACTIVE", "Inactive", questionCounts.inactive],
+        ].map(([status, label, count]) => (
+          <button
+            key={status}
+            type="button"
+            className={`question-status-tab${statusFilter === status ? " is-active" : ""}`}
+            aria-pressed={statusFilter === status}
+            onClick={() => setStatusFilter(status)}
+          >
+            <span>{label}</span>
+            <span className="question-status-tab-count">{count}</span>
+          </button>
+        ))}
+      </div>}
 
       {questionsLoadError && (
         <div className="question-load-error" role="alert">
@@ -1133,8 +1145,11 @@ const QuestionList = () => {
 
       <DataGrid
         rowData={questionRows}
+        height="auto"
+        domLayout="autoHeight"
+        pageSize={10}
         title="Question bank"
-        description="Browse questions with their learning path, type and availability."
+        description={isStudent ? "Browse active questions from your assigned learning path." : "Browse questions with their learning path, type and availability."}
         toolbarFilters={canManage ? (
           <div className="question-grid-toolbar-content">
             <div className="question-grid-filters">
@@ -1143,9 +1158,6 @@ const QuestionList = () => {
                   <span className="question-filter-caption">
                     <FaFilter aria-hidden="true" /> Quick filters
                   </span>
-                  <Form.Select className={`question-filter-select${statusFilter !== "ALL" ? " has-value" : ""}`} aria-label="Filter questions by status" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-                    <option value="ALL">All Statuses</option><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option>
-                  </Form.Select>
                   <Form.Select className={`question-filter-select${typeFilter !== "ALL" ? " has-value" : ""}`} aria-label="Filter questions by type" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
                     <option value="ALL">All Types</option>
                     {availableQuestionTypes.map((type) => <option key={type} value={type}>{type.replace(/_/g, " ")}</option>)}
@@ -1260,10 +1272,9 @@ const QuestionList = () => {
         countLabel="question"
         countLabelPlural="questions"
         loading={loadingQuestions}
-        columnDefs={questionColumns.filter((column) => visibleQuestionColumns.includes(column.field))}
-        height={520}
-        pageSize={5}
-        rowHeight={76}
+        columnDefs={questionColumns.filter((column) => visibleQuestionColumns.includes(column.field) && !(isStudent && column.field === "statusLabel"))}
+        rowHeight={58}
+        headerHeight={48}
         rowSelection={canManage ? {
           mode: "multiRow",
           checkboxes: true,

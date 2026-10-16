@@ -2,8 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   FaArrowLeft,
+  FaBullseye,
   FaBookOpen,
   FaChevronRight,
+  FaExclamationTriangle,
+  FaLayerGroup,
   FaRedo,
 } from "react-icons/fa";
 import DataGrid from "../../components/DataGrid";
@@ -182,6 +185,22 @@ const getChapterKey = (mistake) => {
   return `name-${encodeURIComponent(getChapterName(mistake).toLowerCase())}`;
 };
 
+function ErrorListHeader({ description, total }) {
+  return (
+    <header className="error-list-header">
+      <div className="error-list-title">
+        <span className="error-list-title-icon" aria-hidden="true"><FaExclamationTriangle /></span>
+        <div>
+          <p className="error-list-eyebrow">PRACTICE REVIEW</p>
+          <h1>Error List</h1>
+          {description && <p className="error-list-description">{description}</p>}
+        </div>
+      </div>
+      {total !== undefined && <span className="error-list-total">{total} {total === 1 ? "mistake" : "mistakes"}</span>}
+    </header>
+  );
+}
+
 export default function ErrorList() {
   const { chapterKey } = useParams();
 
@@ -275,7 +294,16 @@ export default function ErrorList() {
     return Array.from(groups.values(), (chapter) => ({
       ...chapter,
       topics: Array.from(chapter.topics),
-    }));
+    })).sort((first, second) => second.count - first.count || first.name.localeCompare(second.name));
+  }, [mistakes]);
+
+  const uniqueTopicCount = useMemo(() => {
+    const topics = new Set();
+    mistakes.forEach((mistake) => {
+      const topic = getDisplayText(mistake.topicName, "");
+      if (topic) topics.add(`${getChapterKey(mistake)}:${topic.toLowerCase()}`);
+    });
+    return topics.size;
   }, [mistakes]);
 
   // =========================================================
@@ -320,17 +348,7 @@ export default function ErrorList() {
   if (loading) {
     return (
       <main className="container-fluid py-4 error-list-page" aria-busy="true">
-        <header className="error-list-header">
-          <div>
-            <p className="error-list-eyebrow">PRACTICE REVIEW</p>
-
-            <h1>Error List</h1>
-
-            <p className="error-list-description">
-              Review your mistakes and revisit the questions.
-            </p>
-          </div>
-        </header>
+        <ErrorListHeader description="Review your mistakes and revisit the questions." />
 
         <div className="error-list-state" role="status">
           <span className="error-list-spinner" aria-hidden="true" />
@@ -347,13 +365,7 @@ export default function ErrorList() {
   if (error) {
     return (
       <main className="container-fluid py-4 error-list-page">
-        <header className="error-list-header">
-          <div>
-            <p className="error-list-eyebrow">PRACTICE REVIEW</p>
-
-            <h1>Error List</h1>
-          </div>
-        </header>
+        <ErrorListHeader />
 
         <div className="error-list-state error-list-state--error" role="alert">
           <p>{error}</p>
@@ -377,19 +389,7 @@ export default function ErrorList() {
   if (mistakes.length === 0) {
     return (
       <main className="container-fluid py-4 error-list-page">
-        <header className="error-list-header">
-          <div>
-            <p className="error-list-eyebrow">PRACTICE REVIEW</p>
-
-            <h1>Error List</h1>
-
-            <p className="error-list-description">
-              Review your mistakes and revisit the questions.
-            </p>
-          </div>
-
-          <span className="error-list-total">0 mistakes</span>
-        </header>
+        <ErrorListHeader description="Review your mistakes and revisit the questions." total={0} />
 
         <div className="error-list-empty">
           <span className="error-list-empty-icon" aria-hidden="true">
@@ -413,18 +413,14 @@ export default function ErrorList() {
     if (!selectedChapter) {
       return (
         <main className="container-fluid py-4 error-list-page">
-          <header className="error-list-header">
-            <div>
-              <p className="error-list-eyebrow">PRACTICE REVIEW</p>
+          <ErrorListHeader />
 
-              <h1>Error List</h1>
-            </div>
-          </header>
-
-          <Link className="error-list-back" to="/errors">
-            <FaArrowLeft aria-hidden="true" />
-            All chapters
-          </Link>
+          <div className="error-list-back-container">
+            <Link className="error-list-back" to="/errors">
+              <FaArrowLeft aria-hidden="true" />
+              <span>All chapters</span>
+            </Link>
+          </div>
 
           <p className="error-list-state">
             That chapter is not in your error list.
@@ -439,32 +435,20 @@ export default function ErrorList() {
             HEADER
         ================================================= */}
 
-        <header className="error-list-header">
-          <div>
-            <p className="error-list-eyebrow">PRACTICE REVIEW</p>
-
-            <h1>Error List</h1>
-
-            <p className="error-list-description">{selectedChapter.name}</p>
-          </div>
-
-          <span className="error-list-total">
-            {chapterMistakes.length}{" "}
-            {chapterMistakes.length === 1 ? "mistake" : "mistakes"}
-          </span>
-        </header>
+        <ErrorListHeader description={selectedChapter.name} total={chapterMistakes.length} />
 
         {/* =================================================
             BACK TO CHAPTERS
         ================================================= */}
 
         <section className="error-list-section">
-          <Link className="error-list-back" to="/errors">
-            <FaArrowLeft aria-hidden="true" />
-            All chapters
-          </Link>
-
-          <h2>{selectedChapter.name}</h2>
+          <div className="error-list-back-container">
+            <Link className="error-list-back" to="/errors">
+              <FaArrowLeft aria-hidden="true" />
+              <span>All chapters</span>
+            </Link>
+            <p>Review your incorrect attempts in {selectedChapter.name}.</p>
+          </div>
 
           <DataGrid
             rowData={sortedChapterMistakes}
@@ -492,30 +476,33 @@ export default function ErrorList() {
 
   return (
     <main className="container-fluid py-4 error-list-page">
-      <header className="error-list-header">
-        <div>
-          <p className="error-list-eyebrow">PRACTICE REVIEW</p>
+      <ErrorListHeader description="Select a chapter to review your mistakes." total={mistakes.length} />
 
-          <h1>Error List</h1>
-
-          <p className="error-list-description">
-            Select a chapter to review your mistakes.
-          </p>
-        </div>
-
-        <span className="error-list-total">{mistakes.length} mistakes</span>
-      </header>
+      <section className="error-list-summary" aria-label="Mistake overview">
+        <article className="error-list-summary-card error-list-summary-card--mistakes">
+          <span className="error-list-summary-icon" aria-hidden="true"><FaExclamationTriangle /></span>
+          <div><span className="error-list-summary-label">Incorrect Attempts</span><strong>{mistakes.length}</strong><small>Questions answered incorrectly</small></div>
+        </article>
+        <article className="error-list-summary-card error-list-summary-card--chapters">
+          <span className="error-list-summary-icon" aria-hidden="true"><FaLayerGroup /></span>
+          <div><span className="error-list-summary-label">Chapters to Revisit</span><strong>{chapters.length}</strong><small>Chapters with mistakes</small></div>
+        </article>
+        <article className="error-list-summary-card error-list-summary-card--topics">
+          <span className="error-list-summary-icon" aria-hidden="true"><FaBullseye /></span>
+          <div><span className="error-list-summary-label">Topics to Review</span><strong>{uniqueTopicCount}</strong><small>Distinct topics with mistakes</small></div>
+        </article>
+      </section>
 
       {/* =================================================
           CHAPTERS
       ================================================= */}
 
       <section
-        className="error-list-section"
+        className="error-list-section error-list-section--chapters"
         aria-label="Chapters with mistakes"
       >
         <div className="error-list-chapter-heading">
-          <h2>Chapters</h2>
+          <div><h2>Pick up where you need practice</h2><p>Chapters with the most incorrect attempts appear first.</p></div>
 
           <span className="error-list-chapter-count">
             {chapters.length} chapters
