@@ -1,5 +1,10 @@
 export const getCurrentUserName = (fallback = "User") =>
   localStorage.getItem("name") || fallback;
+
+export const getUserInitials = (name) => {
+  const words = typeof name === "string" ? name.trim().split(/\s+/).filter(Boolean) : [];
+  return words.slice(0, 2).map((word) => Array.from(word)[0]).join("").toUpperCase() || "U";
+};
 // The logged-in user's id, saved at login. Practice screens send it with every
 // answer, so it must never be a hard-coded value. Returns undefined when
 // nobody is logged in (the request then fails instead of writing as user 1).

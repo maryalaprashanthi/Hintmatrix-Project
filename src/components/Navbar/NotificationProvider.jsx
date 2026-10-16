@@ -2,6 +2,8 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import NotificationService from "../../services/NotificationService";
+import SettingsService from "../../services/SettingsService";
+import { parseNotificationPreferences, notificationPopupAllowed } from "../../utils/notificationPreferences";
 import { NotificationContext } from "./NotificationContext";
 import { ToastContext } from "../Toast/ToastContext";
 import { collectNewNotifications, suppressNotificationPopup } from "../../utils/notificationUpdates";
@@ -17,10 +19,10 @@ export default function NotificationProvider({ children }) {
     return () => window.removeEventListener("storage", storage);
   }, []);
   const identity = localStorage.getItem("token") || "";
-  return <NotificationSession key={identity} enabled={Boolean(identity)} path={location.pathname}>{children}</NotificationSession>;
+  return <NotificationSession key={identity} identity={identity} enabled={Boolean(identity)} path={location.pathname}>{children}</NotificationSession>;
 }
 
-function NotificationSession({ children, enabled, path }) {
+function NotificationSession({ children, enabled, path, identity }) {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsLoading, setLoading] = useState(false);
@@ -31,6 +33,7 @@ function NotificationSession({ children, enabled, path }) {
   const active = useRef(false);
   const seen = useRef(null);
   const pending = useRef(new Map());
+  const preferences = useRef(null);
   const toastIds = useRef([]);
   const currentPath = useRef(path);
   currentPath.current = path;
@@ -38,7 +41,8 @@ function NotificationSession({ children, enabled, path }) {
 
   const announce = useCallback(() => {
     if (suppressNotificationPopup(currentPath.current) || document.visibilityState === "hidden") return;
-    const items = [...pending.current.values()];
+    if (!preferences.current) return;
+    const items = [...pending.current.values()].filter((item) => notificationPopupAllowed(item, preferences.current));
     pending.current.clear();
     if (!items.length) return;
     toastIds.current.push(push({ type: "info", duration: 7000, message: items.length === 1
@@ -46,6 +50,42 @@ function NotificationSession({ children, enabled, path }) {
       : `You have ${items.length} new notifications. Open the bell to view them.` }));
     toastIds.current = toastIds.current.slice(-4);
   }, [push]);
+
+  useEffect(() => {
+    if (!enabled) return;
+    let mounted = true, revision = 0;
+    const apply = (value) => {
+      preferences.current = parseNotificationPreferences(value);
+      toastIds.current.forEach(dismiss);
+      toastIds.current = [];
+      announce();
+    };
+    const refresh = async () => {
+      const request = ++revision;
+      try {
+        const { data } = await SettingsService.getMine();
+        if (mounted && revision === request) apply(data);
+      } catch {
+        // Keep the last saved preference; never enable popups on a failed settings request.
+      }
+    };
+    const changed = (event) => {
+      if (event.detail?.identity !== identity) return;
+      revision++;
+      apply(event.detail.preferences);
+    };
+    const storage = (event) => { if (event.key === "user-settings-changed") refresh(); };
+    refresh();
+    window.addEventListener("user-settings-changed", changed);
+    window.addEventListener("storage", storage);
+    window.addEventListener("focus", refresh);
+    return () => {
+      mounted = false;
+      window.removeEventListener("user-settings-changed", changed);
+      window.removeEventListener("storage", storage);
+      window.removeEventListener("focus", refresh);
+    };
+  }, [enabled, identity, announce, dismiss]);
 
   const loadNotifications = useCallback(({ showLoading = false, force = false } = {}) => {
     if (!enabled) return Promise.resolve(false);

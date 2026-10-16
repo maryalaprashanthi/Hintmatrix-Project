@@ -2,7 +2,7 @@
    NAVBAR
 ===================================== */
 
-.navbar {
+header.navbar {
   position: absolute;
   top: 0;
   left: 0;
@@ -16,8 +16,10 @@
   box-shadow: 0 1px 4px rgba(30, 60, 120, 0.06);
 
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
 
   padding: 0 22px;
 
@@ -55,14 +57,15 @@
 ===================================== */
 
 .navbar-center {
-  flex: 0 0 400px; /* controls actual width */
+  flex: 1 1 400px;
+  min-width: 0;
+  max-width: 400px;
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
 
-  margin-left: 20px;
-  margin-right: 30px;
+  margin: 0;
 }
 
 .search-box {
@@ -102,6 +105,7 @@
 .search-box input {
   height: 100%;
   min-height: 0;
+  min-width: 0;
   flex: 1;
 
   border: none;
@@ -227,8 +231,9 @@
 .navbar-right {
   display: flex;
   align-items: center;
-  gap: 30px;
-  margin-right: 15px;
+  flex: 0 0 auto;
+  gap: 18px;
+  margin-left: auto;
 }
 
 .nav-icon {
@@ -417,27 +422,42 @@ button.notification-trigger {
   display: flex;
   align-items: center;
   gap: 9px;
+  min-height: 36px;
+  white-space: nowrap;
 
   cursor: pointer;
-}
-
-.profile-trigger img {
-  width: 34px;
-  height: 34px;
-
-  border-radius: 50%;
-  object-fit: cover;
 }
 
 .profile-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  max-width: 144px;
+}
+
+.navbar-profile-avatar {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 1.5px solid #6e92ef;
+  background: #fff;
+  color: #2457e6;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .profile-name {
   font-size: 13px;
   font-weight: 600;
   color: #1f2a44;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .profile-role {
@@ -493,7 +513,7 @@ button.notification-trigger {
 ===================================== */
 
 @media (max-width: 768px) {
-  .navbar {
+  header.navbar {
     left: 0;
     right: 0;
 

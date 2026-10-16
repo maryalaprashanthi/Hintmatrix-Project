@@ -54,17 +54,37 @@ html[data-theme="dark"] .setting-select-row select {
   margin: 0;
   color: #718096;
 }
-.account-primary-button {
+/* Outrank the global button:not([class*="btn"]) reset. */
+.account-page .account-primary-button {
   height: 44px;
   padding: 0 18px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   border: 0;
   border-radius: 10px;
   background: #1769ff;
   color: #fff;
   font-weight: 700;
+}
+.account-page .account-primary-button:hover:not(:disabled) {
+  background: #1254cf;
+}
+.account-page .account-primary-button:focus-visible {
+  outline: 3px solid #93b9ff;
+  outline-offset: 3px;
+}
+.settings-announcement-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 0;
+  margin-top: 12px;
+  border-top: 1px solid #e4e9f2;
+}
+.settings-announcement-actions .account-primary-button {
+  min-width: 180px;
+  flex-shrink: 0;
 }
 .profile-hero-card,
 .account-card {
@@ -309,6 +329,18 @@ html[data-theme="dark"] .setting-select-row select {
 }
 .account-switch input:checked + span::after {
   transform: translateX(20px);
+}
+.account-switch input:focus-visible + span {
+  outline: 3px solid #2457e6;
+  outline-offset: 3px;
+}
+.account-switch input:disabled + span {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.account-primary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 @media (max-width: 900px) {
   .account-page {
