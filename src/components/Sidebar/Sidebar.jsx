@@ -38,7 +38,7 @@ const MENU_PREFIXES = {
   admin: ["/admin"],
   question: ["/questions"],
   table: ["/table-"],
-  learningAnalytics: ["/time-analytics", "/performance", "/practice-performance", "/mock-exam"],
+  learningAnalytics: ["/time-analytics", "/performance", "/practice-performance"],
 };
 
 const getMenuForPath = (path) =>
@@ -121,6 +121,8 @@ export default function Sidebar({
   // and /mock-exams, which don't prefix-match, so keep the tab lit there too.
   const examMenuClass = ({ isActive }) =>
     isActive || pathname === "/exams" ? "menu-item active" : "menu-item";
+  const mockMenuClass = ({ isActive }) =>
+    isActive || pathname === "/mock-exams" ? "menu-item active" : "menu-item";
   const subMenuClass = ({ isActive }) =>
     isActive ? "submenu-item active-submenu" : "submenu-item";
 
@@ -299,7 +301,7 @@ export default function Sidebar({
             <NavLink to="/courses" className={menuClass} onClick={closeSidebar}>
               <div className="menu-left">
                 <MdMenuBook className="menu-icon" />
-                <span>Practice</span>
+                <span>{isStudent || isGuest ? "Practice" : "Courses"}</span>
               </div>
             </NavLink>
           )}
@@ -509,8 +511,16 @@ export default function Sidebar({
           )}
 
           {/* Mock Exam */}
+          {canAccessMockExams && (
+            <NavLink to="/mock-exam" className={mockMenuClass} onClick={closeSidebar}>
+              <div className="menu-left">
+                <MdAssignmentTurnedIn className="menu-icon" />
+                <span>Mock Exam</span>
+              </div>
+            </NavLink>
+          )}
 
-          {(canAccessPerformance || canAccessTimeAnalytics || canAccessPracticePerformance || canAccessMockExams) && (
+          {(canAccessPerformance || canAccessTimeAnalytics || canAccessPracticePerformance) && (
             <div className={`learning-analytics-menu ${learningAnalyticsOpen ? "open" : ""}`}>
               <div
                 className={parentClass(learningAnalyticsOpen)}
@@ -534,12 +544,6 @@ export default function Sidebar({
                     <NavLink to="/performance" className={subMenuClass} onClick={closeSidebar}>
                       <MdBarChart />
                       <span>Exam Performance</span>
-                    </NavLink>
-                  )}
-                  {canAccessMockExams && (
-                    <NavLink to="/mock-exam" className={subMenuClass} onClick={closeSidebar}>
-                      <MdAssignmentTurnedIn />
-                      <span>Mock Performance</span>
                     </NavLink>
                   )}
                   {canAccessPracticePerformance && (

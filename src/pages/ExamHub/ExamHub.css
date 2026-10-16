@@ -612,20 +612,30 @@
 
 .exam-hub-page[data-page="exam-hub"] .exam-hub-lower-grid {
   display: grid;
-  grid-template-columns: minmax(0, 2.08fr) minmax(345px, 0.92fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
   margin-bottom: 14px;
 }
 
 .exam-hub-page[data-page="exam-hub"] .analytics-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1.08fr;
-  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
 }
 
 .exam-hub-page[data-page="exam-hub"] .analytics-card {
-  min-height: 160px;
-  padding: 13px;
+  min-height: 280px;
+  padding: 22px;
+}
+
+.exam-hub-page[data-page="exam-hub"] .analytics-card .section-title h2 {
+  font-size: 18px;
+}
+
+.exam-hub-page[data-page="exam-hub"] .analytics-card .section-title {
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
 }
 
 /* =========================================================
@@ -639,9 +649,9 @@
 }
 
 .exam-hub-page[data-page="exam-hub"] .donut {
-  width: 96px;
-  height: 96px;
-  min-width: 96px;
+  width: 130px;
+  height: 130px;
+  min-width: 130px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -655,8 +665,8 @@
 }
 
 .exam-hub-page[data-page="exam-hub"] .donut > div {
-  width: 74px;
-  height: 74px;
+  width: 100px;
+  height: 100px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -666,15 +676,15 @@
 }
 
 .exam-hub-page[data-page="exam-hub"] .donut strong {
-  font-size: 22px;
+  font-size: 28px;
   line-height: 1;
   color: #111b37;
 }
 
 .exam-hub-page[data-page="exam-hub"] .donut span {
-  width: 55px;
+  width: 80px;
   margin-top: 4px;
-  font-size: 6px;
+  font-size: 10px;
   line-height: 1.25;
   color: #7d8699;
   text-align: center;
@@ -686,7 +696,7 @@
 }
 
 .exam-hub-page[data-page="exam-hub"] .performance-legend > div {
-  height: 27px;
+  height: 36px;
   display: grid;
   grid-template-columns: 7px 1fr auto;
   gap: 6px;
@@ -699,12 +709,12 @@
 }
 
 .exam-hub-page[data-page="exam-hub"] .performance-legend span:not(.dot) {
-  font-size: 8px;
+  font-size: 12px;
   color: #5a657c;
 }
 
 .exam-hub-page[data-page="exam-hub"] .performance-legend strong {
-  font-size: 8px;
+  font-size: 12px;
   color: #2f3952;
 }
 
@@ -737,7 +747,7 @@
 .exam-hub-page[data-page="exam-hub"] .subjects {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px;
 }
 
 .exam-hub-page[data-page="exam-hub"] .subject-top {
@@ -749,7 +759,7 @@
 
 .exam-hub-page[data-page="exam-hub"] .subject-top span,
 .exam-hub-page[data-page="exam-hub"] .subject-top strong {
-  font-size: 8px;
+  font-size: 12px;
   color: #536078;
 }
 
@@ -758,7 +768,7 @@
 }
 
 .exam-hub-page[data-page="exam-hub"] .subject-bar {
-  height: 5px;
+  height: 8px;
   overflow: hidden;
   border-radius: 10px;
   background: #edf0f5;
@@ -796,7 +806,7 @@
 }
 
 .exam-hub-page[data-page="exam-hub"] .activity {
-  min-height: 39px;
+  min-height: 54px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -845,7 +855,7 @@
 .exam-hub-page[data-page="exam-hub"] .activity strong {
   display: block;
   overflow: hidden;
-  font-size: 8px;
+  font-size: 12px;
   line-height: 1.25;
   color: #273149;
   white-space: nowrap;
@@ -855,7 +865,7 @@
 .exam-hub-page[data-page="exam-hub"] .activity small {
   display: block;
   margin-top: 2px;
-  font-size: 7px;
+  font-size: 11px;
   line-height: 1.2;
   color: #858da0;
 }
@@ -1210,8 +1220,7 @@
     gap: 10px;
   }
 
-  .exam-hub-page[data-page="exam-hub"] .main-two-column,
-  .exam-hub-page[data-page="exam-hub"] .exam-hub-lower-grid {
+  .exam-hub-page[data-page="exam-hub"] .main-two-column {
     grid-template-columns:
       minmax(0, 1.75fr)
       minmax(310px, 1fr);

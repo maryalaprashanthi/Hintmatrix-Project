@@ -44,7 +44,7 @@ test("old answered response cannot overwrite a newer reset response", async () =
   fixture.unmount();
 });
 
-test("admin and guest lists do not request student statuses", () => {
+test("disabled admin lists do not request completion statuses", () => {
   const fixture = mount(false);
   assert.equal(fixture.requests.length, 0);
 });

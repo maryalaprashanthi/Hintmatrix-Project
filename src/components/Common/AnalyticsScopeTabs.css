@@ -1,0 +1,38 @@
+.analytics-scope-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.analytics-scope-label {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+}
+.analytics-scope-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f1f5f9;
+}
+.analytics-scope-tabs button {
+  border: 0;
+  border-radius: 8px;
+  padding: 7px 16px;
+  background: transparent;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.analytics-scope-tabs button[aria-pressed="true"] {
+  background: #155dfb;
+  color: #fff;
+}
+.analytics-scope-tabs button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}

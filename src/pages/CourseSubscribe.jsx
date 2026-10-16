@@ -172,7 +172,7 @@ export default function CourseSubscribe() {
                   <h2>{plan.name}</h2>
                   <p className="plan-description">{plan.description || "Course learning access"}</p>
                   <div className="plan-price">
-                    {Number(plan.price || 0) === 0 ? "Free" : `₹${plan.price}`}
+                    {Number(plan.price || 0) === 0 ? "Free" : Number(plan.price).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
                     <small> / {plan.durationDays || plan.duration || 30} days</small>
                   </div>
                   <ul className="plan-entitlements">

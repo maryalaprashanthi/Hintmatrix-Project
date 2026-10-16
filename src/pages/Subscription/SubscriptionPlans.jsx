@@ -297,9 +297,12 @@ export default function SubscriptionPlans() {
                     <h3>{plan.name}</h3>
 
                     <span>
-                      {plan.type || "PAID"} · ₹ {plan.price ?? 0} /{" "}
+                      {plan.type || (plan.freeTrial ? "FREE TRIAL" : "PAID")} ·{" "}
                       {plan.durationDays || plan.duration || 30} days
                     </span>
+                    <div className="fw-bold mt-1">
+                      {Number(plan.price ?? 0).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
+                    </div>
                   </div>
                 </div>
 
@@ -499,6 +502,7 @@ export default function SubscriptionPlans() {
                     type="number"
                     min="0"
                     value={form.price}
+                    step="0.01"
                     placeholder="Enter price"
                     onChange={(event) =>
                       updateField("price", event.target.value)
