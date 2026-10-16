@@ -114,9 +114,9 @@
   display: flex;
   flex-wrap: wrap;
   align-items: end;
-  gap: 12px;
-  margin: -8px 0 20px;
-  padding: 16px 18px;
+  gap: 16px;
+  margin: 0 0 16px;
+  padding: 20px;
   border: 1px solid #e5eaf2;
   border-radius: 14px;
   background: #fff;
@@ -140,7 +140,18 @@
 }
 
 .time-analytics-filters label {
-  min-width: 180px;
+  min-width: 0;
+  gap: 6px;
+  margin: 0;
+}
+
+.time-analytics-filters select {
+  min-width: 190px;
+  max-width: 260px;
+  min-height: 40px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 14px;
 }
 
 .time-analytics-summary {

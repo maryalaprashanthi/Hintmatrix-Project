@@ -105,11 +105,8 @@ function Dashboard() {
     return () => { active = false; };
   }, [isStudent]);
 
-  const cards = dashboardCards(data).map((card) =>
-    card.type === "rank" && ADMIN_ROLES.includes(role)
-      ? { ...card, subtitle: "Student rankings from exam results" }
-      : card,
-  );
+  const isAdmin = ADMIN_ROLES.includes(role);
+  const cards = dashboardCards(data).filter((card) => !isAdmin || card.type !== "rank");
   return (
     <div className="dashboard container-fluid" aria-busy={loading}>
       <div className="dashboard-header mb-4">
@@ -200,7 +197,7 @@ function Dashboard() {
               </div>
             ))}
           </div>
-          <div className="row g-4 mb-4">
+          {!isAdmin && <div className="row g-4 mb-4">
             {cards.slice(4).filter((card) => card.type !== "streak").map((card) => (
               <div className="col-12 col-lg-6" key={card.type}>
                 <StatsCard {...card} />
@@ -209,18 +206,18 @@ function Dashboard() {
             <div className="col-12 col-lg-6">
               <PracticeStreak streakDays={data.streakDays} week={data.practiceWeek} />
             </div>
-          </div>
+          </div>}
           <div className="row g-4 mb-4">
             <div className="col-12 col-xl-6">
               <RecentActivity activities={data.recentActivities} />
             </div>
-            <div className="col-12 col-md-6 col-xl-3">
+            {!isAdmin && <div className="col-12 col-md-6 col-xl-3">
               <TodayPractice
                 questions={data.todayQuestions}
                 goal={data.dailyGoal}
               />
-            </div>
-            <div className="col-12 col-md-6 col-xl-3">
+            </div>}
+            <div className={isAdmin ? "col-12 col-xl-6" : "col-12 col-md-6 col-xl-3"}>
               <LeaderBoard
                 entries={data.leaderboard}
                 scope={data.rankingScope}

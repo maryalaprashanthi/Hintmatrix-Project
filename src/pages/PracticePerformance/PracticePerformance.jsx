@@ -1014,10 +1014,9 @@ const PracticePerformance = () => {
           </select>
         </label>
 
-        {hasPath && (
-          <button type="button" className="pp-clear-filters" onClick={resetHierarchy}>
-            <X size={16} aria-hidden="true" />
-            Clear course &amp; subject
+        {(scope.mode === "all" || hasPath) && (
+          <button type="button" className="btn btn-outline-secondary btn-sm" disabled={!hasPath} onClick={resetHierarchy}>
+            Clear
           </button>
         )}
       </section>

@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useCallback, useEffect, useMemo, useState } from "react";
+import AnalyticsScopeTabs from "../../components/Common/AnalyticsScopeTabs";
 import { Link, useNavigate } from "react-router-dom";
 import {
   FaBookOpen,
@@ -971,28 +972,12 @@ function PerformanceDashboard() {
       )}
 
       {!isStudent && (
-        <section className="performance-filters card shadow-sm border-0">
+        <section className="performance-filters">
           {scopeTabs.length > 0 && (
-            <div className="performance-scope-row">
-              <span className="performance-field-label">Scope</span>
-              <div className="performance-scope-tabs" role="tablist">
-                {scopeTabs.map((tab) => (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    role="tab"
-                    aria-selected={scope.mode === tab.key}
-                    className={scope.mode === tab.key ? "is-active" : undefined}
-                    onClick={() => changeScopeMode(tab.key)}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <AnalyticsScopeTabs tabs={scopeTabs} value={scope.mode} onChange={changeScopeMode} />
           )}
 
-          <div className="row g-3 align-items-end">
+          <div className="performance-filter-fields">
             {pickKind && (
               <div className="col-12 col-md-4 col-xl-3">
                 <label htmlFor="performance-pick">
@@ -1082,16 +1067,15 @@ function PerformanceDashboard() {
                 })}
               </select>
             </div>
-            {(hierarchy.courseId || hierarchy.sectionId || hierarchy.examId) && (
-              <div className="col-12 col-md-4 col-xl-3">
+            {(scope.mode === "all" || hierarchy.courseId || hierarchy.sectionId || hierarchy.examId) && (
                 <button
                   type="button"
-                  className="btn btn-light w-100"
+                  className="btn btn-outline-secondary btn-sm"
+                  disabled={!hierarchy.courseId && !hierarchy.sectionId && !hierarchy.examId}
                   onClick={clearHierarchy}
                 >
-                  Clear course, section &amp; exam
+                  Clear
                 </button>
-              </div>
             )}
           </div>
           {optionsError && (

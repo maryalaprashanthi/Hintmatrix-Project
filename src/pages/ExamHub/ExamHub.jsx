@@ -8,14 +8,9 @@ import {
   FaTrophy,
   FaArrowRight,
   FaClock,
-  FaDownload,
-  FaCalculator,
-  FaStickyNote,
   FaLaptop,
   FaBookOpen,
   FaGraduationCap,
-  FaCheck,
-  FaBookmark,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { canAccessFeature, currentRole } from "../../utils/roles";
@@ -129,18 +124,6 @@ const formatDuration = (durationMinutes) => {
   if (!Number.isFinite(minutes) || minutes <= 0) return "—";
   return `${minutes} Min`;
 };
-
-/* ================= QUICK ACTIONS  ================= */
-
-const quickActions = [
-  { title: "Bookmarks", icon: <FaBookmark />, type: "blue" },
-  { title: "Weak Areas", icon: <FaBullseye />, type: "pink" },
-  { title: "Downloads", icon: <FaDownload />, type: "blue" },
-  { title: "Study Planner", icon: <FaCalendarAlt />, type: "purple" },
-  { title: "Notes", icon: <FaStickyNote />, type: "cyan" },
-  { title: "Documents", icon: <FaFileAlt />, type: "pink" },
-  { title: "Calculator", icon: <FaCalculator />, type: "green" },
-];
 
 /* ================= SUBJECTS  ================= */
 
@@ -537,7 +520,7 @@ function ExamHub({ kind = "exam" }) {
         </div>
       </div>
 
-      {/* ================= ANALYTICS + QUICK ACTIONS ================= */}
+      {/* ================= ANALYTICS ================= */}
 
       <div className="exam-hub-lower-grid">
         <div className="analytics-row">
@@ -659,56 +642,6 @@ function ExamHub({ kind = "exam" }) {
           </div>
         </div>
 
-        {/* RIGHT SIDE */}
-
-        <div className="exam-hub-right-column">
-          {/* QUICK ACTIONS */}
-
-          <div className="quick-section">
-            <div className="section-title">
-              <h2>Quick Actions</h2>
-            </div>
-
-            <div className="quick-grid">
-              {quickActions.map((item) => (
-                <button type="button" className="quick-card" key={item.title}>
-                  <span className={`quick-icon ${item.type}`}>{item.icon}</span>
-                  <span>{item.title}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* STREAK */}
-
-          <div className="streak-section">
-            <div className="streak-top">
-              <div>
-                <h2>Stay Consistent. Keep Improving!</h2>
-                <p>You are on a 07 day study streak. 🔥</p>
-              </div>
-              <FaTrophy className="big-trophy" />
-            </div>
-
-            <div className="streak-days">
-              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
-                (day, index) => (
-                  <div className="streak-day" key={day}>
-                    <div className={`streak-circle ${index < 6 ? "done" : ""}`}>
-                      {index < 6 && <FaCheck />}
-                    </div>
-                    <span>{day}</span>
-                  </div>
-                ),
-              )}
-            </div>
-
-            <div className="streak-books">
-              <FaBookOpen />
-              <FaGraduationCap />
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* ================= MOTIVATION ================= */}

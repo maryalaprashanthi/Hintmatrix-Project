@@ -9,6 +9,7 @@ import SectionService from "../../services/SectionService";
 import UserService from "../../services/UserService";
 import { currentRole, ROLES } from "../../utils/roles";
 import "./TimeAnalytics.css";
+import AnalyticsScopeTabs from "../../components/Common/AnalyticsScopeTabs";
 
 const numberValue = (value) => {
   const number = Number(value);
@@ -77,6 +78,12 @@ export default function TimeAnalytics() {
   const isStudent = role === ROLES.STUDENT;
   const isSuperAdmin = role === ROLES.SUPER_ADMIN;
   const isCollegeAdmin = role === ROLES.COLLEGE_ADMIN;
+  const scopeTabs = isSuperAdmin
+    ? [{ key: "all", label: "All App" }, { key: "college", label: "College" }, { key: "branch", label: "Branch" }, { key: "student", label: "Student" }]
+    : isCollegeAdmin
+      ? [{ key: "college", label: "My College" }, { key: "branch", label: "Branch" }, { key: "student", label: "Student" }]
+      : [{ key: "branch", label: "My Branch" }, { key: "student", label: "Student" }];
+  const [scopeMode, setScopeMode] = useState(scopeTabs[0].key);
   const [options, setOptions] = useState({ colleges: [], branches: [], sections: [], students: [] });
   const [filters, setFilters] = useState({ collegeId: "", branchId: "", sectionId: "", studentId: "" });
   const [days, setDays] = useState(7);
@@ -95,6 +102,7 @@ export default function TimeAnalytics() {
   const [content, setContent] = useState({ status: "loading", items: [] });
   const [practice, setPractice] = useState({ status: "loading", items: [] });
   const [learningOverview, setLearningOverview] = useState({ status: "loading", summary: {}, topics: [] });
+
 
   useEffect(() => {
     if (isStudent) return undefined;
@@ -481,11 +489,11 @@ export default function TimeAnalytics() {
 
       {!isStudent && (
         <section className="time-analytics-filters" aria-label="Student scope filters">
-          <div className="time-analytics-filters-heading">
-            <strong>Student scope</strong>
-            <span>Choose a group, then select a student to view their individual study trends.</span>
-          </div>
-          {isSuperAdmin && (
+          <AnalyticsScopeTabs tabs={scopeTabs} value={scopeMode} onChange={(mode) => {
+            setScopeMode(mode);
+            setFilters({ collegeId: "", branchId: "", sectionId: "", studentId: "" });
+          }} />
+          {isSuperAdmin && (scopeMode === "all" || scopeMode === "college") && (
             <label>
               <span>College</span>
               <select value={filters.collegeId} onChange={(event) => setFilters({ collegeId: event.target.value, branchId: "", sectionId: "", studentId: "" })}>
@@ -494,7 +502,7 @@ export default function TimeAnalytics() {
               </select>
             </label>
           )}
-          {role !== ROLES.BRANCH_ADMIN && (
+          {role !== ROLES.BRANCH_ADMIN && (scopeMode === "all" || scopeMode === "branch") && (
             <label>
               <span>Branch</span>
               <select value={filters.branchId} onChange={(event) => setFilters((current) => ({ ...current, branchId: event.target.value, sectionId: "", studentId: "" }))}>
@@ -503,14 +511,22 @@ export default function TimeAnalytics() {
               </select>
             </label>
           )}
-          <label>
+          {scopeMode === "all" && <label>
             <span>Section</span>
-            <select value={filters.sectionId} onChange={(event) => setFilters((current) => ({ ...current, sectionId: event.target.value, studentId: "" }))}>
+            <select value={filters.sectionId}
+              onChange={(event) => setFilters((current) => ({ ...current, sectionId: event.target.value, studentId: "" }))}>
               <option value="">All sections</option>
-              {visibleSections.map((item) => <option key={item.sectionId ?? item.id} value={item.sectionId ?? item.id}>{item.sectionName ?? item.name}</option>)}
+              {visibleSections.map((item) => <option key={item.sectionId ?? item.id} value={item.sectionId ?? item.id}>
+                {item.sectionName ?? item.name}
+              </option>)}
             </select>
-          </label>
-          <label>
+          </label>}
+          {scopeMode === "all" && <button type="button" className="btn btn-outline-secondary btn-sm"
+            disabled={!filters.collegeId && !filters.branchId && !filters.sectionId}
+            onClick={() => setFilters({ collegeId: "", branchId: "", sectionId: "", studentId: "" })}>
+            Clear
+          </button>}
+          {scopeMode === "student" && <label>
             <span>Student</span>
             <select value={filters.studentId} onChange={(event) => setFilters((current) => ({ ...current, studentId: event.target.value }))}>
               <option value="">All students in this scope</option>
@@ -519,7 +535,7 @@ export default function TimeAnalytics() {
                 return <option key={studentId} value={studentId}>{student.name ?? student.studentName ?? `Student ${studentId}`}{student.studentCode ? ` · ${student.studentCode}` : ""}</option>;
               })}
             </select>
-          </label>
+          </label>}
         </section>
       )}
 
