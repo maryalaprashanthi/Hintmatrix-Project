@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../../interceptors/axiosInterceptor";
-import { getCurrentUserName } from "../../utils/user";
+import { getCurrentUserName, getUserInitials } from "../../utils/user";
 import CourseService from "../../services/CourseService";
 import TopicService from "../../services/TopicService";
 import SubjectService from "../../services/SubjectService";
@@ -586,8 +586,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
               setShowNotifications(false);
             }}
           >
-            <img src="https://i.pravatar.cc/150?img=32" alt="Profile" />
-
+            <span className="navbar-profile-avatar" aria-hidden="true">{getUserInitials(userName)}</span>
             <div className="profile-info">
               <span className="profile-name">{userName}</span>
 

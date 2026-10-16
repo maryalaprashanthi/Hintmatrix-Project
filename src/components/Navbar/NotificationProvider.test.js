@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { transformSync } from "esbuild";
 import { setImmediate } from "node:timers";
 import { collectNewNotifications, suppressNotificationPopup } from "../../utils/notificationUpdates.js";
+import { parseNotificationPreferences, notificationPopupAllowed, defaultNotificationPreferences } from "../../utils/notificationPreferences.js";
 
 const source = transformSync(readFileSync(new URL("./NotificationProvider.jsx", import.meta.url), "utf8")
   .replace(/^import .*;\r?\n/gm, "")
@@ -29,7 +30,7 @@ function mount(path = "/dashboard") {
   const React = { createElement: (_type, props) => props };
   const Session = new Function("React", "useState", "useRef", "useCallback", "useContext", "useEffect",
     "NotificationService", "NotificationContext", "ToastContext", "window", "document",
-    "collectNewNotifications", "suppressNotificationPopup",
+    "collectNewNotifications", "suppressNotificationPopup", "SettingsService", "parseNotificationPreferences", "notificationPopupAllowed",
     source + "; return NotificationSession;")(
     React,
     (initial) => { const index = cursor++; if (!(index in slots)) slots[index] = initial;
@@ -41,6 +42,7 @@ function mount(path = "/dashboard") {
       pendingEffects.push(() => { effects[index]?.cleanup?.(); effects[index] = { deps, cleanup: effect() }; });
     } },
     service, { Provider: "provider" }, {}, window, document, collectNewNotifications, suppressNotificationPopup,
+    { getMine: async () => ({ data: defaultNotificationPreferences }) }, parseNotificationPreferences, notificationPopupAllowed,
   );
   const render = (nextPath = path) => {
     path = nextPath; cursor = 0; pendingEffects = [];
@@ -143,5 +145,18 @@ test("background-tab arrivals wait for visibility before announcing", async () =
   fixture.document.dispatchEvent(new Event("visibilitychange"));
   await fixture.respond(2, [{ notificationId: 4, title: "New", read: false }]);
   assert.equal(fixture.toasts.length, 1);
+  fixture.unmount();
+});
+
+test("saved preferences stop popups immediately while bell history still updates", async () => {
+  const fixture = mount();
+  await fixture.respond(0, []);
+  const event = new Event("user-settings-changed");
+  event.detail = { preferences: { ...defaultNotificationPreferences, notificationPopups: false } };
+  fixture.window.dispatchEvent(event);
+  fixture.window.tick();
+  await fixture.respond(1, [{ notificationId: 5, title: "New result", read: false }]);
+  assert.equal(fixture.toasts.length, 0);
+  assert.equal(fixture.render().notifications[0].notificationId, 5);
   fixture.unmount();
 });

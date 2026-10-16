@@ -3,6 +3,7 @@ import apiClient from "./apiClient";
 const BASE_URL = "/api/notifications";
 
 const NotificationService = {
+  announce: (announcement) => apiClient.post(`${BASE_URL}/announcements`, announcement),
   getMine: (limit = 20) => apiClient.get(`${BASE_URL}/mine`, { params: { limit } }),
   getUnreadCount: () => apiClient.get(`${BASE_URL}/mine/unread-count`),
   markRead: (notificationId) => apiClient.put(`${BASE_URL}/${notificationId}/read`),
