@@ -18,6 +18,16 @@ const cleanParams = (params = {}) =>
 //                                       it has a column for)
 //   collegeId / branchId / studentId  - which students
 const PracticePerformanceService = {
+  getMyQuestionStatuses(topicId) {
+    return apiClient.get(`${BASE_URL}/question-statuses`, {
+      params: cleanParams({ topicId }),
+    });
+  },
+  getMyQuestionCompletion(level, params = {}) {
+    return apiClient.get(`${BASE_URL}/completion/${level}`, {
+      params: cleanParams(params),
+    });
+  },
   getLevel(level, params = {}) {
     return apiClient.get(`${BASE_URL}/${level}`, {
       params: cleanParams(params),

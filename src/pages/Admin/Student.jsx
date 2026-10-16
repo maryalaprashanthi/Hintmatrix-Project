@@ -110,8 +110,9 @@ function Student() {
     console.log("Selected File:", file);
 
     StudentService.uploadUsersExcel(file)
-      .then((response) => {
-        toast.success(response.data.message || "Students uploaded.");
+      .then(() => {
+        // Success is announced by the notification popup; avoid a duplicate toast.
+        // toast.success(response.data.message || "Students uploaded.");
 
         // Refresh table after upload
         fetchStudents();

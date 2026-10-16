@@ -127,13 +127,15 @@ function Courses() {
     if (!file) return;
 
     try {
-      const response = await CourseService.uploadExcel(file);
+      // const response = await CourseService.uploadExcel(file);
+      await CourseService.uploadExcel(file);
 
-      toast.success(
-        typeof response.data === "string"
-          ? response.data
-          : "Course Excel uploaded.",
-      );
+      // Success is announced by the notification popup; avoid a duplicate toast.
+      // toast.success(
+        // typeof response.data === "string"
+          // ? response.data
+          // : "Course Excel uploaded.",
+      // );
 
       loadCourses(); // Refresh course list
     } catch (error) {

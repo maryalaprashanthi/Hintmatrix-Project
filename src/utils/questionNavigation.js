@@ -1,5 +1,8 @@
 // Mapping responses have no guaranteed order. Navigation must be stable across
 // requests, include the opened question, and never silently truncate a topic.
+export const compareQuestionIds = (first, second) =>
+  String(first.questionId ?? "").localeCompare(String(second.questionId ?? ""), "en", { numeric: true });
+
 export function getQuestionNavigationIds(orderedIds, currentId) {
   if (!Array.isArray(orderedIds) || orderedIds.length === 0 ||
       !orderedIds.every((id) => /^\d+$/.test(String(id)) && Number(id) > 0) ||
@@ -26,9 +29,7 @@ export function buildQuestionSequence(rows, current, orderedIds) {
     const key = String(current.questionId);
     byId.set(key, { ...byId.get(key), ...current });
   }
-  return [...byId.values()].sort((a, b) =>
-    String(b.questionId).localeCompare(String(a.questionId), "en", { numeric: true }),
-  );
+  return [...byId.values()].sort(compareQuestionIds);
 }
 
 export function questionIndex(rows, id) {
@@ -40,4 +41,14 @@ export function questionDisplayNumber(rows, id, listNumbers) {
   const listNumber = listNumbers?.[id];
   return Number.isInteger(listNumber) && listNumber > 0
     ? listNumber : questionIndex(rows, id) + 1;
+}
+
+export function getQuestionListPath(question, navigationState) {
+  const source = navigationState?.questionListPath;
+  if (source === "/questions" || /^\/topics\/[1-9]\d*\/questions$/.test(source ?? "")) {
+    return source;
+  }
+  const topicId = question?.topicId ?? question?.categoryId;
+  return /^[1-9]\d*$/.test(String(topicId ?? ""))
+    ? `/topics/${topicId}/questions` : "/questions";
 }

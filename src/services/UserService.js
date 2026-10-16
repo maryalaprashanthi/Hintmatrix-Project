@@ -6,6 +6,11 @@ import { currentRole, ROLES } from "../utils/roles";
 const BASE_URL = "/api/users";
 
 class UserService {
+  getMyProfile() {
+    // The server resolves the user ID from authentication, not local storage.
+    return apiClient.get("/api/auth/me");
+  }
+
   // =========================
   // SUPER ADMIN
   // =========================

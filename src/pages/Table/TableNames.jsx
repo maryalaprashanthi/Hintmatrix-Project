@@ -87,11 +87,13 @@ function TableNames() {
     }
 
     try {
-      const response = await TableNameService.uploadExcel(file);
+      // const response = await TableNameService.uploadExcel(file);
+      await TableNameService.uploadExcel(file);
 
-      toast.success(
-        typeof response.data === "string" ? response.data : "Upload complete.",
-      );
+      // Success is announced by the notification popup; avoid a duplicate toast.
+      // toast.success(
+        // typeof response.data === "string" ? response.data : "Upload complete.",
+      // );
 
       loadTableNames();
     } catch (error) {

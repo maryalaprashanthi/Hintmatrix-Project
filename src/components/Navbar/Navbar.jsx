@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../../interceptors/axiosInterceptor";
 import { getCurrentUserName } from "../../utils/user";
@@ -10,8 +10,8 @@ import QuestionService from "../../services/QuestionService";
 import CollegeService from "../../services/CollegeService";
 import BranchService from "../../services/BranchService";
 import SectionService from "../../services/SectionService";
-import NotificationService from "../../services/NotificationService";
-import { loadOncePerLogin, updatePageLoadCache } from "../../utils/pageLoadCache";
+import { NotificationContext } from "./NotificationContext";
+import { loadOncePerLogin } from "../../utils/pageLoadCache";
 import {
   canAccessFeature,
   normalizeRole,
@@ -37,9 +37,6 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [activeSearchIndex, setActiveSearchIndex] = useState(-1);
-  const [notifications, setNotifications] = useState([]);
-  const [notificationsLoading, setNotificationsLoading] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
 
   const menuRef = useRef(null);
@@ -53,80 +50,18 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
     logoutUser(navigate);
   };
 
-  const loadNotifications = useCallback(async ({ showLoading = false, isActive = () => true } = {}) => {
-    // if (document.visibilityState !== "visible") return;
-    if (showLoading) setNotificationsLoading(true);
-    try {
-      // const [itemsResponse, countResponse] = await Promise.all([...]);
-      const [itemsResponse, countResponse] = await loadOncePerLogin("navbar-notifications", () => Promise.all([
-        NotificationService.getMine(12),
-        NotificationService.getUnreadCount(),
-      ]));
-      if (!isActive()) return;
-      setNotifications(Array.isArray(itemsResponse.data) ? itemsResponse.data : []);
-      setUnreadCount(Number(countResponse.data?.unreadCount) || 0);
-    } catch (error) {
-      console.error("Unable to load notifications:", error);
-    } finally {
-      if (showLoading && isActive()) setNotificationsLoading(false);
-    }
-  }, []);
+  const { notifications, unreadCount, notificationsLoading, notificationError,
+    notificationsBusy, loadNotifications, markNotificationsRead } = useContext(NotificationContext);
 
-  useEffect(() => {
-    // loadNotifications({ showLoading: true });
-    let active = true;
-    loadNotifications({ showLoading: true, isActive: () => active });
-    // const intervalId = window.setInterval(loadNotifications, 45_000);
-    // const handleVisibility = () => {
-    //   if (document.visibilityState === "visible") loadNotifications();
-    // };
-    // document.addEventListener("visibilitychange", handleVisibility);
-    // return () => {
-    //   window.clearInterval(intervalId);
-    //   document.removeEventListener("visibilitychange", handleVisibility);
-    // };
-    return () => { active = false; };
-  }, [loadNotifications]);
-
-  const markAllNotificationsRead = async () => {
-    if (!unreadCount) return;
-    try {
-      await NotificationService.markAllRead();
-      await updatePageLoadCache("navbar-notifications", ([items, count]) => {
-        items.data = (Array.isArray(items.data) ? items.data : []).map((item) => ({ ...item, read: true }));
-        count.data = { ...count.data, unreadCount: 0 };
-      });
-      setNotifications((items) => items.map((item) => ({ ...item, read: true })));
-      setUnreadCount(0);
-    } catch (error) {
-      console.error("Unable to mark notifications as read:", error);
-    }
-  };
+  const markAllNotificationsRead = () => markNotificationsRead();
 
   const openNotification = async (notification) => {
-    if (!notification.read) {
-      try {
-        await NotificationService.markRead(notification.notificationId);
-        await updatePageLoadCache("navbar-notifications", ([items, count]) => {
-          items.data = (Array.isArray(items.data) ? items.data : []).map((item) =>
-            item.notificationId === notification.notificationId ? { ...item, read: true } : item,
-          );
-          count.data = { ...count.data, unreadCount: Math.max(0, (Number(count.data?.unreadCount) || 0) - 1) };
-        });
-        setNotifications((items) =>
-          items.map((item) =>
-            item.notificationId === notification.notificationId
-              ? { ...item, read: true }
-              : item,
-          ),
-        );
-        setUnreadCount((count) => Math.max(0, count - 1));
-      } catch (error) {
-        console.error("Unable to mark notification as read:", error);
-      }
-    }
+    if (notificationsBusy) return;
+    if (!notification.read && !(await markNotificationsRead(notification.notificationId))) return;
     setShowNotifications(false);
-    if (notification.actionUrl?.startsWith("/")) navigate(notification.actionUrl);
+    if (notification.actionUrl?.startsWith("/") && !notification.actionUrl.startsWith("//")) {
+      navigate(notification.actionUrl);
+    }
   };
 
   const relativeTime = (value) => {
@@ -578,10 +513,8 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
             aria-label="Notifications"
             aria-expanded={showNotifications}
             onClick={() => {
-              setShowNotifications((visible) => {
-                // if (!visible) loadNotifications({ showLoading: true });
-                return !visible;
-              });
+              if (!showNotifications) loadNotifications({ showLoading: true });
+              setShowNotifications(!showNotifications);
               setShowMenu(false);
             }}
           >
@@ -602,7 +535,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
                 </div>
                 <button
                   type="button"
-                  disabled={!unreadCount}
+                  disabled={!unreadCount || notificationsBusy}
                   onClick={markAllNotificationsRead}
                 >
                   Mark all as read
@@ -610,6 +543,9 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
               </div>
 
               <div className="notification-list">
+                {notificationError && <div className="notification-state" role="alert">
+                  {notificationError} <button type="button" onClick={() => loadNotifications({ showLoading: true })}>Retry</button>
+                </div>}
                 {notificationsLoading ? (
                   <div className="notification-state">Loading notifications...</div>
                 ) : notifications.length ? (
@@ -619,6 +555,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
                       <button
                         key={notification.notificationId}
                         type="button"
+                        disabled={notificationsBusy}
                         className={`notification-item ${notification.read ? "" : "unread"}`}
                         onClick={() => openNotification(notification)}
                       >
@@ -634,7 +571,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
                     );
                   })
                 ) : (
-                  <div className="notification-state">No notifications yet.</div>
+                  !notificationError && <div className="notification-state">No notifications yet.</div>
                 )}
               </div>
             </div>
