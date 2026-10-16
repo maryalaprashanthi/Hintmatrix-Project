@@ -16,7 +16,8 @@ import {
 } from "react-icons/fa";
 
 import "./Courses.css";
-import { canManageContent } from "../../../utils/roles";
+import { canManageContent, currentRole, ROLES } from "../../../utils/roles";
+import SubscriptionService from "../../../services/SubscriptionService";
 import { getApiErrorMessage } from "../../../utils/apiError";
 import { paths } from "../../../routes/paths";
 import ConfirmDialog from "../../../components/Common/ConfirmDialog";
@@ -31,6 +32,7 @@ import bcom from "../../../assets/courses/bcom.png.jpeg";
 function Courses() {
   const navigate = useNavigate();
   const canManage = canManageContent();
+  const isStudent = currentRole() === ROLES.STUDENT;
   const toast = useToast();
 
   const [search, setSearch] = useState("");
@@ -39,16 +41,37 @@ function Courses() {
   const [courses, setCourses] = useState([]);
   const [chapters, setChapters] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [assignedCourseIds, setAssignedCourseIds] = useState(null);
+  const [assignmentError, setAssignmentError] = useState(false);
   const courseProgress = useHierarchyProgress("course");
 
-  const loadCourses = () => {
-    CourseService.getAllCourses()
-      .then((response) => {
-        setCourses(response.data || []);
-      })
-      .catch((error) => {
-        console.error("Failed to load backend courses:", error);
-      });
+  const loadCourses = async () => {
+    try {
+      const response = await CourseService.getAllCourses();
+      const allCourses = Array.isArray(response.data) ? response.data : [];
+      if (isStudent) {
+        const subscriptionResponse = await SubscriptionService.getMine();
+        const activeSubscriptions = Array.isArray(subscriptionResponse.data)
+          ? subscriptionResponse.data.filter((subscription) => subscription.active === true || subscription.active === "true")
+          : [];
+        const assignedIds = activeSubscriptions
+          .map((subscription) => subscription.courseId ?? subscription.course?.courseId ?? subscription.course?.id)
+          .filter((id) => id != null)
+          .map(String);
+        setAssignedCourseIds(new Set(assignedIds));
+        setAssignmentError(false);
+        setCourses(allCourses);
+      } else {
+        setCourses(allCourses);
+      }
+    } catch (error) {
+      console.error("Failed to load backend courses:", error);
+      if (isStudent) {
+        setCourses([]);
+        setAssignedCourseIds(new Set());
+        setAssignmentError(true);
+      }
+    }
   };
 
   const loadChapters = () => {
@@ -64,7 +87,7 @@ function Courses() {
   useEffect(() => {
     loadCourses();
     loadChapters();
-  }, []);
+  }, [isStudent]);
 
   const handleEdit = (courseData) => {
     setSelectedCourse(courseData);
@@ -152,7 +175,14 @@ function Courses() {
     };
   }, [courses, chapters]);
 
-  const filteredCourses = courses.filter((course) => {
+  const studentAssignedCourses = !isStudent || assignedCourseIds === null
+    ? courses
+    : courses.filter((course) => {
+      const isActive = course.activeRow !== false && course.activeRow !== "false" && course.activeRow !== 0;
+      return isActive && assignedCourseIds.has(String(course.courseId ?? course.id));
+    });
+
+  const filteredCourses = studentAssignedCourses.filter((course) => {
     const courseTitle = course.name || course.title || "";
 
     const searchMatch = courseTitle
@@ -172,7 +202,7 @@ function Courses() {
   });
 
   return (
-    <div className="container-fluid courses-page">
+    <div className={`container-fluid courses-page${isStudent ? " student-assigned-courses-page" : ""}`}>
       {/* ================= HEADER ================= */}
 
       <div className="courses-header">
@@ -182,9 +212,9 @@ function Courses() {
           </div>
 
           <div>
-            <h2>Course Management</h2>
+            <h2>{isStudent ? "My Courses" : "Course Management"}</h2>
 
-            <p>Create, organize and manage all your learning programs.</p>
+            <p>{isStudent ? "Continue learning from courses assigned to you." : "Create, organize and manage all your learning programs."}</p>
           </div>
         </div>
 
@@ -221,7 +251,7 @@ function Courses() {
       </div>
       {/* ================= STATISTICS ================= */}
 
-      <div className="row g-4 stats-row">
+      {!isStudent && <div className="row g-4 stats-row">
         <div className="col-xl-3 col-lg-6 col-md-6">
           <div className="modern-stat-card">
             <div className="stat-icon blue">
@@ -277,11 +307,11 @@ function Courses() {
             </div>
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* ================= SEARCH ================= */}
 
-      <div className="course-toolbar">
+      {!isStudent && <div className="course-toolbar">
         <div className="search-box">
           <FaSearch
             className="search-icon"
@@ -308,10 +338,12 @@ function Courses() {
           <option value="ACTIVE">Active</option>
           <option value="INACTIVE">Inactive</option>
         </select>
-      </div>
+      </div>}
 
       {/* ================= COURSE GRID ================= */}
 
+      {isStudent && assignmentError && <div className="alert alert-danger" role="alert">Assigned courses could not be loaded. Please try again.</div>}
+      {isStudent && assignedCourseIds === null && !assignmentError && <div className="course-loading-state" role="status">Loading your assigned courses…</div>}
       <div className="row">
         {filteredCourses.map((course) => {
           const courseId = course.courseId || course.id;
@@ -347,7 +379,7 @@ function Courses() {
                   <div className="d-flex justify-content-between align-items-center">
                     <h4>{course.name || course.title}</h4>
 
-                    <span
+                    {!isStudent && <span
                       className={
                         course.activeRow
                           ? "status-badge active"
@@ -355,7 +387,7 @@ function Courses() {
                       }
                     >
                       {course.activeRow ? "Active" : "Inactive"}
-                    </span>
+                    </span>}
                   </div>
 
                   <p className="course-level">{course.level || "Beginner"}</p>
@@ -363,7 +395,7 @@ function Courses() {
                   <div className="course-details">
                     <div>
                       <FaUsers />
-                      <span>{course.students} Students</span>
+                  {!isStudent && <span>{course.students} Students</span>}
                     </div>
 
                     <div>
@@ -428,11 +460,11 @@ function Courses() {
 
       {/* ================= EMPTY ================= */}
 
-      {filteredCourses.length === 0 && (
+      {filteredCourses.length === 0 && !(isStudent && assignedCourseIds === null) && !assignmentError && (
         <div className="empty-state">
-          <h4>No Courses Found</h4>
+          <h4>{isStudent ? "No courses assigned yet" : "No Courses Found"}</h4>
 
-          <p>Try another search keyword or select another category.</p>
+          <p>{isStudent ? "Courses assigned to your account will appear here." : "Try another search keyword or select another category."}</p>
         </div>
       )}
 

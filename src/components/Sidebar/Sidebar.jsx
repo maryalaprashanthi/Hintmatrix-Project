@@ -38,6 +38,7 @@ const MENU_PREFIXES = {
   admin: ["/admin"],
   question: ["/questions"],
   table: ["/table-"],
+  learningAnalytics: ["/time-analytics", "/performance", "/practice-performance", "/mock-exam"],
 };
 
 const getMenuForPath = (path) =>
@@ -64,6 +65,7 @@ export default function Sidebar({
   const adminOpen = openMenu === "admin";
   const questionOpen = openMenu === "question";
   const tableOpen = openMenu === "table";
+  const learningAnalyticsOpen = openMenu === "learningAnalytics";
 
   const userRole = normalizeRole(localStorage.getItem("role") || ROLES.GUEST);
 
@@ -77,6 +79,7 @@ export default function Sidebar({
     "practicePerformance",
     userRole,
   );
+  const canAccessMockExams = canAccessFeature("attemptMockExams", userRole);
   const canAccessCollegeMenu = canAccessFeature("colleges", userRole);
   const canAccessBranchMenu = canAccessFeature("branches", userRole);
   const canAccessCourseMenu = canAccessFeature("courses", userRole);
@@ -118,9 +121,6 @@ export default function Sidebar({
   // and /mock-exams, which don't prefix-match, so keep the tab lit there too.
   const examMenuClass = ({ isActive }) =>
     isActive || pathname === "/exams" ? "menu-item active" : "menu-item";
-  const mockExamMenuClass = ({ isActive }) =>
-    isActive || pathname === "/mock-exams" ? "menu-item active" : "menu-item";
-
   const subMenuClass = ({ isActive }) =>
     isActive ? "submenu-item active-submenu" : "submenu-item";
 
@@ -510,58 +510,47 @@ export default function Sidebar({
 
           {/* Mock Exam */}
 
-          {canAccessFeature("attemptMockExams", userRole) && (
-            <NavLink
-              to="/mock-exam"
-              className={mockExamMenuClass}
-              onClick={closeSidebar}
-            >
-              <div className="menu-left">
-                <MdAssignmentTurnedIn className="menu-icon" />
-                <span>Mock Exam</span>
+          {(canAccessPerformance || canAccessTimeAnalytics || canAccessPracticePerformance || canAccessMockExams) && (
+            <div className={`learning-analytics-menu ${learningAnalyticsOpen ? "open" : ""}`}>
+              <div
+                className={parentClass(learningAnalyticsOpen)}
+                onClick={() => toggleMenu("learningAnalytics")}
+                aria-expanded={learningAnalyticsOpen}
+              >
+                <div className="menu-left">
+                  <MdInsights className="menu-icon" />
+                  <span>Learning Analytics</span>
+                </div>
               </div>
-            </NavLink>
-          )}
-
-          {/* Performance */}
-
-          {canAccessPerformance && (
-            <NavLink
-              to="/performance"
-              className={menuClass}
-              onClick={closeSidebar}
-            >
-              <div className="menu-left">
-                <MdBarChart className="menu-icon" />
-                <span>{isStudent ? "Performance" : "Exam Performance"}</span>
-              </div>
-            </NavLink>
-          )}
-
-          {canAccessTimeAnalytics && (
-            <NavLink
-              to="/time-analytics"
-              className={menuClass}
-              onClick={closeSidebar}
-            >
-              <div className="menu-left">
-                <MdAccessTime className="menu-icon" />
-                <span>Study Time Tracking</span>
-              </div>
-            </NavLink>
-          )}
-
-          {canAccessPracticePerformance && (
-            <NavLink
-              to="/practice-performance"
-              className={menuClass}
-              onClick={closeSidebar}
-            >
-              <div className="menu-left">
-                <MdInsights className="menu-icon" />
-                <span>Practice Performance</span>
-              </div>
-            </NavLink>
+              {learningAnalyticsOpen && (
+                <div className="submenu">
+                  {canAccessTimeAnalytics && (
+                    <NavLink to="/time-analytics" className={subMenuClass} onClick={closeSidebar}>
+                      <MdAccessTime />
+                      <span>Study Time Tracking</span>
+                    </NavLink>
+                  )}
+                  {canAccessPerformance && (
+                    <NavLink to="/performance" className={subMenuClass} onClick={closeSidebar}>
+                      <MdBarChart />
+                      <span>Exam Performance</span>
+                    </NavLink>
+                  )}
+                  {canAccessMockExams && (
+                    <NavLink to="/mock-exam" className={subMenuClass} onClick={closeSidebar}>
+                      <MdAssignmentTurnedIn />
+                      <span>Mock Performance</span>
+                    </NavLink>
+                  )}
+                  {canAccessPracticePerformance && (
+                    <NavLink to="/practice-performance" className={subMenuClass} onClick={closeSidebar}>
+                      <MdInsights />
+                      <span>Practice Performance</span>
+                    </NavLink>
+                  )}
+                </div>
+              )}
+            </div>
           )}
 
           {/* Settings */}

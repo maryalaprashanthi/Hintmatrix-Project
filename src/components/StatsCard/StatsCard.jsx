@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import "./StatsCard.css";
+import { Link } from "react-router-dom";
 import { FaBookOpen, FaQuestionCircle, FaCheckCircle, FaClock, FaTrophy,
   FaFire, FaUniversity, FaLayerGroup, FaCodeBranch, FaGraduationCap } from "react-icons/fa";
 
@@ -16,11 +17,16 @@ const cards = {
   streak: { Icon: FaFire, title: "Practice Streak", color: "#16a34a", bg: "#eafaf0" },
 };
 
-function StatsCard({ type, data, subtitle, progress, loading = false }) {
+function StatsCard({ type, data, subtitle, progress, loading = false, to }) {
   const card = cards[type] ?? cards.courses;
   const Icon = card.Icon;
+  const CardWrapper = to ? Link : "div";
   return (
-    <div className="dashboard-stat-card" aria-busy={loading}>
+    <CardWrapper
+      className={`dashboard-stat-card${to ? " dashboard-stat-card-link" : ""}`}
+      aria-busy={loading}
+      {...(to ? { to } : {})}
+    >
       <div className="dashboard-stat-icon" style={{ background: card.bg, color: card.color }}><Icon /></div>
       <div className="dashboard-stat-info">
         <small>{card.title}</small>
@@ -34,7 +40,7 @@ function StatsCard({ type, data, subtitle, progress, loading = false }) {
           </div>
         )}
       </div>
-    </div>
+    </CardWrapper>
   );
 }
 export default StatsCard;

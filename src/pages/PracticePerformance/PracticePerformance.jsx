@@ -293,6 +293,78 @@ const PracticeComparisonCharts = ({ items, kind = "accuracy" }) => {
     </>
   );
 };
+
+const PracticeActivityTrend = ({ state, items, metric, onMetricChange }) => {
+  const attempted = items.reduce((sum, item) => sum + num(item.answerCount), 0);
+  const activeDays = items.filter((item) => num(item.answerCount) > 0).length;
+  const correct = items.reduce((sum, item) => sum + num(item.correctCount), 0);
+  const accuracy = attempted ? (correct / attempted) * 100 : 0;
+  const labels = items.map((item) => {
+    const date = new Date(`${item.date}T00:00:00`);
+    return Number.isNaN(date.getTime())
+      ? String(item.date ?? "")
+      : date.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+  });
+  const values = items.map((item) => {
+    const count = num(item.answerCount);
+    return metric === "accuracy"
+      ? (count ? (num(item.correctCount) / count) * 100 : 0)
+      : count;
+  });
+
+  return (
+    <section className="pp-card pp-trend-card pp-activity-card">
+      <div className="pp-card__head">
+        <div>
+          <h2 className="pp-card__title">Practice activity · last 14 days</h2>
+          <p className="pp-card__sub">Daily answer activity and accuracy from submitted practice answers.</p>
+        </div>
+        <select
+          className="pp-select pp-trend-select"
+          aria-label="Practice activity chart metric"
+          value={metric}
+          onChange={(event) => onMetricChange(event.target.value)}
+        >
+          <option value="attempts">Answer attempts</option>
+          <option value="accuracy">Daily accuracy</option>
+        </select>
+      </div>
+      <div className="pp-activity-summary" aria-live="polite">
+        <div><span>Active practice days</span><strong>{formatCount(activeDays)} <small>of 14</small></strong></div>
+        <div><span>Answer attempts</span><strong>{formatCount(attempted)}</strong></div>
+        <div><span>Accuracy in range</span><strong>{formatPct(accuracy)}</strong></div>
+      </div>
+      {state === "loading" ? (
+        <p className="pp-empty" role="status">Loading practice activity…</p>
+      ) : state === "error" ? (
+        <p className="pp-empty" role="alert">Couldn’t load practice activity.</p>
+      ) : attempted === 0 ? (
+        <p className="pp-empty">No submitted practice answers in the last 14 days.</p>
+      ) : (
+        <div className="pp-trend-scroll" role="region" aria-label="Practice activity over the last 14 days" tabIndex={0}>
+          <div className="pp-chart-canvas">
+            <LineChart
+              height={280}
+              xAxis={[{ scaleType: "band", data: labels, tickLabelInterval: () => true, tickLabelStyle: { fontSize: 11 } }]}
+              yAxis={[{ min: 0, ...(metric === "accuracy" ? { max: 100, valueFormatter: (value) => `${value}%` } : {}) }]}
+              series={[{
+                data: values,
+                label: metric === "accuracy" ? "Accuracy" : "Answer attempts",
+                color: metric === "accuracy" ? "#0ea5e9" : "#6366f1",
+                curve: "monotoneX",
+                area: true,
+                showMark: true,
+                valueFormatter: (value) => metric === "accuracy" ? formatPct(value) : formatCount(value),
+              }]}
+              grid={{ horizontal: true }}
+              margin={{ left: 58, right: 24, top: 24, bottom: 42 }}
+            />
+          </div>
+        </div>
+      )}
+    </section>
+  );
+};
 // One clickable row of a level list: name, the level above it, a bar of
 // accuracy and how much of it has been attempted.
 const ItemRow = ({ item, active, onSelect }) => {
@@ -370,6 +442,9 @@ const PracticePerformance = () => {
   const [error, setError] = useState("");
   const [trendCourseId, setTrendCourseId] = useState("");
   const [trend, setTrend] = useState({ status: "loading", items: [] });
+  const [activity, setActivity] = useState({ status: "loading", items: [] });
+  const [activityMetric, setActivityMetric] = useState("attempts");
+  const [studentsToSupport, setStudentsToSupport] = useState({ status: "idle", items: [] });
 
   const [orgMode, setOrgMode] = useState(
     role === ROLES.SUPER_ADMIN ? "college" : "branch",
@@ -409,6 +484,44 @@ const PracticePerformance = () => {
       cancelled = true;
     };
   }, [scopeParams, trendCourseId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setActivity({ status: "loading", items: [] });
+    PracticePerformanceService.getTimeline({ ...scopeParams, ...pathParams })
+      .then((response) => {
+        if (!cancelled) {
+          setActivity({ status: "ready", items: asArray(response.data) });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setActivity({ status: "error", items: [] });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [scopeParams, pathParams]);
+
+  useEffect(() => {
+    if (isStudent) {
+      setStudentsToSupport({ status: "idle", items: [] });
+      return undefined;
+    }
+    let cancelled = false;
+    setStudentsToSupport({ status: "loading", items: [] });
+    PracticePerformanceService.getStudentsNeedingSupport({ ...scopeParams, ...pathParams })
+      .then((response) => {
+        if (!cancelled) {
+          setStudentsToSupport({ status: "ready", items: asArray(response.data) });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setStudentsToSupport({ status: "error", items: [] });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isStudent, scopeParams, pathParams]);
 
   // ---- pick lists --------------------------------------------------------
   useEffect(() => {
@@ -969,6 +1082,13 @@ const PracticePerformance = () => {
               />
             </section>
 
+            <PracticeActivityTrend
+              state={activity.status}
+              items={activity.items}
+              metric={activityMetric}
+              onMetricChange={setActivityMetric}
+            />
+
             <div className="pp-grid-2 pp-trend-breakdown">
               <section className="pp-card pp-trend-card">
                 <div className="pp-card__head">
@@ -1223,6 +1343,59 @@ const PracticePerformance = () => {
                       </tbody>
                     </table>
                   </div>
+                )}
+              </section>
+            )}
+
+            {!isStudent && (
+              <section className="pp-card">
+                <div className="pp-card__head">
+                  <div>
+                    <h2 className="pp-card__title"><Users size={18} aria-hidden="true" /> Students Needing Support</h2>
+                    <p className="pp-card__sub">No practice attempts or accuracy below {REVISION_THRESHOLD}%. Select a student to inspect their results.</p>
+                  </div>
+                </div>
+                {studentsToSupport.status === "loading" ? (
+                  <p className="pp-empty" role="status">Loading student support data…</p>
+                ) : studentsToSupport.status === "error" ? (
+                  <p className="pp-empty" role="alert">Couldn’t load student support data.</p>
+                ) : studentsToSupport.items.length ? (
+                  <div className="pp-table-wrap">
+                    <table className="pp-table">
+                      <thead><tr><th>Student</th><th>Section</th><th>Units attempted</th><th>Accuracy</th><th aria-label="Open" /></tr></thead>
+                      <tbody>
+                        {studentsToSupport.items.map((student) => (
+                          <tr key={student.userId}>
+                            <td>
+                              <button
+                                type="button"
+                                className="pp-table__name"
+                                onClick={() => applyScopeTarget({ mode: "student", studentId: String(student.userId) })}
+                              >
+                                <Users size={15} aria-hidden="true" />
+                                <span>{student.studentName}{student.studentCode ? <small>{student.studentCode}</small> : null}</span>
+                              </button>
+                            </td>
+                            <td>{student.sectionName || "—"}</td>
+                            <td>{formatCount(student.attemptedUnits)} / {formatCount(student.totalUnits)}</td>
+                            <td className={student.accuracyPercentage == null ? "" : `pp-text-${band(num(student.accuracyPercentage), num(student.attemptedUnits))}`}>
+                              {student.accuracyPercentage == null ? "No attempts" : formatPct(student.accuracyPercentage)}
+                            </td>
+                            <td className="pp-table__chev">
+                              <button
+                                type="button"
+                                className="pp-table__open"
+                                aria-label={`Open practice performance for ${student.studentName}`}
+                                onClick={() => applyScopeTarget({ mode: "student", studentId: String(student.userId) })}
+                              ><ChevronRight size={16} aria-hidden="true" /></button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="pp-empty">No students are below the support threshold in this scope.</p>
                 )}
               </section>
             )}

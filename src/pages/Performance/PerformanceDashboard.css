@@ -137,72 +137,77 @@
   margin-bottom: 20px;
 }
 
-.student-learning-analytics .performance-panel-heading {
-  gap: 16px;
+.exam-insights-panel,
+.score-distribution-panel {
+  margin-bottom: 22px;
 }
 
-.student-learning-analytics .performance-panel-heading .btn {
+.exam-insights-progress {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 14px;
+  margin: 16px 0;
+  padding: 16px 18px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: linear-gradient(110deg, #eff6ff, #f5f3ff);
+  color: #475569;
+}
+
+.exam-insights-progress strong {
+  color: #334155;
+  font-size: 1.05rem;
+}
+
+.exam-insights-progress strong.is-positive { color: #15803d; }
+.exam-insights-progress strong.is-negative { color: #dc2626; }
+.exam-insights-progress small { flex-basis: 100%; color: #64748b; }
+
+.exam-chapter-insights {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.exam-chapter-insight {
+  display: grid;
+  gap: 6px;
+  padding: 16px 18px;
+  border: 1px solid #e5eaf3;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.exam-chapter-insight > span { color: #64748b; font-size: .82rem; font-weight: 700; }
+.exam-chapter-insight > strong { color: #172554; font-size: 1.05rem; }
+.exam-chapter-insight > small { color: #64748b; }
+.exam-chapter-insight--strength { box-shadow: inset 3px 0 #10b981; }
+.exam-chapter-insight--review { box-shadow: inset 3px 0 #f59e0b; }
+
+.exam-chapter-review-link {
   display: inline-flex;
-  flex: 0 0 auto;
+  width: fit-content;
   align-items: center;
   gap: 7px;
-}
-
-.student-learning-actions {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: 8px;
-}
-
-.student-learning-actions select {
-  width: auto;
-  min-width: 132px;
-}
-
-.student-learning-metric {
-  display: flex;
-  min-height: 132px;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 18px;
-  border: 1px solid #e8edf5;
-  border-radius: 12px;
-  background: #f8fafc;
-}
-
-.student-learning-metric > svg {
+  margin-top: 4px;
   color: #2563eb;
-  font-size: 19px;
+  font-size: .84rem;
+  font-weight: 700;
+  text-decoration: none;
 }
 
-.student-learning-metric > span {
-  color: #64748b;
-  font-size: 13px;
-}
+.exam-chapter-review-link:hover { color: #1d4ed8; text-decoration: underline; }
 
-.student-learning-metric > strong {
-  color: #0f172a;
-  font-size: 23px;
-  line-height: 1.2;
-}
-
-.student-learning-metric > small {
-  color: #b91c1c;
-  font-size: 12px;
-}
-
-.student-practice-courses {
-  margin-top: 22px;
+@media (max-width: 640px) {
+  .exam-chapter-insights { grid-template-columns: 1fr; }
 }
 
 .student-daily-study-chart {
   margin-top: 22px;
 }
 
-.student-daily-study-chart h3,
-.student-practice-courses h3 {
+.student-daily-study-chart h3 {
   margin: 0 0 12px;
   color: #1e293b;
   font-size: 15px;
@@ -624,16 +629,6 @@
 
   .performance-panel {
     padding: 16px;
-  }
-
-  .student-learning-analytics .performance-panel-heading {
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .student-learning-actions {
-    width: 100%;
-    justify-content: flex-end;
   }
 
   .performance-table-panel .performance-panel-heading {

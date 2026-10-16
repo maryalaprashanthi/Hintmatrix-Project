@@ -196,7 +196,8 @@
 .college-menu,
 .question-menu,
 .table-menu,
-.admin-menu {
+.admin-menu,
+.learning-analytics-menu {
   width: 100%;
 }
 
@@ -216,7 +217,8 @@
 .sidebar.collapsed .college-menu.open .submenu,
 .sidebar.collapsed .question-menu.open .submenu,
 .sidebar.collapsed .table-menu.open .submenu,
-.sidebar.collapsed .admin-menu.open .submenu {
+.sidebar.collapsed .admin-menu.open .submenu,
+.sidebar.collapsed .learning-analytics-menu.open .submenu {
   display: flex;
   margin-left: 0;
   padding-left: 0;
