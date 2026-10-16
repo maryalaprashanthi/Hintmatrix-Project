@@ -168,7 +168,6 @@ const QuestionList = () => {
   // filter call, the create-question modal and the breadcrumb all need.
   // No topicId (the flat /questions route) = admin "all questions" mode.
   const { topicId } = useParams();
-  const isStudent = currentRole() === ROLES.STUDENT;
   const answerStatuses = useQuestionStatuses(topicId, isStudent);
   const [topic, setTopic] = useState(null);
 
