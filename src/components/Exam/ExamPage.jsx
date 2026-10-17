@@ -16,6 +16,7 @@ import useExamQuestionStore from "./ExamComponents/examQuestionStore";
 import { buildSubmission } from "./ExamComponents/buildSubmission";
 import { loadSampleQuestions } from "./sampleData";
 import { getCurrentUserId } from "../../utils/user";
+import { isFillBlankQuestionType } from "../../utils/questionType";
 import "./ExamShell/examTokens.css";
 import styles from "./ExamPage.module.css";
 
@@ -122,7 +123,9 @@ const ExamPage = () => {
   const resetQuestion = useExamSessionStore((state) => state.resetQuestion);
   const clearSession = useExamSessionStore((state) => state.reset);
   const examDragById = useExamQuestionStore((state) => state.byQuestionId);
-  const resetDragQuestion = useExamQuestionStore((state) => state.resetQuestion);
+  const resetDragQuestion = useExamQuestionStore(
+    (state) => state.resetQuestion,
+  );
   const clearDragState = useExamQuestionStore((state) => state.reset);
 
   useEffect(() => {
@@ -135,7 +138,9 @@ const ExamPage = () => {
         // built-in sample paper. The two share the same shell below.
         if (examId) {
           const response = await ExamService.getExamQuestions(examId);
-          const apiQuestions = Array.isArray(response.data) ? response.data : [];
+          const apiQuestions = Array.isArray(response.data)
+            ? response.data
+            : [];
 
           if (apiQuestions.length === 0) {
             setError("This paper doesn't have any questions yet.");
@@ -187,12 +192,14 @@ const ExamPage = () => {
   // costs a warning, and the third one submits the paper. This is the rule the
   // design assumed - swap it here if the real invigilation rule differs.
   useEffect(() => {
-    const syncFullscreen = () => setFullscreen(Boolean(document.fullscreenElement));
+    const syncFullscreen = () =>
+      setFullscreen(Boolean(document.fullscreenElement));
 
     document.addEventListener("fullscreenchange", syncFullscreen);
     syncFullscreen();
 
-    return () => document.removeEventListener("fullscreenchange", syncFullscreen);
+    return () =>
+      document.removeEventListener("fullscreenchange", syncFullscreen);
   }, []);
 
   useEffect(() => {
@@ -270,7 +277,8 @@ const ExamPage = () => {
 
   const startExam = async () => {
     const now = Date.now();
-    const durationMinutes = examDetails?.durationMinutes ?? DEFAULT_EXAM_MINUTES;
+    const durationMinutes =
+      examDetails?.durationMinutes ?? DEFAULT_EXAM_MINUTES;
     const durationEndAt = now + durationMinutes * 60 * 1000;
     // A scheduled exam's own end date can cut a late starter short; the
     // sample paper and a paper with no end date aren't bounded by it.
@@ -341,7 +349,8 @@ const ExamPage = () => {
     setEndReason(reason);
     setPhase("ended");
     setConfirmingSubmit(false);
-    if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
+    if (document.fullscreenElement)
+      void document.exitFullscreen().catch(() => {});
   };
 
   // However the attempt ended (submit button, time up, third warning): a real
@@ -406,7 +415,10 @@ const ExamPage = () => {
   // --- render --------------------------------------------------------------
   if (phase === "start") {
     return (
-      <main className={`examRoot ${styles.shell} ${styles.startShell}`} ref={shellRef}>
+      <main
+        className={`examRoot ${styles.shell} ${styles.startShell}`}
+        ref={shellRef}
+      >
         <ExamStartScreen
           error={error}
           eyebrow={
@@ -474,10 +486,18 @@ const ExamPage = () => {
             {activeQuestion && (
               <div className={styles.questionHead}>
                 <div className={styles.questionIdentity}>
-                  <span className={styles.questionChip}>Q{activeIndex + 1}</span>
+                  <span className={styles.questionChip}>
+                    Q{activeIndex + 1}
+                  </span>
                   <div>
                     <div className={styles.questionTitle}>
-                      {activeQuestion.question?.questionText}
+                      {/* A fill-in-the-blank sentence shows once, with its
+                          blanks, in ExamFillBlank. */}
+                      {isFillBlankQuestionType(
+                        activeQuestion.question?.questionType,
+                      )
+                        ? "Complete the sentence."
+                        : activeQuestion.question?.questionText}
                     </div>
                     <div className={styles.questionMeta}>
                       {[
@@ -524,7 +544,10 @@ const ExamPage = () => {
 
           <footer className={styles.footer}>
             <button
-              className={[styles.markButton, isMarked && styles.markButtonActive]
+              className={[
+                styles.markButton,
+                isMarked && styles.markButtonActive,
+              ]
                 .filter(Boolean)
                 .join(" ")}
               onClick={toggleMark}
@@ -584,7 +607,8 @@ const ExamPage = () => {
             onRetry={runSubmit}
             onReview={
               result?.examResultId
-                ? () => navigate(`/exams/${examId}/review/${result.examResultId}`)
+                ? () =>
+                    navigate(`/exams/${examId}/review/${result.examResultId}`)
                 : undefined
             }
             result={result}

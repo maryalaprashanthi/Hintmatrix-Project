@@ -5,6 +5,8 @@ import ExamQuestionPage from "./ExamComponents/ExamQuestionPage";
 import { questionTypeOf } from "./ExamComponents/questionTypeOf";
 import ExamMultipleChoice from "./ExamComponents/ExamMultipleChoice";
 import ExamSingleChoice from "./ExamComponents/ExamSingleChoice";
+import ExamMatching from "./ExamComponents/ExamMatching";
+import ExamFillBlank from "./ExamComponents/ExamFillBlank";
 import DragAndDropWithAdj from "../Question/DragAndDropWithAdj";
 import examStore from "./ExamComponents/examQuestionStore";
 import sessionStore from "./ExamComponents/examSessionStore";
@@ -14,7 +16,14 @@ import sessionStore from "./ExamComponents/examSessionStore";
 const ExamQuestionRenderer = ({ questionId, question }) => {
   const questionType = questionTypeOf(question);
   if (questionType === "DRAG_AND_DROP_WITH_ADJ") {
-    return <DragAndDropWithAdj key={questionId} question={question} examStore={examStore} sessionStore={sessionStore} />;
+    return (
+      <DragAndDropWithAdj
+        key={questionId}
+        question={question}
+        examStore={examStore}
+        sessionStore={sessionStore}
+      />
+    );
   }
 
   if (questionType === "JOURNAL") {
@@ -31,6 +40,14 @@ const ExamQuestionRenderer = ({ questionId, question }) => {
 
   if (questionType === "MULTIPLE_CHOICE") {
     return <ExamMultipleChoice id={questionId} question={question} />;
+  }
+
+  if (questionType === "MATCHING") {
+    return <ExamMatching id={questionId} question={question} />;
+  }
+
+  if (questionType === "FILL_IN_THE_BLANK") {
+    return <ExamFillBlank id={questionId} question={question} />;
   }
 
   if (questionType === "SINGLE_CHOICE") {

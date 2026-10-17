@@ -3,7 +3,11 @@
 // tokens ("JOURNAL" / "DROPDOWN" / "DRAG_AND_DROP"). Without normalising,
 // "Journal" !== "JOURNAL" and every question fell through to the drag-and-drop
 // branch. Accepts either a question object or a bare type string.
-import { normalizeQuestionType } from "../../../utils/questionType.js";
+import {
+  isFillBlankQuestionType,
+  isMatchingQuestionType,
+  normalizeQuestionType,
+} from "../../../utils/questionType.js";
 export const questionTypeOf = (input) => {
   const raw =
     typeof input === "string"
@@ -15,10 +19,17 @@ export const questionTypeOf = (input) => {
         input?.type ??
         "");
 
-  const token = String(raw).trim().toUpperCase().replace(/[\s-]+/g, "_");
+  const token = String(raw)
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
 
   if (!token) return null;
-  if (normalizeQuestionType(raw) === "DRAG_AND_DROP_WITH_ADJ") return "DRAG_AND_DROP_WITH_ADJ";
+  if (normalizeQuestionType(raw) === "DRAG_AND_DROP_WITH_ADJ")
+    return "DRAG_AND_DROP_WITH_ADJ";
+  // The table stores "MATCH_THE_FOLLOWING" and "FILL_IN_THE_BLANKS".
+  if (isMatchingQuestionType(raw)) return "MATCHING";
+  if (isFillBlankQuestionType(raw)) return "FILL_IN_THE_BLANK";
   // Match loosely - the label may be "Dropdown", "Drop Down",
   // "Drop-Down Question", "DropDownQuestion", etc.
   if (token.includes("JOURNAL")) return "JOURNAL";

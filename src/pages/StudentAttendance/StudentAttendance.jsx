@@ -51,7 +51,7 @@ function StudentAttendance() {
 
   // Filters
 
-  const [selectedDate, setSelectedDate] = useState(getTodayDate());
+  const [selectedDate, setSelectedDate] = useState(getDefaultFromDate());
   const [selectedToDate, setSelectedToDate] = useState(getTodayDate());
 
   const [selectedSection, setSelectedSection] = useState("");
@@ -59,7 +59,7 @@ function StudentAttendance() {
   const [appliedStudent, setAppliedStudent] = useState("");
 
   const [appliedSection, setAppliedSection] = useState("");
-  const [appliedDate, setAppliedDate] = useState(getTodayDate());
+  const [appliedDate, setAppliedDate] = useState(getDefaultFromDate());
   const [appliedToDate, setAppliedToDate] = useState(getTodayDate());
   const [organizationFilters, setOrganizationFilters] = useState({ collegeId: "", branchId: "", courseId: "" });
   const [appliedOrganization, setAppliedOrganization] = useState({ collegeId: "", branchId: "", courseId: "" });
@@ -102,6 +102,12 @@ function StudentAttendance() {
     const day = String(today.getDate()).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
+  }
+
+  function getDefaultFromDate() {
+    const date = new Date();
+    date.setDate(date.getDate() - 6);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
   }
 
   // ==============================
@@ -480,6 +486,19 @@ function StudentAttendance() {
         )}
 
         {error && <div className="alert alert-danger">{error}</div>}
+        {!loading && !error && attendance.length > 0 && filteredAttendance.length === 0 && (
+          <div className="alert alert-info" role="status">
+            Attendance records are available, but none match the applied dates and filters.
+            <button type="button" className="btn btn-link btn-sm" onClick={() => {
+              setSelectedDate(""); setSelectedToDate(""); setAppliedDate(""); setAppliedToDate("");
+            }}>Show all dates</button>
+          </div>
+        )}
+        {!loading && !error && attendance.length === 0 && (
+          <div className="alert alert-info" role="status">
+            {isStudent ? "No attendance records have been uploaded for your Student ID yet." : "No attendance records are available in your assigned scope yet."}
+          </div>
+        )}
 
         {successMessage && (
           <div className="alert alert-success">{successMessage}</div>
