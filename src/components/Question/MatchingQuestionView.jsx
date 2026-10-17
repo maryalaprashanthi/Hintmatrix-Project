@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+/* eslint-disable react/prop-types */
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import QuestionAnswerService from "../../services/QuestionAnswerService";
 import useQuestionStore from "./questionStore";
 import { getCurrentUserId } from "../../utils/user";
@@ -13,7 +14,15 @@ const MatchingQuestionView = ({
   onCompleted,
   onNext,
   onPrevious,
+  // Exam and mock exam mode: { answers: [{ pairId, answerText }], onChange }.
+  // The exam paper sends pairs with columnA only and the column B texts
+  // shuffled in question.matchOptions (QuestionService.hideTextAnswers), so
+  // the view cannot judge answers. In this mode it keeps the same drag and
+  // drop, keeps the answers in the exam store, and leaves out the practice
+  // API calls, the score, Submit, Reset, the navigation and the review.
+  exam = null,
 }) => {
+  const examMode = Boolean(exam);
   const { setCurrentScore } = useQuestionStore();
 
   // =========================================================
@@ -26,7 +35,7 @@ const MatchingQuestionView = ({
   const [shuffledColumnB, setShuffledColumnB] = useState([]);
 
   // Column A pairId (question) -> Column B pairId (answer)
-  const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [localAnswers, setLocalAnswers] = useState({});
 
   // Question (Column A item) currently being dragged
   const [draggedQuestion, setDraggedQuestion] = useState(null);
@@ -43,17 +52,69 @@ const MatchingQuestionView = ({
   const [restoredReady, setRestoredReady] = useState(false);
   const savedAnswers = useRef({});
 
+  // Exam mode: Column B rows come from matchOptions. Each one gets a
+  // negative id, so it can never be mistaken for a real pairId.
+  const examOptions = useMemo(
+    () =>
+      (question?.matchOptions || []).map((text, index) => ({
+        pairId: -(index + 1),
+        columnB: text,
+      })),
+    [question?.matchOptions],
+  );
+
+  // Exam mode: the store holds { pairId, answerText }. Turn each text back
+  // into its Column B row; a text that appears twice fills its rows in order.
+  const examAnswers = useMemo(() => {
+    if (!examMode) return {};
+    const taken = new Set();
+    const result = {};
+    for (const entry of exam.answers || []) {
+      const option = examOptions.find(
+        (item) => item.columnB === entry.answerText && !taken.has(item.pairId),
+      );
+      if (option) {
+        taken.add(option.pairId);
+        result[entry.pairId] = option.pairId;
+      }
+    }
+    return result;
+  }, [examMode, exam?.answers, examOptions]);
+
+  const selectedAnswers = examMode ? examAnswers : localAnswers;
+
+  const setSelectedAnswers = (updater) => {
+    if (!examMode) {
+      setLocalAnswers(updater);
+      return;
+    }
+    const next = typeof updater === "function" ? updater(examAnswers) : updater;
+    exam.onChange(
+      Object.entries(next)
+        .map(([pairId, optionId]) => ({
+          pairId: Number(pairId),
+          answerText: examOptions.find(
+            (item) => Number(item.pairId) === Number(optionId),
+          )?.columnB,
+        }))
+        .filter((entry) => entry.answerText != null),
+    );
+  };
+
   // Overall earned marks use the same backend endpoint as journal/dropdown.
   const loadTotalScore = useCallback(async () => {
     const tracker = scoreRequest.current;
     const request = ++tracker.version;
     setScoreError("");
     try {
-      const marks = await QuestionAnswerService.getOverallMarks(getCurrentUserId());
+      const marks =
+        await QuestionAnswerService.getOverallMarks(getCurrentUserId());
       if (request === tracker.version) setTotalScore(Number(marks) || 0);
     } catch {
       if (request === tracker.version) {
-        setScoreError("Unable to refresh total score. Reopen the question to retry.");
+        setScoreError(
+          "Unable to refresh total score. Reopen the question to retry.",
+        );
       }
     }
   }, []);
@@ -61,9 +122,11 @@ const MatchingQuestionView = ({
   useEffect(() => {
     const tracker = scoreRequest.current;
     setTotalScore(null);
-    if (question?.questionId) void loadTotalScore();
-    return () => { tracker.version++; };
-  }, [question?.questionId, loadTotalScore]);
+    if (question?.questionId && !examMode) void loadTotalScore();
+    return () => {
+      tracker.version++;
+    };
+  }, [question?.questionId, loadTotalScore, examMode]);
 
   // =========================================================
   // SHUFFLE
@@ -86,10 +149,25 @@ const MatchingQuestionView = ({
   // =========================================================
 
   useEffect(() => {
+    // Exam mode: the answers live in the exam store, so nothing is reset
+    // here. matchOptions is already shuffled by the server; keeping its order
+    // keeps Column B still while the student moves between questions.
+    if (examMode) {
+      setPairs(
+        [...(question?.pairs || [])].sort(
+          (a, b) => Number(a.displayOrder ?? 0) - Number(b.displayOrder ?? 0),
+        ),
+      );
+      setShuffledColumnB(examOptions);
+      setDraggedQuestion(null);
+      setDropTargetAnswerId(null);
+      return;
+    }
+
     if (!question || !Array.isArray(question.pairs)) {
       setPairs([]);
       setShuffledColumnB([]);
-      setSelectedAnswers({});
+      setLocalAnswers({});
       setSubmitted(false);
       setDraggedQuestion(null);
       setDropTargetAnswerId(null);
@@ -108,18 +186,23 @@ const MatchingQuestionView = ({
     setShuffledColumnB(shuffleArray(sortedPairs));
 
     // Reset
-    setSelectedAnswers({});
+    setLocalAnswers({});
     setSubmitted(false);
     setDraggedQuestion(null);
     setDropTargetAnswerId(null);
     setCurrentScore(0);
-  }, [question?.questionId, setCurrentScore]);
+  }, [question?.questionId, setCurrentScore, examMode, examOptions]);
 
   // =========================================================
   // RESTORE SAVED ANSWERS
   // =========================================================
 
   useEffect(() => {
+    // Exam mode has nothing to restore from the practice answer events.
+    if (examMode) {
+      setRestoredReady(true);
+      return undefined;
+    }
     if (!question?.questionId || !Array.isArray(question.pairs)) return;
     let active = true;
     setSaving(true);
@@ -134,7 +217,7 @@ const MatchingQuestionView = ({
         if (!active) return;
         const restored = restoreMatchingAnswers(events, question.pairs);
         savedAnswers.current = restored.saved;
-        setSelectedAnswers(restored.answers);
+        setLocalAnswers(restored.answers);
         setCurrentScore(restored.score);
         setSubmitted(restored.submitted);
         setRestoredReady(true);
@@ -153,7 +236,7 @@ const MatchingQuestionView = ({
     return () => {
       active = false;
     };
-  }, [question?.questionId, setCurrentScore]);
+  }, [question?.questionId, setCurrentScore, examMode]);
 
   // =========================================================
   // HELPERS
@@ -403,7 +486,9 @@ const MatchingQuestionView = ({
     return (
       <div className="matching-empty">
         <div className="matching-empty-card">
-          <h3>Q{displayQuestionNumber}. {question.questionText}</h3>
+          <h3>
+            Q{displayQuestionNumber}. {question.questionText}
+          </h3>
           <p>No matching pairs found.</p>
         </div>
       </div>
@@ -421,27 +506,38 @@ const MatchingQuestionView = ({
           {error}
         </div>
       )}
-      {scoreError && <div className="alert alert-warning" role="alert">{scoreError}</div>}
-
-      {/* HEADER */}
-      <div className="matching-practice-header">
-        <div className="matching-header-left">
-          <div className="matching-eyebrow">STUDENT PRACTICE</div>
-
-          <h1 className="matching-practice-title">Match the Following</h1>
-
-          <p className="matching-practice-subtitle">
-            Match each question in Column A with the correct answer in Column B.
-          </p>
+      {scoreError && (
+        <div className="alert alert-warning" role="alert">
+          {scoreError}
         </div>
+      )}
 
-        <div className="matching-stat-cards">
-          <div className="matching-stat-card matching-score-card" role="status" aria-live="polite">
-            <span>TOTAL SCORE</span>
-            <strong>{totalScore ?? "—"}</strong>
+      {/* HEADER (practice only: the exam shell has its own) */}
+      {!examMode && (
+        <div className="matching-practice-header">
+          <div className="matching-header-left">
+            <div className="matching-eyebrow">STUDENT PRACTICE</div>
+
+            <h1 className="matching-practice-title">Match the Following</h1>
+
+            <p className="matching-practice-subtitle">
+              Match each question in Column A with the correct answer in Column
+              B.
+            </p>
+          </div>
+
+          <div className="matching-stat-cards">
+            <div
+              className="matching-stat-card matching-score-card"
+              role="status"
+              aria-live="polite"
+            >
+              <span>TOTAL SCORE</span>
+              <strong>{totalScore ?? "—"}</strong>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* MAIN LAYOUT */}
       <div className="matching-practice-layout">
@@ -455,7 +551,7 @@ const MatchingQuestionView = ({
             <div className="matching-heading-actions">
               <span className="matching-mark-badge">{pairs.length} Marks</span>
 
-              {!submitted ? (
+              {examMode ? null : !submitted ? (
                 <>
                   <button
                     type="button"
@@ -492,8 +588,12 @@ const MatchingQuestionView = ({
             </div>
           </div>
 
-          {/* QUESTION TEXT */}
-          <div className="matching-question-title">Q{displayQuestionNumber}. {question.questionText}</div>
+          {/* QUESTION TEXT (the exam shell shows it above) */}
+          {!examMode && (
+            <div className="matching-question-title">
+              Q{displayQuestionNumber}. {question.questionText}
+            </div>
+          )}
 
           {/* INSTRUCTION */}
           {/* <div className="matching-instruction">
@@ -640,32 +740,34 @@ const MatchingQuestionView = ({
             </div>
           </div>
 
-          {/* BOTTOM QUESTION NAVIGATION */}
-          <div className="matching-nav-row">
-            <div className="matching-nav-left">
-              {questionNumber > 1 && (
-                <button
-                  type="button"
-                  className="matching-prev-btn"
-                  onClick={onPrevious}
-                >
-                  ← Previous
-                </button>
-              )}
-            </div>
+          {/* BOTTOM QUESTION NAVIGATION (the exam shell has its own) */}
+          {!examMode && (
+            <div className="matching-nav-row">
+              <div className="matching-nav-left">
+                {questionNumber > 1 && (
+                  <button
+                    type="button"
+                    className="matching-prev-btn"
+                    onClick={onPrevious}
+                  >
+                    ← Previous
+                  </button>
+                )}
+              </div>
 
-            <div className="matching-nav-right">
-              {questionNumber < totalQuestions && (
-                <button
-                  type="button"
-                  className="matching-next-btn matching-nav-next-btn"
-                  onClick={onNext}
-                >
-                  Next →
-                </button>
-              )}
+              <div className="matching-nav-right">
+                {questionNumber < totalQuestions && (
+                  <button
+                    type="button"
+                    className="matching-next-btn matching-nav-next-btn"
+                    onClick={onNext}
+                  >
+                    Next →
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* ANSWER REVIEW */}
           {submitted && (

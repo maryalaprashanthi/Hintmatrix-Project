@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import QuestionAnswerService from "../../services/QuestionAnswerService";
@@ -102,7 +103,13 @@ const getBackendBlanks = (questionRecord) => {
 
     // displayOrder orders choices; blankNumber identifies the sentence blank.
     // Keep distractors in the answer bank, never in accepted answers.
-    if (backendAnswers.some((answer) => Number.isInteger(Number(answer.blankNumber)) && Number(answer.blankNumber) > 0)) {
+    if (
+      backendAnswers.some(
+        (answer) =>
+          Number.isInteger(Number(answer.blankNumber)) &&
+          Number(answer.blankNumber) > 0,
+      )
+    ) {
       const grouped = new Map();
       for (const answer of backendAnswers) {
         const number = Number(answer.blankNumber);
@@ -113,13 +120,30 @@ const getBackendBlanks = (questionRecord) => {
       const count = Math.max(detectedBlankCount, ...grouped.keys());
       return Array.from({ length: count }, (_, index) => {
         const options = grouped.get(index + 1) ?? [];
-        const answerOptions = [...new Set(options.flatMap((option) => normalizeAnswerValues(
-          option.acceptedAnswers ?? option.acceptedAnswerList ?? option.answerText,
-        )))];
-        const acceptedAnswers = [...new Set(options
-          .filter((option) => !hasCorrectFlag || option.isCorrect === true)
-          .flatMap((option) => normalizeAnswerValues(
-            option.acceptedAnswers ?? option.acceptedAnswerList ?? option.answerText)))];
+        const answerOptions = [
+          ...new Set(
+            options.flatMap((option) =>
+              normalizeAnswerValues(
+                option.acceptedAnswers ??
+                  option.acceptedAnswerList ??
+                  option.answerText,
+              ),
+            ),
+          ),
+        ];
+        const acceptedAnswers = [
+          ...new Set(
+            options
+              .filter((option) => !hasCorrectFlag || option.isCorrect === true)
+              .flatMap((option) =>
+                normalizeAnswerValues(
+                  option.acceptedAnswers ??
+                    option.acceptedAnswerList ??
+                    option.answerText,
+                ),
+              ),
+          ),
+        ];
         return {
           answerId: options[0]?.answerId ?? index + 1,
           blankNumber: index + 1,
@@ -190,7 +214,15 @@ const FillInBlankQuestionView = ({
   onQuestionSelect,
   onPrevious,
   onNext,
+  // Exam and mock exam mode: { answers: [{ blankNumber, answerText }], onChange }.
+  // The exam paper sends no blanks, only blankCount and a shuffled wordBank
+  // (QuestionService.hideTextAnswers), so the view cannot judge answers. In
+  // this mode it keeps the same drag and drop, keeps the answers in the exam
+  // store, and leaves out the practice API calls, the score, Submit, Reset,
+  // the navigation and the review.
+  exam = null,
 }) => {
+  const examMode = Boolean(exam);
   const questionRecord = question?.question ?? question?.data ?? question ?? {};
   const blanks = getBackendBlanks(questionRecord);
 
@@ -229,11 +261,45 @@ const FillInBlankQuestionView = ({
   ).length;
 
   const blankCount =
-    detectedBlankCount > 0 ? detectedBlankCount : Math.max(blanks.length, 1);
+    detectedBlankCount > 0
+      ? detectedBlankCount
+      : examMode
+        ? Math.max(Number(questionRecord.blankCount) || 0, 1)
+        : Math.max(blanks.length, 1);
 
-  const [answers, setAnswers] = useState(() =>
+  const [localAnswers, setLocalAnswers] = useState(() =>
     Array.from({ length: blankCount }, () => ""),
   );
+
+  // Exam mode: the store holds { blankNumber, answerText }; blank n is index n-1.
+  const examAnswers = useMemo(() => {
+    if (!examMode) return [];
+    const list = Array.from({ length: blankCount }, () => "");
+    for (const entry of exam.answers || []) {
+      const index = Number(entry.blankNumber) - 1;
+      if (index >= 0 && index < blankCount)
+        list[index] = entry.answerText ?? "";
+    }
+    return list;
+  }, [examMode, exam?.answers, blankCount]);
+
+  const answers = examMode ? examAnswers : localAnswers;
+
+  const setAnswers = (updater) => {
+    if (!examMode) {
+      setLocalAnswers(updater);
+      return;
+    }
+    const next = typeof updater === "function" ? updater(examAnswers) : updater;
+    exam.onChange(
+      next
+        .map((answerText, index) => ({
+          blankNumber: index + 1,
+          answerText: String(answerText ?? "").trim(),
+        }))
+        .filter((entry) => entry.answerText),
+    );
+  };
 
   const [submitted, setSubmitted] = useState(false);
   const [totalScore, setTotalScore] = useState(null);
@@ -253,11 +319,14 @@ const FillInBlankQuestionView = ({
     const request = ++tracker.version;
     setScoreError("");
     try {
-      const marks = await QuestionAnswerService.getOverallMarks(getCurrentUserId());
+      const marks =
+        await QuestionAnswerService.getOverallMarks(getCurrentUserId());
       if (request === tracker.version) setTotalScore(Number(marks) || 0);
     } catch {
       if (request === tracker.version) {
-        setScoreError("Unable to refresh total score. Reopen the question to retry.");
+        setScoreError(
+          "Unable to refresh total score. Reopen the question to retry.",
+        );
       }
     }
   }, []);
@@ -265,17 +334,26 @@ const FillInBlankQuestionView = ({
   useEffect(() => {
     const tracker = scoreRequest.current;
     setTotalScore(null);
-    if (questionRecord.questionId) void loadTotalScore();
-    return () => { tracker.version++; };
-  }, [questionRecord.questionId, loadTotalScore]);
+    if (questionRecord.questionId && !examMode) void loadTotalScore();
+    return () => {
+      tracker.version++;
+    };
+  }, [questionRecord.questionId, loadTotalScore, examMode]);
 
   useEffect(() => {
-    setAnswers(Array.from({ length: blankCount }, () => ""));
+    // Exam mode: the answers live in the exam store, so nothing is reset.
+    if (!examMode)
+      setLocalAnswers(Array.from({ length: blankCount }, () => ""));
     setSubmitted(false);
     setDraggedAnswer("");
-  }, [questionRecord.questionId, blankCount]);
+  }, [questionRecord.questionId, blankCount, examMode]);
 
   useEffect(() => {
+    // Exam mode has nothing to restore from the practice answer events.
+    if (examMode) {
+      setRestoredReady(true);
+      return undefined;
+    }
     if (!questionRecord.questionId) return undefined;
 
     let active = true;
@@ -295,7 +373,7 @@ const FillInBlankQuestionView = ({
         const restored = restoreBlankAnswers(events, blankCount);
 
         savedAnswers.current = restored.saved;
-        setAnswers(restored.answers);
+        setLocalAnswers(restored.answers);
         setSubmitted(restored.submitted);
         setRestoredReady(true);
 
@@ -317,9 +395,12 @@ const FillInBlankQuestionView = ({
     return () => {
       active = false;
     };
-  }, [questionRecord.questionId, blankCount]);
+  }, [questionRecord.questionId, blankCount, examMode]);
 
   const answerOptions = useMemo(() => {
+    // Exam mode: the server sends the word bank already shuffled.
+    if (examMode) return questionRecord.wordBank || [];
+
     const options = blanks.flatMap((blank) => [
       ...acceptedAnswersFromBlank(blank),
       ...(blank.answerOptions ?? []),
@@ -330,7 +411,7 @@ const FillInBlankQuestionView = ({
         options.map((answer) => String(answer).trim()).filter(Boolean),
       ),
     ];
-  }, [blanks]);
+  }, [blanks, examMode, questionRecord.wordBank]);
 
   const answerOptionsKey = JSON.stringify(answerOptions);
 
@@ -340,8 +421,11 @@ const FillInBlankQuestionView = ({
     if (shuffledOptionsKey.current === key) return;
 
     shuffledOptionsKey.current = key;
-    setDisplayOptions(shuffleArray(JSON.parse(answerOptionsKey)));
-  }, [answerOptionsKey, questionRecord.questionId]);
+    // Exam mode keeps the server's order, so the bank stays still while the
+    // student moves between questions.
+    const options = JSON.parse(answerOptionsKey);
+    setDisplayOptions(examMode ? options : shuffleArray(options));
+  }, [answerOptionsKey, questionRecord.questionId, examMode]);
 
   const updateAnswer = (index, value) => {
     setAnswers((current) => {
@@ -492,8 +576,12 @@ const FillInBlankQuestionView = ({
 
   const isAnswerCorrect = (index) => {
     const saved = savedAnswers.current[index];
-    if (saved && typeof saved.isCorrect === "boolean" &&
-        String(saved.userAnswer ?? "").trim() === String(answers[index] ?? "").trim()) {
+    if (
+      saved &&
+      typeof saved.isCorrect === "boolean" &&
+      String(saved.userAnswer ?? "").trim() ===
+        String(answers[index] ?? "").trim()
+    ) {
       return saved.isCorrect;
     }
     const acceptedAnswers = getAcceptedAnswers(index);
@@ -559,23 +647,33 @@ const FillInBlankQuestionView = ({
         </div>
       )}
 
-      {scoreError && <div className="alert alert-warning" role="alert">{scoreError}</div>}
-      <header className="matching-practice-header">
-        <div>
-          <div className="matching-eyebrow">STUDENT PRACTICE</div>
-          <h1 className="matching-practice-title">Fill in the Blanks</h1>
-          <p className="matching-practice-subtitle">
-            Complete each blank with the correct answer.
-          </p>
+      {scoreError && (
+        <div className="alert alert-warning" role="alert">
+          {scoreError}
         </div>
-
-        <div className="matching-stat-cards">
-          <div className="matching-stat-card matching-score-card" role="status" aria-live="polite">
-            <span>TOTAL SCORE</span>
-            <strong>{totalScore ?? "—"}</strong>
+      )}
+      {!examMode && (
+        <header className="matching-practice-header">
+          <div>
+            <div className="matching-eyebrow">STUDENT PRACTICE</div>
+            <h1 className="matching-practice-title">Fill in the Blanks</h1>
+            <p className="matching-practice-subtitle">
+              Complete each blank with the correct answer.
+            </p>
           </div>
-        </div>
-      </header>
+
+          <div className="matching-stat-cards">
+            <div
+              className="matching-stat-card matching-score-card"
+              role="status"
+              aria-live="polite"
+            >
+              <span>TOTAL SCORE</span>
+              <strong>{totalScore ?? "—"}</strong>
+            </div>
+          </div>
+        </header>
+      )}
 
       <div className="matching-practice-layout">
         <section className="matching-question-content fill-blank-question-card">
@@ -587,16 +685,18 @@ const FillInBlankQuestionView = ({
                 {questionRecord.marks ?? blankCount} Marks
               </span>
 
-              <button
-                type="button"
-                className="matching-reset-btn"
-                onClick={reset}
-                disabled={saving || !restoredReady}
-              >
-                ↻ {submitted ? "Try Again" : "Reset"}
-              </button>
+              {!examMode && (
+                <button
+                  type="button"
+                  className="matching-reset-btn"
+                  onClick={reset}
+                  disabled={saving || !restoredReady}
+                >
+                  ↻ {submitted ? "Try Again" : "Reset"}
+                </button>
+              )}
 
-              {!submitted && (
+              {!submitted && !examMode && (
                 <button
                   type="button"
                   className="matching-next-btn"
@@ -609,7 +709,10 @@ const FillInBlankQuestionView = ({
             </div>
           </div>
 
-          <div className="fill-blank-question">Q{displayQuestionNumber}. {questionContent}</div>
+          <div className="fill-blank-question">
+            {examMode ? null : `Q${displayQuestionNumber}. `}
+            {questionContent}
+          </div>
 
           <div className="fill-blank-answer-bank">
             <strong>Drag the correct answers into the blanks</strong>
@@ -675,33 +778,35 @@ const FillInBlankQuestionView = ({
             </div>
           )}
 
-          <div className="matching-nav-row matching-nav-bottom">
-            <div className="matching-nav-left">
-              {questionNumber > 1 && (
-                <button
-                  type="button"
-                  className="matching-prev-btn"
-                  onClick={handlePreviousQuestion}
-                  disabled={saving}
-                >
-                  ← Previous
-                </button>
-              )}
-            </div>
+          {!examMode && (
+            <div className="matching-nav-row matching-nav-bottom">
+              <div className="matching-nav-left">
+                {questionNumber > 1 && (
+                  <button
+                    type="button"
+                    className="matching-prev-btn"
+                    onClick={handlePreviousQuestion}
+                    disabled={saving}
+                  >
+                    ← Previous
+                  </button>
+                )}
+              </div>
 
-            <div className="matching-nav-right">
-              {questionNumber < totalQuestions && (
-                <button
-                  type="button"
-                  className="matching-next-btn"
-                  onClick={handleNextQuestion}
-                  disabled={saving}
-                >
-                  Next →
-                </button>
-              )}
+              <div className="matching-nav-right">
+                {questionNumber < totalQuestions && (
+                  <button
+                    type="button"
+                    className="matching-next-btn"
+                    onClick={handleNextQuestion}
+                    disabled={saving}
+                  >
+                    Next →
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </section>
       </div>
     </main>

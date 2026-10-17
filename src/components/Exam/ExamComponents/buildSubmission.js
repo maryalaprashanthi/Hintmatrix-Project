@@ -10,6 +10,8 @@
 //         questionType,           // "JOURNAL" | "DROPDOWN" | "DRAG_AND_DROP"
 //         answers: [
 //           { answeredData: { tableName, headerName, attributeId, arithmetic, amount } }
+//           MATCHING:          { answeredData: { pairId, answerText } }
+//           FILL_IN_THE_BLANK: { answeredData: { blankNumber, answerText } }
 //         ]
 //       }
 //     ]
@@ -20,6 +22,7 @@
 // examQuestionStore, also keyed by questionId.
 
 import { questionTypeOf } from "./questionTypeOf";
+import { BLANK_KEY, MATCH_KEY, wordAnswerLines } from "./examWordAnswers";
 
 const HEADER_BY_SIDE = {
   Debit: "Debit Particulars",
@@ -29,7 +32,8 @@ const HEADER_BY_SIDE = {
 // A journal/dropdown line stores its money in whichever of debit/credit applies.
 const lineAmount = (row) => Number(row.debit || row.credit || 0);
 
-const isNarration = (row) => String(row?.particulars || "").startsWith("(Being");
+const isNarration = (row) =>
+  String(row?.particulars || "").startsWith("(Being");
 
 // Fallback when we can't resolve the ledger account by id: recover it from the
 // text the row shows ("Cash Ac..........Dr" / "To Cash Ac" / "Cash Ac ... Dr").
@@ -150,23 +154,27 @@ const mcqAnswers = (entry, multiple) => {
 // droppableData is keyed "<tableName>-<headerName>"; each placed row already
 // carries the attribute id, the amount and the add/less operation.
 const dragAnswers = (dragSlice) => {
-  return Object.entries(dragSlice?.droppableData || {}).flatMap(([key, rows]) => {
-    const splitAt = key.lastIndexOf("-");
-    const tableName = splitAt === -1 ? key : key.slice(0, splitAt);
-    const headerName = splitAt === -1 ? "" : key.slice(splitAt + 1);
+  return Object.entries(dragSlice?.droppableData || {}).flatMap(
+    ([key, rows]) => {
+      const splitAt = key.lastIndexOf("-");
+      const tableName = splitAt === -1 ? key : key.slice(0, splitAt);
+      const headerName = splitAt === -1 ? "" : key.slice(splitAt + 1);
 
-    return (rows || []).filter((row) => !row.derived && !row.isDerived).map((row) => ({
-      answeredData: {
-        tableName,
-        headerName,
-        questionAttributeId: row.questionAttributeId ?? null,
-        attributeId: row.attributeId ?? row.id,
-        arithmetic: row.operation,
-        amount: Number(row.amount || 0),
-        info: describeInfo(row.operation, headerName, tableName),
-      },
-    }));
-  });
+      return (rows || [])
+        .filter((row) => !row.derived && !row.isDerived)
+        .map((row) => ({
+          answeredData: {
+            tableName,
+            headerName,
+            questionAttributeId: row.questionAttributeId ?? null,
+            attributeId: row.attributeId ?? row.id,
+            arithmetic: row.operation,
+            amount: Number(row.amount || 0),
+            info: describeInfo(row.operation, headerName, tableName),
+          },
+        }));
+    },
+  );
 };
 
 export const buildSubmission = ({
@@ -198,6 +206,10 @@ export const buildSubmission = ({
       answered = mcqAnswers(entry, true);
     } else if (questionType === "SINGLE_CHOICE") {
       answered = mcqAnswers(entry, false);
+    } else if (questionType === "MATCHING") {
+      answered = wordAnswerLines(entry?.answeredData?.matches, MATCH_KEY);
+    } else if (questionType === "FILL_IN_THE_BLANK") {
+      answered = wordAnswerLines(entry?.answeredData?.filled, BLANK_KEY);
     } else {
       answered = dragAnswers(examDragById?.[id]);
     }

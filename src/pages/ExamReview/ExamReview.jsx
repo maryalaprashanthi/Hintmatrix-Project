@@ -18,6 +18,7 @@ import AttributeMistakePanel from "./AttributeMistakePanel";
 import ReadOnlyDragDropAnswer from "./ReadOnlyDragDropAnswer";
 import ReadOnlyLedgerAnswer from "./ReadOnlyLedgerAnswer";
 import ReadOnlyMcqAnswer from "./ReadOnlyMcqAnswer";
+import ReadOnlyWordAnswer from "./ReadOnlyWordAnswer";
 import "./ExamReview.css";
 
 const formatDuration = (seconds) => {
@@ -94,6 +95,8 @@ function ExamReview() {
             correct: Boolean(entry?.correct),
             answers: entry?.answers ?? [],
             correctOptionIds: entry?.correctOptionIds ?? [],
+            correctMatches: entry?.correctMatches ?? null,
+            correctBlanks: entry?.correctBlanks ?? null,
           };
         });
 
@@ -138,7 +141,12 @@ function ExamReview() {
       return;
     }
 
-    setAttributeDetail({ attributeId, status: "loading", hints: [], mistakes: [] });
+    setAttributeDetail({
+      attributeId,
+      status: "loading",
+      hints: [],
+      mistakes: [],
+    });
 
     service
       .getAttributeReviewDetail(
@@ -200,7 +208,10 @@ function ExamReview() {
           </div>
           <div>
             <h1>Exam Review</h1>
-            <p>Review your answers, identify mistakes, and improve your understanding.</p>
+            <p>
+              Review your answers, identify mistakes, and improve your
+              understanding.
+            </p>
           </div>
         </div>
 
@@ -317,7 +328,9 @@ function ExamReview() {
               </span>
               <span
                 className={`exam-review__badge ${
-                  active.correct ? "exam-review__badge--correct" : "exam-review__badge--incorrect"
+                  active.correct
+                    ? "exam-review__badge--correct"
+                    : "exam-review__badge--incorrect"
                 }`}
               >
                 {active.correct ? (
@@ -352,6 +365,15 @@ function ExamReview() {
                 question={active.question}
                 answers={active.answers}
                 correctOptionIds={active.correctOptionIds}
+              />
+            ) : active.questionType === "MATCHING" ||
+              active.questionType === "FILL_IN_THE_BLANK" ? (
+              <ReadOnlyWordAnswer
+                question={active.question}
+                answers={active.answers}
+                questionType={active.questionType}
+                correctMatches={active.correctMatches}
+                correctBlanks={active.correctBlanks}
               />
             ) : (
               <ReadOnlyDragDropAnswer
