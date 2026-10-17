@@ -1,4 +1,4 @@
-import React, {
+import {
   useCallback,
   useEffect,
   useMemo,
@@ -28,9 +28,11 @@ import "./StudentAttendance.css";
 
 import AttendanceService from "../../services/AttendanceService";
 import { currentRole, ROLES } from "../../utils/roles";
+import { analyzeAttendance } from "../../utils/attendanceSummaryRows";
 
 function StudentAttendance() {
-  const isStudent = currentRole() === ROLES.STUDENT;
+  const role = currentRole();
+  const isStudent = role === ROLES.STUDENT;
   const fileInputRef = useRef(null);
 
   // ==============================
@@ -50,10 +52,33 @@ function StudentAttendance() {
   // Filters
 
   const [selectedDate, setSelectedDate] = useState(getTodayDate());
+  const [selectedToDate, setSelectedToDate] = useState(getTodayDate());
 
   const [selectedSection, setSelectedSection] = useState("");
+  const [selectedStudent, setSelectedStudent] = useState("");
+  const [appliedStudent, setAppliedStudent] = useState("");
 
   const [appliedSection, setAppliedSection] = useState("");
+  const [appliedDate, setAppliedDate] = useState(getTodayDate());
+  const [appliedToDate, setAppliedToDate] = useState(getTodayDate());
+  const [organizationFilters, setOrganizationFilters] = useState({ collegeId: "", branchId: "", courseId: "" });
+  const [appliedOrganization, setAppliedOrganization] = useState({ collegeId: "", branchId: "", courseId: "" });
+  const matchesOrganization = (item, filters) => Object.entries(filters)
+    .every(([key, value]) => !value || String(item[key] ?? "") === value);
+  const organizationOptions = (field, label, parentFilters) => [...new Map(attendance
+    .filter((item) => matchesOrganization(item, parentFilters) && item[field] != null)
+    .map((item) => [String(item[field]), { value: String(item[field]), label: item[label] || String(item[field]) }]))
+    .values()].sort((first, second) => first.label.localeCompare(second.label));
+  const collegeOptions = organizationOptions("collegeId", "collegeName", {});
+  const branchOptions = organizationOptions("branchId", "branchName", { collegeId: organizationFilters.collegeId });
+  const courseOptions = organizationOptions("courseId", "courseName", {
+    collegeId: organizationFilters.collegeId, branchId: organizationFilters.branchId,
+  });
+  const studentOptions = useMemo(() => [...new Map(attendance
+    .filter((item) => item.studentId != null && matchesOrganization(item, organizationFilters) &&
+      (!selectedSection || item.section === selectedSection))
+    .map((item) => [String(item.studentId).trim(), { value: String(item.studentId).trim(), name: item.studentName || "Student" }]))
+    .values()].sort((first, second) => first.name.localeCompare(second.name)), [attendance, organizationFilters, selectedSection]);
 
   const normalizeAttendanceResponse = (response) => {
     if (Array.isArray(response)) return response;
@@ -99,7 +124,7 @@ function StudentAttendance() {
     } catch (err) {
       console.error("Failed to load attendance:", err);
 
-      setError(err.response?.data || "Failed to load attendance");
+      setError(typeof err.response?.data === "string" ? err.response.data : err.response?.data?.message || "Failed to load attendance");
     } finally {
       setLoading(false);
     }
@@ -140,8 +165,9 @@ function StudentAttendance() {
   // ==============================
 
   const sections = useMemo(() => {
-    return [...new Set(attendance.map((item) => item.section).filter(Boolean))];
-  }, [attendance]);
+    return [...new Set(attendance.filter((item) => matchesOrganization(item, organizationFilters))
+      .map((item) => item.section).filter(Boolean))].sort();
+  }, [attendance, organizationFilters]);
 
   // ==============================
   // FILTER ATTENDANCE
@@ -149,153 +175,63 @@ function StudentAttendance() {
 
   const filteredAttendance = useMemo(() => {
     return attendance.filter((item) => {
-      const dateMatches = !selectedDate || item.attendanceDate === selectedDate;
+      const dateMatches = (!appliedDate || item.attendanceDate >= appliedDate) &&
+        (!appliedToDate || item.attendanceDate <= appliedToDate);
 
       const sectionMatches = !appliedSection || item.section === appliedSection;
 
-      return dateMatches && sectionMatches;
+      const studentMatches = !appliedStudent || String(item.studentId ?? "").trim() === appliedStudent;
+      return dateMatches && sectionMatches && studentMatches && matchesOrganization(item, appliedOrganization);
     });
-  }, [attendance, selectedDate, appliedSection]);
+  }, [attendance, appliedDate, appliedToDate, appliedSection, appliedOrganization, appliedStudent]);
 
   // ==============================
   // KPI VALUES
   // ==============================
 
-  const totalStudents = filteredAttendance.length;
-
-  const presentCount = filteredAttendance.filter(
-    (item) => getStatus(item.status) === "Present",
-  ).length;
-
-  const lateCount = filteredAttendance.filter(
-    (item) => getStatus(item.status) === "Late",
-  ).length;
-
-  const absentCount = filteredAttendance.filter(
-    (item) => getStatus(item.status) === "Absent",
-  ).length;
-
-  // Present + Late = Attended
-  const attendedCount = presentCount + lateCount;
-
-  const attendancePercentage =
-    totalStudents > 0 ? Math.round((attendedCount / totalStudents) * 100) : 0;
-
-  const attendanceChart = useMemo(() => {
-    const byDate = new Map();
-
-    attendance.forEach((item) => {
-      const date = item.attendanceDate || "Unknown";
-      const current = byDate.get(date) || {
-        present: 0,
-        late: 0,
-        absent: 0,
-      };
-      const status = getStatus(item.status);
-
-      if (status === "Present") current.present += 1;
-      if (status === "Late") current.late += 1;
-      if (status === "Absent") current.absent += 1;
-
-      byDate.set(date, current);
-    });
-
-    const dates = [...byDate.keys()].sort();
-
-    return {
-      dates,
-      present: dates.map((date) => byDate.get(date).present),
-      late: dates.map((date) => byDate.get(date).late),
-      absent: dates.map((date) => byDate.get(date).absent),
-    };
-  }, [attendance]);
-
-  // ==============================
-  // TODAY'S ATTENDANCE
-  // ==============================
-
-  const studentRows = useMemo(() => {
-    return filteredAttendance.map((item) => ({
-      attendanceId: item.attendanceId,
-
-      rollNo: item.rollNo,
-
-      name: item.studentName,
-
-      section: item.section || "-",
-
-      status: getStatus(item.status),
-
-      statusDescription: item.statusDescription || "-",
-
-      inTime: item.inTime || "-",
-
-      outTime: item.outTime || "-",
-    }));
-  }, [filteredAttendance]);
-
-  // ==============================
-  // ATTENDANCE BY SECTION
-  // ==============================
-
-  const sectionRows = useMemo(() => {
-    const grouped = {};
-
-    filteredAttendance.forEach((item) => {
-      const section = item.section || "Unknown";
-
-      if (!grouped[section]) {
-        grouped[section] = {
-          section,
-          students: 0,
-          present: 0,
-          late: 0,
-          absent: 0,
-        };
-      }
-
-      grouped[section].students++;
-
-      const status = getStatus(item.status);
-
-      if (status === "Present") {
-        grouped[section].present++;
-      }
-
-      if (status === "Late") {
-        grouped[section].late++;
-      }
-
-      if (status === "Absent") {
-        grouped[section].absent++;
-      }
-    });
-
-    return Object.values(grouped).map((item) => {
-      const attended = item.present + item.late;
-
-      const percentage =
-        item.students > 0
-          ? ((attended / item.students) * 100).toFixed(1)
-          : "0.0";
-
-      return {
-        ...item,
-
-        attendance: `${percentage}%`,
-      };
-    });
-  }, [filteredAttendance]);
-
-  // ==============================
-  // STUDENT GRID COLUMNS
-  // ==============================
+  const analytics = useMemo(() => analyzeAttendance(filteredAttendance), [filteredAttendance]);
+  const totalStudents = isStudent ? analytics.dailyRows.length : analytics.totalStudents;
+  const presentCount = analytics.present;
+  const lateCount = analytics.late;
+  const absentCount = analytics.absent;
+  const attendancePercentage = analytics.rate == null ? "—" : `${analytics.rate.toFixed(1)}%`;
+  const attendanceChart = {
+    dates: analytics.trend.map((item) => item.date),
+    present: analytics.trend.map((item) => item.present),
+    late: analytics.trend.map((item) => item.late),
+    absent: analytics.trend.map((item) => item.absent),
+  };
+  const studentRows = analytics.dailyRows.map((item) => ({
+    ...item, name: item.studentName, section: item.section || "-",
+    status: getStatus(item.status), statusDescription: item.statusDescription || "-",
+    inTime: item.inTime || "-", outTime: item.outTime || "-",
+  }));
+  const lowAttendanceColumns = [
+    { headerName: "Student ID", field: "studentId", minWidth: 120 },
+    { headerName: "Student", field: "name", minWidth: 170, flex: 1 },
+    { headerName: "College", field: "college", minWidth: 170 },
+    { headerName: "Branch", field: "branch", minWidth: 130 },
+    { headerName: "Course", field: "course", minWidth: 140 },
+    { headerName: "Section", field: "section", minWidth: 100 },
+    { headerName: "Recorded days", field: "days", minWidth: 135 },
+    { headerName: "Present", field: "present", minWidth: 100 },
+    { headerName: "Late", field: "late", minWidth: 85 },
+    { headerName: "Absent", field: "absent", minWidth: 100 },
+    { headerName: "Attendance", field: "percentage", minWidth: 125,
+      valueFormatter: ({ value }) => `${Number(value).toFixed(1)}%`,
+      cellStyle: { color: "#dc3545", fontWeight: 600 } },
+  ];
 
   const studentColumns = useMemo(
     () => [
+      { headerName: "Date", field: "attendanceDate", minWidth: 120 },
+      { headerName: "College", field: "collegeName", minWidth: 170 },
+      { headerName: "Branch", field: "branchName", minWidth: 130 },
+      { headerName: "Course", field: "courseName", minWidth: 140 },
       {
-        headerName: "Roll No",
-        field: "rollNo",
+        headerName: "Student ID",
+        field: "studentId",
+        minWidth: 140,
         flex: 1,
         sortable: true,
         filter: true,
@@ -304,6 +240,7 @@ function StudentAttendance() {
       {
         headerName: "Student Name",
         field: "name",
+        minWidth: 190,
         flex: 2,
         sortable: true,
         filter: true,
@@ -312,6 +249,7 @@ function StudentAttendance() {
       {
         headerName: "Section",
         field: "section",
+        minWidth: 120,
         flex: 1,
         sortable: true,
         filter: true,
@@ -320,6 +258,7 @@ function StudentAttendance() {
       {
         headerName: "In Time",
         field: "inTime",
+        minWidth: 125,
         flex: 1,
         sortable: true,
         filter: true,
@@ -328,6 +267,7 @@ function StudentAttendance() {
       {
         headerName: "Out Time",
         field: "outTime",
+        minWidth: 130,
         flex: 1,
         sortable: true,
         filter: true,
@@ -336,6 +276,7 @@ function StudentAttendance() {
       {
         headerName: "Status",
         field: "status",
+        minWidth: 120,
         flex: 1,
         sortable: true,
         filter: true,
@@ -387,57 +328,21 @@ function StudentAttendance() {
   // SECTION GRID COLUMNS
   // ==============================
 
-  const sectionColumns = useMemo(
-    () => [
-      {
-        headerName: "Section",
-        field: "section",
-        flex: 2,
-        sortable: true,
-        filter: true,
-      },
-
-      {
-        headerName: "Students",
-        field: "students",
-        flex: 1,
-        sortable: true,
-        filter: true,
-      },
-
-      {
-        headerName: "Present",
-        field: "present",
-        flex: 1,
-        sortable: true,
-        filter: true,
-      },
-
-      {
-        headerName: "Absent",
-        field: "absent",
-        flex: 1,
-        sortable: true,
-        filter: true,
-      },
-
-      {
-        headerName: "Attendance",
-        field: "attendance",
-        flex: 1.5,
-        sortable: true,
-        filter: true,
-      },
-    ],
-    [],
-  );
-
   // ==============================
   // APPLY FILTERS
   // ==============================
 
   const handleApplyFilters = () => {
+    if (selectedDate && selectedToDate && selectedDate > selectedToDate) {
+      setError("From date must be on or before To date.");
+      return;
+    }
+    setError("");
+    setAppliedDate(selectedDate);
+    setAppliedToDate(selectedToDate);
     setAppliedSection(selectedSection);
+    setAppliedStudent(selectedStudent);
+    setAppliedOrganization(organizationFilters);
   };
 
   // ==============================
@@ -478,7 +383,7 @@ function StudentAttendance() {
     } catch (err) {
       console.error("Upload failed:", err);
 
-      setError(err.response?.data || "Attendance upload failed.");
+      setError(typeof err.response?.data === "string" ? err.response.data : err.response?.data?.message || "Attendance upload failed.");
     } finally {
       setUploading(false);
 
@@ -491,13 +396,8 @@ function StudentAttendance() {
   // FORMAT HEADER DATE
   // ==============================
 
-  const formattedDate = selectedDate
-    ? new Date(`${selectedDate}T00:00:00`).toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })
-    : "-";
+  const isSingleDay = appliedDate && appliedDate === appliedToDate;
+  const formattedDate = isSingleDay ? appliedDate : `${appliedDate || "Beginning"} to ${appliedToDate || "latest"}`;
 
   // ==============================
   // UI
@@ -521,7 +421,7 @@ function StudentAttendance() {
             <input
               type="file"
               ref={fileInputRef}
-              accept=".xlsx,.xls,.csv"
+              accept=".xlsx,.xls,.xlsm"
               style={{
                 display: "none",
               }}
@@ -529,7 +429,7 @@ function StudentAttendance() {
             />
           )}
 
-          <div className="d-flex gap-2">
+          <div className="d-flex gap-2 flex-wrap">
             {!isStudent && (
               <button
                 className="btn btn-primary"
@@ -540,13 +440,18 @@ function StudentAttendance() {
               </button>
             )}
 
-            <div className="header-date">
+            <label className="header-date">
+              <span>From</span>
               <FaCalendarAlt />
 
               <input
                 type="date"
                 value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
+                max={selectedToDate || undefined}
+                onChange={(e) => {
+                  setSelectedDate(e.target.value);
+                  if (isStudent) setAppliedDate(e.target.value);
+                }}
                 style={{
                   border: "none",
                   background: "transparent",
@@ -555,7 +460,16 @@ function StudentAttendance() {
               />
 
               <FaChevronDown />
-            </div>
+            </label>
+            <label className="header-date">
+              <span>To</span>
+              <input type="date" value={selectedToDate} min={selectedDate || undefined}
+                onChange={(event) => {
+                  setSelectedToDate(event.target.value);
+                  if (isStudent) setAppliedToDate(event.target.value);
+                }}
+                style={{ border: "none", background: "transparent", outline: "none" }} />
+            </label>
           </div>
         </header>
 
@@ -572,6 +486,11 @@ function StudentAttendance() {
         )}
 
         {/* ================= KPI ================= */}
+        <p className="text-muted small mb-3" role="status">
+          {formattedDate} · {analytics.totalStudents} unique students · {analytics.dailyRows.length} recorded student-days.
+          {" "}Present and Late count as attended. Missing records are not counted as absent.
+          {analytics.unknown > 0 && ` ${analytics.unknown} unrecognized statuses are excluded from the percentage.`}
+        </p>
 
         <section className="attendance-kpi-grid">
           {/* Total */}
@@ -595,19 +514,26 @@ function StudentAttendance() {
               <FaCheckCircle />
             </div>
             <div className="kpi-content">
-              <div className="kpi-title">Present</div>
+              <div className="kpi-title">{isSingleDay ? "Present" : "Present days"}</div>
               <div className="kpi-number">{presentCount}</div>
             </div>
           </div>
 
           {/* Absent */}
+          <div className="attendance-kpi">
+            <div className="kpi-icon attendance-icon"><FaCalendarAlt /></div>
+            <div className="kpi-content">
+              <div className="kpi-title">{isSingleDay ? "Late" : "Late days"}</div>
+              <div className="kpi-number">{lateCount}</div>
+            </div>
+          </div>
 
           <div className="attendance-kpi">
             <div className="kpi-icon absent-icon">
               <FaTimesCircle />
             </div>
             <div className="kpi-content">
-              <div className="kpi-title">Absent</div>
+              <div className="kpi-title">{isSingleDay ? "Absent" : "Absent days"}</div>
               <div className="kpi-number">{absentCount}</div>
             </div>
           </div>
@@ -620,7 +546,7 @@ function StudentAttendance() {
             </div>
             <div className="kpi-content">
               <div className="kpi-title">Attendance</div>
-              <div className="kpi-number">{attendancePercentage}%</div>
+              <div className="kpi-number">{attendancePercentage}</div>
             </div>
           </div>
         </section>
@@ -636,46 +562,34 @@ function StudentAttendance() {
             </div>
 
             <div className="attendance-filter-grid">
-              {/* Branch */}
-
-              <div className="attendance-filter">
-                <label>Branch</label>
-
-                <div
-                  className="attendance-select"
-                  style={{
-                    opacity: 0.6,
-                    cursor: "not-allowed",
-                  }}
-                >
-                  <FaGraduationCap />
-
-                  <span>Branch unavailable</span>
-
-                  <FaChevronDown className="select-arrow" />
+              {[
+                { field: "collegeId", label: "College", options: collegeOptions },
+                { field: "branchId", label: "Branch", options: branchOptions },
+                { field: "courseId", label: "Course", options: courseOptions },
+              ].filter(({ field }) => field === "collegeId" ? role === ROLES.SUPER_ADMIN
+                : field === "branchId" ? role !== ROLES.BRANCH_ADMIN : true)
+                .map(({ field, label, options }) => (
+                <div className="attendance-filter" key={field}>
+                  <label htmlFor={`attendance-${field}`}>{label}</label>
+                  <div className="attendance-select">
+                    <FaGraduationCap />
+                    <select id={`attendance-${field}`} value={organizationFilters[field]}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        setOrganizationFilters((current) => field === "collegeId"
+                          ? { collegeId: value, branchId: "", courseId: "" }
+                          : field === "branchId" ? { ...current, branchId: value, courseId: "" }
+                          : { ...current, courseId: value });
+                        setSelectedSection("");
+                        setSelectedStudent("");
+                      }}
+                      style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "transparent", color: "#24466d" }}>
+                      <option value="">All {label === "Branch" ? "branches" : `${label.toLowerCase()}s`}</option>
+                      {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                    </select>
+                  </div>
                 </div>
-              </div>
-
-              {/* Course */}
-
-              <div className="attendance-filter">
-                <label>Course</label>
-
-                <div
-                  className="attendance-select"
-                  style={{
-                    opacity: 0.6,
-                    cursor: "not-allowed",
-                  }}
-                >
-                  <FaGraduationCap />
-
-                  <span>Course unavailable</span>
-
-                  <FaChevronDown className="select-arrow" />
-                </div>
-              </div>
-
+              ))}
               {!isStudent && (
                 <div className="attendance-filter">
                   <label>Section</label>
@@ -685,7 +599,7 @@ function StudentAttendance() {
 
                     <select
                       value={selectedSection}
-                      onChange={(e) => setSelectedSection(e.target.value)}
+                      onChange={(e) => { setSelectedSection(e.target.value); setSelectedStudent(""); }}
                       style={{
                         flex: 1,
                         border: "none",
@@ -707,18 +621,41 @@ function StudentAttendance() {
               )}
 
               {/* Apply */}
+              <div className="attendance-filter">
+                <label htmlFor="attendance-student">Student</label>
+                <div className="attendance-select">
+                  <FaUsers />
+                  <select id="attendance-student" value={selectedStudent}
+                    onChange={(event) => setSelectedStudent(event.target.value)}
+                    style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "transparent", color: "#24466d" }}>
+                    <option value="">All students</option>
+                    {studentOptions.map((student) => <option key={student.value} value={student.value}>
+                      {student.name} ({student.value})
+                    </option>)}
+                  </select>
+                </div>
+              </div>
 
               <button className="attendance-apply" onClick={handleApplyFilters}>
                 <FaSearch />
                 Apply Filters
               </button>
             </div>
+            <button type="button" className="btn btn-outline-secondary btn-sm mt-3"
+              onClick={() => {
+                const empty = { collegeId: "", branchId: "", courseId: "" };
+                setOrganizationFilters(empty); setAppliedOrganization(empty);
+                setSelectedSection(""); setAppliedSection("");
+                setSelectedStudent(""); setAppliedStudent("");
+                setSelectedDate(""); setSelectedToDate(""); setAppliedDate(""); setAppliedToDate("");
+                setError("");
+              }}>Clear filters</button>
           </section>
         )}
 
         {/* ================= TABLES ================= */}
 
-        {isStudent && (
+        {(
           <section
             className="attendance-data-card"
             style={{ marginBottom: 24 }}
@@ -726,7 +663,7 @@ function StudentAttendance() {
             <div className="data-card-header">
               <div className="attendance-section-heading">
                 <FaChartBar />
-                <h2>My Attendance Graph</h2>
+                <h2>{isStudent ? "My Attendance Trend" : "Attendance Trend"}</h2>
               </div>
             </div>
 
@@ -774,16 +711,19 @@ function StudentAttendance() {
                 <div className="attendance-section-heading">
                   <FaClipboardList />
 
-                  <h2>Today's Attendance</h2>
+                  <h2>Attendance Records</h2>
                 </div>
               </div>
 
               <DataGrid
                 rowData={studentRows}
                 columnDefs={studentColumns}
+                suppressHorizontalScroll={false}
+                alwaysShowHorizontalScroll
+                defaultColDef={{ wrapHeaderText: true, autoHeaderHeight: true }}
                 height={320}
                 pageSize={5}
-                description="Review which students checked in today."
+                description="One record per student per day in the selected range."
                 animateRows
               />
             </div>
@@ -791,20 +731,13 @@ function StudentAttendance() {
             <div className="attendance-data-card">
               <div className="data-card-header">
                 <div className="attendance-section-heading">
-                  <FaChartBar />
-
-                  <h2>Attendance by Section</h2>
+                  <FaTimesCircle /><h2>Students Below 50% Attendance</h2>
                 </div>
               </div>
-
-              <DataGrid
-                rowData={sectionRows}
-                columnDefs={sectionColumns}
-                height={320}
-                pageSize={5}
-                description="Compare today's attendance totals across sections."
-                animateRows
-              />
+              <DataGrid rowData={analytics.lowAttendance} columnDefs={lowAttendanceColumns}
+                height={320} pageSize={5} loading={loading}
+                description="For the applied dates and filters. Present + Late divided by recorded days with a known status."
+                noRowsMessage="No students below 50% attendance in the selected range." />
             </div>
           </section>
         )}

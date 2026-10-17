@@ -481,7 +481,7 @@ export default function Sidebar({
             >
               <div className="menu-left">
                 <MdTableChart className="menu-icon" />
-                <span>Student Attendance</span>
+                <span>{isStudent ? "My Attendance" : "Student Attendance"}</span>
               </div>
             </NavLink>
           )}
