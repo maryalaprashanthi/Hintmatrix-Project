@@ -6,6 +6,7 @@ import { useState } from "react";
 
 function Landing() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % 3);
@@ -14,9 +15,17 @@ function Landing() {
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + 3) % 3);
   };
+
+  const toggleMenu = () => {
+    setMenuOpen((prev) => !prev);
+  };
+
+  const closeMenu = () => {
+    setMenuOpen(false);
+  };
+
   return (
     <div className="landing-page">
-      {/* ================= HEADER ================= */}
       <header>
         <nav className="navbar">
           <div className="logo">
@@ -35,33 +44,41 @@ function Landing() {
             </a>
           </div>
 
-          <div className="menu-toggle">☰</div>
+          <div
+            className="menu-toggle"
+            onClick={toggleMenu}
+            role="button"
+            aria-label="Toggle menu"
+            aria-expanded={menuOpen}
+          >
+            {menuOpen ? "✕" : "☰"}
+          </div>
 
-          <div className="nav-menu">
+          <div className={`nav-menu ${menuOpen ? "active" : ""}`}>
             <ul className="nav-links">
               <li>
-                <a href="/">
+                <a href="/" onClick={closeMenu}>
                   <FaHome />
                   Home
                 </a>
               </li>
 
               <li>
-                <a href="#about">
+                <a href="#about" onClick={closeMenu}>
                   <FaInfoCircle />
                   About
                 </a>
               </li>
 
               <li>
-                <a href="#courses">
+                <a href="#courses" onClick={closeMenu}>
                   <FaBook />
                   Courses
                 </a>
               </li>
 
               <li>
-                <a href="#contact">
+                <a href="#contact" onClick={closeMenu}>
                   <FaPhoneAlt />
                   Contact
                 </a>
@@ -69,18 +86,18 @@ function Landing() {
             </ul>
 
             <div className="nav-buttons">
-              <Link to="/login" className="login-link">
+              <Link to="/login" className="login-link" onClick={closeMenu}>
                 Login
               </Link>
 
-              <Link to="/signup" className="signup-link">
+              <Link to="/signup" className="signup-link" onClick={closeMenu}>
                 Sign Up
               </Link>
             </div>
           </div>
         </nav>
       </header>
-      {/* ================= HERO ================= */}
+
       <section className="hero">
         <div className="hero-content">
           <div className="hero-text">
@@ -117,7 +134,7 @@ function Landing() {
           </div>
         </div>
       </section>
-      {/* ================= ABOUT ================= */}
+
       <section id="about" className="about">
         <div className="about-container">
           <div className="about-image">
@@ -156,7 +173,7 @@ function Landing() {
           </div>
         </div>
       </section>
-      {/* ================= FEATURES ================= */}
+
       <section id="features" className="features">
         <h2>Why Choose HINTMATRIX?</h2>
 
@@ -199,7 +216,7 @@ function Landing() {
           </div>
         </div>
       </section>
-      {/* ================= COURSES ================= */}
+
       <section id="courses" className="courses">
         <div className="section-title">
           <h2>Courses Offered</h2>
@@ -223,7 +240,7 @@ function Landing() {
           </p>
         </div>
       </section>
-      {/* ================= PRACTICE ================= */}
+
       <div className="practice-images">
         <img src="/images/step1.png" alt="Step 1" />
         <img src="/images/step2.png" alt="Step 2" />
@@ -233,11 +250,9 @@ function Landing() {
         <img src="/images/step2.png" alt="Step 2" />
         <img src="/images/step3.png" alt="Step 3" />
       </div>
-      {/* ================= BANNERS ================= */}
-      /* ================= BANNERS ================= */
+
       <section className="slider-section">
         <div className="slider">
-          {/* PREVIOUS */}
           <button
             className="prev"
             onClick={prevSlide}
@@ -247,7 +262,6 @@ function Landing() {
           </button>
 
           <div className="slides">
-            {/* BANNER 1 */}
             <div className={`slide ${currentSlide === 0 ? "active" : ""}`}>
               <img
                 src="/images/banner1.png"
@@ -271,7 +285,6 @@ function Landing() {
               </div>
             </div>
 
-            {/* BANNER 2 */}
             <div className={`slide ${currentSlide === 1 ? "active" : ""}`}>
               <img
                 src="/images/banner2.png"
@@ -294,7 +307,6 @@ function Landing() {
               </div>
             </div>
 
-            {/* BANNER 3 */}
             <div className={`slide ${currentSlide === 2 ? "active" : ""}`}>
               <img src="/images/banner3.png" alt="Smart digital education" />
 
@@ -315,13 +327,11 @@ function Landing() {
             </div>
           </div>
 
-          {/* NEXT */}
           <button className="next" onClick={nextSlide} aria-label="Next banner">
             &#10095;
           </button>
         </div>
 
-        {/* DOTS */}
         <div className="dots">
           <span
             className={`dot ${currentSlide === 0 ? "active" : ""}`}
@@ -339,7 +349,7 @@ function Landing() {
           ></span>
         </div>
       </section>
-      {/* ================= CONTACT ================= */}
+
       <section id="contact" className="contact">
         <div className="section-title">
           <h2>Contact Us</h2>

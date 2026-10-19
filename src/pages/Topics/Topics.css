@@ -4,10 +4,6 @@
   min-height: 100vh;
 }
 
-/* ===========================
-   HEADER
-=========================== */
-
 .page-header {
   padding: 20px 25px;
   background: transparent;
@@ -43,10 +39,6 @@
 .add-category-btn:hover {
   background: #1d4ed8;
 }
-
-/* ===========================
-   SEARCH & FILTER
-=========================== */
 
 .input-group-text {
   border-radius: 18px 0 0 18px !important;
@@ -91,20 +83,18 @@
 .category-search .input-group,
 .category-status-filter .form-select {
   width: 100%;
-  height: 46px;
 }
 
-/* ===========================
-   CATEGORY CARD
-=========================== */
-
-.category-card {
+.question-category-page .category-card {
+  display: flex;
+  flex-direction: column;
+  height: auto;
   background: white;
   border: none;
-  border-radius: 16px;
+  border-radius: 18px;
   overflow: hidden;
-  height: 100%;
   transition: 0.25s;
+  box-shadow: 0 4px 16px rgba(40, 70, 130, 0.08);
 }
 
 .category-card:hover {
@@ -112,43 +102,72 @@
   box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
 }
 
-.category-card .card-body {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
+.category-illustration {
+  width: 100%;
+  aspect-ratio: 582 / 201;
+  overflow: hidden;
+  background: #dbe9fb;
 }
 
-.icon-circle {
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-}
-
-.category-title {
-  margin-top: 16px;
-  margin-bottom: 8px;
-  font-size: 17px;
-  font-weight: 700;
-  color: #111827;
-  line-height: 1.4;
-  min-height: 48px;
-}
-
-.question-count {
-  color: #6b7280;
-  font-size: 14px;
-  margin-bottom: 12px;
-  min-height: 20px;
+.category-illustration img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .badge {
   font-size: 12px;
   padding: 6px 12px;
   border-radius: 20px;
+}
+
+.badge.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.status-dot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-pill.status-active {
+  background: #e1f5e8;
+  color: #0e8f45;
+}
+
+.status-pill.status-inactive {
+  background: #fde8e8;
+  color: #c0392b;
+}
+
+.category-card .card-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.category-card .hierarchy-card-footer {
+  position: static;
+  margin-top: auto;
+}
+
+.category-title {
+  margin-top: 4px;
+  margin-bottom: 14px;
+  font-size: 19px;
+  font-weight: 700;
+  color: #0f1b3d;
+  line-height: 1.35;
+  min-height: 26px;
 }
 
 .category-status {
@@ -171,15 +190,14 @@
   min-height: 20px;
 }
 
-/* ===========================
-   VIEW QUESTIONS BUTTON
-=========================== */
-
-.view-btn {
+.question-category-page .category-card .view-btn {
   width: 100%;
-  height: 42px;
-  border-radius: 9px;
-  font-size: 14px;
+  height: 46px;
+  border: none;
+  border-radius: 14px !important;
+  background: linear-gradient(180deg, #3b6ff5 0%, #2547e0 100%) !important;
+  color: #fff;
+  font-size: 15px;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -188,13 +206,9 @@
   transition: 0.25s;
 }
 
-.view-btn:hover {
+.question-category-page .category-card .view-btn:hover {
   transform: translateY(-2px);
 }
-
-/* ===========================
-   ACTION BUTTONS
-=========================== */
 
 .action-btn {
   height: 32px;
@@ -208,18 +222,10 @@
   transform: translateY(-1px);
 }
 
-/* ===========================
-   EMPTY STATE
-=========================== */
-
 .text-center.bg-white {
   border-radius: 16px !important;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
-
-/* ===========================
-   RESPONSIVE
-=========================== */
 
 @media (max-width: 992px) {
   .question-category-page {
@@ -255,12 +261,6 @@
     padding: 18px;
   }
 
-  .icon-circle {
-    width: 50px;
-    height: 50px;
-    font-size: 20px;
-  }
-
   .category-title {
     font-size: 16px;
   }
@@ -277,9 +277,5 @@
 
   .page-header p {
     font-size: 14px;
-  }
-
-  .question-count {
-    font-size: 13px;
   }
 }
