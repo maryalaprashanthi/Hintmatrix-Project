@@ -26,7 +26,7 @@ import { useHierarchyProgress } from "../../hooks/useHierarchyProgress";
 
 const svgProps = {
   viewBox: "0 0 400 172",
-  preserveAspectRatio: "xMidYMid meet",
+  preserveAspectRatio: "xMidYMid slice",
   "aria-hidden": true,
 };
 
@@ -238,10 +238,10 @@ function CalculatorIllustration() {
   );
 }
 
-const CARD_THEMES = [
-  { name: "blue", Illustration: BookIllustration },
-  { name: "purple", Illustration: JournalIllustration },
-  { name: "green", Illustration: CalculatorIllustration },
+const ILLUSTRATIONS = [
+  BookIllustration,
+  JournalIllustration,
+  CalculatorIllustration,
 ];
 const ZIGZAG = [0, 1, 2, 1];
 
@@ -340,15 +340,7 @@ function Chapters() {
     if (!file) return;
 
     try {
-      // const response = await ChapterService.uploadExcel(file);
       await ChapterService.uploadExcel(file);
-
-      // Success is announced by the notification popup; avoid a duplicate toast.
-      // toast.success(
-        // typeof response.data === "string"
-          // ? response.data
-          // : "Chapter Excel uploaded.",
-      // );
       loadChapters();
     } catch (error) {
       console.error("Upload Error:", error);
@@ -451,70 +443,72 @@ function Chapters() {
 
       <div className="row g-3">
         {filteredChapters.map((chapter, index) => {
-          const theme = CARD_THEMES[ZIGZAG[index % ZIGZAG.length]];
+          const Illustration = ILLUSTRATIONS[ZIGZAG[index % ZIGZAG.length]];
           const progress = Number(chapterProgress(chapter.chapterId)) || 0;
           const progressLabel = `${Number(progress.toFixed(1))}%`;
 
           return (
             <div className="col-xl-4 col-lg-4 col-md-6" key={chapter.chapterId}>
-              <div className={`chapter-card theme-${theme.name}`}>
+              <div className="chapter-card">
                 <div className="chapter-thumb">
-                  <theme.Illustration />
+                  <Illustration />
                 </div>
 
-                <h4>{chapter.name}</h4>
+                <div className="chapter-body">
+                  <h4>{chapter.name}</h4>
 
-                <span
-                  className={`chapter-status ${
-                    chapter.activeRow ? "is-active" : "is-inactive"
-                  }`}
-                >
-                  {chapter.activeRow ? "Active" : "Inactive"}
-                </span>
-
-                <p className="chapter-desc">{chapter.description}</p>
-
-                <div className="chapter-footer">
-                  <div className="chapter-progress-head">
-                    <span>Progress</span>
-                    <strong>{progressLabel}</strong>
-                  </div>
-
-                  <div className="chapter-progress-track">
-                    <div
-                      className="chapter-progress-fill"
-                      style={{ width: `${Math.min(progress, 100)}%` }}
-                    />
-                  </div>
-
-                  <button
-                    className="chapter-start-btn"
-                    disabled={!chapter.activeRow}
-                    onClick={() => openTopics(chapter)}
+                  <span
+                    className={`chapter-status ${
+                      chapter.activeRow ? "is-active" : "is-inactive"
+                    }`}
                   >
-                    Start Learning
-                    <FaArrowRight />
-                  </button>
+                    {chapter.activeRow ? "Active" : "Inactive"}
+                  </span>
 
-                  {canManage && (
-                    <div className="chapter-actions-row">
-                      <button
-                        className="chapter-action-btn outline-blue"
-                        onClick={() => handleEdit(chapter)}
-                      >
-                        <FaEdit />
-                        Edit
-                      </button>
+                  <p className="chapter-desc">{chapter.description}</p>
 
-                      <button
-                        className="chapter-action-btn outline-red"
-                        onClick={() => del.request(chapter)}
-                      >
-                        <FaTrash />
-                        Delete
-                      </button>
+                  <div className="chapter-footer">
+                    <div className="chapter-progress-head">
+                      <span>Progress</span>
+                      <strong>{progressLabel}</strong>
                     </div>
-                  )}
+
+                    <div className="chapter-progress-track">
+                      <div
+                        className="chapter-progress-fill"
+                        style={{ width: `${Math.min(progress, 100)}%` }}
+                      />
+                    </div>
+
+                    <button
+                      className="chapter-start-btn"
+                      disabled={!chapter.activeRow}
+                      onClick={() => openTopics(chapter)}
+                    >
+                      Start Learning
+                      <FaArrowRight />
+                    </button>
+
+                    {canManage && (
+                      <div className="chapter-actions-row">
+                        <button
+                          className="chapter-action-btn outline-blue"
+                          onClick={() => handleEdit(chapter)}
+                        >
+                          <FaEdit />
+                          Edit
+                        </button>
+
+                        <button
+                          className="chapter-action-btn outline-red"
+                          onClick={() => del.request(chapter)}
+                        >
+                          <FaTrash />
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

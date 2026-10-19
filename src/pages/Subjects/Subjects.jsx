@@ -565,7 +565,9 @@ function Subjects() {
                   <div className="subject-icon">
                     <theme.Icon />
                   </div>
+                </div>
 
+                <div className="subject-card-body">
                   <h4>{subjectLabel(subject)}</h4>
 
                   <div className="subject-info">

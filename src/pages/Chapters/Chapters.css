@@ -46,44 +46,30 @@
   }
 }
 
-.chapter-card {
-  --accent: #2f6fed;
-  --accent-grad: linear-gradient(180deg, #2f67f0, #2549e0);
-  --thumb-bg: linear-gradient(135deg, #e6f0ff, #cfe3fb);
-
+.chapters-page .chapter-card {
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 12px;
+  padding: 0 !important;
   background: #fff;
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(60, 100, 180, 0.1);
+  overflow: hidden;
   transition: transform 0.3s ease;
 }
 
-.chapter-card:hover {
+.chapters-page .chapter-card:hover {
   transform: translateY(-6px);
 }
 
-.chapter-card.theme-purple {
-  --accent: #7b5cf0;
-  --accent-grad: linear-gradient(180deg, #7b5cf0, #6a4be0);
-  --thumb-bg: linear-gradient(135deg, #efe9ff, #e0d6fb);
-}
-
-.chapter-card.theme-green {
-  --accent: #12a87e;
-  --accent-grad: linear-gradient(180deg, #12a87e, #0b9170);
-  --thumb-bg: linear-gradient(135deg, #dcf8ec, #c5f0de);
-}
-
-.chapter-thumb {
-  height: 140px;
+.chapters-page .chapter-thumb {
+  height: 170px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 14px;
-  background: var(--thumb-bg);
+  margin: 0 !important;
+  background: linear-gradient(135deg, #e6f0ff, #cfe3fb);
   overflow: hidden;
 }
 
@@ -92,17 +78,14 @@
   height: 100%;
 }
 
-.chapter-card h4,
-.chapter-desc {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-
-  overflow: hidden;
+.chapters-page .chapter-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px 20px;
 }
 
 .chapter-card h4 {
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
   min-height: 50px;
   margin: 14px 0 6px;
   font-size: 20px;
@@ -142,7 +125,6 @@
 }
 
 .chapter-desc {
-  min-height: 0;
   margin: 0 0 12px;
   font-size: 13px;
   font-weight: 500;
@@ -184,7 +166,7 @@
 .chapter-progress-fill {
   height: 100%;
   border-radius: 999px;
-  background: var(--accent);
+  background: #2f6fed;
 }
 
 .chapter-start-btn {
@@ -196,7 +178,7 @@
   gap: 8px;
   border: 0;
   border-radius: 12px;
-  background: var(--accent-grad);
+  background: linear-gradient(180deg, #2f67f0, #2549e0);
   color: #fff;
   font-size: 15px;
   font-weight: 600;
