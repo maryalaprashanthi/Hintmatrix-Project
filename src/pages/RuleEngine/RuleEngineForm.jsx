@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Select from "react-select";
 import RuleEngineService from "../../services/RuleEngineService";
+import TableHeaderService from "../../services/TableHeaderService";
 
 import {
   FaTimes,
@@ -42,19 +43,19 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
 
   const loadDropdowns = async () => {
     try {
-      const [chapterRes, tableRes, attributeRes, headerRes] = await Promise.all(
+      const [chapterRes, tableRes, attributeRes, headerResponse] = await Promise.all(
         [
           RuleEngineService.getChapters(),
           RuleEngineService.getTableNames(),
           RuleEngineService.getTableAttributes(),
-          RuleEngineService.getTableHeaders(),
+          TableHeaderService.getAll(),
         ],
       );
 
       setChapters(chapterRes);
       setTableNames(tableRes);
       setTableAttributes(attributeRes);
-      setTableHeaders(headerRes);
+      setTableHeaders(Array.isArray(headerResponse?.data) ? headerResponse.data : []);
     } catch (error) {
       console.error("Error loading dropdowns", error);
     }
@@ -89,6 +90,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
     chapterName: "",
     tableAttributeName: "",
     pairAttributeName: "",
+    fieldType: "",
     relationshipName: "",
     pairOrder: "",
 
@@ -134,6 +136,8 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
 
         pairAttributeName: selectedRuleData.pairAttributeName || "",
 
+        fieldType: selectedRuleData.fieldType || "",
+
         relationshipName: selectedRuleData.relationshipName || "",
 
         pairOrder: selectedRuleData.pairOrder || "",
@@ -153,6 +157,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
         chapterName: "",
         tableAttributeName: "",
         pairAttributeName: "",
+        fieldType: "",
         relationshipName: "",
         pairOrder: "",
 
@@ -229,6 +234,8 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
       attributeName: formData.tableAttributeName,
 
       pairAttributeName: formData.pairAttributeName,
+
+      fieldType: formData.fieldType,
 
       relationshipName: formData.relationshipName,
 
@@ -401,6 +408,49 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                     {getFieldIssue("attribute").message}
                   </div>
                 )}
+              </div>
+
+              {/* Field Type */}
+
+              <div className="form-group">
+                <label>Field Type</label>
+
+                <div className="select-box">
+                  <FaFont className="select-icon" />
+
+                  <Select
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
+                    menuPlacement="bottom"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                    }}
+                    options={tableHeaders.map((item) => ({
+                      value: item.name,
+                      label: item.name,
+                    }))}
+                    value={
+                      tableHeaders
+                        .map((item) => ({
+                          value: item.name,
+                          label: item.name,
+                        }))
+                        .find((option) => option.value === formData.fieldType) ||
+                      null
+                    }
+                    onChange={(option) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        fieldType: option?.value || "",
+                      }))
+                    }
+                    placeholder="Select Field Type"
+                    isSearchable
+                    isClearable
+                    noOptionsMessage={() => "No field type found"}
+                  />
+                </div>
               </div>
 
               {/*
