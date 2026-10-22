@@ -99,6 +99,19 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
     activeRow: true,
     rowStatus: "",
   });
+  const selectedFieldType = tableHeaders.find((header) => header.name === formData.fieldType);
+  const filteredAttributes = tableAttributes.filter((attribute) =>
+    selectedFieldType && String(attribute.headerId) === String(selectedFieldType.headerId),
+  );
+  const handleFieldTypeChange = (option) => {
+    const fieldType = option?.value || "";
+    setFormData((prev) => prev.fieldType === fieldType ? prev : ({
+      ...prev,
+      fieldType,
+      tableAttributeName: "",
+      pairAttributeName: "",
+    }));
+  };
   // Edit / Reset Form Data
   useEffect(() => {
     if (selectedRuleData) {
@@ -218,6 +231,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
   // Save
   const handleSave = async () => {
     if (
+      !formData.fieldType ||
       !formData.chapterName ||
       !formData.tableAttributeName ||
       !formData.pairAttributeName ||
@@ -225,6 +239,13 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
       !formData.pairOrder
     ) {
       alert("Please fill the mandatory fields.");
+      return;
+    }
+
+    if (![formData.tableAttributeName, formData.pairAttributeName].every(
+      (name) => filteredAttributes.some((attribute) => attribute.name === name),
+    )) {
+      alert("Select both attributes from the selected Field Type.");
       return;
     }
 
@@ -355,65 +376,10 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                 )}
               </div>
 
-              {/*
-                  Table Attribute
-              */}
-
-              <div className="form-group">
-                <label>
-                  Table Attribute Name
-                  <span className="required">*</span>
-                </label>
-
-                <div className="select-box">
-                  <FaTag className="select-icon" />
-
-                  <Select
-                    className="aq-search-select"
-                    classNamePrefix="aq-select"
-                    menuPlacement="bottom"
-                    menuPortalTarget={document.body}
-                    styles={{
-                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
-                    }}
-                    options={tableAttributes.map((item) => ({
-                      value: item.name,
-                      label: item.name,
-                    }))}
-                    value={
-                      tableAttributes
-                        .map((item) => ({ value: item.name, label: item.name }))
-                        .find(
-                          (option) =>
-                            option.value === formData.tableAttributeName,
-                        ) || null
-                    }
-                    onChange={(option) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        tableAttributeName: option?.value || "",
-                      }))
-                    }
-                    placeholder="Select Table Attribute"
-                    isSearchable
-                    isClearable
-                    noOptionsMessage={() => "No table attribute found"}
-                  />
-                </div>
-
-                {/* REQUIRED FIELD ISSUE */}
-
-                {getFieldIssue("attribute") && (
-                  <div className="field-error">
-                    {getFieldIssue("attribute").message}
-                  </div>
-                )}
-              </div>
-
               {/* Field Type */}
 
               <div className="form-group">
-                <label>Field Type</label>
+                <label>Field Type<span className="required">*</span></label>
 
                 <div className="select-box">
                   <FaFont className="select-icon" />
@@ -439,18 +405,69 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                         .find((option) => option.value === formData.fieldType) ||
                       null
                     }
-                    onChange={(option) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        fieldType: option?.value || "",
-                      }))
-                    }
+                    onChange={handleFieldTypeChange}
                     placeholder="Select Field Type"
                     isSearchable
                     isClearable
                     noOptionsMessage={() => "No field type found"}
                   />
                 </div>
+              </div>
+
+              {/*
+                  Table Attribute
+              */}
+
+              <div className="form-group">
+                <label>
+                  Table Attribute Name
+                  <span className="required">*</span>
+                </label>
+
+                <div className="select-box">
+                  <FaTag className="select-icon" />
+
+                  <Select
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
+                    menuPlacement="bottom"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                    }}
+                    options={filteredAttributes.map((item) => ({
+                      value: item.name,
+                      label: item.name,
+                    }))}
+                    value={
+                      filteredAttributes
+                        .map((item) => ({ value: item.name, label: item.name }))
+                        .find(
+                          (option) =>
+                            option.value === formData.tableAttributeName,
+                        ) || null
+                    }
+                    onChange={(option) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        tableAttributeName: option?.value || "",
+                      }))
+                    }
+                    isDisabled={!formData.fieldType}
+                    placeholder="Select Table Attribute"
+                    isSearchable
+                    isClearable
+                    noOptionsMessage={() => "No table attribute found"}
+                  />
+                </div>
+
+                {/* REQUIRED FIELD ISSUE */}
+
+                {getFieldIssue("attribute") && (
+                  <div className="field-error">
+                    {getFieldIssue("attribute").message}
+                  </div>
+                )}
               </div>
 
               {/*
@@ -474,12 +491,12 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                     styles={{
                       menuPortal: (base) => ({ ...base, zIndex: 99999 }),
                     }}
-                    options={tableAttributes.map((item) => ({
+                    options={filteredAttributes.map((item) => ({
                       value: item.name,
                       label: item.name,
                     }))}
                     value={
-                      tableAttributes
+                      filteredAttributes
                         .map((item) => ({ value: item.name, label: item.name }))
                         .find(
                           (option) =>
@@ -492,6 +509,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                         pairAttributeName: option?.value || "",
                       }))
                     }
+                    isDisabled={!formData.fieldType}
                     placeholder="Select Pair Attribute"
                     isSearchable
                     isClearable
