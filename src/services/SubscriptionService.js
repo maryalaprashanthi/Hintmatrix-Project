@@ -19,6 +19,14 @@ const SubscriptionService = {
     return apiClient.put(`/api/subscriptions/plans/${id}`, payload);
   },
 
+  getPlanQuestionAssignments(planId, courseId) {
+    return apiClient.get(`/api/subscriptions/plans/${planId}/courses/${courseId}/questions`);
+  },
+
+  setPlanQuestionAssignments(planId, courseId, payload) {
+    return apiClient.put(`/api/subscriptions/plans/${planId}/courses/${courseId}/questions`, payload);
+  },
+
   deletePlan(id) {
     return apiClient.delete(`/api/subscriptions/plans/${id}`);
   },

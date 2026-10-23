@@ -20,6 +20,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import CourseService from "../../services/CourseService";
 import SubscriptionService from "../../services/SubscriptionService";
+import PlanQuestionAccessModal from "./PlanQuestionAccessModal";
 import { canAccessFeature, currentRole } from "../../utils/roles";
 import "./SubscriptionPlans.css";
 
@@ -46,6 +47,8 @@ export default function SubscriptionPlans() {
   const [editingId, setEditingId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [message, setMessage] = useState(null);
+  const [questionPlan, setQuestionPlan] = useState(null);
+  const [questionCourse, setQuestionCourse] = useState(null);
 
   const loadData = async () => {
     try {
@@ -354,6 +357,19 @@ export default function SubscriptionPlans() {
               </div>
 
               {canManagePlans && (
+                <div className="plan-question-course-actions">
+                  {(plan.courseIds || plan.courses?.map((course) => course.courseId) || []).map((courseId) => {
+                    const course = courses.find((item) => String(item.courseId) === String(courseId));
+                    if (!course) return null;
+                    return <Button key={courseId} size="sm" variant="outline-primary"
+                      onClick={() => { setQuestionPlan(plan); setQuestionCourse(course); }}>
+                      <FaQuestionCircle /> Questions · {course.name}
+                    </Button>;
+                  })}
+                </div>
+              )}
+
+              {canManagePlans && (
                 <div className="plan-actions">
                   <Button
                     onClick={() => openEdit(plan)}
@@ -383,6 +399,13 @@ export default function SubscriptionPlans() {
           );
         })}
       </div>
+
+      <PlanQuestionAccessModal
+        show={Boolean(questionPlan && questionCourse)}
+        onHide={() => { setQuestionPlan(null); setQuestionCourse(null); }}
+        plan={questionPlan}
+        course={questionCourse}
+      />
 
       {/* CREATE / EDIT PLAN MODAL */}
 

@@ -176,14 +176,14 @@ export default function CourseSubscribe() {
                     <small> / {plan.durationDays || plan.duration || 30} days</small>
                   </div>
                   <ul className="plan-entitlements">
-                    <li><FiCheckCircle /> {formatLimit(plan.practiceQuestionLimit || plan.practiceLimit)} practice questions</li>
+                    <li><FiCheckCircle /> {plan.availableQuestionCount ?? formatLimit(plan.practiceQuestionLimit ?? plan.practiceLimit)} questions</li>
                     <li>
                       {plan.mockTestEnabled === false ? <FiLock /> : <FiCheckCircle />}
                       {plan.mockTestEnabled === false ? " Mock tests not included" : ` ${formatLimit(plan.mockTestLimit)} mock tests`}
                     </li>
                     <li>
                       {plan.examEnabled === false ? <FiLock /> : <FiCheckCircle />}
-                      {plan.examEnabled === false ? " Exams not included" : ` ${formatLimit(plan.examAttemptLimit || plan.examLimit)} exam attempts`}
+                      {plan.examEnabled === false ? " Exams not included" : ` ${formatLimit(plan.examAttemptLimit ?? plan.examLimit)} exam attempts`}
                     </li>
                   </ul>
                   <Button
