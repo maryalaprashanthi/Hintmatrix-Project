@@ -182,17 +182,17 @@
   top: 50%;
   right: 20px;
   z-index: 5;
-  height: 40px;
+  height: 42px;
   padding: 0 18px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   border: none;
-  border-radius: 21px;
+  border-radius: 10px;
   background: #2563eb;
   color: #fff;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transform: translateY(-50%);
@@ -579,7 +579,7 @@ body:has(.subscription-plan-modal) .modal-backdrop {
   align-items: center;
   justify-content: space-between;
   gap: 15px;
-  background: #f4f8fe;
+  background: #fff;
   border-bottom: 1px solid #dfe9f5;
 }
 
@@ -605,16 +605,17 @@ body:has(.subscription-plan-modal) .modal-backdrop {
 
 .subscription-plan-modal-content .subscription-plan-modal-title-wrap h2 {
   margin: 0;
-  color: #123d69;
-  font-size: 20px;
+  color: #0e1323;
+  font-size: 28px;
   line-height: 1.2;
   font-weight: 700;
 }
 
 .subscription-plan-modal-content .subscription-plan-modal-title-wrap p {
   margin: 3px 0 0;
-  color: #5f7690;
-  font-size: 13px;
+  color: #0e1323;
+  font-size: 16px;
+  font-weight: 700;
   line-height: 1.35;
 }
 
@@ -704,8 +705,8 @@ body:has(.subscription-plan-modal) .modal-backdrop {
 .subscription-plan-modal-content .subscription-plan-courses-label {
   display: block;
   margin-bottom: 7px;
-  color: #173b63;
-  font-size: 14px;
+  color: #111827;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -746,13 +747,13 @@ body:has(.subscription-plan-modal) .modal-backdrop {
 .subscription-plan-modal-content .subscription-plan-input-wrap .form-control,
 .subscription-plan-modal-content .subscription-plan-input-wrap .form-select {
   width: 100%;
-  height: 44px;
+  height: 50px;
   padding: 0 14px 0 42px;
   border: 1px solid #c5d5e6;
   border-radius: 10px;
   background-color: #fff;
   color: #173b63;
-  font-size: 14px;
+  font-size: 15px;
   box-shadow: none;
   transition:
     border-color 0.15s ease,
@@ -832,7 +833,7 @@ body:has(.subscription-plan-modal) .modal-backdrop {
   border-radius: 10px;
   background-color: #fff;
   color: #173b63;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.5;
   box-shadow: none;
   transition:
@@ -894,7 +895,7 @@ body:has(.subscription-plan-modal) .modal-backdrop {
 .subscription-plan-modal-content .subscription-plan-option {
   min-width: 0;
   padding: 14px 16px;
-  border: 1px solid #c5d5e6;
+  border: 1px solid #dbe4f0;
   border-radius: 12px;
   background: #fff;
   transition:
@@ -970,7 +971,7 @@ body:has(.subscription-plan-modal) .modal-backdrop {
   margin: 10px 0 0 28px;
   padding: 0 12px;
   border: 1px solid #c5d5e6;
-  border-radius: 8px;
+  border-radius: 12px;
   background: #fff;
   font-size: 13.5px;
   box-shadow: none;
@@ -1005,8 +1006,8 @@ body:has(.subscription-plan-modal) .modal-backdrop {
   display: flex;
   align-items: center;
   gap: 12px;
-  border: 1px solid #c5d5e6;
-  border-radius: 10px;
+  border: 1px solid #dbe4f0;
+  border-radius: 12px;
   background: #fff;
   cursor: pointer;
   transition:
@@ -1139,16 +1140,16 @@ body:has(.subscription-plan-modal) .modal-backdrop {
 
 .subscription-plan-modal-content .subscription-plan-cancel {
   min-width: 110px;
-  border: 1px solid #c5d5e6;
-  background: #fff;
-  color: #3f5a75;
+  border: 1px solid #6c757d;
+  background: #6c757d;
+  color: #fff;
 }
 
 .subscription-plan-modal-content .subscription-plan-cancel:hover,
 .subscription-plan-modal-content .subscription-plan-cancel:active {
-  border-color: #a5bcd4;
-  background: #eef4fb;
-  color: #173b63;
+  border-color: #5c636a;
+  background: #5c636a;
+  color: #fff;
 }
 
 .subscription-plan-modal-content .subscription-plan-save {
@@ -1308,8 +1309,8 @@ body:has(.subscription-plan-modal) .modal-backdrop {
 
 .subscription-plan-modal-content .subscription-plan-input-wrap,
 .subscription-plan-modal-content .subscription-plan-textarea-wrap {
-  border: 1.5px solid #a9bdd3 !important;
-  border-radius: 10px !important;
+  border: 1px solid #dbe4f0 !important;
+  border-radius: 12px !important;
   background: #fff !important;
   transition:
     border-color 0.15s ease,
@@ -1318,7 +1319,7 @@ body:has(.subscription-plan-modal) .modal-backdrop {
 
 .subscription-plan-modal-content .subscription-plan-input-wrap:hover,
 .subscription-plan-modal-content .subscription-plan-textarea-wrap:hover {
-  border-color: #7f9bb8 !important;
+  border-color: #b8c9de !important;
 }
 
 .subscription-plan-modal-content .subscription-plan-input-wrap:focus-within,
@@ -1333,14 +1334,14 @@ body:has(.subscription-plan-modal) .modal-backdrop {
   .subscription-plan-textarea-wrap
   .form-control {
   border: 0 !important;
-  border-radius: 10px !important;
+  border-radius: 12px !important;
   background-color: transparent !important;
   box-shadow: none !important;
   outline: 0 !important;
 }
 
 .subscription-plan-modal-content .subscription-plan-option > .form-control {
-  border: 1.5px solid #a9bdd3 !important;
+  border: 1px solid #dbe4f0 !important;
   background-color: #fff !important;
 }
 

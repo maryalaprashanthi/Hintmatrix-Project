@@ -5,14 +5,10 @@
 *,
 *::before,
 *::after {
-
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-
 }
-
-
 
 /* ==========================
    Root Context
@@ -21,67 +17,50 @@
 html,
 body,
 #root {
-
   width: 100%;
   min-height: 100%;
 
   overflow-x: hidden;
   overflow-y: auto;
-
 }
-
-
 
 /* ==========================
    Body Base Typography
 ========================== */
 
 body {
-
   font-family: Inter, Arial, sans-serif;
 
   background: #f5f7fb;
 
   color: #111827;
-
 }
-
-
 
 /* ==========================
    Links
 ========================== */
 
 a {
-
   text-decoration: none;
 
   color: inherit;
-
 }
-
-
 
 /* ==========================
    Images
 ========================== */
 
 img {
-
   display: block;
 
   max-width: 100%;
-
 }
-
-
 
 /* ==========================
    Buttons
 ========================== */
 
 button:not([class*="btn"]) {
-
   font: inherit;
 
   cursor: pointer;
@@ -89,17 +68,11 @@ button:not([class*="btn"]) {
   border: none;
 
   background: none;
-
 }
-
 
 button {
-
   cursor: pointer;
-
 }
-
-
 
 /* ==========================
    Inputs
@@ -108,49 +81,32 @@ button {
 input:not(.form-control),
 select:not(.form-select),
 textarea:not(.form-control) {
-
   font: inherit;
 
   outline: none;
-
 }
-
-
 
 /* ==========================
    Scrollbar
 ========================== */
 
 ::-webkit-scrollbar {
-
   width: 8px;
-
 }
-
 
 ::-webkit-scrollbar-track {
-
   background: #f5f7fb;
-
 }
 
-
 ::-webkit-scrollbar-thumb {
-
   background: #cbd5e1;
 
   border-radius: 10px;
-
 }
-
 
 ::-webkit-scrollbar-thumb:hover {
-
   background: #94a3b8;
-
 }
-
-
 
 /* ==========================================================
    Bootstrap Modal Protection
@@ -160,74 +116,52 @@ textarea:not(.form-control) {
 .modal-dialog,
 .modal-content,
 .modal-body {
-
   background-color: #ffffff !important;
 
   background: #ffffff !important;
 
   color: #212529 !important;
-
 }
-
-
 
 /* Form Controls Inside Modal */
 
 .modal-body .form-control {
-
   background-color: #ffffff !important;
 
   background: #ffffff !important;
 
   color: #111827 !important;
 
-  border:1px solid #cbd5e1 !important;
+  border: 1px solid #cbd5e1 !important;
 
-  opacity:1 !important;
-
+  opacity: 1 !important;
 }
-
-
 
 .modal-body .form-control:focus {
+  background-color: #ffffff !important;
 
-  background-color:#ffffff !important;
+  color: #111827 !important;
 
-  color:#111827 !important;
+  border-color: #2563eb !important;
 
-  border-color:#2563eb !important;
-
-  box-shadow:0 0 0 .25rem rgba(37,99,235,.25) !important;
-
+  box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25) !important;
 }
-
-
 
 .modal-body .form-control::placeholder {
+  color: #94a3b8 !important;
 
-  color:#94a3b8 !important;
-
-  opacity:1 !important;
-
+  opacity: 1 !important;
 }
-
-
 
 .modal-body label,
 .modal-body h2 {
+  color: #1e293b !important;
 
-  color:#1e293b !important;
-
-  opacity:1 !important;
-
+  opacity: 1 !important;
 }
 
-
-
 .modal-backdrop {
-
-  opacity:.5 !important;
-
+  opacity: 0.5 !important;
 }
 
 /* Shared hierarchy card progress (Course > Subject > Chapter > Topic) */
@@ -337,4 +271,10 @@ html[data-theme="dark"] .hierarchy-progress-track {
 
 html[data-theme="dark"] .hierarchy-progress-track > span {
   background: #60a5fa;
+}
+
+body .modal-overlay {
+  top: 0 !important;
+  padding-top: 50px !important;
+  z-index: 99999 !important;
 }
