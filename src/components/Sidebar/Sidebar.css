@@ -16,13 +16,22 @@
   display: flex;
   flex-direction: column;
   z-index: 1000;
-  transition:
-    width 0.3s ease,
-    left 0.3s ease;
+  transition: width 0.3s ease;
+}
+
+.sidebar.collapsed {
+  width: 80px;
+}
+
+/* Mobile: expanded sidebar floats over the page, rail stays visible */
+@media (max-width: 768px) {
+  .sidebar:not(.collapsed) {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  }
 }
 
 /* =====================================
-   HEADER
+   HEADER + LOGO
 ===================================== */
 
 .sidebar-header {
@@ -30,7 +39,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: none;
   padding: 0 20px;
   position: relative;
 }
@@ -46,33 +54,56 @@
   transition: all 0.3s ease;
 }
 
-/* =====================================
-   COLLAPSED SIDEBAR
-   SHOW ONLY LOGO SYMBOL
-===================================== */
-
+/* Collapsed: crop the same logo so only the icon shows */
 .sidebar.collapsed .sidebar-header {
   padding: 0;
 }
 
 .sidebar.collapsed .sidebar-logo-wrapper {
-  width: 60px;
+  width: 42px; /* 40px = less "H", 44px = more icon */
   height: 85px;
-  display: flex;
   align-items: center;
   justify-content: flex-start;
-  overflow: hidden;
 }
 
 .sidebar.collapsed .sidebar-logo {
   width: 180px;
-  height: auto;
   max-width: none;
   flex-shrink: 0;
+  margin-left: -6px; /* more negative = icon moves left */
 }
 
 /* =====================================
-   CONTENT
+   COLLAPSE BUTTON
+===================================== */
+
+.sidebar-toggle {
+  position: absolute;
+  right: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid #2a3a6b;
+  background: #0b1636;
+  color: #e5e9f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1001;
+  font-size: 20px;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.sidebar-toggle:hover {
+  background: #16224a;
+}
+
+/* =====================================
+   CONTENT + MAIN MENU
 ===================================== */
 
 .college-menu-link {
@@ -89,10 +120,6 @@
 .sidebar-content::-webkit-scrollbar {
   display: none;
 }
-
-/* =====================================
-   MENU
-===================================== */
 
 .sidebar-menu {
   display: flex;
@@ -133,9 +160,32 @@
   font-weight: 500;
 }
 
+.sidebar.collapsed .menu-left span {
+  display: none;
+}
+
+.sidebar.collapsed .menu-item {
+  justify-content: center;
+  padding: 0;
+}
+
+.sidebar.collapsed .menu-left {
+  justify-content: center;
+  gap: 0;
+}
+
 /* =====================================
-   SUB MENU - COMMON FOR ALL
+   SUBMENUS
 ===================================== */
+
+.subscription-menu,
+.college-menu,
+.question-menu,
+.table-menu,
+.admin-menu,
+.learning-analytics-menu {
+  width: 100%;
+}
 
 .submenu {
   margin-left: 20px;
@@ -158,26 +208,18 @@
   transition: all 0.2s ease;
 }
 
-/* All submenu icons */
-
 .submenu-item svg {
   width: 18px;
   height: 18px;
   font-size: 18px;
   flex-shrink: 0;
   display: block;
-  visibility: visible;
-  opacity: 1;
 }
-
-/* All submenu text */
 
 .submenu-item span {
   font-size: 14px;
   font-weight: 500;
 }
-
-/* Active submenu */
 
 .submenu-item.active-submenu {
   background: linear-gradient(90deg, #3558d8, #5878f8);
@@ -188,30 +230,11 @@
   color: white;
 }
 
-/* =====================================
-   SUBMENU PARENT MENUS
-===================================== */
-
-.subscription-menu,
-.college-menu,
-.question-menu,
-.table-menu,
-.admin-menu,
-.learning-analytics-menu {
-  width: 100%;
-}
-
-/* =====================================
-   COLLAPSED SIDEBAR - ALL SUBMENUS
-===================================== */
-
-/* Hide submenu when sidebar is collapsed */
+/* Collapsed: submenus show as an icon-only column when their parent is open */
 
 .sidebar.collapsed .submenu {
   display: none;
 }
-
-/* Show submenu when its parent is open */
 
 .sidebar.collapsed .subscription-menu.open .submenu,
 .sidebar.collapsed .college-menu.open .submenu,
@@ -223,10 +246,7 @@
   margin-left: 0;
   padding-left: 0;
   align-items: center;
-  gap: 6px;
 }
-
-/* Same style for every submenu item */
 
 .sidebar.collapsed .submenu-item {
   width: 48px;
@@ -236,77 +256,14 @@
   gap: 0;
 }
 
-/* Hide submenu text */
-
 .sidebar.collapsed .submenu-item span {
   display: none;
 }
 
-/* Keep every submenu icon visible */
-
 .sidebar.collapsed .submenu-item svg {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
   width: 20px;
   height: 20px;
   font-size: 20px;
-  flex-shrink: 0;
-}
-
-/* =====================================
-   COLLAPSED MAIN MENU
-===================================== */
-
-.sidebar.collapsed {
-  width: 80px;
-}
-
-/* Hide main menu text */
-
-.sidebar.collapsed .menu-left span {
-  display: none;
-}
-
-/* Center main menu */
-
-.sidebar.collapsed .menu-item {
-  justify-content: center;
-  padding: 0;
-}
-
-.sidebar.collapsed .menu-left {
-  justify-content: center;
-  gap: 0;
-}
-
-/* =====================================
-   COLLAPSE BUTTON
-===================================== */
-
-.sidebar-toggle {
-  position: absolute;
-  right: -14px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 1px solid #2a3a6b;
-  background: #0b1636;
-  color: #e5e9f5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 1001;
-  font-size: 20px;
-  line-height: 1;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-}
-
-.sidebar-toggle:hover {
-  background: #16224a;
 }
 
 /* =====================================
@@ -334,173 +291,4 @@
 
 .sidebar.collapsed .logout span {
   display: none;
-}
-
-/* =====================================
-   MOBILE RESPONSIVE
-===================================== */
-
-@media (max-width: 768px) {
-  /* Sidebar hidden by default */
-
-  .sidebar {
-    left: -280px;
-    width: 280px;
-    transition: left 0.3s ease;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  }
-
-  /* Show sidebar */
-
-  .sidebar.show {
-    left: 0;
-  }
-
-  /* =====================================
-     KEEP FULL SIDEBAR ON MOBILE
-  ===================================== */
-
-  .sidebar.collapsed {
-    width: 280px;
-  }
-
-  /* =====================================
-     MOBILE HEADER
-  ===================================== */
-
-  .sidebar.collapsed .sidebar-header {
-    padding: 0 20px;
-  }
-
-  .sidebar.collapsed .sidebar-logo-wrapper {
-    width: auto;
-    height: auto;
-    justify-content: center;
-  }
-
-  .sidebar.collapsed .sidebar-logo {
-    width: 190px;
-    max-width: none;
-  }
-
-  /* =====================================
-     MOBILE MAIN MENU
-  ===================================== */
-
-  .sidebar.collapsed .menu-item {
-    justify-content: space-between;
-    padding: 0 16px;
-  }
-
-  .sidebar.collapsed .menu-left {
-    justify-content: flex-start;
-    gap: 12px;
-  }
-
-  /* Show main menu text */
-
-  .sidebar.collapsed .menu-left span {
-    display: inline;
-  }
-
-  /* =====================================
-     MOBILE SUBMENUS
-  ===================================== */
-
-  /* Always use normal submenu layout on mobile */
-
-  .sidebar.collapsed .submenu {
-    display: flex;
-    margin-left: 20px;
-    padding-left: 14px;
-    align-items: stretch;
-    gap: 6px;
-  }
-
-  /* Normal submenu item size */
-
-  .sidebar.collapsed .submenu-item {
-    width: auto;
-    height: 38px;
-    justify-content: flex-start;
-    padding: 0 12px;
-    gap: 10px;
-  }
-
-  /* Show submenu text */
-
-  .sidebar.collapsed .submenu-item span {
-    display: inline;
-    font-size: 14px;
-    font-weight: 500;
-  }
-
-  /* Normal submenu icons */
-
-  .sidebar.collapsed .submenu-item svg {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    width: 18px;
-    height: 18px;
-    font-size: 18px;
-    flex-shrink: 0;
-  }
-
-  /* =====================================
-     MOBILE ARROW
-  ===================================== */
-
-  .sidebar.collapsed .menu-item > svg {
-    display: block;
-  }
-
-  /* =====================================
-     MOBILE SEARCH
-  ===================================== */
-
-  .sidebar.collapsed .sidebar-search {
-    display: flex;
-  }
-
-  /* =====================================
-     MOBILE LOGOUT
-  ===================================== */
-
-  .sidebar.collapsed .logout {
-    justify-content: flex-start;
-    padding: 0 20px;
-  }
-
-  .sidebar.collapsed .logout span {
-    display: inline;
-  }
-
-  /* =====================================
-     HIDE COLLAPSE BUTTON ON MOBILE
-  ===================================== */
-
-  .sidebar-toggle {
-    display: none;
-  }
-}
-
-/* Subscription submenu visibility */
-.sidebar .subscription-menu .submenu {
-  display: none;
-}
-
-.sidebar .subscription-menu.open .submenu {
-  display: flex;
-  flex-direction: column;
-  margin-left: 20px;
-  padding-left: 14px;
-  align-items: stretch;
-}
-
-/* Keep submenu items visible */
-.sidebar .subscription-menu.open .submenu .submenu-item {
-  display: flex;
-  visibility: visible;
-  opacity: 1;
 }

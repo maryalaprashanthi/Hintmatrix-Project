@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { logoutUser } from "../../interceptors/axiosInterceptor";
 import "./Sidebar.css";
@@ -24,8 +24,6 @@ import {
   MdAccessTime,
   MdSettings,
   MdLogout,
-  MdKeyboardArrowDown,
-  MdKeyboardArrowUp,
   MdQuiz,
   MdMenuBook,
   MdSecurity,
@@ -38,7 +36,11 @@ const MENU_PREFIXES = {
   admin: ["/admin"],
   question: ["/questions"],
   table: ["/table-"],
-  learningAnalytics: ["/time-analytics", "/performance", "/practice-performance"],
+  learningAnalytics: [
+    "/time-analytics",
+    "/performance",
+    "/practice-performance",
+  ],
 };
 
 const getMenuForPath = (path) =>
@@ -46,12 +48,83 @@ const getMenuForPath = (path) =>
     MENU_PREFIXES[key].some((prefix) => path.startsWith(prefix)),
   ) || null;
 
-export default function Sidebar({
-  sidebarOpen,
-  setSidebarOpen,
-  collapsed,
-  setCollapsed,
+const menuClass = ({ isActive }) =>
+  isActive ? "menu-item active" : "menu-item";
+
+const subMenuClass = ({ isActive }) =>
+  isActive ? "submenu-item active-submenu" : "submenu-item";
+
+const parentClass = (isOpen) => (isOpen ? "menu-item group-open" : "menu-item");
+
+/* ---------- Reusable pieces ---------- */
+
+function MenuLink({
+  to,
+  icon: Icon,
+  label,
+  end,
+  classFn = menuClass,
+  onClick,
 }) {
+  return (
+    <NavLink to={to} end={end} className={classFn} onClick={onClick}>
+      <div className="menu-left">
+        <Icon className="menu-icon" />
+        <span>{label}</span>
+      </div>
+    </NavLink>
+  );
+}
+
+function SubLink({ to, icon: Icon, label, end, onClick }) {
+  return (
+    <NavLink to={to} end={end} className={subMenuClass} onClick={onClick}>
+      <Icon />
+      <span>{label}</span>
+    </NavLink>
+  );
+}
+
+function ParentMenu({
+  name,
+  icon: Icon,
+  label,
+  isOpen,
+  onToggle,
+  to,
+  children,
+}) {
+  const header = (
+    <div
+      className={parentClass(isOpen)}
+      onClick={to ? undefined : onToggle}
+      aria-expanded={isOpen}
+    >
+      <div className="menu-left">
+        <Icon className="menu-icon" />
+        <span>{label}</span>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className={`${name}-menu ${isOpen ? "open" : ""}`}>
+      {to ? (
+        <NavLink to={to} className="college-menu-link" onClick={onToggle}>
+          {header}
+        </NavLink>
+      ) : (
+        header
+      )}
+
+      {isOpen && <div className="submenu">{children}</div>}
+    </div>
+  );
+}
+
+/* ---------- Sidebar ---------- */
+
+export default function Sidebar({ collapsed, setCollapsed }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -60,83 +133,62 @@ export default function Sidebar({
   const toggleMenu = (key) =>
     setOpenMenu((current) => (current === key ? null : key));
 
-  const subscriptionOpen = openMenu === "subscription";
-  const collegeOpen = openMenu === "college";
-  const adminOpen = openMenu === "admin";
-  const questionOpen = openMenu === "question";
-  const tableOpen = openMenu === "table";
-  const learningAnalyticsOpen = openMenu === "learningAnalytics";
-
   const userRole = normalizeRole(localStorage.getItem("role") || ROLES.GUEST);
+  const can = (feature) => canAccessFeature(feature, userRole);
 
   const isStudent = userRole === ROLES.STUDENT;
   const isGuest = userRole === ROLES.GUEST;
-  const canAccessAdminMenu = canAccessFeature("subscriptions", userRole);
-  const canAccessPlans = canAccessFeature("subscriptionsPlans", userRole);
-  const canAccessPerformance = canAccessFeature("performance", userRole);
-  const canAccessTimeAnalytics = canAccessFeature("timeAnalytics", userRole);
-  const canAccessPracticePerformance = canAccessFeature(
-    "practicePerformance",
-    userRole,
-  );
-  const canAccessMockExams = canAccessFeature("attemptMockExams", userRole);
-  const canAccessCollegeMenu = canAccessFeature("colleges", userRole);
-  const canAccessBranchMenu = canAccessFeature("branches", userRole);
-  const canAccessCourseMenu = canAccessFeature("courses", userRole);
-  const canManageCollegeAdminUsers = canAccessFeature(
-    "manageCollegeAdmins",
-    userRole,
-  );
-  const canManageSuperAdminUsers = canAccessFeature(
-    "manageSuperAdmins",
-    userRole,
-  );
-  const canManageBranchAdminUsers = canAccessFeature(
-    "manageBranchAdmins",
-    userRole,
-  );
-  const canManageStudentUsers = canAccessFeature("manageStudents", userRole);
 
-  const canAccessQuestionMenu = canAccessFeature("manageQuestions", userRole);
-  const canAccessTableMenu = canAccessFeature("tableMetadata", userRole);
-  const canAccessRuleEngine = canAccessFeature("ruleEngine", userRole);
-  const canAccessStudentAttendance = canAccessFeature("attendance", userRole);
-  const canAccessErrorList = canAccessFeature("attemptExams", userRole);
-  const canAccessSettings = canAccessFeature("settings", userRole);
+  const canAccessAdminMenu = can("subscriptions");
+  const canAccessPlans = can("subscriptionsPlans");
+  const canAccessPerformance = can("performance");
+  const canAccessTimeAnalytics = can("timeAnalytics");
+  const canAccessPracticePerformance = can("practicePerformance");
+  const canAccessCollegeMenu = can("colleges");
+  const canAccessBranchMenu = can("branches");
+  const canAccessCourseMenu = can("courses");
+  const canAccessExams = can("attemptExams");
 
-  const handleLogout = () => {
-    logoutUser(navigate);
-  };
+  const handleLogout = () => logoutUser(navigate);
 
+  // On mobile, shrink back to the icon rail after choosing a menu item
   const closeSidebar = () => {
-    if (window.innerWidth <= 768) {
-      setSidebarOpen(false);
-    }
+    if (window.innerWidth <= 768) setCollapsed(true);
   };
 
-  const menuClass = ({ isActive }) =>
-    isActive ? "menu-item active" : "menu-item";
+  // Mobile: tapping anywhere outside the sidebar shrinks it back to the rail
+  const sidebarRef = useRef(null);
 
-  // /exam and /mock-exam are the landing pages; their catalogs live at /exams
-  // and /mock-exams, which don't prefix-match, so keep the tab lit there too.
-  const examMenuClass = ({ isActive }) =>
-    isActive || pathname === "/exams" ? "menu-item active" : "menu-item";
-  const mockMenuClass = ({ isActive }) =>
-    isActive || pathname === "/mock-exams" ? "menu-item active" : "menu-item";
-  const subMenuClass = ({ isActive }) =>
-    isActive ? "submenu-item active-submenu" : "submenu-item";
+  useEffect(() => {
+    if (collapsed) return;
 
-  const parentClass = (isOpen) =>
-    isOpen ? "menu-item group-open" : "menu-item";
+    const handleOutside = (e) => {
+      if (
+        window.innerWidth <= 768 &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(e.target)
+      ) {
+        setCollapsed(true);
+      }
+    };
+
+    document.addEventListener("pointerdown", handleOutside);
+    return () => document.removeEventListener("pointerdown", handleOutside);
+  }, [collapsed, setCollapsed]);
+
+  // /exam and /mock-exam are landing pages; their catalogs live at /exams and
+  // /mock-exams, which don't prefix-match, so keep the tab lit there too.
+  const landingClass =
+    (extraPath) =>
+    ({ isActive }) =>
+      isActive || pathname === extraPath ? "menu-item active" : "menu-item";
 
   return (
     <aside
-      className={`sidebar ${sidebarOpen ? "show" : ""} ${
-        collapsed ? "collapsed" : ""
-      }`}
+      ref={sidebarRef}
+      className={`sidebar ${collapsed ? "collapsed" : ""}`}
     >
       {/* Logo */}
-
       <div className="sidebar-header">
         <div className="sidebar-logo-wrapper">
           <img src={logo} alt="HintMatrix" className="sidebar-logo" />
@@ -153,429 +205,303 @@ export default function Sidebar({
       </div>
 
       {/* Menu */}
-
       <div className="sidebar-content">
         <nav className="sidebar-menu">
-          {/* Dashboard */}
-
-          <NavLink
+          <MenuLink
             to="/dashboard"
             end
-            className={menuClass}
+            icon={MdDashboard}
+            label="Dashboard"
             onClick={closeSidebar}
-          >
-            <div className="menu-left">
-              <MdDashboard className="menu-icon" />
-              <span>Dashboard</span>
-            </div>
-          </NavLink>
+          />
 
           {/* Subscription */}
           {(canAccessAdminMenu || canAccessPlans) && (
-            <div
-              className={`subscription-menu ${subscriptionOpen ? "open" : ""}`}
+            <ParentMenu
+              name="subscription"
+              icon={FaCreditCard}
+              label="Subscription"
+              isOpen={openMenu === "subscription"}
+              onToggle={() => toggleMenu("subscription")}
             >
-              <div
-                className={parentClass(subscriptionOpen)}
-                onClick={() => toggleMenu("subscription")}
-              >
-                <div className="menu-left">
-                  <FaCreditCard className="menu-icon" />
-                  <span>Subscription</span>
-                </div>
-              </div>
-
-              {subscriptionOpen && (
-                <div className="submenu">
-                  {canAccessAdminMenu && (
-                    <NavLink
-                      to="/subscriptions"
-                      end
-                      className={subMenuClass}
-                      onClick={closeSidebar}
-                    >
-                      <FaCreditCard />
-                      <span>Overview</span>
-                    </NavLink>
-                  )}
-
-                  <NavLink
-                    to="/subscriptions/plans"
-                    className={subMenuClass}
-                    onClick={closeSidebar}
-                  >
-                    <FaCreditCard />
-                    <span>{canAccessAdminMenu ? "Manage Plans" : "Plans"}</span>
-                  </NavLink>
-
-                  {isStudent && (
-                    <NavLink
-                      to="/course-subscription"
-                      className={subMenuClass}
-                      onClick={closeSidebar}
-                    >
-                      <FaCreditCard />
-                      <span>Course Subscription</span>
-                    </NavLink>
-                  )}
-
-                  {canAccessAdminMenu && (
-                    <NavLink
-                      to="/subscriptions/history"
-                      className={subMenuClass}
-                      onClick={closeSidebar}
-                    >
-                      <MdListAlt />
-                      <span>Subscription History</span>
-                    </NavLink>
-                  )}
-                </div>
+              {canAccessAdminMenu && (
+                <SubLink
+                  to="/subscriptions"
+                  end
+                  icon={FaCreditCard}
+                  label="Overview"
+                  onClick={closeSidebar}
+                />
               )}
-            </div>
+
+              <SubLink
+                to="/subscriptions/plans"
+                icon={FaCreditCard}
+                label={canAccessAdminMenu ? "Manage Plans" : "Plans"}
+                onClick={closeSidebar}
+              />
+
+              {isStudent && (
+                <SubLink
+                  to="/course-subscription"
+                  icon={FaCreditCard}
+                  label="Course Subscription"
+                  onClick={closeSidebar}
+                />
+              )}
+
+              {canAccessAdminMenu && (
+                <SubLink
+                  to="/subscriptions/history"
+                  icon={MdListAlt}
+                  label="Subscription History"
+                  onClick={closeSidebar}
+                />
+              )}
+            </ParentMenu>
           )}
 
-          {/* Courses */}
+          {/* College / Organization */}
           {canAccessCourseMenu && !isStudent && !isGuest && (
-            <div className={`college-menu ${collegeOpen ? "open" : ""}`}>
-              {canAccessCollegeMenu ? (
-                <NavLink
-                  to="/college"
-                  className="college-menu-link"
-                  onClick={() => toggleMenu("college")}
-                >
-                  <div className={parentClass(collegeOpen)}>
-                    <div className="menu-left">
-                      <MdSchool className="menu-icon" />
-                      <span>College</span>
-                    </div>
-                  </div>
-                </NavLink>
-              ) : (
-                <div
-                  className={parentClass(collegeOpen)}
-                  onClick={() => toggleMenu("college")}
-                >
-                  <div className="menu-left">
-                    <MdSchool className="menu-icon" />
-                    <span>Organization</span>
-                  </div>
-                </div>
+            <ParentMenu
+              name="college"
+              icon={MdSchool}
+              label={canAccessCollegeMenu ? "College" : "Organization"}
+              to={canAccessCollegeMenu ? "/college" : undefined}
+              isOpen={openMenu === "college"}
+              onToggle={() => toggleMenu("college")}
+            >
+              {canAccessBranchMenu && (
+                <SubLink
+                  to="/branch"
+                  icon={MdAccountTree}
+                  label="Branch"
+                  onClick={closeSidebar}
+                />
               )}
-
-              {collegeOpen && (
-                <div className="submenu">
-                  {canAccessBranchMenu && (
-                    <NavLink
-                      to="/branch"
-                      className={subMenuClass}
-                      onClick={closeSidebar}
-                    >
-                      <MdAccountTree />
-                      <span>Branch</span>
-                    </NavLink>
-                  )}
-
-                  <NavLink
-                    to="/courses"
-                    className={subMenuClass}
-                    onClick={closeSidebar}
-                  >
-                    <MdLibraryBooks />
-                    <span>Course</span>
-                  </NavLink>
-
-                  <NavLink
-                    to="/section"
-                    className={subMenuClass}
-                    onClick={closeSidebar}
-                  >
-                    <MdViewModule />
-                    <span>Section</span>
-                  </NavLink>
-                </div>
-              )}
-            </div>
+              <SubLink
+                to="/courses"
+                icon={MdLibraryBooks}
+                label="Course"
+                onClick={closeSidebar}
+              />
+              <SubLink
+                to="/section"
+                icon={MdViewModule}
+                label="Section"
+                onClick={closeSidebar}
+              />
+            </ParentMenu>
           )}
 
+          {/* Courses / Practice */}
           {canAccessCourseMenu && (
-            <NavLink to="/courses" className={menuClass} onClick={closeSidebar}>
-              <div className="menu-left">
-                <MdMenuBook className="menu-icon" />
-                <span>{isStudent || isGuest ? "Practice" : "Courses"}</span>
-              </div>
-            </NavLink>
+            <MenuLink
+              to="/courses"
+              icon={MdMenuBook}
+              label={isStudent || isGuest ? "Practice" : "Courses"}
+              onClick={closeSidebar}
+            />
           )}
 
           {/* Admin */}
-
           {canAccessAdminMenu && (
-            <div className={`admin-menu ${adminOpen ? "open" : ""}`}>
-              <div
-                className={parentClass(adminOpen)}
-                onClick={() => toggleMenu("admin")}
-              >
-                <div className="menu-left">
-                  <MdAdminPanelSettings className="menu-icon" />
-                  <span>Admin</span>
-                </div>
-              </div>
-
-              {adminOpen && (
-                <div className="submenu">
-                  {canManageSuperAdminUsers && (
-                    <NavLink
-                      to="/admin/super-admin"
-                      className={subMenuClass}
-                      onClick={closeSidebar}
-                    >
-                      <MdSecurity />
-                      <span>Super Admin</span>
-                    </NavLink>
-                  )}
-
-                  {canManageCollegeAdminUsers && (
-                    <NavLink
-                      to="/admin/college-admin"
-                      className={subMenuClass}
-                      onClick={closeSidebar}
-                    >
-                      <MdSchool />
-                      <span>College Admin</span>
-                    </NavLink>
-                  )}
-
-                  {canManageBranchAdminUsers && (
-                    <NavLink
-                      to="/admin/branch-admin"
-                      className={subMenuClass}
-                      onClick={closeSidebar}
-                    >
-                      <MdAccountTree />
-                      <span>Branch Admin</span>
-                    </NavLink>
-                  )}
-
-                  {canManageStudentUsers && (
-                    <NavLink
-                      to="/admin/student"
-                      className={subMenuClass}
-                      onClick={closeSidebar}
-                    >
-                      <MdSchool />
-                      <span>Student</span>
-                    </NavLink>
-                  )}
-                </div>
+            <ParentMenu
+              name="admin"
+              icon={MdAdminPanelSettings}
+              label="Admin"
+              isOpen={openMenu === "admin"}
+              onToggle={() => toggleMenu("admin")}
+            >
+              {can("manageSuperAdmins") && (
+                <SubLink
+                  to="/admin/super-admin"
+                  icon={MdSecurity}
+                  label="Super Admin"
+                  onClick={closeSidebar}
+                />
               )}
-            </div>
+              {can("manageCollegeAdmins") && (
+                <SubLink
+                  to="/admin/college-admin"
+                  icon={MdSchool}
+                  label="College Admin"
+                  onClick={closeSidebar}
+                />
+              )}
+              {can("manageBranchAdmins") && (
+                <SubLink
+                  to="/admin/branch-admin"
+                  icon={MdAccountTree}
+                  label="Branch Admin"
+                  onClick={closeSidebar}
+                />
+              )}
+              {can("manageStudents") && (
+                <SubLink
+                  to="/admin/student"
+                  icon={MdSchool}
+                  label="Student"
+                  onClick={closeSidebar}
+                />
+              )}
+            </ParentMenu>
           )}
 
           {/* Questions */}
-
-          {canAccessQuestionMenu && (
-            <div className={`question-menu ${questionOpen ? "open" : ""}`}>
-              <div
-                className={parentClass(questionOpen)}
-                onClick={() => toggleMenu("question")}
-              >
-                <div className="menu-left">
-                  <MdQuiz className="menu-icon" />
-                  <span>Questions</span>
-                </div>
-              </div>
-
-              {questionOpen && (
-                <div className="submenu">
-                  <NavLink
-                    to="/questions/create-all"
-                    className={subMenuClass}
-                    onClick={closeSidebar}
-                  >
-                    <MdAssignment />
-                    <span>Create Questions</span>
-                  </NavLink>
-
-                  <NavLink
-                    to="/questions"
-                    end
-                    className={subMenuClass}
-                    onClick={closeSidebar}
-                  >
-                    <MdListAlt />
-                    <span>All Questions</span>
-                  </NavLink>
-                </div>
-              )}
-            </div>
+          {can("manageQuestions") && (
+            <ParentMenu
+              name="question"
+              icon={MdQuiz}
+              label="Questions"
+              isOpen={openMenu === "question"}
+              onToggle={() => toggleMenu("question")}
+            >
+              <SubLink
+                to="/questions/create-all"
+                icon={MdAssignment}
+                label="Create Questions"
+                onClick={closeSidebar}
+              />
+              <SubLink
+                to="/questions"
+                end
+                icon={MdListAlt}
+                label="All Questions"
+                onClick={closeSidebar}
+              />
+            </ParentMenu>
           )}
 
           {/* Table Details */}
-
-          {canAccessTableMenu && (
-            <div className={`table-menu ${tableOpen ? "open" : ""}`}>
-              <div
-                className={parentClass(tableOpen)}
-                onClick={() => toggleMenu("table")}
-              >
-                <div className="menu-left">
-                  <MdTableChart className="menu-icon" />
-                  <span>Table Details</span>
-                </div>
-              </div>
-
-              {tableOpen && (
-                <div className="submenu">
-                  <NavLink
-                    to="/table-names"
-                    className={subMenuClass}
-                    onClick={closeSidebar}
-                  >
-                    <MdTableRows />
-                    <span>Table Names</span>
-                  </NavLink>
-
-                  <NavLink
-                    to="/table-headers"
-                    className={subMenuClass}
-                    onClick={closeSidebar}
-                  >
-                    <MdViewHeadline />
-                    <span>Table Headers</span>
-                  </NavLink>
-
-                  <NavLink
-                    to="/table-attributes"
-                    className={subMenuClass}
-                    onClick={closeSidebar}
-                  >
-                    <MdListAlt />
-                    <span>Table Attributes</span>
-                  </NavLink>
-                </div>
-              )}
-            </div>
+          {can("tableMetadata") && (
+            <ParentMenu
+              name="table"
+              icon={MdTableChart}
+              label="Table Details"
+              isOpen={openMenu === "table"}
+              onToggle={() => toggleMenu("table")}
+            >
+              <SubLink
+                to="/table-names"
+                icon={MdTableRows}
+                label="Table Names"
+                onClick={closeSidebar}
+              />
+              <SubLink
+                to="/table-headers"
+                icon={MdViewHeadline}
+                label="Table Headers"
+                onClick={closeSidebar}
+              />
+              <SubLink
+                to="/table-attributes"
+                icon={MdListAlt}
+                label="Table Attributes"
+                onClick={closeSidebar}
+              />
+            </ParentMenu>
           )}
 
-          {/* Rule Engine */}
-
-          {canAccessRuleEngine && (
-            <NavLink
+          {/* Single links */}
+          {can("ruleEngine") && (
+            <MenuLink
               to="/ruleengine"
-              className={menuClass}
+              icon={MdSettings}
+              label="Rule Engine"
               onClick={closeSidebar}
-            >
-              <div className="menu-left">
-                <MdSettings className="menu-icon" />
-                <span>Rule Engine</span>
-              </div>
-            </NavLink>
+            />
           )}
 
-          {/* Student Attendance */}
-
-          {canAccessStudentAttendance && (
-            <NavLink
+          {can("attendance") && (
+            <MenuLink
               to="/studentattendance"
-              className={menuClass}
+              icon={MdTableChart}
+              label={isStudent ? "My Attendance" : "Student Attendance"}
               onClick={closeSidebar}
-            >
-              <div className="menu-left">
-                <MdTableChart className="menu-icon" />
-                <span>{isStudent ? "My Attendance" : "Student Attendance"}</span>
-              </div>
-            </NavLink>
+            />
           )}
 
-          {canAccessErrorList && (
-            <NavLink to="/errors" className={menuClass} onClick={closeSidebar}>
-              <div className="menu-left">
-                <MdListAlt className="menu-icon" />
-                <span>Error List</span>
-              </div>
-            </NavLink>
+          {canAccessExams && (
+            <MenuLink
+              to="/errors"
+              icon={MdListAlt}
+              label="Error List"
+              onClick={closeSidebar}
+            />
           )}
 
-          {/* Exam */}
-
-          {canAccessFeature("attemptExams", userRole) && (
-            <NavLink
+          {canAccessExams && (
+            <MenuLink
               to="/exam"
-              className={examMenuClass}
+              icon={MdAssignment}
+              label="Exam"
+              classFn={landingClass("/exams")}
               onClick={closeSidebar}
+            />
+          )}
+
+          {can("attemptMockExams") && (
+            <MenuLink
+              to="/mock-exam"
+              icon={MdAssignmentTurnedIn}
+              label="Mock Exam"
+              classFn={landingClass("/mock-exams")}
+              onClick={closeSidebar}
+            />
+          )}
+
+          {/* Learning Analytics */}
+          {(canAccessPerformance ||
+            canAccessTimeAnalytics ||
+            canAccessPracticePerformance) && (
+            <ParentMenu
+              name="learning-analytics"
+              icon={MdInsights}
+              label="Learning Analytics"
+              isOpen={openMenu === "learningAnalytics"}
+              onToggle={() => toggleMenu("learningAnalytics")}
             >
-              <div className="menu-left">
-                <MdAssignment className="menu-icon" />
-                <span>Exam</span>
-              </div>
-            </NavLink>
-          )}
-
-          {/* Mock Exam */}
-          {canAccessMockExams && (
-            <NavLink to="/mock-exam" className={mockMenuClass} onClick={closeSidebar}>
-              <div className="menu-left">
-                <MdAssignmentTurnedIn className="menu-icon" />
-                <span>Mock Exam</span>
-              </div>
-            </NavLink>
-          )}
-
-          {(canAccessPerformance || canAccessTimeAnalytics || canAccessPracticePerformance) && (
-            <div className={`learning-analytics-menu ${learningAnalyticsOpen ? "open" : ""}`}>
-              <div
-                className={parentClass(learningAnalyticsOpen)}
-                onClick={() => toggleMenu("learningAnalytics")}
-                aria-expanded={learningAnalyticsOpen}
-              >
-                <div className="menu-left">
-                  <MdInsights className="menu-icon" />
-                  <span>Learning Analytics</span>
-                </div>
-              </div>
-              {learningAnalyticsOpen && (
-                <div className="submenu">
-                  {canAccessTimeAnalytics && (
-                    <NavLink to="/time-analytics" className={subMenuClass} onClick={closeSidebar}>
-                      <MdAccessTime />
-                      <span>Study Time Tracking</span>
-                    </NavLink>
-                  )}
-                  {canAccessPerformance && (
-                    <NavLink to="/performance" className={subMenuClass} onClick={closeSidebar}>
-                      <MdBarChart />
-                      <span>Exam Performance</span>
-                    </NavLink>
-                  )}
-                  {canAccessPracticePerformance && (
-                    <NavLink to="/practice-performance" className={subMenuClass} onClick={closeSidebar}>
-                      <MdInsights />
-                      <span>Practice Performance</span>
-                    </NavLink>
-                  )}
-                </div>
+              {canAccessTimeAnalytics && (
+                <SubLink
+                  to="/time-analytics"
+                  icon={MdAccessTime}
+                  label="Study Time Tracking"
+                  onClick={closeSidebar}
+                />
               )}
-            </div>
+              {canAccessPerformance && (
+                <SubLink
+                  to="/performance"
+                  icon={MdBarChart}
+                  label="Exam Performance"
+                  onClick={closeSidebar}
+                />
+              )}
+              {canAccessPracticePerformance && (
+                <SubLink
+                  to="/practice-performance"
+                  icon={MdInsights}
+                  label="Practice Performance"
+                  onClick={closeSidebar}
+                />
+              )}
+            </ParentMenu>
           )}
 
           {/* Settings */}
-
-          {canAccessSettings && (
-            <NavLink
+          {can("settings") && (
+            <MenuLink
               to="/settings"
-              className={menuClass}
+              icon={MdSettings}
+              label="Settings"
               onClick={closeSidebar}
-            >
-              <div className="menu-left">
-                <MdSettings className="menu-icon" />
-                <span>Settings</span>
-              </div>
-            </NavLink>
+            />
           )}
         </nav>
       </div>
 
       {/* Logout */}
-
       <button type="button" className="logout" onClick={handleLogout}>
         <MdLogout />
         <span>Logout</span>
