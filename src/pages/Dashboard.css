@@ -5,6 +5,7 @@
 .dashboard {
   width: 100%;
   min-height: 100%;
+  padding-top: 10px;
   padding-bottom: 40px;
   background-color: #f3f7fe;
 }
@@ -31,6 +32,7 @@
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
+  margin-top: 10px;
 }
 .dashboard .dashboard-empty {
   color: #64748b;
@@ -206,9 +208,15 @@
   white-space: nowrap;
 }
 
-.student-dashboard-insight-card.is-time { background: linear-gradient(145deg, #fff, #eff6ff); }
-.student-dashboard-insight-card.is-accuracy { background: linear-gradient(145deg, #fff, #f0fdf4); }
-.student-dashboard-insight-card.is-review { background: linear-gradient(145deg, #fff, #fff7ed); }
+.student-dashboard-insight-card.is-time {
+  background: linear-gradient(145deg, #fff, #eff6ff);
+}
+.student-dashboard-insight-card.is-accuracy {
+  background: linear-gradient(145deg, #fff, #f0fdf4);
+}
+.student-dashboard-insight-card.is-review {
+  background: linear-gradient(145deg, #fff, #fff7ed);
+}
 
 .student-dashboard-review-list {
   display: flex;
