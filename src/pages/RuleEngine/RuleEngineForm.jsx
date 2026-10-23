@@ -38,8 +38,8 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
   const [tableHeaders, setTableHeaders] = useState([]);
   // Load Dropdowns
   useEffect(() => {
-    loadDropdowns();
-  }, []);
+    if (show) loadDropdowns();
+  }, [show]);
 
   const loadDropdowns = async () => {
     try {
@@ -88,9 +88,12 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
   // Form Data
   const [formData, setFormData] = useState({
     chapterName: "",
+    attributeId: "",
     tableAttributeName: "",
+    pairAttributeId: "",
     pairAttributeName: "",
     fieldType: "",
+    pairedFieldType: "",
     relationshipName: "",
     pairOrder: "",
 
@@ -99,18 +102,28 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
     activeRow: true,
     rowStatus: "",
   });
-  const selectedFieldType = tableHeaders.find((header) => header.name === formData.fieldType);
-  const filteredAttributes = tableAttributes.filter((attribute) =>
-    selectedFieldType && String(attribute.headerId) === String(selectedFieldType.headerId),
-  );
+  const attributeOptions = tableAttributes.map((attribute) => ({
+    value: String(attribute.attributeId),
+    name: attribute.name,
+    headerName: attribute.tableHeaderName,
+    label: attribute.tableHeaderName
+      ? `${attribute.name} (${attribute.tableHeaderName})`
+      : attribute.name,
+  }));
+  const selectedAttribute = (id, name) => {
+    if (id !== "" && id != null) {
+      return attributeOptions.find((option) => option.value === String(id)) ||
+        (name ? { value: String(id), name, label: name } : null);
+    }
+    const matches = attributeOptions.filter((option) => option.name === name);
+    return matches.length === 1 ? matches[0] : null;
+  };
+  const tableAttributeOption = selectedAttribute(formData.attributeId, formData.tableAttributeName);
+  const pairAttributeOption = selectedAttribute(formData.pairAttributeId, formData.pairAttributeName);
+  const mainFieldType = tableAttributeOption?.headerName ?? formData.fieldType;
+  const pairedFieldType = pairAttributeOption?.headerName ?? formData.pairedFieldType;
   const handleFieldTypeChange = (option) => {
-    const fieldType = option?.value || "";
-    setFormData((prev) => prev.fieldType === fieldType ? prev : ({
-      ...prev,
-      fieldType,
-      tableAttributeName: "",
-      pairAttributeName: "",
-    }));
+    setFormData((prev) => ({ ...prev, fieldType: option?.value || "" }));
   };
   // Edit / Reset Form Data
   useEffect(() => {
@@ -142,6 +155,8 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
       setFormData({
         chapterName: selectedRuleData.chapterName || "",
 
+        attributeId: selectedRuleData.attributeId ?? "",
+        pairAttributeId: selectedRuleData.pairAttributeId ?? "",
         tableAttributeName:
           selectedRuleData.tableAttributeName ||
           selectedRuleData.attributeName ||
@@ -150,6 +165,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
         pairAttributeName: selectedRuleData.pairAttributeName || "",
 
         fieldType: selectedRuleData.fieldType || "",
+        pairedFieldType: selectedRuleData.pairedFieldType || "",
 
         relationshipName: selectedRuleData.relationshipName || "",
 
@@ -168,9 +184,12 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
     } else {
       setFormData({
         chapterName: "",
+        attributeId: "",
         tableAttributeName: "",
+        pairAttributeId: "",
         pairAttributeName: "",
         fieldType: "",
+        pairedFieldType: "",
         relationshipName: "",
         pairOrder: "",
 
@@ -231,10 +250,9 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
   // Save
   const handleSave = async () => {
     if (
-      !formData.fieldType ||
       !formData.chapterName ||
-      !formData.tableAttributeName ||
-      !formData.pairAttributeName ||
+      !tableAttributeOption ||
+      !pairAttributeOption ||
       !formData.relationshipName ||
       !formData.pairOrder
     ) {
@@ -242,21 +260,17 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
       return;
     }
 
-    if (![formData.tableAttributeName, formData.pairAttributeName].every(
-      (name) => filteredAttributes.some((attribute) => attribute.name === name),
-    )) {
-      alert("Select both attributes from the selected Field Type.");
-      return;
-    }
-
     const payload = {
       chapterName: formData.chapterName,
 
-      attributeName: formData.tableAttributeName,
+      attributeId: Number(tableAttributeOption.value),
+      attributeName: tableAttributeOption.name,
 
-      pairAttributeName: formData.pairAttributeName,
+      pairAttributeId: Number(pairAttributeOption.value),
+      pairAttributeName: pairAttributeOption.name,
 
-      fieldType: formData.fieldType,
+      fieldType: mainFieldType,
+      pairedFieldType,
 
       relationshipName: formData.relationshipName,
 
@@ -379,7 +393,7 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
               {/* Field Type */}
 
               <div className="form-group">
-                <label>Field Type<span className="required">*</span></label>
+                <label>Field Type</label>
 
                 <div className="select-box">
                   <FaFont className="select-icon" />
@@ -402,9 +416,10 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                           value: item.name,
                           label: item.name,
                         }))
-                        .find((option) => option.value === formData.fieldType) ||
+                        .find((option) => option.value === mainFieldType) ||
                       null
                     }
+                    isDisabled={Boolean(tableAttributeOption)}
                     onChange={handleFieldTypeChange}
                     placeholder="Select Field Type"
                     isSearchable
@@ -435,25 +450,16 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                     styles={{
                       menuPortal: (base) => ({ ...base, zIndex: 99999 }),
                     }}
-                    options={filteredAttributes.map((item) => ({
-                      value: item.name,
-                      label: item.name,
-                    }))}
-                    value={
-                      filteredAttributes
-                        .map((item) => ({ value: item.name, label: item.name }))
-                        .find(
-                          (option) =>
-                            option.value === formData.tableAttributeName,
-                        ) || null
-                    }
+                    options={attributeOptions}
+                    value={tableAttributeOption}
                     onChange={(option) =>
                       setFormData((prev) => ({
                         ...prev,
-                        tableAttributeName: option?.value || "",
+                        attributeId: option?.value || "",
+                        tableAttributeName: option?.name || "",
+                        fieldType: option?.headerName || "",
                       }))
                     }
-                    isDisabled={!formData.fieldType}
                     placeholder="Select Table Attribute"
                     isSearchable
                     isClearable
@@ -468,6 +474,45 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                     {getFieldIssue("attribute").message}
                   </div>
                 )}
+              </div>
+
+              {/* Paired Field Type */}
+
+              <div className="form-group">
+                <label>Paired Field Type</label>
+
+                <div className="select-box">
+                  <FaFont className="select-icon" />
+
+                  <Select
+                    className="aq-search-select"
+                    classNamePrefix="aq-select"
+                    menuPlacement="bottom"
+                    menuPortalTarget={document.body}
+                    styles={{
+                      menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                    }}
+                    options={tableHeaders.map((item) => ({
+                      value: item.name,
+                      label: item.name,
+                    }))}
+                    value={
+                      tableHeaders
+                        .map((item) => ({
+                          value: item.name,
+                          label: item.name,
+                        }))
+                        .find((option) => option.value === pairedFieldType) ||
+                      null
+                    }
+                    isDisabled={Boolean(pairAttributeOption)}
+                    onChange={(option) => setFormData((prev) => ({ ...prev, pairedFieldType: option?.value || "" }))}
+                    placeholder="Select Paired Field Type"
+                    isSearchable
+                    isClearable
+                    noOptionsMessage={() => "No field type found"}
+                  />
+                </div>
               </div>
 
               {/*
@@ -491,25 +536,16 @@ function RuleEngineForm({ show, onClose, onSave, selectedRuleData }) {
                     styles={{
                       menuPortal: (base) => ({ ...base, zIndex: 99999 }),
                     }}
-                    options={filteredAttributes.map((item) => ({
-                      value: item.name,
-                      label: item.name,
-                    }))}
-                    value={
-                      filteredAttributes
-                        .map((item) => ({ value: item.name, label: item.name }))
-                        .find(
-                          (option) =>
-                            option.value === formData.pairAttributeName,
-                        ) || null
-                    }
+                    options={attributeOptions}
+                    value={pairAttributeOption}
                     onChange={(option) =>
                       setFormData((prev) => ({
                         ...prev,
-                        pairAttributeName: option?.value || "",
+                        pairAttributeId: option?.value || "",
+                        pairAttributeName: option?.name || "",
+                        pairedFieldType: option?.headerName || "",
                       }))
                     }
-                    isDisabled={!formData.fieldType}
                     placeholder="Select Pair Attribute"
                     isSearchable
                     isClearable
