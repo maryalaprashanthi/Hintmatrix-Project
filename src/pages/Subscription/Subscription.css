@@ -361,6 +361,7 @@
 }
 
 .subscription-stats .stat-menu {
+  display: none;
   position: absolute;
   top: 21px;
   right: 18px;
