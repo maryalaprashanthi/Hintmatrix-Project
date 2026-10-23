@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import RuleEngineForm from "./RuleEngineForm";
+import RuleEngineUploadErrorsModal from "./RuleEngineUploadErrorsModal";
+import { readRuleEngineUploadReport, saveRuleEngineUploadReport } from "./ruleEngineUploadReport";
 import RuleEngineTable from "./RuleEngineTable";
 import "./RuleEngine.css";
 import RuleEngineService from "../../services/RuleEngineService";
@@ -19,6 +21,9 @@ function RuleEngine() {
 
   const fileInputRef = useRef(null);
 
+  const [uploadReport, setUploadReport] = useState(readRuleEngineUploadReport);
+  const [showUploadErrors, setShowUploadErrors] = useState(false);
+  const [uploading, setUploading] = useState(false);
   // Store upload draft information
   const [uploadDrafts, setUploadDrafts] = useState([]);
   // Fetch All Rules
@@ -47,48 +52,25 @@ function RuleEngine() {
       return;
     }
 
+    setUploading(true);
+    saveRuleEngineUploadReport(null);
+    setUploadReport(null);
+    setShowUploadErrors(false);
     try {
-      const response =
-        await RuleEngineService.uploadRulesExcel(file);
-
-      console.log("Excel Upload Response:", response);
-      const drafts = response.drafts || [];
-
-      setUploadDrafts(drafts);
-      const latestRules =
-        await RuleEngineService.getAllRules();
-      const rulesWithIssues = (latestRules || []).map((rule) => {
-        const draft = drafts.find(
-          (item) =>
-            Number(item.ruleEngineId) ===
-            Number(rule.ruleEngineId)
-        );
-
-        return {
-          ...rule,
-
-          uploadIssues: draft
-            ? draft.missingFields || []
-            : [],
-
-          uploadStatus: draft
-            ? "DRAFT"
-            : "RULE",
-        };
-      });
-
-      setRuleEngineList(rulesWithIssues);
-
-      // Success is announced by the notification popup; avoid a duplicate toast.
-      // toast.success(
-        // `Excel upload complete — ${response.rulesUploaded || 0} uploaded, ` +
-          // `${response.draftsCreated || 0} drafts, ${response.failedRows || 0} failed.`,
-      // );
+      const response = await RuleEngineService.uploadRulesExcel(file);
+      setUploadReport(response);
+      saveRuleEngineUploadReport(response);
+      setUploadDrafts([]);
+      setShowUploadErrors(Boolean(response.errors?.length));
+      if (!response.errors?.length) toast.success(response.message || "Rule upload complete.");
+      await fetchRules();
     } catch (error) {
       console.error("Upload Error:", error);
       toast.error(getApiErrorMessage(error, "Rule upload failed."));
+    } finally {
+      setUploading(false);
+      e.target.value = "";
     }
-    e.target.value = "";
   };
   // Add Rule
   const handleAdd = () => {
@@ -189,15 +171,21 @@ function RuleEngine() {
         <input
           type="file"
           ref={fileInputRef}
-          accept=".xlsx,.xls,.csv"
+          accept=".xlsx,.xls,.xlsm"
           style={{ display: "none" }}
           onChange={handleFileChange}
         />
 
         <div className="d-flex gap-2">
+          {uploadReport?.errors?.length > 0 && (
+            <button className="btn btn-outline-danger" onClick={() => setShowUploadErrors(true)}>
+              Upload Errors ({uploadReport.errors.length})
+            </button>
+          )}
 
           <button
             className="btn btn-primary"
+            disabled={uploading}
             onClick={handleUploadClick}
           >
             ⬆ Upload
@@ -234,7 +222,11 @@ function RuleEngine() {
         onDelete={del.request}
       />
 
-      {}
+      <RuleEngineUploadErrorsModal
+        show={showUploadErrors}
+        report={uploadReport}
+        onClose={() => setShowUploadErrors(false)}
+      />
       <RuleEngineForm
         show={showModal}
         onClose={handleClose}
