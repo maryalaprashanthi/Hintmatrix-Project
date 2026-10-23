@@ -46,16 +46,13 @@ const statMeta = [
   {
     key: "avgScore",
     title: "Average Score",
-    value: "78.6%",
-    sub: "Good Progress",
+    sub: "No completed exams",
     type: "orange",
     icon: <FaBullseye />,
   },
   {
     key: "bestScore",
     title: "Best Score",
-    value: "92.5%",
-    sub: "Mock Test - 12",
     type: "pink",
     icon: <FaTrophy />,
   },
@@ -125,6 +122,15 @@ const formatDuration = (durationMinutes) => {
   return `${minutes} Min`;
 };
 
+// Distinct, non-null exam ids from a list of attempts, as strings.
+const distinctExamIds = (attempts) =>
+  new Set(
+    attempts
+      .map((attempt) => attempt.examId)
+      .filter((examId) => examId !== null && examId !== undefined)
+      .map(String),
+  );
+
 /* ================= SUBJECTS  ================= */
 
 const subjects = [
@@ -139,6 +145,11 @@ const subjects = [
 // One dashboard, two routes: /exam (kind="exam") and /mock-exam (kind="mock").
 // Mock exams have no schedule window, so the mock version swaps the "Upcoming"
 // stat and schedule list for "Yet to Attempt" and the published mock exams.
+//
+// IMPORTANT (backend behaviour): for a STUDENT, ExamService.getAll() and
+// MockExamService.getAll() return only exams the student has NOT attempted
+// yet. So:
+//   Total = pending (getAll) + completed (distinct exams in getMyAttempts)
 function ExamHub({ kind = "exam" }) {
   const isMock = kind === "mock";
   const userName = getCurrentUserName();
@@ -154,19 +165,28 @@ function ExamHub({ kind = "exam" }) {
 
   const [mockCatalog, setMockCatalog] = useState([]);
   const [attempts, setAttempts] = useState([]);
+  const [attemptsLoading, setAttemptsLoading] = useState(true);
+  const [attemptsError, setAttemptsError] = useState(false);
   const recentAttempts = attempts.slice(0, 4);
 
+  // pending = exams still to attempt (what getAll() returns for a student)
   const [statValues, setStatValues] = useState({
-    total: "00",
-    completed: "00",
-    completedPct: "0.0%",
-    upcoming: "00",
+    pending: 0,
+    upcoming: 0,
   });
+
+  /* ---------- Load exams / mock catalog ---------- */
 
   useEffect(() => {
     let active = true;
 
     async function loadExamData() {
+      // Clear the previous page's data so /exam <-> /mock-exam never
+      // shows stale numbers while the new request is in flight.
+      setSchedules([]);
+      setMockCatalog([]);
+      setStatValues({ pending: 0, upcoming: 0 });
+
       try {
         setScheduleLoading(true);
         setScheduleError(false);
@@ -188,37 +208,27 @@ function ExamHub({ kind = "exam" }) {
         const now = new Date();
         const oneWeekOut = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-        /* ---- Stats: Total / Completed / Upcoming ---- */
+        /* ---- Pending count + Upcoming (open now or starting within 7 days) ---- */
 
-        const totalCount = activeExams.length;
-
-        const completedCount = activeExams.filter(
-          (exam) => new Date(exam.endDate) < now,
-        ).length;
+        const pendingCount = activeExams.length;
 
         const upcomingThisWeekCount = activeExams.filter((exam) => {
           const start = new Date(exam.startDate);
-          return start > now && start <= oneWeekOut;
+          const end = new Date(exam.endDate);
+          return end > now && start <= oneWeekOut;
         }).length;
-
-        const completedPct =
-          totalCount > 0
-            ? ((completedCount / totalCount) * 100).toFixed(1)
-            : "0.0";
 
         if (active) {
           setStatValues({
-            total: String(totalCount).padStart(2, "0"),
-            completed: String(completedCount).padStart(2, "0"),
-            completedPct: `${completedPct}%`,
-            upcoming: String(upcomingThisWeekCount).padStart(2, "0"),
+            pending: pendingCount,
+            upcoming: upcomingThisWeekCount,
           });
         }
 
-        /* ---- Upcoming schedule list  ---- */
+        /* ---- Upcoming schedule list ---- */
 
         const upcomingExams = activeExams
-          .filter((exam) => new Date(exam.endDate) > now) // not yet finished (covers ongoing + future)
+          .filter((exam) => new Date(exam.endDate) > now) // not yet finished (ongoing + future)
           .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
           .slice(0, MAX_SCHEDULE_ITEMS)
           .map((exam, index) => {
@@ -255,6 +265,8 @@ function ExamHub({ kind = "exam" }) {
     };
   }, [isMock]);
 
+  /* ---------- Load the student's own attempts ---------- */
+
   // Recent Activity: the student's own completed attempts for this page's kind
   // (exams on /exam, mock exams on /mock-exam), newest first. Each entry is
   // clickable and opens that attempt's review screen instead of "starting" it
@@ -263,6 +275,9 @@ function ExamHub({ kind = "exam" }) {
     let active = true;
 
     const service = isMock ? MockExamService : ExamService;
+    setAttempts([]);
+    setAttemptsLoading(true);
+    setAttemptsError(false);
 
     service
       .getMyAttempts()
@@ -278,6 +293,10 @@ function ExamHub({ kind = "exam" }) {
       })
       .catch((err) => {
         console.error("Failed to load attempts:", err);
+        if (active) setAttemptsError(true);
+      })
+      .finally(() => {
+        if (active) setAttemptsLoading(false);
       });
 
     return () => {
@@ -285,22 +304,103 @@ function ExamHub({ kind = "exam" }) {
     };
   }, [isMock]);
 
-  // Mock stats come from the catalog + the student's own attempts: a mock exam
-  // counts as completed once they have at least one attempt on it.
+  /* ---------- Derived stats ---------- */
+
+  // Distinct exams the student has attempted at least once.
+  const completedExamIds = useMemo(() => distinctExamIds(attempts), [attempts]);
+
+  // Mock stats. Works whether getAll() returns the full catalog (admins) or
+  // hides attempted mocks (students): total is every mock we know about
+  // (catalog + attempted), pending is the catalog entries not attempted yet.
   const mockStats = useMemo(() => {
-    const total = mockCatalog.length;
-    const attemptedIds = new Set(attempts.map((attempt) => attempt.examId));
-    const completed = mockCatalog.filter((mock) =>
-      attemptedIds.has(mock.mockExamId),
+    const ready = !attemptsLoading && !attemptsError;
+
+    const catalogIds = new Set(
+      mockCatalog
+        .map((mock) => mock.mockExamId)
+        .filter((id) => id !== null && id !== undefined)
+        .map(String),
+    );
+    const allIds = new Set([...catalogIds, ...completedExamIds]);
+    const total = allIds.size;
+    const completed = completedExamIds.size;
+    const pending = [...catalogIds].filter(
+      (id) => !completedExamIds.has(id),
     ).length;
 
     return {
       total: pad(total),
-      completed: pad(completed),
-      completedPct: `${total > 0 ? ((completed / total) * 100).toFixed(1) : "0.0"}%`,
-      upcoming: pad(total - completed),
+      completed: ready ? pad(completed) : "—",
+      completedPct: ready
+        ? `${total > 0 ? ((completed / total) * 100).toFixed(1) : "0.0"}%`
+        : "—",
+      upcoming: pad(pending),
     };
-  }, [mockCatalog, attempts]);
+  }, [attemptsError, attemptsLoading, completedExamIds, mockCatalog]);
+
+  // Exam stats. For students getAll() only returns UNATTEMPTED exams, so
+  // Total = pending + completed. Admins get every exam from getAll() and their
+  // own attempts are a separate list, so we must not add them together.
+  const examStats = useMemo(() => {
+    const ready = !attemptsLoading && !attemptsError;
+    const pending = statValues.pending;
+    const completed = completedExamIds.size;
+    const total = canCreateExam ? pending : pending + completed;
+
+    return {
+      total: ready || canCreateExam ? pad(total) : "—",
+      completed: ready ? pad(completed) : "—",
+      completedPct: ready
+        ? `${total > 0 ? Math.min((completed / total) * 100, 100).toFixed(1) : "0.0"}%`
+        : "—",
+      upcoming: pad(statValues.upcoming),
+    };
+  }, [
+    attemptsError,
+    attemptsLoading,
+    canCreateExam,
+    completedExamIds,
+    statValues,
+  ]);
+
+  const scoreStats = useMemo(() => {
+    const scoredAttempts = attempts
+      .map((attempt) => ({ ...attempt, score: Number(attempt.percentage) }))
+      .filter(
+        (attempt) =>
+          attempt.percentage !== null &&
+          attempt.percentage !== undefined &&
+          attempt.percentage !== "" &&
+          Number.isFinite(attempt.score),
+      );
+
+    if (scoredAttempts.length === 0) {
+      return {
+        avgScore: attemptsLoading ? "—" : "0.00%",
+        avgScoreSub: attemptsLoading
+          ? "Loading results..."
+          : "No completed exams",
+        bestScore: attemptsLoading ? "—" : "0.00%",
+        bestScoreSub: attemptsLoading
+          ? "Loading results..."
+          : "No completed exams",
+      };
+    }
+
+    const average =
+      scoredAttempts.reduce((sum, attempt) => sum + attempt.score, 0) /
+      scoredAttempts.length;
+    const bestAttempt = scoredAttempts.reduce((best, attempt) =>
+      attempt.score > best.score ? attempt : best,
+    );
+
+    return {
+      avgScore: `${average.toFixed(2)}%`,
+      avgScoreSub: `${scoredAttempts.length} ${scoredAttempts.length === 1 ? "attempt" : "attempts"}`,
+      bestScore: `${bestAttempt.score.toFixed(2)}%`,
+      bestScoreSub: bestAttempt.examName || "Best completed exam",
+    };
+  }, [attempts, attemptsLoading]);
 
   const mockList = useMemo(
     () =>
@@ -319,7 +419,7 @@ function ExamHub({ kind = "exam" }) {
     [mockCatalog],
   );
 
-  const shownStats = isMock ? mockStats : statValues;
+  const shownStats = isMock ? mockStats : examStats;
   const scheduleItems = isMock ? mockList : schedules;
   const tiles = buildTiles(isMock);
 
@@ -332,7 +432,11 @@ function ExamHub({ kind = "exam" }) {
       return {
         ...meta,
         value: shownStats.completed,
-        sub: shownStats.completedPct,
+        sub: attemptsError
+          ? "Unable to load results"
+          : attemptsLoading
+            ? "Loading results..."
+            : shownStats.completedPct,
       };
     }
     if (meta.key === "upcoming") {
@@ -344,6 +448,20 @@ function ExamHub({ kind = "exam" }) {
             value: shownStats.upcoming,
           }
         : { ...meta, value: shownStats.upcoming };
+    }
+    if (meta.key === "avgScore") {
+      return {
+        ...meta,
+        value: attemptsError || attemptsLoading ? "—" : scoreStats.avgScore,
+        sub: attemptsError ? "Unable to load results" : scoreStats.avgScoreSub,
+      };
+    }
+    if (meta.key === "bestScore") {
+      return {
+        ...meta,
+        value: attemptsError || attemptsLoading ? "—" : scoreStats.bestScore,
+        sub: attemptsError ? "Unable to load results" : scoreStats.bestScoreSub,
+      };
     }
     return meta;
   });
@@ -395,6 +513,11 @@ function ExamHub({ kind = "exam" }) {
           </div>
         ))}
       </div>
+      {attemptsError && (
+        <p className="schedule-status schedule-error" role="alert">
+          Couldn&apos;t load your {isMock ? "mock exam" : "exam"} results.
+        </p>
+      )}
 
       {/* ================= PRIMARY ================= */}
 
@@ -466,12 +589,12 @@ function ExamHub({ kind = "exam" }) {
             )}
 
             {!scheduleLoading && !scheduleError && scheduleItems.length === 0 && (
-              <p className="schedule-status">
-                {isMock
-                  ? "No mock exams published yet."
-                  : "No upcoming exams scheduled."}
-              </p>
-            )}
+                <p className="schedule-status">
+                  {isMock
+                    ? "No mock exams published yet."
+                    : "No upcoming exams scheduled."}
+                </p>
+              )}
 
             {!scheduleLoading &&
               !scheduleError &&
