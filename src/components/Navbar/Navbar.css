@@ -27,32 +27,6 @@ header.navbar {
 }
 
 /* =====================================
-   LEFT
-===================================== */
-
-.navbar-left {
-  display: none;
-}
-
-.menu-btn {
-  width: 42px;
-  height: 42px;
-  border: none;
-  background: transparent;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-}
-
-.menu-btn svg {
-  font-size: 24px;
-  color: #1e3a6e;
-}
-
-/* =====================================
    SEARCH
 ===================================== */
 
@@ -522,14 +496,19 @@ button.notification-trigger {
     padding: 0 15px;
   }
 
-  .navbar-left {
-    display: block;
-  }
-
   .navbar-center {
-    display: none;
+    flex: 1 1 auto;
+    max-width: none;
   }
 
+  .search-box {
+    height: 36px !important;
+    padding: 0 10px;
+  }
+
+  .navbar-search-results {
+    top: 44px;
+  }
   .profile-info {
     display: none;
   }

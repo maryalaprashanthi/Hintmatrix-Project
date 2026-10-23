@@ -26,10 +26,9 @@ import {
   FiUser,
   FiSettings,
   FiLogOut,
-  FiMenu,
 } from "react-icons/fi";
 
-export default function Navbar({ sidebarOpen, setSidebarOpen }) {
+export default function Navbar() {
   const [showMenu, setShowMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -50,16 +49,30 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
     logoutUser(navigate);
   };
 
-  const { notifications, unreadCount, notificationsLoading, notificationError,
-    notificationsBusy, loadNotifications, markNotificationsRead } = useContext(NotificationContext);
+  const {
+    notifications,
+    unreadCount,
+    notificationsLoading,
+    notificationError,
+    notificationsBusy,
+    loadNotifications,
+    markNotificationsRead,
+  } = useContext(NotificationContext);
 
   const markAllNotificationsRead = () => markNotificationsRead();
 
   const openNotification = async (notification) => {
     if (notificationsBusy) return;
-    if (!notification.read && !(await markNotificationsRead(notification.notificationId))) return;
+    if (
+      !notification.read &&
+      !(await markNotificationsRead(notification.notificationId))
+    )
+      return;
     setShowNotifications(false);
-    if (notification.actionUrl?.startsWith("/") && !notification.actionUrl.startsWith("//")) {
+    if (
+      notification.actionUrl?.startsWith("/") &&
+      !notification.actionUrl.startsWith("//")
+    ) {
       navigate(notification.actionUrl);
     }
   };
@@ -78,10 +91,19 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
   };
 
   const notificationStyle = (notification) => {
-    if (notification.severity === "WARNING" || notification.severity === "ERROR") {
+    if (
+      notification.severity === "WARNING" ||
+      notification.severity === "ERROR"
+    ) {
       return { symbol: "!", color: "amber" };
     }
-    if (["UPLOAD_COMPLETED", "CERTIFICATE_GENERATED", "RESULT_PUBLISHED"].includes(notification.eventType)) {
+    if (
+      [
+        "UPLOAD_COMPLETED",
+        "CERTIFICATE_GENERATED",
+        "RESULT_PUBLISHED",
+      ].includes(notification.eventType)
+    ) {
       return { symbol: "✓", color: "green" };
     }
     return { symbol: "↑", color: "blue" };
@@ -433,16 +455,6 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
 
   return (
     <header className="navbar">
-      {/* Mobile Menu */}
-      <div className="navbar-left">
-        <button
-          className="menu-btn"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-        >
-          <FiMenu />
-        </button>
-      </div>
-
       {/* Search */}
       <div className="navbar-center" ref={searchRef}>
         <div
@@ -543,11 +555,21 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
               </div>
 
               <div className="notification-list">
-                {notificationError && <div className="notification-state" role="alert">
-                  {notificationError} <button type="button" onClick={() => loadNotifications({ showLoading: true })}>Retry</button>
-                </div>}
+                {notificationError && (
+                  <div className="notification-state" role="alert">
+                    {notificationError}{" "}
+                    <button
+                      type="button"
+                      onClick={() => loadNotifications({ showLoading: true })}
+                    >
+                      Retry
+                    </button>
+                  </div>
+                )}
                 {notificationsLoading ? (
-                  <div className="notification-state">Loading notifications...</div>
+                  <div className="notification-state">
+                    Loading notifications...
+                  </div>
                 ) : notifications.length ? (
                   notifications.map((notification) => {
                     const style = notificationStyle(notification);
@@ -571,7 +593,11 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
                     );
                   })
                 ) : (
-                  !notificationError && <div className="notification-state">No notifications yet.</div>
+                  !notificationError && (
+                    <div className="notification-state">
+                      No notifications yet.
+                    </div>
+                  )
                 )}
               </div>
             </div>
@@ -586,7 +612,9 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
               setShowNotifications(false);
             }}
           >
-            <span className="navbar-profile-avatar" aria-hidden="true">{getUserInitials(userName)}</span>
+            <span className="navbar-profile-avatar" aria-hidden="true">
+              {getUserInitials(userName)}
+            </span>
             <div className="profile-info">
               <span className="profile-name">{userName}</span>
 

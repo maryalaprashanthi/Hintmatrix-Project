@@ -77,22 +77,17 @@ body {
 /* ==========================================
    MOBILE
 ========================================== */
-
 @media (max-width: 768px) {
-  .main-layout {
-    left: 0;
-    width: 100%;
-  }
-
+  .main-layout,
   .main-layout.sidebar-collapsed {
-    left: 0;
+    left: 80px;
   }
 
   .page-content {
     padding: 20px;
-    width: 100%;
   }
 }
+
 /* ==========================================
    SIDEBAR OVERLAY (mobile)
 ========================================== */
